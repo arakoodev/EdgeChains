@@ -1,3 +1,4 @@
 # javachains
 chain-of-thought engineering for LLM and OpenAI GPT. Built for Java. Built for Enterprise. Built for Scale
-![image](https://user-images.githubusercontent.com/76883/226261036-4efd270b-3104-44b4-8f29-ec411f9e0fae.png)
+![image](https://user-images.githubusercontent.com/76883/226261289-21a6fd42-ff6f-4d7a-9c59-3c7f149e0f56.png)
+
