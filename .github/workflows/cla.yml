@@ -25,7 +25,9 @@ jobs:
           allowlist: user1,bot*
           custom-pr-sign-comment: 'I have read the Arakoo CLA Document and I hereby sign the CLA'
           custom-notsigned-prcomment: 'Thank you for your submission, we really appreciate it. Before we can accept your contribution, we ask that you sign the [Arakoo Contributor License Agreement](https://github.com/arakoodev/.github/blob/main/CLA.md). You can sign the CLA by adding a new comment to this pull request and pasting exactly the following text.'
-
+          remote-organization-name: arakoodev
+          remote-repository-name: .github
+          
          # the followings are the optional inputs - If the optional inputs are not given, then default values will be taken
           #remote-organization-name: enter the remote organization name where the signatures should be stored (Default is storing the signatures in the same repository)
           #remote-repository-name: enter the  remote repository name where the signatures should be stored (Default is storing the signatures in the same repository)
