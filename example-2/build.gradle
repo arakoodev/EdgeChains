@@ -1,0 +1,30 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.0.5'
+	id 'io.spring.dependency-management' version '1.1.0'
+}
+
+group = 'com.openai.test'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'log4j:log4j:1.2.17'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+	implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+	implementation group: 'commons-io', name: 'commons-io', version: '2.4'
+	implementation 'org.apache.pdfbox:pdfbox:2.0.24'
+	implementation 'com.openai:openai:0.27.0'
+	implementation 'io.pinecone:pinecone:0.1.9'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
