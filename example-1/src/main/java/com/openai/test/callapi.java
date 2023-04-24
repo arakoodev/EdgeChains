@@ -151,7 +151,7 @@ public class callapi {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.setBearerAuth("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");
+        headers.setBearerAuth("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");
 
         // Create body
         String jsonBody = createJsonWithContent(inputContent);

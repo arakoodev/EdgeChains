@@ -43,7 +43,7 @@ public class callapi {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.setBearerAuth("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");
+        headers.setBearerAuth("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");
 
         // Create body
         String existingContent = "Use the following pieces of context to answer the question at the end. If\n" +
