@@ -227,7 +227,7 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 
                        HttpHeaders headers = new HttpHeaders();
                        headers.setContentType(MediaType.APPLICATION_JSON);
-                       headers.setBearerAuth("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");
+                       headers.setBearerAuth("");
 
                        HttpEntity<PluginRequest> entity = new HttpEntity<>(request, headers);
 
@@ -255,7 +255,7 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 
                        HttpHeaders headers = new HttpHeaders();
                        headers.setContentType(MediaType.APPLICATION_JSON);
-                       headers.setBearerAuth("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");
+                       headers.setBearerAuth("");
 
                        // Creating Request Body
                        String requestBody = objectMapper.writeValueAsString(new EmbeddingRequest(text));

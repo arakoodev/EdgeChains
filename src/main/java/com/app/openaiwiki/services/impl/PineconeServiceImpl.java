@@ -26,9 +26,9 @@ public class PineconeServiceImpl implements PineconeService {
 
     @Autowired private ObjectMapper objectMapper;
 
-    private final String pineconeUrl = "https://langchain-60c1091.svc.northamerica-northeast1-gcp.pinecone.io";;
+    private final String pineconeUrl = "";;
 //    private final String indexName = "index";
-    private final String apiKey = "2709ba96-d47e-4bb8-b39d-02977e458cf9";
+    private final String apiKey = "";
 
     /**
      * Why Used Completable?? Because we aren't returning anything; although you could use Observable as well.
