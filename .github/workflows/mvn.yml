@@ -5,7 +5,7 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
 
-name: Java CI with MV
+name: Java CI with MVN
 
 
     
@@ -15,10 +15,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-# Enrich gradle.properties for CI/CD
-env:
-  GRADLE_OPTS: --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx3072m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.daemon.jvm.options="-Xmx2560m" -Dkotlin.incremental=false
-
 permissions:
   contents: read
 
@@ -26,13 +22,8 @@ jobs:
   build:
     defaults:
      run:
-      working-directory: project
+      working-directory: .
     runs-on: ubuntu-20.04
-    
-    # Allow all jobs on main and develop. Just one per PR.
-    concurrency:
-      group: ${{ github.ref == 'refs/heads/main' && format('unit-tests-main-{0}', github.sha) || github.ref == 'refs/heads/develop' && format('unit-tests-develop-{0}', github.sha) || format('unit-tests-{0}', github.ref) }}
-      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
@@ -53,24 +44,39 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository/*/*
+            !~/.m2/repository/com/arakoo
+          key: ${{ runner.os }}-cron-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-cron-maven
+            ${{ runner.os }}-maven
 
-
-      - name: Setup Java
+      - name: Install JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
-         cache: gradle
-         distribution: temurin
-         java-version: ${{matrix.java}}
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
 
-      - name: Test with gradle
-        uses: gradle/gradle-build-action@v2
+      - name: Build  - JVM
+        run: mvn clean package   
+
+      - name: Move App Bundle to location
+        run: cp target/flyfly-0.0.1-SNAPSHOT.jar ./flyfly.jar
+      - uses: actions/upload-artifact@v3
         with:
-          arguments: test
-
-      - name: Archive test report
-        uses: actions/upload-artifact@v3
+          name: flyfly-artifact-rel
+          path: |
+            ./project/flyfly/flyfly.jar
+            ./project/flyfly/pom.xml
+        
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v2
         with:
          name: test-results
-         path: /tmp/deepsource
+         path: build/reports/tests/
     outputs:
       relid: ${{ steps.versioninfo.outputs.pipeline_id }}
