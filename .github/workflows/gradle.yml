@@ -62,9 +62,10 @@ jobs:
          distribution: temurin
          java-version: ${{matrix.java}}
 
-      - name: Run tests
-        run: ./gradlew  test
-        shell: bash
+      - name: Test with gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: test
 
       - name: Archive test report
         uses: actions/upload-artifact@v3
