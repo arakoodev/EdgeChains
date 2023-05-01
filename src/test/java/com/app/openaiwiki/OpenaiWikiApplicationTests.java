@@ -1,0 +1,13 @@
+package com.app.openaiwiki;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class OpenaiWikiApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}
