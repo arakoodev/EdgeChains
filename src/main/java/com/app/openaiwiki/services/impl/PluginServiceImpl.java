@@ -212,7 +212,7 @@ public class PluginServiceImpl implements PluginService {
     }
 
 
-    public boolean isValidJSON(String json) {
+    private boolean isValidJSON(String json) {
 
         ObjectMapper mapper = new ObjectMapper().enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
 

@@ -119,24 +119,25 @@ public class BuilderServiceImpl implements BuilderService {
                         Map<Integer, List<Double>> embeddingsMap = new HashMap<>();
                         IntStream.range(0, chunks.size()).parallel()
                                 .forEach(index -> {
-                                    String jsonResponse = openAiClientService.createEmbeddings(chunks.get(index)).get();
+                                   try{
 
-                                    // Parse the JSON response to extract the embedding
-                                    JsonNode jsonNode = null;
-                                    try {
-                                        jsonNode = objectMapper.readTree(jsonResponse);
-                                    } catch (JsonProcessingException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                    JsonNode dataArrayNode = jsonNode.get("data");
+                                       String jsonResponse = openAiClientService.createEmbeddings(chunks.get(index)).getWithOutRetry();
 
-                                    JsonNode firstDataNode = dataArrayNode.get(0);
-                                    JsonNode embeddingNode = firstDataNode.get("embedding");
+                                       // Parse the JSON response to extract the embedding
+                                       JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+                                       JsonNode dataArrayNode = jsonNode.get("data");
 
-                                    List<Double> embedding = objectMapper.convertValue(embeddingNode, new TypeReference<>() {});
+                                       JsonNode firstDataNode = dataArrayNode.get(0);
+                                       JsonNode embeddingNode = firstDataNode.get("embedding");
 
-                                    // Add the embedding to the HashMap with the chunk number as the key
-                                    embeddingsMap.put(index, embedding);
+                                       List<Double> embedding = objectMapper.convertValue(embeddingNode, new TypeReference<>() {});
+
+                                       // Add the embedding to the HashMap with the chunk number as the key
+                                       embeddingsMap.put(index, embedding);
+
+                                   }catch (final Exception e){
+                                       throw new RuntimeException(e.getMessage());
+                                   }
                                 });
 
                         // Step 5: Prepare a list of embeddings in the required format (Parallel)
