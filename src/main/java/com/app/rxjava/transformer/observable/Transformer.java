@@ -91,7 +91,6 @@ public class Transformer<T> extends EdgeChain<T> {
     }
 
 
-
     /**
      * Wrapper implementation of doWhile loop
      * @param booleanSupplier
