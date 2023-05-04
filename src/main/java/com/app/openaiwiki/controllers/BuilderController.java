@@ -36,14 +36,14 @@ public class BuilderController {
         return builderService.createChatCompletion(query).getScheduledObservable();
     }
 
-    @PostMapping(value = "/embeddings")
-    public Flux<? extends ResponseEntity<?>> extractInformationFlux(@RequestPart("file") MultipartFile file,
-                                                          @RequestPart("query") String query) {
-        return ArkResponse
-                .fromObservable(builderService.extractInformation(file,query).getScheduledObservable(),
-                        MediaType.APPLICATION_JSON).getResponse();
-
-    }
+//    @PostMapping(value = "/embeddings")
+//    public Flux<? extends ResponseEntity<?>> extractInformationFlux(@RequestPart("file") MultipartFile file,
+//                                                          @RequestPart("query") String query) {
+//        return ArkResponse
+//                .fromObservable(builderService.extractInformation(file,query).getScheduledObservable(),
+//                        MediaType.APPLICATION_JSON).getResponse();
+//
+//    }
 
     @PostMapping(value = "/rx-embeddings")
     public Observable<String> extractInformationRx(@RequestPart("file") MultipartFile file,

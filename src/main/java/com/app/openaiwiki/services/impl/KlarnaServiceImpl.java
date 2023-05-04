@@ -14,7 +14,6 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class KlarnaServiceImpl implements KlarnaService {
 
-
     private static final String KLARNA_PLUGIN_URL = "https://www.klarna.com/.well-known/ai-plugin.json";
     private static final String KLARNA_OPENAPI = "https://www.klarna.com/us/shopping/public/openai/v0/api-docs/";
 

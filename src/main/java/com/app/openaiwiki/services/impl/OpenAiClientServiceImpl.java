@@ -136,7 +136,7 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                        headers.setBearerAuth("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");
+                        headers.setBearerAuth("");
 
                         // Create body
                         String jsonBody = prepareJsonBody(inputContent, query);
@@ -194,7 +194,7 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                        headers.setBearerAuth("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");
+                        headers.setBearerAuth("");
 
                         // Create body
                         String existingContent = "Use the following pieces of context to answer the question at the end. If " +
