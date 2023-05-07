@@ -1,12 +1,9 @@
 package com.app.openaiwiki.services;
 
-import com.app.openaiwiki.response.AiPluginResponse;
-import com.app.openaiwiki.services.impl.PluginServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -28,7 +25,7 @@ public class PluginServiceTest {
     private MockRestServiceServer mockServer;
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired PluginService pluginService = new PluginServiceImpl();
+    @Autowired KlarnaService klarnaService = new KlarnaServiceImpl();
 
     // Arrange
     @BeforeEach
@@ -46,7 +43,7 @@ public class PluginServiceTest {
     void testKlarnaPluginWithOpenAPI_ProvidedQuery_ShouldAssertCompleteAndEmitResult(String query) throws InterruptedException {
 
         // Act
-        TestObserver<String> test = pluginService.requestKlarna(query).getObservable().test();
+        TestObserver<String> test = klarnaService.request(query).getObservable().test();
 
         test.await();
 
