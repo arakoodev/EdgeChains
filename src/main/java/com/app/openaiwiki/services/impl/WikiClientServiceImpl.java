@@ -27,7 +27,6 @@ public class WikiClientServiceImpl implements WikiClientService {
 
     private static final String WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php";
 
-
     @Override
     public WikiChain getPageContent(String pageTitle) {
 

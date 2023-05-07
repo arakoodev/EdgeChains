@@ -1,65 +1,180 @@
 package com.app.rxjava.transformer.observable;
 
+import com.app.openai.endpoint.Endpoint;
+
+import com.app.rxjava.retry.impl.FixedDelay;
 import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableSource;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.functions.*;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-public abstract class EdgeChain<T> {
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
-    protected Observable<T> observable;
+public class EdgeChain<T> extends AbstractEdgeChain<T> {
+
+    private static final int MAX_RETRIES = 4;
+    private static final int FIXED_DELAY = 3;
+    private static final TimeUnit UNIT = TimeUnit.SECONDS;
+
+    private Endpoint endpoint;
 
     public EdgeChain(Observable<T> observable) {
-        this.observable = observable;
+        super(observable);
+    }
+
+    public EdgeChain(Observable<T> observable, Endpoint endpoint) {
+        super(observable);
+        this.endpoint = endpoint;
     }
 
 
-    public abstract <R> EdgeChain<R> transform(Function<T,R> mapper);
-    public abstract <R> EdgeChain<R> combine(ObservableSource<T> other, BiFunction<T, T, R> zipper);
-    public abstract <R> EdgeChain<R> combine(EdgeChain<T> other, BiFunction<T, T, R> zipper);
+    @Override
+    public <R> EdgeChain<R> transform(Function<T, R> mapper) {
+        return new EdgeChain<>(this.observable.map(mapper));
+    }
 
-    public abstract EdgeChain<T> filter(Predicate<T> predicate);
-    public abstract EdgeChain<T> mergeWith(ObservableSource<T> other);
-    public abstract EdgeChain<T> mergeWith(EdgeChain<T> other);
-    public abstract EdgeChain<T> concatWith(ObservableSource<T> other);
-    public abstract EdgeChain<T> concatWith(EdgeChain<T> other);
+    @Override
+    public <R> EdgeChain<R> combine(ObservableSource<T> other, BiFunction<T, T, R> zipper) {
+        return new EdgeChain<>(this.observable.zipWith(other,zipper));
+    }
 
-    public abstract EdgeChain<T> doOnNext(@NonNull Consumer<? super T> onNext);
-    public abstract EdgeChain<T> doOnError(@NonNull Consumer<? super Throwable> onError);
+    @Override
+    public EdgeChain<T> filter(Predicate<T> predicate) {
+        return new EdgeChain<>(this.observable.filter(predicate));
+    }
 
-    public abstract EdgeChain<T> schedule();
-    public abstract EdgeChain<T> schedule(Scheduler scheduler);
+    @Override
+    public EdgeChain<T> mergeWith(ObservableSource<T> other) {
+        return new EdgeChain<>(this.observable.mergeWith(other));
+    }
 
-    public abstract EdgeChain<T> doWhileLoop(BooleanSupplier booleanSupplier);
 
-    public abstract void execute();
-    public abstract void execute(Consumer<? super T> onNext, Consumer<? super Throwable> onError);
-    public abstract void execute(Consumer<? super T> onNext, Consumer<? super Throwable> onError, Action onComplete);
+    @Override
+    public EdgeChain<T> concatWith(ObservableSource<T> other) {
+        return new EdgeChain<>(this.observable.concatWith(other));
+    }
 
-    public abstract Observable<T> getRetryScheduledObservable();
+    
+    @Override
+    public EdgeChain<T> doOnNext(@NonNull Consumer<? super T> onNext) {
+        return new EdgeChain<>(this.observable.doOnNext(onNext));
+    }
 
-    public abstract T get();
+    @Override
+    public EdgeChain<T> doOnError(@NonNull Consumer<? super Throwable> onError) {
+        return new EdgeChain<>(this.observable.doOnError(onError));
+    }
 
-    /*
-        Specialized Method where we assume API is returning errors like: (Not Returning JSON Response, Invalid URL)
-        Primarily used with createCompletion() OPENAPI..
-        Here, we by default assume the API will not emit an error, if correct API is provided
+    @Override
+    public EdgeChain<T> schedule() {
+        return new EdgeChain<>(this.observable.subscribeOn(Schedulers.io()));
+    }
+
+    @Override
+    public EdgeChain<T> schedule(Scheduler scheduler) {
+        return new EdgeChain<>(this.observable.subscribeOn(scheduler));
+    }
+
+
+    /**
+     * Wrapper implementation of doWhile loop
+     * @param booleanSupplier
+     * @return
      */
-    public abstract T getWithOutRetry();
-
-    /* Primarily For Writing Test Cases & Transforming The Wrapper Into Observable */
-    public Observable<T> getObservable() {
-        return observable;
+    @Override
+    public EdgeChain<T> doWhileLoop(BooleanSupplier booleanSupplier) {
+        return new EdgeChain<>(this.observable.repeatUntil(booleanSupplier));
     }
 
-    public Observable<T> getScheduledObservable() {
-        return observable
+    @Override
+    public void execute() {
+        this.observable
+                .subscribeOn(Schedulers.io())
+                .retryWhen(Objects.isNull(endpoint) ? new FixedDelay(MAX_RETRIES,FIXED_DELAY,UNIT) : endpoint.getRetryPolicy())
+                .subscribe();
+    }
+
+
+    @Override
+    public void execute(Consumer<? super T> onNext, Consumer<? super Throwable> onError) {
+        this.observable
+                .subscribeOn(Schedulers.io())
+                .retryWhen(Objects.isNull(endpoint) ? new FixedDelay(MAX_RETRIES,FIXED_DELAY,UNIT) : endpoint.getRetryPolicy())
+                .subscribe(onNext, onError);
+    }
+
+    @Override
+    public void execute(Consumer<? super T> onNext, Consumer<? super Throwable> onError, Action onComplete) {
+        this.observable
+                .subscribeOn(Schedulers.io())
+                .retryWhen(Objects.isNull(endpoint) ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT) : endpoint.getRetryPolicy())
+                .subscribe(onNext, onError, onComplete);
+    }
+
+    @Override
+    public Observable<T> getScheduledObservableWithRetry() {
+        return this.observable
+                .retryWhen(Objects.isNull(endpoint) ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT) : endpoint.getRetryPolicy())
                 .subscribeOn(Schedulers.io());
     }
 
+    @Override
+    public Observable<T> getScheduledObservableWithoutRetry() {
+        return this.observable.subscribeOn(Schedulers.io());
+    }
 
+    /**
+     * Will Return Only Single Value In A Blocking Way (If emit successful the value is returned; otherwise error is emitted
+     * @return
+     */
+    @Override
+    public T getWithRetry() {
+        return this.observable
+                .retryWhen(Objects.isNull(endpoint) ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT) : endpoint.getRetryPolicy())
+                .firstOrError().blockingGet();
+    }
+
+    @Override
+    public T getWithOutRetry() {
+        return this.observable.firstOrError().blockingGet();
+    }
+
+    @Override
+    public Observable<T> getObservable() {
+        return this.observable;
+    }
+
+    @Override
+    public void awaitWithRetry() {
+        Completable.fromObservable(
+                this.observable
+                        .retryWhen(Objects.isNull(endpoint) ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT) : endpoint.getRetryPolicy()))
+                .blockingAwait();
+    }
+
+    @Override
+    public void awaitWithoutRetry() {
+        Completable.fromObservable(this.observable).blockingAwait();
+    }
+
+    @Override
+    public void completed() {
+        Completable.fromObservable(this.observable).subscribeOn(Schedulers.io()).subscribe();
+    }
+
+    @Override
+    public void completed(Action onComplete) {
+        Completable.fromObservable(this.observable).subscribeOn(Schedulers.io()).subscribe(onComplete);
+    }
+
+    @Override
+    public void completed(Action onComplete, Consumer<? super Throwable> onError) {
+        Completable.fromObservable(this.observable).subscribeOn(Schedulers.io()).subscribe(onComplete, onError);
+    }
 
 
 }

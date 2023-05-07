@@ -1,6 +1,6 @@
 package com.app.openaiwiki.controllers;
 
-import com.app.openaiwiki.services.PluginService;
+import com.app.openaiwiki.services.PluginOpenAiService;
 import io.reactivex.rxjava3.core.Observable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -13,12 +13,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/plugins")
 public class PluginController {
 
-    @Autowired
-    private PluginService pluginService;
+    @Autowired private PluginOpenAiService pluginOpenAiService;
 
-    @GetMapping(value = "/klarna",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Observable<String> get(@RequestParam("query") String query){
-        return pluginService.requestKlarna(query).getScheduledObservable();
+    @GetMapping(value = "/klarna", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Observable<String> getKlarna(@RequestParam("query") String query){
+        return pluginOpenAiService.requestKlarna(query).getScheduledObservableWithoutRetry();
+    }
+
+    @GetMapping(value = "/shopbox", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Observable<String> getShopBox(@RequestParam("query") String query){
+       return pluginOpenAiService.requestShopBox(query).getScheduledObservableWithoutRetry();
+    }
+
+    // Query = How much is 3849 x 8394 ?
+    // Query = Divide 156059 / 32 ?
+    // Query = Multiply 10 x 10
+    @GetMapping(value = "/calculator", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Observable<String> getCalculator(@RequestParam("query") String query){
+        return pluginOpenAiService.requestCalculator(query).getScheduledObservableWithoutRetry();
     }
 
 }

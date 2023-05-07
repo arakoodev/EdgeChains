@@ -1,18 +1,17 @@
 package com.app.openaiwiki.chains;
 
-import com.app.openaiwiki.response.AiPluginResponse;
-import com.app.rxjava.endpoint.Endpoint;
-import com.app.rxjava.transformer.observable.Transformer;
+import com.app.openai.endpoint.Endpoint;
+import com.app.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
 
-public class KlarnaChain extends Transformer<AiPluginResponse> {
+public class KlarnaChain extends EdgeChain<String> {
 
 
-    public KlarnaChain(Observable<AiPluginResponse> observable) {
+    public KlarnaChain(Observable<String> observable) {
         super(observable);
     }
 
-    public KlarnaChain(Observable<AiPluginResponse> observable, Endpoint endpoint) {
+    public KlarnaChain(Observable<String> observable, Endpoint endpoint) {
         super(observable, endpoint);
     }
 }
