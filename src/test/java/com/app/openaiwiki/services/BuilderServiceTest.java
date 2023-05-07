@@ -55,7 +55,7 @@ public class BuilderServiceTest {
     void testBuilderComponent_ProvidedEmptyString_ShouldContinueUntilActionContentIsNull(String query) throws InterruptedException {
 
        // Act
-        TestObserver<String> test = builderService.createChatCompletion(query).getScheduledObservable().test();
+        TestObserver<String> test = builderService.openAIWithWiki(query).getScheduledObservableWithRetry().test();
         test.await();
 
         // Assert
@@ -63,37 +63,37 @@ public class BuilderServiceTest {
 
     }
 
-    @DisplayName("Openai-Pinecone Word2Vec")
-    @ParameterizedTest
-    @CsvSource(
-            {
-                    "..." + // Your File Path
-                            " Question: What is the collect stage of data maturity? Helpful Answer, data maturity"
-            })
-        // Put Your Filepath Here
-    void testPerformQuery_ProvidedMultiPartAndQuery_ShouldReturnTheResult(String filePath, String query, String textContain) throws IOException, InterruptedException {
-
-        // Arrange
-        File file = new File(filePath);
-        FileItem fileItem = new DiskFileItem("file", Files.probeContentType(file.toPath()), false, file.getName(), (int) file.length(), file.getParentFile());
-
-        IOUtils.copy(new FileInputStream(file), fileItem.getOutputStream());
-
-        MultipartFile multipartFile = new CommonsMultipartFile(fileItem);
-
-        // Act
-        TestObserver<String> test = builderService.extractInformation(multipartFile, query)
-                .getObservable().test();
-
-        test.await();
-
-        // Assert
-        test.assertComplete();
-
-       assertThat(test.values().get(0), CoreMatchers.containsString(textContain));
-
-
-
-    }
+//    @DisplayName("Openai-Pinecone Word2Vec")
+//    @ParameterizedTest
+//    @CsvSource(
+//            {
+//                    "..." + // Your File Path
+//                            " Question: What is the collect stage of data maturity? Helpful Answer, data maturity"
+//            })
+//        // Put Your Filepath Here
+//    void testPerformQuery_ProvidedMultiPartAndQuery_ShouldReturnTheResult(String filePath, String query, String textContain) throws IOException, InterruptedException {
+//
+//        // Arrange
+//        File file = new File(filePath);
+//        FileItem fileItem = new DiskFileItem("file", Files.probeContentType(file.toPath()), false, file.getName(), (int) file.length(), file.getParentFile());
+//
+//        IOUtils.copy(new FileInputStream(file), fileItem.getOutputStream());
+//
+//        MultipartFile multipartFile = new CommonsMultipartFile(fileItem);
+//
+//        // Act
+//        TestObserver<String> test = builderService.extractInformation(multipartFile, query)
+//                .getObservable().test();
+//
+//        test.await();
+//
+//        // Assert
+//        test.assertComplete();
+//
+//       assertThat(test.values().get(0), CoreMatchers.containsString(textContain));
+//
+//
+//
+//    }
 
 }

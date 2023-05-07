@@ -1,17 +1,16 @@
-package com.app.openaiwiki.chains;
+package com.app.openai.chains;
 
 import com.app.openai.endpoint.Endpoint;
 import com.app.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
 
-public class KlarnaChain extends EdgeChain<String> {
+public class IndexChain extends EdgeChain<String> {
 
-
-    public KlarnaChain(Observable<String> observable) {
+    public IndexChain(Observable<String> observable) {
         super(observable);
     }
 
-    public KlarnaChain(Observable<String> observable, Endpoint endpoint) {
+    public IndexChain(Observable<String> observable, Endpoint endpoint) {
         super(observable, endpoint);
     }
 }
