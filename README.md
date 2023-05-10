@@ -1,4 +1,4 @@
-# EdgeChains - LLM chains of the edge
+# EdgeChains : LLM chains on-the-edge
 **chain-of-thought engineering for LLM and OpenAI GPT. Built for Java. Built for Enterprise. Built for Scale**
 
 
