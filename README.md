@@ -6,3 +6,48 @@ chain-of-thought engineering for LLM and OpenAI GPT. Built for Java. Built for E
 
 ![image](https://user-images.githubusercontent.com/76883/236382313-a7b34bba-0364-4867-8b59-5ed97d9bbee0.png)
 
+## 🎊 Community
+
+💫💫💫 **we would be very grateful if you could take 5 seconds to star our repository on Github. It helps get the word out to more Java developers & open source committers about edgechains.** 💫💫💫
+
+- Follow our [Twitter](https://twitter.com/arakoodev)
+- Join  [Discord](https://discord.gg/MtEPK9cnSF) to write code, get help, or to chat with us!!!
+- Open a [discussion](https://github.com/arakoodev/edgechains/discussions/new) with your question, or
+- Open [a bug](https://github.com/arakoodev/edgechains/issues/new)
+- Check open [Github Issues](https://github.com/arakoodev/edgechains/issues)
+- Make sure to read our [contributing CLA](https://github.com/arakoodev/.github/blob/main/CLA.md).
+
+
+## 🧐 Contributing Guidelines (There is only one)
+
+This project hopes and requests for clean pull request merges. the way we merge is squash and merge. This fundamentally can only work if you **NEVER ISSUE A PULL REQUEST TWICE FROM THE SAME LOCAL BRANCH**. If you create another pull request from same local branch, then the merge will always fail.
+
+solution is simple - **ONE BRANCH PER PULL REQUEST**. We Follow this strictly. if you have created this pull request using your master/main branch, then follow these steps to fix it:
+```
+# Note: Any changes not committed will be lost.
+git branch newbranch      # Create a new branch, saving the desired commits
+git checkout master       # checkout master, this is the place you want to go back
+git reset --hard HEAD~3   # Move master back by 3 commits (Make sure you know how many commits you need to go back)
+git checkout newbranch    # Go to the new branch that still has the desired commits. NOW CREATE A PULL REQUEST
+```
+
+## 💌 Acknowledgements
+
+- First Hat tip to  [Spring](https://github.com/spring-projects/spring-framework).
+- We are inspired by the spirit of [Nextjs](https://github.com/vercel/next.js/).
+- All the other [contributors](https://github.com/wootzapp/wootz-browser/graphs/contributors).
+- Respect to LangChain, Anthropic, Mosaic and the rest of the opensource LLM community. We are deeply grateful for sharing your knowledge and never turning anyone away.
+
+## ✍️ Authors and Contributors
+
+- Sandeep Srinivasa ([@sandys](https://twitter.com/sandeepssrin))
+
+We love contributors! Feel free to contribute to this project but please read the [CLA](https://github.com/wootzapp/.github/blob/main/CLA.md) first!
+
+<a href="https://github.com/arakoodev/edgechains/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=arakoodev/edgechains&max=300&columns=12&anon=0" />
+</a>
+
+## 📜 License
+
+edgechains is open-source OSS software licensed under the MIT license.
