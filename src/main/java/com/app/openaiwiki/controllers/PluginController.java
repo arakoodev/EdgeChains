@@ -15,7 +15,7 @@ public class PluginController {
 
     @Autowired private PluginOpenAiService pluginOpenAiService;
 
-    @GetMapping(value = "/klarna", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "klarna", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Observable<String> getKlarna(@RequestParam("query") String query){
         return pluginOpenAiService.requestKlarna(query).getScheduledObservableWithoutRetry();
     }

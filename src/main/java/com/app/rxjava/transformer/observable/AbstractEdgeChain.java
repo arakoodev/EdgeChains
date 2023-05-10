@@ -1,12 +1,16 @@
 package com.app.rxjava.transformer.observable;
-import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableSource;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.functions.*;
 
+import java.io.Serializable;
 
-public abstract class AbstractEdgeChain<T> {
+
+public abstract class AbstractEdgeChain<T> implements Serializable {
+
+    private static final long serialVersionUID = -7323653750095226732L;
 
     protected Observable<T> observable;
 
@@ -22,9 +26,9 @@ public abstract class AbstractEdgeChain<T> {
     public abstract AbstractEdgeChain<T> mergeWith(ObservableSource<T> other);
     public abstract AbstractEdgeChain<T> concatWith(ObservableSource<T> other);
 
-
-    public abstract AbstractEdgeChain<T> doOnNext(@NonNull Consumer<? super T> onNext);
-    public abstract AbstractEdgeChain<T> doOnError(@NonNull Consumer<? super Throwable> onError);
+    public abstract AbstractEdgeChain<T> doOnComplete(Action onComplete);
+    public abstract AbstractEdgeChain<T> doOnNext(Consumer<? super T> onNext);
+    public abstract AbstractEdgeChain<T> doOnError(Consumer<? super Throwable> onError);
 
     public abstract AbstractEdgeChain<T> schedule();
     public abstract AbstractEdgeChain<T> schedule(Scheduler scheduler);
@@ -39,7 +43,11 @@ public abstract class AbstractEdgeChain<T> {
 
     public abstract Observable<T> getScheduledObservableWithRetry();
     public abstract Observable<T> getScheduledObservableWithoutRetry();
+
+
+    public abstract T getWithRetry(Scheduler scheduler);
     public abstract T getWithRetry();
+
     public abstract T getWithOutRetry();
 
 

@@ -5,8 +5,11 @@ import com.app.rxjava.transformer.observable.EdgeChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LLMService implements LLMProvider {
+import java.io.Serializable;
 
+public class LLMService implements LLMProvider, Serializable {
+
+    private static final long serialVersionUID = 2134005420372599230L;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final LLMProvider provider;

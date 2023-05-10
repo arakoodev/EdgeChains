@@ -10,7 +10,6 @@ import com.app.openai.plugin.tool.ApiConfig;
 import com.app.openai.plugin.tool.PluginTool;
 import com.app.openai.prompt.PromptTemplate;
 import com.app.openai.prompt.impl.CompletionPrompt;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
 
