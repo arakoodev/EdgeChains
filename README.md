@@ -16,7 +16,7 @@ EdgeChains, a framework for building large-scale distributed machine learning sy
 
 ## 🎊 Community
 
-💫💫💫 **we would be very grateful if you could take 5 seconds to star our repository on Github. It helps get the word out to more Java developers & open source committers about edgechains.** 💫💫💫
+💫💫💫 **we would be very grateful if you could take 5 seconds to star our repository on Github. It helps get the word out to more LLM developers & open source committers about edgechains.** 💫💫💫
 
 - Follow our [Twitter](https://twitter.com/arakoodev)
 - Join  [Discord](https://discord.gg/MtEPK9cnSF) to write code, get help, or to chat with us!!!
