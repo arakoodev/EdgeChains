@@ -12,14 +12,23 @@ import java.util.List;
 public class OpenAiChatCompletionProvider implements LLMProvider {
 
     private final Endpoint endpoint;
-    private final String role;
     private final String model;
+    private final String role;
 
+    private Double temperature;
 
-    public OpenAiChatCompletionProvider(Endpoint endpoint, String model, String role) {
+    public OpenAiChatCompletionProvider(Endpoint endpoint, String model, String role ) {
         this.endpoint = endpoint;
         this.role = role;
         this.model = model;
+
+    }
+
+    public OpenAiChatCompletionProvider(Endpoint endpoint, String model, String role, Double temperature) {
+        this.endpoint = endpoint;
+        this.role = role;
+        this.model = model;
+        this.temperature = temperature;
     }
 
     @Override
@@ -27,6 +36,7 @@ public class OpenAiChatCompletionProvider implements LLMProvider {
 
         ChatCompletionRequest request = ChatCompletionRequest.builder()
                 .model(model)
+                .temperature(temperature)
                 .messages(List.of(new ChatMessage(role,prompt)))
                 .build();
 

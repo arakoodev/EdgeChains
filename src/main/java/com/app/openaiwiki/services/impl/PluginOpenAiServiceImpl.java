@@ -12,7 +12,6 @@ import com.app.openaiwiki.chains.KlarnaChain;
 import com.app.openaiwiki.chains.ShopBoxChain;
 import com.app.openaiwiki.constants.JSONPluginConstants;
 import com.app.openaiwiki.services.PluginOpenAiService;
-import com.app.rxjava.transformer.observable.EdgeChain;
 import org.springframework.stereotype.Service;
 
 @Service
