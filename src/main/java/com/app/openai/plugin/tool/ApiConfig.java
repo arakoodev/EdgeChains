@@ -1,7 +1,5 @@
 package com.app.openai.plugin.tool;
 
-import java.util.StringJoiner;
-
 public class ApiConfig {
 
     private String type;

@@ -1,7 +1,6 @@
 package com.app.rxjava.utils;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 /**
  * Simple wrapper over an AtomicReference

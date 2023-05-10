@@ -1,5 +1,6 @@
 package com.app.openaiwiki.services;
 
+import com.app.openaiwiki.services.impl.PluginOpenAiServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +26,7 @@ public class PluginServiceTest {
     private MockRestServiceServer mockServer;
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired KlarnaService klarnaService = new KlarnaServiceImpl();
+    @Autowired PluginOpenAiService pluginOpenAiService = new PluginOpenAiServiceImpl();
 
     // Arrange
     @BeforeEach
@@ -43,7 +44,7 @@ public class PluginServiceTest {
     void testKlarnaPluginWithOpenAPI_ProvidedQuery_ShouldAssertCompleteAndEmitResult(String query) throws InterruptedException {
 
         // Act
-        TestObserver<String> test = klarnaService.request(query).getObservable().test();
+        TestObserver<String> test = pluginOpenAiService.requestKlarna(query).getObservable().test();
 
         test.await();
 

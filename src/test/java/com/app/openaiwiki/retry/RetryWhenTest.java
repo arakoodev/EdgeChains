@@ -1,7 +1,7 @@
 package com.app.openaiwiki.retry;
 
-import com.app.rxjava.retry.observable.impl.ExponentialDelay;
-import com.app.rxjava.retry.observable.impl.FixedDelay;
+import com.app.rxjava.retry.impl.ExponentialDelay;
+import com.app.rxjava.retry.impl.FixedDelay;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,11 +1,15 @@
 package com.app.rxjava.utils;
 
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Simple wrapper over an AtomicInteger
  */
-public final class AtomInteger {
+public final class AtomInteger implements Serializable {
+
+
+    private static final long serialVersionUID = 2089141378144025092L;
     private final AtomicInteger ref;
 
     private AtomInteger(Integer data) {

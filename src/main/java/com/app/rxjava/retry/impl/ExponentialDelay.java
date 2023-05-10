@@ -1,6 +1,6 @@
 package com.app.rxjava.retry.impl;
 
-import com.app.rxjava.retry.observable.RetryPolicy;
+import com.app.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.functions.Function;
 import org.slf4j.Logger;

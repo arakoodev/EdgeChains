@@ -1,15 +1,19 @@
 package com.app.openai.endpoint;
 
+import com.app.rxjava.retry.RetryPolicy;
 import com.app.rxjava.retry.impl.FixedDelay;
-import com.app.rxjava.retry.observable.RetryPolicy;
 
+import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
-public class Endpoint {
+public class Endpoint implements Serializable {
+
+    private static final long serialVersionUID = 7312640931172021528L;
 
     private static final int MAX_RETRIES = 4;
     private static final int FIXED_DELAY = 3;
     private static final TimeUnit UNIT = TimeUnit.SECONDS;
+
 
     private final String url;
     private String apiKey;
@@ -47,5 +51,13 @@ public class Endpoint {
 
     public RetryPolicy getRetryPolicy() {
         return retryPolicy;
+    }
+
+    @Override
+    public String toString() {
+        return "Endpoint{" + "url='" + url + '\'' +
+                ", apiKey='" + apiKey + '\'' +
+                ", retryPolicy=" + retryPolicy +
+                '}';
     }
 }

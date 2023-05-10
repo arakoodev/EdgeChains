@@ -14,7 +14,8 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/builder")
-public class BuilderController {
+public class
+BuilderController {
 
     @Autowired private BuilderService builderService;
 

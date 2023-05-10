@@ -4,7 +4,6 @@ import com.app.openai.chains.PluginChain;
 import com.app.openai.llm.service.LLMService;
 import com.app.openai.plugin.parser.PluginParser;
 import com.app.openai.plugin.response.PluginResponse;
-import com.app.openaiwiki.exceptions.UserException;
 import com.app.rxjava.utils.Atom;
 import com.app.rxjava.utils.AtomInteger;
 import com.fasterxml.jackson.core.JacksonException;
@@ -91,7 +90,7 @@ public class PluginService {
             // Step 3: Parse The Initial Response Using PluginParser
             return PluginParser.parse(pluginResponse.getPlugin().getName_for_model(), pluginResponse.getOpenApiSpec());
         } catch (final Exception e) {
-            throw new UserException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -123,7 +122,7 @@ public class PluginService {
             return Objects.requireNonNullElse(jsonResponse, "");
 
         } catch (final Exception e) {
-            throw new UserException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -132,7 +131,7 @@ public class PluginService {
             String response = llmService.request(prompt.toString()).getWithRetry();
             return PluginParser.getFinalAnswer(response);
         } catch (final Exception e) {
-            throw new UserException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
