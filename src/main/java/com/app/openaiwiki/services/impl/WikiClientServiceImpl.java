@@ -68,7 +68,7 @@ public class WikiClientServiceImpl implements WikiClientService {
                     Objects.requireNonNullElse(
                         output,
                         "")); // Observables never return null values; therefore we have used this
-                              // trick
+                // trick
                 emitter.onComplete();
 
               } catch (final Exception e) {
