@@ -6,11 +6,11 @@ import io.reactivex.rxjava3.core.Observable;
 
 public class ShopBoxChain extends EdgeChain<String> {
 
-    public ShopBoxChain(Observable<String> observable) {
-        super(observable);
-    }
+  public ShopBoxChain(Observable<String> observable) {
+    super(observable);
+  }
 
-    public ShopBoxChain(Observable<String> observable, Endpoint endpoint) {
-        super(observable, endpoint);
-    }
+  public ShopBoxChain(Observable<String> observable, Endpoint endpoint) {
+    super(observable, endpoint);
+  }
 }

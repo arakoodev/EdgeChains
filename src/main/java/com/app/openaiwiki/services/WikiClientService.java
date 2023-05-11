@@ -4,5 +4,5 @@ import com.app.openaiwiki.chains.WikiChain;
 
 public interface WikiClientService {
 
-    WikiChain getPageContent(String pageTitle);
+  WikiChain getPageContent(String pageTitle);
 }

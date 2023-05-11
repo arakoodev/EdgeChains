@@ -19,38 +19,31 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootTest
 public class PluginServiceTest {
 
+  @Mock RestTemplate restTemplate;
+  private MockRestServiceServer mockServer;
+  private ObjectMapper objectMapper = new ObjectMapper();
 
+  @Autowired PluginOpenAiService pluginOpenAiService = new PluginOpenAiServiceImpl();
 
-    @Mock
-    RestTemplate restTemplate;
-    private MockRestServiceServer mockServer;
-    private ObjectMapper objectMapper = new ObjectMapper();
+  // Arrange
+  @BeforeEach
+  public void setup() {
+    mockServer = MockRestServiceServer.createServer(restTemplate);
+  }
 
-    @Autowired PluginOpenAiService pluginOpenAiService = new PluginOpenAiServiceImpl();
+  @ParameterizedTest
+  @DisplayName("Test Klarna Plugin")
+  @CsvSource({"Question: What Black tshirts are available at Klarna?"})
+  void testKlarnaPluginWithOpenAPI_ProvidedQuery_ShouldAssertCompleteAndEmitResult(String query)
+      throws InterruptedException {
 
-    // Arrange
-    @BeforeEach
-    public void setup(){
-        mockServer = MockRestServiceServer.createServer(restTemplate);
-    }
+    // Act
+    TestObserver<String> test = pluginOpenAiService.requestKlarna(query).getObservable().test();
 
+    test.await();
 
-    @ParameterizedTest
-    @DisplayName("Test Klarna Plugin")
-    @CsvSource(
-            {
-                  "Question: What Black tshirts are available at Klarna?"
-            })
-    void testKlarnaPluginWithOpenAPI_ProvidedQuery_ShouldAssertCompleteAndEmitResult(String query) throws InterruptedException {
-
-        // Act
-        TestObserver<String> test = pluginOpenAiService.requestKlarna(query).getObservable().test();
-
-        test.await();
-
-        // Assert
-        test.assertComplete();
-        System.out.println(test.values());
-    }
-
+    // Assert
+    test.assertComplete();
+    System.out.println(test.values());
+  }
 }

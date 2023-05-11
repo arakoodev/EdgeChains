@@ -4,8 +4,5 @@ import com.app.rxjava.transformer.observable.AbstractEdgeChain;
 
 public interface BuilderService {
 
-    AbstractEdgeChain<String> openAIWithWiki(String query);
-
-
+  AbstractEdgeChain<String> openAIWithWiki(String query);
 }
-

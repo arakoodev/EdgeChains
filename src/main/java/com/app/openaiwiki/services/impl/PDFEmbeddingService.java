@@ -19,81 +19,101 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.stream.IntStream;
 
-public class PDFEmbeddingService  {
+public class PDFEmbeddingService {
 
-    private final EmbeddingService embeddingService;
-    private final Endpoint openAiEndpoint;
-    private final String model;
-    private final int chunkSize;
+  private final EmbeddingService embeddingService;
+  private final Endpoint openAiEndpoint;
+  private final String model;
+  private final int chunkSize;
 
-    public PDFEmbeddingService(EmbeddingService embeddingService, Endpoint openAiEndpoint, int chunkSize) {
-        this.embeddingService = embeddingService;
-        this.openAiEndpoint = openAiEndpoint;
-        this.chunkSize = chunkSize;
-        this.model = "text-embedding-ada-002";
-    }
+  public PDFEmbeddingService(
+      EmbeddingService embeddingService, Endpoint openAiEndpoint, int chunkSize) {
+    this.embeddingService = embeddingService;
+    this.openAiEndpoint = openAiEndpoint;
+    this.chunkSize = chunkSize;
+    this.model = "text-embedding-ada-002";
+  }
 
-    public PDFEmbeddingService(EmbeddingService embeddingService, Endpoint openAiEndpoint, String model) {
-        this.embeddingService = embeddingService;
-        this.openAiEndpoint = openAiEndpoint;
-        this.model = model;
-        this.chunkSize = 512;
-    }
+  public PDFEmbeddingService(
+      EmbeddingService embeddingService, Endpoint openAiEndpoint, String model) {
+    this.embeddingService = embeddingService;
+    this.openAiEndpoint = openAiEndpoint;
+    this.model = model;
+    this.chunkSize = 512;
+  }
 
-    public PDFEmbeddingService(EmbeddingService embeddingService, Endpoint openAiEndpoint) {
-        this.embeddingService = embeddingService;
-        this.openAiEndpoint = openAiEndpoint;
-        this.model = "text-embedding-ada-002";
-        this.chunkSize = 512;
-    }
+  public PDFEmbeddingService(EmbeddingService embeddingService, Endpoint openAiEndpoint) {
+    this.embeddingService = embeddingService;
+    this.openAiEndpoint = openAiEndpoint;
+    this.model = "text-embedding-ada-002";
+    this.chunkSize = 512;
+  }
 
-    public PDFEmbeddingService(EmbeddingService embeddingService, Endpoint openAiEndpoint, String model, int chunkSize) {
-        this.embeddingService = embeddingService;
-        this.openAiEndpoint = openAiEndpoint;
-        this.model = model;
-        this.chunkSize = chunkSize;
-    }
+  public PDFEmbeddingService(
+      EmbeddingService embeddingService, Endpoint openAiEndpoint, String model, int chunkSize) {
+    this.embeddingService = embeddingService;
+    this.openAiEndpoint = openAiEndpoint;
+    this.model = model;
+    this.chunkSize = chunkSize;
+  }
 
-    public EdgeChain<String> upsert(MultipartFile file) {
-        return new EdgeChain<>(
-                Observable.create(emitter -> {
-                    try{
-                        BodyContentHandler contentHandler = new BodyContentHandler(-1);
-                        Metadata data = new Metadata();
-                        ParseContext context = new ParseContext();
-                        PDFParser pdfparser = new PDFParser();
-                        pdfparser.parse(file.getInputStream(), contentHandler, data, context);
-                        String[] arr = splitToChunks(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "), chunkSize);
+  public EdgeChain<String> upsert(MultipartFile file) {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
+                BodyContentHandler contentHandler = new BodyContentHandler(-1);
+                Metadata data = new Metadata();
+                ParseContext context = new ParseContext();
+                PDFParser pdfparser = new PDFParser();
+                pdfparser.parse(file.getInputStream(), contentHandler, data, context);
+                String[] arr =
+                    splitToChunks(
+                        Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "),
+                        chunkSize);
 
-                        LLMService openAiEmbedding = new LLMService(new OpenAIEmbeddingProvider(openAiEndpoint, model));
+                LLMService openAiEmbedding =
+                    new LLMService(new OpenAIEmbeddingProvider(openAiEndpoint, model));
 
-                        IntStream.range(0, arr.length)
-                                .parallel()
-                                .forEach((i) -> {
-                                    openAiEmbedding.request(arr[i])
-                                            .transform(response -> new ObjectMapper().readValue(response, OpenAiEmbeddingResponse.class))
-                                            .transform(embeddingResponse -> new WordVec(arr[i], embeddingResponse.getData().get(0).getEmbedding()))
-                                            .transform(wordVec -> embeddingService.upsert(wordVec).getWithRetry())
-                                            .doOnError(System.err::println).getWithRetry(Schedulers.io());
-                                });
+                IntStream.range(0, arr.length)
+                    .parallel()
+                    .forEach(
+                        (i) -> {
+                          openAiEmbedding
+                              .request(arr[i])
+                              .transform(
+                                  response ->
+                                      new ObjectMapper()
+                                          .readValue(response, OpenAiEmbeddingResponse.class))
+                              .transform(
+                                  embeddingResponse ->
+                                      new WordVec(
+                                          arr[i],
+                                          embeddingResponse.getData().get(0).getEmbedding()))
+                              .transform(wordVec -> embeddingService.upsert(wordVec).getWithRetry())
+                              .doOnError(System.err::println)
+                              .getWithRetry(Schedulers.io());
+                        });
 
-                        emitter.onNext("Vectors Upserted");
-                        emitter.onComplete();
-                    }catch (final Exception e){
-                        emitter.onError(e);
-                    }
-                })
-        );
-    }
+                emitter.onNext("Vectors Upserted");
+                emitter.onComplete();
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }));
+  }
 
-    private static String[] splitToChunks(String input, int chunkSize) {
-        int noOfChunks = (int) Math.ceil((float) input.length() / chunkSize);
+  private static String[] splitToChunks(String input, int chunkSize) {
+    int noOfChunks = (int) Math.ceil((float) input.length() / chunkSize);
 
-        return IntStream.range(0, noOfChunks).parallel()
-                .mapToObj(i -> {
-                    int start = i * chunkSize;
-                    int end = Math.min((i + 1) * chunkSize, input.length());
-                    return input.substring(start, end).strip();
-                }).toArray(String[]::new);
-    }
+    return IntStream.range(0, noOfChunks)
+        .parallel()
+        .mapToObj(
+            i -> {
+              int start = i * chunkSize;
+              int end = Math.min((i + 1) * chunkSize, input.length());
+              return input.substring(start, end).strip();
+            })
+        .toArray(String[]::new);
+  }
 }

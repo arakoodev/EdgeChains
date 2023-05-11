@@ -6,12 +6,11 @@ import io.reactivex.rxjava3.core.Observable;
 
 public class KlarnaChain extends EdgeChain<String> {
 
+  public KlarnaChain(Observable<String> observable) {
+    super(observable);
+  }
 
-    public KlarnaChain(Observable<String> observable) {
-        super(observable);
-    }
-
-    public KlarnaChain(Observable<String> observable, Endpoint endpoint) {
-        super(observable, endpoint);
-    }
+  public KlarnaChain(Observable<String> observable, Endpoint endpoint) {
+    super(observable, endpoint);
+  }
 }

@@ -6,9 +6,9 @@ import com.app.openaiwiki.chains.ShopBoxChain;
 
 public interface PluginOpenAiService {
 
-    KlarnaChain requestKlarna(String query);
-    ShopBoxChain requestShopBox(String query);
+  KlarnaChain requestKlarna(String query);
 
-    CalculatorChain requestCalculator(String query);
+  ShopBoxChain requestShopBox(String query);
 
+  CalculatorChain requestCalculator(String query);
 }
