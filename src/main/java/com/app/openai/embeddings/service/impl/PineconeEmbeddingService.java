@@ -23,210 +23,239 @@ import java.util.*;
 
 public class PineconeEmbeddingService extends EmbeddingService {
 
-    private static final String OPENAI_EMBEDDINGS_API = "https://api.openai.com/v1/embeddings";
-    private static final String OPENAI_CHAT_COMPLETION_API = "https://api.openai.com/v1/chat/completions";
-    private final Endpoint endpoint;
-    private final String namespace;
+  private static final String OPENAI_EMBEDDINGS_API = "https://api.openai.com/v1/embeddings";
+  private static final String OPENAI_CHAT_COMPLETION_API =
+      "https://api.openai.com/v1/chat/completions";
+  private final Endpoint endpoint;
+  private final String namespace;
 
-    public PineconeEmbeddingService(Endpoint endpoint, String namespace) {
-        this.endpoint = endpoint;
-        this.namespace = namespace;
-    }
+  public PineconeEmbeddingService(Endpoint endpoint, String namespace) {
+    this.endpoint = endpoint;
+    this.namespace = namespace;
+  }
 
-    public PineconeEmbeddingService(Endpoint endpoint) {
-        this.endpoint = endpoint;
-        this.namespace = "";
-    }
+  public PineconeEmbeddingService(Endpoint endpoint) {
+    this.endpoint = endpoint;
+    this.namespace = "";
+  }
 
-    @Override
-    public IndexChain upsert(WordVec wordVec) {
-        return new IndexChain(
-                Observable.create(emitter -> {
-                    try {
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        headers.set("Api-Key",endpoint.getApiKey());
+  @Override
+  public IndexChain upsert(WordVec wordVec) {
+    return new IndexChain(
+        Observable.create(
+            emitter -> {
+              try {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("Api-Key", endpoint.getApiKey());
 
-                        Map<String, Object> embeddings = new HashMap<>();
-                        embeddings.put("id", wordVec.getId());
-                        embeddings.put("values", wordVec.getValues());
+                Map<String, Object> embeddings = new HashMap<>();
+                embeddings.put("id", wordVec.getId());
+                embeddings.put("values", wordVec.getValues());
 
-                        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-                        body.add("vectors", embeddings);
-                        if(!namespace.isBlank()) body.add("namespace",namespace);
+                MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+                body.add("vectors", embeddings);
+                if (!namespace.isBlank()) body.add("namespace", namespace);
 
-                        HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
+                HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
-                        ResponseEntity<String> response = new RestTemplate().exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
-                        emitter.onNext(response.getBody());
-                        emitter.onComplete();
+                ResponseEntity<String> response =
+                    new RestTemplate()
+                        .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                emitter.onNext(response.getBody());
+                emitter.onComplete();
 
-                    } catch (final Exception e) {
-                        emitter.onError(e);
-                    }
-                }), endpoint);
-    }
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
+  }
 
-    @Override
-    public IndexChain predict(String query, String OPENAI_API_KEY) {
-        return new IndexChain(
-                Observable.create(emitter -> {
-                    try {
+  @Override
+  public IndexChain predict(String query, String OPENAI_API_KEY) {
+    return new IndexChain(
+        Observable.create(
+            emitter -> {
+              try {
 
-                        LLMService openAiEmbedding = new LLMService(new OpenAIEmbeddingProvider(
-                                new Endpoint(OPENAI_EMBEDDINGS_API,OPENAI_API_KEY), "text-embedding-ada-002"));
+                LLMService openAiEmbedding =
+                    new LLMService(
+                        new OpenAIEmbeddingProvider(
+                            new Endpoint(OPENAI_EMBEDDINGS_API, OPENAI_API_KEY),
+                            "text-embedding-ada-002"));
 
-                        List<Double> queryEmbeddings = openAiEmbedding.request(query)
-                                .transform(response -> new ObjectMapper().readValue(response, OpenAiEmbeddingResponse.class))
-                                .transform(embeddingResponse -> embeddingResponse.getData().get(0).getEmbedding())
-                                .getWithRetry();
+                List<Double> queryEmbeddings =
+                    openAiEmbedding
+                        .request(query)
+                        .transform(
+                            response ->
+                                new ObjectMapper()
+                                    .readValue(response, OpenAiEmbeddingResponse.class))
+                        .transform(
+                            embeddingResponse -> embeddingResponse.getData().get(0).getEmbedding())
+                        .getWithRetry();
 
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        headers.set("Api-Key",endpoint.getApiKey());
+                HttpHeaders headers = new HttpHeaders();
+                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("Api-Key", endpoint.getApiKey());
 
-                        // Prepare the request payload using a LinkedHashMap to maintain key order
-                        Map<String, Object> payload = new LinkedHashMap<>();
-                        payload.put("includeValues", true);
-                        payload.put("includeMetadata", false);
-                        payload.put("vector", queryEmbeddings);
-                        payload.put("top_k", 1);
+                // Prepare the request payload using a LinkedHashMap to maintain key order
+                Map<String, Object> payload = new LinkedHashMap<>();
+                payload.put("includeValues", true);
+                payload.put("includeMetadata", false);
+                payload.put("vector", queryEmbeddings);
+                payload.put("top_k", 1);
 
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
 
-                        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+                ResponseEntity<String> response =
+                    new RestTemplate()
+                        .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
 
-                        ResponseEntity<String> response = new RestTemplate().exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                WordVec wordVec = parsePredict(response.getBody());
 
-                        WordVec wordVec = parsePredict(response.getBody());
+                if (Objects.nonNull(wordVec)) {
+                  LLMProvider llmProvider =
+                      new OpenAiChatCompletionProvider(
+                          new Endpoint(OPENAI_CHAT_COMPLETION_API, OPENAI_API_KEY),
+                          "gpt-3.5-turbo",
+                          "user");
 
-                        if(Objects.nonNull(wordVec)) {
-                            LLMProvider llmProvider =
-                                    new OpenAiChatCompletionProvider
-                                            (new Endpoint(OPENAI_CHAT_COMPLETION_API, OPENAI_API_KEY), "gpt-3.5-turbo", "user");
+                  LLMService chatCompletion = new LLMService(llmProvider);
 
-                            LLMService chatCompletion = new LLMService(llmProvider);
+                  String prompt = new ChatQueryPrompt().getPrompt() + "\n" + query;
+                  String responseBody = chatCompletion.request(prompt).getWithRetry();
+                  emitter.onNext(parseChatCompletion(responseBody));
+                } else {
+                  emitter.onNext("Unable to extract information...");
+                }
 
-                            String prompt = new ChatQueryPrompt().getPrompt() + "\n" + query;
-                            String responseBody = chatCompletion.request(prompt).getWithRetry();
-                            emitter.onNext(parseChatCompletion(responseBody));
-                        }
-                        else{
-                            emitter.onNext("Unable to extract information...");
-                        }
+                emitter.onComplete(); // Complete Signal Necessary
 
-                        emitter.onComplete(); // Complete Signal Necessary
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
+  }
 
-                    }catch (final Exception e){
-                        emitter.onError(e);
-                    }
-                }),endpoint
-        );
-    }
+  @Override
+  public IndexChain predict(String query, Double temperature, String OPENAI_API_KEY) {
 
-    @Override
-    public IndexChain predict(String query, Double temperature, String OPENAI_API_KEY) {
+    return new IndexChain(
+        Observable.create(
+            emitter -> {
+              try {
 
-        return new IndexChain(
-                Observable.create(emitter -> {
-                    try {
+                LLMService openAiEmbedding =
+                    new LLMService(
+                        new OpenAIEmbeddingProvider(
+                            new Endpoint(OPENAI_EMBEDDINGS_API, OPENAI_API_KEY),
+                            "text-embedding-ada-002"));
 
-                        LLMService openAiEmbedding = new LLMService(new OpenAIEmbeddingProvider(
-                                new Endpoint(OPENAI_EMBEDDINGS_API,OPENAI_API_KEY), "text-embedding-ada-002"));
+                List<Double> queryEmbeddings =
+                    openAiEmbedding
+                        .request(query)
+                        .transform(
+                            response ->
+                                new ObjectMapper()
+                                    .readValue(response, OpenAiEmbeddingResponse.class))
+                        .transform(
+                            embeddingResponse -> embeddingResponse.getData().get(0).getEmbedding())
+                        .getWithRetry();
 
-                        List<Double> queryEmbeddings = openAiEmbedding.request(query)
-                                .transform(response -> new ObjectMapper().readValue(response, OpenAiEmbeddingResponse.class))
-                                .transform(embeddingResponse -> embeddingResponse.getData().get(0).getEmbedding())
-                                .getWithRetry();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("Api-Key", endpoint.getApiKey());
 
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        headers.set("Api-Key",endpoint.getApiKey());
+                // Prepare the request payload using a LinkedHashMap to maintain key order
+                Map<String, Object> payload = new LinkedHashMap<>();
+                payload.put("includeValues", true);
+                payload.put("includeMetadata", false);
+                payload.put("vector", queryEmbeddings);
+                payload.put("top_k", 1);
 
-                        // Prepare the request payload using a LinkedHashMap to maintain key order
-                        Map<String, Object> payload = new LinkedHashMap<>();
-                        payload.put("includeValues", true);
-                        payload.put("includeMetadata", false);
-                        payload.put("vector", queryEmbeddings);
-                        payload.put("top_k", 1);
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
 
+                ResponseEntity<String> response =
+                    new RestTemplate()
+                        .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
 
-                        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+                WordVec wordVec = parsePredict(response.getBody());
 
-                        ResponseEntity<String> response = new RestTemplate().exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                if (Objects.nonNull(wordVec)) {
+                  LLMProvider llmProvider =
+                      new OpenAiChatCompletionProvider(
+                          new Endpoint(OPENAI_CHAT_COMPLETION_API, OPENAI_API_KEY),
+                          "gpt-3.5-turbo",
+                          "user",
+                          temperature);
 
-                        WordVec wordVec = parsePredict(response.getBody());
+                  LLMService chatCompletion = new LLMService(llmProvider);
 
-                        if(Objects.nonNull(wordVec)) {
-                            LLMProvider llmProvider =
-                                    new OpenAiChatCompletionProvider
-                                            (new Endpoint(OPENAI_CHAT_COMPLETION_API, OPENAI_API_KEY), "gpt-3.5-turbo", "user", temperature);
+                  String prompt = new ChatQueryPrompt().getPrompt() + "\n" + query;
+                  String responseBody = chatCompletion.request(prompt).getWithRetry();
+                  emitter.onNext(parseChatCompletion(responseBody));
+                } else {
+                  emitter.onNext("Unable to extract information...");
+                }
 
-                            LLMService chatCompletion = new LLMService(llmProvider);
+                emitter.onComplete(); // Complete Signal Necessary
 
-                            String prompt = new ChatQueryPrompt().getPrompt() + "\n" + query;
-                            String responseBody = chatCompletion.request(prompt).getWithRetry();
-                            emitter.onNext(parseChatCompletion(responseBody));
-                        }
-                        else{
-                            emitter.onNext("Unable to extract information...");
-                        }
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
+  }
 
+  @Override
+  public IndexChain delete() {
+    return new IndexChain(
+        Observable.create(
+            emitter -> {
+              try {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("Api-Key", endpoint.getApiKey());
 
-                        emitter.onComplete(); // Complete Signal Necessary
+                Map<String, Object> body = new HashMap<>();
+                body.put("deleteAll", true);
 
-                    }catch (final Exception e){
-                        emitter.onError(e);
-                    }
-                }),endpoint
-        );
-    }
+                if (!namespace.isEmpty()) body.put("namespace", namespace);
 
-    @Override
-    public IndexChain delete() {
-        return new IndexChain(
-                Observable.create(emitter -> {
-                    try {
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        headers.set("Api-Key",endpoint.getApiKey());
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-                        Map<String, Object> body = new HashMap<>();
-                        body.put("deleteAll", true);
+                ResponseEntity<String> responseEntity =
+                    new RestTemplate()
+                        .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                emitter.onNext(responseEntity.getBody());
+                emitter.onComplete();
 
-                        if(!namespace.isEmpty()) body.put("namespace",namespace);
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }));
+  }
 
-                        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+  private String parseChatCompletion(String body) throws JsonProcessingException {
+    JsonNode outputJsonNode = new ObjectMapper().readTree(body);
+    System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
 
-                        ResponseEntity<String> responseEntity = new RestTemplate().exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
-                        emitter.onNext(responseEntity.getBody());
-                        emitter.onComplete();
+    return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
+  }
 
-                    } catch (final Exception e) {
-                        emitter.onError(e);
-                    }
-                }));
+  private WordVec parsePredict(String body) throws JsonProcessingException {
 
-    }
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode outputJsonNode = objectMapper.readTree(body);
+    System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
 
-    private String parseChatCompletion(String body) throws JsonProcessingException {
-        JsonNode outputJsonNode = new ObjectMapper().readTree(body);
-        System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
-
-        return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
-    }
-
-    private WordVec parsePredict(String body) throws JsonProcessingException {
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode outputJsonNode = objectMapper.readTree(body);
-        System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
-
-        return objectMapper.treeToValue(outputJsonNode.get("matches").get(0), WordVec.class);
-
-    }
-
+    return objectMapper.treeToValue(outputJsonNode.get("matches").get(0), WordVec.class);
+  }
 }

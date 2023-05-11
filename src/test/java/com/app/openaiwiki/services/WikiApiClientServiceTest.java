@@ -16,34 +16,32 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
-
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
 public class WikiApiClientServiceTest {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Mock RestTemplate restTemplate;
-    private MockRestServiceServer mockServer;
+  @Mock RestTemplate restTemplate;
+  private MockRestServiceServer mockServer;
 
-    @Autowired WikiClientService wikiClientService = new WikiClientServiceImpl();
+  @Autowired WikiClientService wikiClientService = new WikiClientServiceImpl();
 
-    @BeforeEach
-    public void setup(){
-        mockServer = MockRestServiceServer.createServer(restTemplate);
-    }
+  @BeforeEach
+  public void setup() {
+    mockServer = MockRestServiceServer.createServer(restTemplate);
+  }
 
+  @DisplayName("Test Wiki API")
+  @ParameterizedTest
+  @CsvSource({"David Chanoff"})
+  void testWikiApi_ProvidedPageTitle_ShouldReturnHttpStatus200(String pageTitle)
+      throws InterruptedException {
 
-    @DisplayName("Test Wiki API")
-    @ParameterizedTest
-    @CsvSource({"David Chanoff"})
-    void testWikiApi_ProvidedPageTitle_ShouldReturnHttpStatus200(String pageTitle) throws InterruptedException {
+    // Act
+    TestObserver<String> test = wikiClientService.getPageContent(pageTitle).getObservable().test();
 
-        // Act
-        TestObserver<String> test = wikiClientService.getPageContent(pageTitle).getObservable().test();
-
-        // Assert
-        test.assertComplete();
-    }
-
+    // Assert
+    test.assertComplete();
+  }
 }

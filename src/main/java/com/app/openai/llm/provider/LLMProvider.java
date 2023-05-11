@@ -2,8 +2,7 @@ package com.app.openai.llm.provider;
 
 import com.app.rxjava.transformer.observable.EdgeChain;
 
-public interface LLMProvider  {
+public interface LLMProvider {
 
-    EdgeChain<String> request(String prompt);
-
+  EdgeChain<String> request(String prompt);
 }

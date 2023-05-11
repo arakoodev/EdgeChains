@@ -7,12 +7,11 @@ import io.reactivex.rxjava3.core.Observable;
 
 public class PluginResponseChain extends EdgeChain<PluginResponse> {
 
+  public PluginResponseChain(Observable<PluginResponse> observable) {
+    super(observable);
+  }
 
-    public PluginResponseChain(Observable<PluginResponse> observable) {
-        super(observable);
-    }
-
-    public PluginResponseChain(Observable<PluginResponse> observable, Endpoint endpoint) {
-        super(observable, endpoint);
-    }
+  public PluginResponseChain(Observable<PluginResponse> observable, Endpoint endpoint) {
+    super(observable, endpoint);
+  }
 }

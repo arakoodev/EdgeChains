@@ -6,11 +6,11 @@ import io.reactivex.rxjava3.core.Observable;
 
 public class IndexChain extends EdgeChain<String> {
 
-    public IndexChain(Observable<String> observable) {
-        super(observable);
-    }
+  public IndexChain(Observable<String> observable) {
+    super(observable);
+  }
 
-    public IndexChain(Observable<String> observable, Endpoint endpoint) {
-        super(observable, endpoint);
-    }
+  public IndexChain(Observable<String> observable, Endpoint endpoint) {
+    super(observable, endpoint);
+  }
 }

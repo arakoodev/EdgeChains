@@ -9,16 +9,10 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages = {"com.app.openaiwiki", "com.app.rxjava", "com.app.openai"})
 public class OpenaiWikiApplication implements CommandLineRunner {
 
-    public static void main(String[] args) {
-        SpringApplication.run(OpenaiWikiApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(OpenaiWikiApplication.class, args);
+  }
 
-    @Override
-    public void run(String... args) throws Exception {
-
-    }
-
-
-
-
+  @Override
+  public void run(String... args) throws Exception {}
 }

@@ -23,83 +23,94 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class BuilderServiceImpl implements BuilderService {
 
-    private static final String OPENAI_CHAT_COMPLETION_API = "https://api.openai.com/v1/chat/completions";
-    private static final String OPENAI_API_KEY = "";
+  private static final String OPENAI_CHAT_COMPLETION_API =
+      "https://api.openai.com/v1/chat/completions";
+  private static final String OPENAI_API_KEY = "";
 
-    @Autowired private WikiClientService wikiClientService;
-    @Autowired private ObjectMapper objectMapper;
+  @Autowired private WikiClientService wikiClientService;
+  @Autowired private ObjectMapper objectMapper;
 
-    @Override
-    public EdgeChain<String> openAIWithWiki(String query) {
+  @Override
+  public EdgeChain<String> openAIWithWiki(String query) {
 
-        /* Any Global Variable Outside Observable must be created with Atom<?> */
-        Atom<String> textOutput = Atom.of(""); // Result which we want to emit; initialize with empty string;
-        Atom<String> scratchString = Atom.of(""); // Input for OpenAI API
-        Atom<Scratchpad> scratchPad = Atom.of(new Scratchpad("")); // Appending & Modifying Wiki-Response;
-        Atom<Boolean> terminateWhileLoop = Atom.of(false);
+    /* Any Global Variable Outside Observable must be created with Atom<?> */
+    Atom<String> textOutput =
+        Atom.of(""); // Result which we want to emit; initialize with empty string;
+    Atom<String> scratchString = Atom.of(""); // Input for OpenAI API
+    Atom<Scratchpad> scratchPad =
+        Atom.of(new Scratchpad("")); // Appending & Modifying Wiki-Response;
+    Atom<Boolean> terminateWhileLoop = Atom.of(false);
 
-        return new EdgeChain<String>(
+    return new EdgeChain<String>(
+            Observable.create(
+                emitter -> {
+                  try {
 
-                Observable.create(emitter -> {
-                    try {
+                    Endpoint endpoint =
+                        new Endpoint(
+                            OPENAI_CHAT_COMPLETION_API,
+                            OPENAI_API_KEY,
+                            new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
 
-                        Endpoint endpoint = new Endpoint(OPENAI_CHAT_COMPLETION_API, OPENAI_API_KEY,
-                                new ExponentialDelay(2,3,2, TimeUnit.SECONDS));
+                    LLMProvider llmProvider =
+                        new OpenAiChatCompletionProvider(endpoint, "gpt-3.5-turbo", "user");
 
-                        LLMProvider llmProvider =
-                                new OpenAiChatCompletionProvider(endpoint, "gpt-3.5-turbo", "user");
+                    LLMService llmService = new LLMService(llmProvider);
 
-                        LLMService llmService = new LLMService(llmProvider);
+                    // Building & Appending prompt
+                    String prompt =
+                        new ChatWikiPrompt().getPrompt()
+                            + "\n"
+                            + query
+                            + "\n"
+                            + scratchString.get();
+                    String responseBody = llmService.request(prompt).getWithRetry();
 
-                        // Building & Appending prompt
-                        String prompt = new ChatWikiPrompt().getPrompt() + "\n" + query + "\n" + scratchString.get();
-                        String responseBody = llmService.request(prompt).getWithRetry();
+                    // Step 2: Set the parse JSON response
+                    String textOutput_ = textOutput.set(parse(responseBody));
 
-                        // Step 2: Set the parse JSON response
-                        String textOutput_ = textOutput.set(parse(responseBody));
+                    // Step 3: Set ScratchPad (TextOutput)
+                    scratchPad.set(new Scratchpad(textOutput_));
 
-                        // Step 3: Set ScratchPad (TextOutput)
-                        scratchPad.set(new Scratchpad(textOutput_));
+                    String actionContent = scratchPad.get().getActionContent();
+                    System.out.println("Action Content: " + actionContent); // Logging Purpose
 
-                        String actionContent = scratchPad.get().getActionContent();
-                        System.out.println("Action Content: " + actionContent); // Logging Purpose
+                    /* Define While Loop Condition */
+                    if (actionContent == null) terminateWhileLoop.set(true);
 
-                        /* Define While Loop Condition */
-                        if (actionContent == null) terminateWhileLoop.set(true);
+                    // Step 5: Send Request To Wiki & Modify the response
+                    String wikiContent =
+                        wikiClientService.getPageContent(actionContent).getWithRetry();
+                    scratchPad.get().observationReplacer(wikiContent);
 
-                        // Step 5: Send Request To Wiki & Modify the response
-                        String wikiContent = wikiClientService.getPageContent(actionContent).getWithRetry();
-                        scratchPad.get().observationReplacer(wikiContent);
+                    // Step 6: Create StringBuilder
+                    StringBuilder stringBuilder = new StringBuilder(scratchString.get());
 
-                        // Step 6: Create StringBuilder
-                        StringBuilder stringBuilder = new StringBuilder(scratchString.get());
-
-                        for (String line : scratchPad.get().getScratchpadList()) {
-                            stringBuilder.append(line).append("\n");
-                        }
-
-                        // Step 7: Update ScratchString (which shall be used for OpenAI Request)
-                        scratchString.set(stringBuilder.toString());
-
-                        // Step 8: Emit the Response & Complete
-                        emitter.onNext(textOutput_);
-//                        System.out.println("Text: " + textOutput_); // Logging Purpose
-
-                        emitter.onComplete();
-
-                    } catch (final Exception e) {
-                        emitter.onError(e);
+                    for (String line : scratchPad.get().getScratchpadList()) {
+                      stringBuilder.append(line).append("\n");
                     }
-                })
-        ).doWhileLoop(terminateWhileLoop::get);
-    }
 
+                    // Step 7: Update ScratchString (which shall be used for OpenAI Request)
+                    scratchString.set(stringBuilder.toString());
 
-    private String parse(String body) throws JsonProcessingException {
-        JsonNode outputJsonNode = objectMapper.readTree(body);
-        System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
+                    // Step 8: Emit the Response & Complete
+                    emitter.onNext(textOutput_);
+                    //                        System.out.println("Text: " + textOutput_); // Logging
+                    // Purpose
 
-        return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
-    }
+                    emitter.onComplete();
 
+                  } catch (final Exception e) {
+                    emitter.onError(e);
+                  }
+                }))
+        .doWhileLoop(terminateWhileLoop::get);
+  }
+
+  private String parse(String body) throws JsonProcessingException {
+    JsonNode outputJsonNode = objectMapper.readTree(body);
+    System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
+
+    return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
+  }
 }
