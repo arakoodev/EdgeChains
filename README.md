@@ -12,7 +12,7 @@ EdgeChains, a framework for building large-scale distributed machine learning sy
 
 # What does it look like ?
 
-![image](https://user-images.githubusercontent.com/76883/236382313-a7b34bba-0364-4867-8b59-5ed97d9bbee0.png)
+![image](/.github/assets/code.png)
 
 ## 🎊 Community
 
@@ -49,6 +49,7 @@ git checkout newbranch    # Go to the new branch that still has the desired comm
 ## ✍️ Authors and Contributors
 
 - Sandeep Srinivasa ([@sandys](https://twitter.com/sandeepssrin))
+- Rohan Guha ([@pizzaboi21](https://github.com/pizzaboi21))
 
 We love contributors! Feel free to contribute to this project but please read the [CLA](https://github.com/wootzapp/.github/blob/main/CLA.md) first!
 

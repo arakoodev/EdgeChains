@@ -1,0 +1,38 @@
+name: Build and Run
+
+on: workflow_dispatch
+
+jobs:
+  build_and_run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Build autoroute project
+        working-directory: ./FlySpring/autoroute
+        run: mvn clean package -P gofly
+
+      - name: Build flyfly project
+        working-directory: ./FlySpring/flyfly
+        run: mvn clean package -P gofly
+
+      - name: Run Edgechain
+        working-directory: ./Edgechain
+        run: |
+          java -jar flyfly.jar run &
+          sleep 180
+          pkill --signal TERM -f "java -jar flyfly.jar run"
+
+      - name: Upload Edgechain folder as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Edgechain-folder
+          path: ./Edgechain/
