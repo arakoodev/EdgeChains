@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.flyspring.autoroute.RouterFunctionConfig,\
+com.flyspring.autoroute.AuthConfig
