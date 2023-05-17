@@ -109,7 +109,7 @@
 								<phase>package</phase>
 								<configuration>
 									<target>
-										<copy file="target/flyfly-0.0.1-SNAPSHOT.jar" tofile="${project.basedir}/../../EdgeChain/flyfly.jar"/>
+										<copy file="target/flyfly-0.0.1-SNAPSHOT.jar" tofile="${project.basedir}/EdgeChain/flyfly.jar"/>
 									</target>
 								</configuration>
 								<goals>
