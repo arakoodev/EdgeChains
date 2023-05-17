@@ -13,23 +13,27 @@ import reactor.core.publisher.Mono;
 import java.util.concurrent.TimeUnit;
 
 public class Flyopenaiwiki {
-private static final String OPENAI_CHAT_COMPLETION_API = "https://api.openai.com/v1/chat/completions";
-private static final String OPENAI_API_KEY = "";
+  private static final String OPENAI_CHAT_COMPLETION_API =
+      "https://api.openai.com/v1/chat/completions";
+  private static final String OPENAI_API_KEY = "";
 
-    public Mono<ServerResponse> flyget(FlyRequest request){
+  public Mono<ServerResponse> flyget(FlyRequest request) {
 
-        Endpoint endpoint = new Endpoint(OPENAI_CHAT_COMPLETION_API, OPENAI_API_KEY, "gpt-3.5-turbo", "user",
-                            new ExponentialDelay(2,3,2, TimeUnit.SECONDS));
+    Endpoint endpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_API_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
 
-        String question = request.getQueryParam("query");
+    String question = request.getQueryParam("query");
 
-        PluginService wikiClientService = new WikiPluginServiceImpl();
-        ToolService[] ToolArray = {wikiClientService};
+    PluginService wikiClientService = new WikiPluginServiceImpl();
+    ToolService[] ToolArray = {wikiClientService};
 
+    ReactChain rc = new ReactChain(endpoint, question, ToolArray);
 
-       ReactChain rc = new ReactChain(endpoint, question, ToolArray);
-
-
-        return ServerResponse.ok().body(rc.getResponse(),String.class);
-    }
+    return ServerResponse.ok().body(rc.getResponse(), String.class);
+  }
 }

@@ -9,24 +9,18 @@ import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;
 
 @Component
-@Command(
-    name="format",
-    description = "Format code with Spotless")
+@Command(name = "format", description = "Format code with Spotless")
 @Slf4j
 public class FormatCommand implements Runnable {
-    @Autowired
-    Formatter formatter;
-    @Autowired
-    ProjectTypeChecker projectTypeChecker;
+  @Autowired Formatter formatter;
+  @Autowired ProjectTypeChecker projectTypeChecker;
 
-    @Override
-    public void run() {
-        if (projectTypeChecker.isGradleProject())
-            formatter.format();
-        else{
-            log.error("Couldn't find build.gradle");
-            log.error("Please try again inside the project directory");
-        }
+  @Override
+  public void run() {
+    if (projectTypeChecker.isGradleProject()) formatter.format();
+    else {
+      log.error("Couldn't find build.gradle");
+      log.error("Please try again inside the project directory");
     }
-    
+  }
 }

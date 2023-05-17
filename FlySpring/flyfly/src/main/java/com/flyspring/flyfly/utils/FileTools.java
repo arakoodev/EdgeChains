@@ -13,17 +13,18 @@ import net.lingala.zip4j.ZipFile;
 @Component
 @Slf4j
 public class FileTools {
-    public void exportFileTo(String file, String dest) throws IOException{
-        log.debug("Exporting " + file + " To " + dest);
-        InputStream resource = FileTools.class.getClassLoader().getResourceAsStream(file);
-        Files.copy(resource, Path.of(dest));
-        log.debug("Exported successfully");
-    }
-    public void unzip(String zipFilePath, String destDir) throws IOException {
-        log.debug("Unzipping " + zipFilePath + " into " + destDir);
-		ZipFile zipFile = new ZipFile(zipFilePath);
-		zipFile.extractAll(destDir);
-		zipFile.close();
-        log.debug("Unzipped successfully");
-    }
+  public void exportFileTo(String file, String dest) throws IOException {
+    log.debug("Exporting " + file + " To " + dest);
+    InputStream resource = FileTools.class.getClassLoader().getResourceAsStream(file);
+    Files.copy(resource, Path.of(dest));
+    log.debug("Exported successfully");
+  }
+
+  public void unzip(String zipFilePath, String destDir) throws IOException {
+    log.debug("Unzipping " + zipFilePath + " into " + destDir);
+    ZipFile zipFile = new ZipFile(zipFilePath);
+    zipFile.extractAll(destDir);
+    zipFile.close();
+    log.debug("Unzipped successfully");
+  }
 }

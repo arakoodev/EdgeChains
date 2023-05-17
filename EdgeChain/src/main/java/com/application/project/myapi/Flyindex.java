@@ -6,7 +6,6 @@ public class Flyindex {
 
   public String flyget(FlyRequest request) {
 
-
     return ("hello world");
   }
 }

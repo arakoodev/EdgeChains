@@ -9,6 +9,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface PathVariableAnnotation {
 
-    public String[] name() ;
-    
+  public String[] name();
 }
