@@ -13,7 +13,6 @@ import java.util.zip.ZipOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 class FileToolsTest {
 
   private FileTools fileTools;

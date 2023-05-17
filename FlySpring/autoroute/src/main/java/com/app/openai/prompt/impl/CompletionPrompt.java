@@ -14,7 +14,7 @@ public class CompletionPrompt implements PromptTemplate {
   @Override
   public String getPrompt() {
     return "Answer the following questions as best you can. You have access to the following tools:"
-               + " requests_get, "
+        + " requests_get, "
         + pluginResponse.getPlugin().getName_for_model()
         + "\n"
         + pluginResponse.getPlugin().getName_for_model()

@@ -67,7 +67,7 @@ public class WikiPluginServiceImpl implements PluginService {
                     Objects.requireNonNullElse(
                         output,
                         "")); // Observables never return null values; therefore we have used this
-                              // trick
+                // trick
                 emitter.onComplete();
 
               } catch (final Exception e) {

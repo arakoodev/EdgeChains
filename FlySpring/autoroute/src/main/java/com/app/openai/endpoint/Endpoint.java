@@ -4,7 +4,6 @@ import com.app.openai.llm.provider.LLMProvider;
 import com.app.openai.llm.provider.impl.OpenAiChatCompletionProvider;
 import com.app.rxjava.retry.RetryPolicy;
 
-
 public class Endpoint {
   private final String url;
   private String apiKey;
