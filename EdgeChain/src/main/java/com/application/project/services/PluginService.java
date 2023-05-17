@@ -4,5 +4,5 @@ import com.application.project.chains.WikiChain;
 
 public interface PluginService extends ToolService {
 
-    WikiChain getPageContent(String pageTitle);
+  WikiChain getPageContent(String pageTitle);
 }

@@ -9,20 +9,18 @@ import picocli.CommandLine.IFactory;
 
 @Component
 public class CustomApplicationRunner implements CommandLineRunner, ExitCodeGenerator {
-    @Autowired
-	private FlyflyCommand runCommand;
-    @Autowired
-	private IFactory factory; // auto-configured to inject PicocliSpringFactory
+  @Autowired private FlyflyCommand runCommand;
+  @Autowired private IFactory factory; // auto-configured to inject PicocliSpringFactory
 
-	private int exitCode;
+  private int exitCode;
 
-	@Override
-	public void run(String... args) throws Exception {
-		exitCode = new CommandLine(runCommand, factory).execute(args);
-	}
+  @Override
+  public void run(String... args) throws Exception {
+    exitCode = new CommandLine(runCommand, factory).execute(args);
+  }
 
-	@Override
-	public int getExitCode() {
-		return exitCode;
-	}
+  @Override
+  public int getExitCode() {
+    return exitCode;
+  }
 }

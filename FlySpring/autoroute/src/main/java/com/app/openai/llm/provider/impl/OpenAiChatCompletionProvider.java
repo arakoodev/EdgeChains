@@ -10,18 +10,19 @@ import com.app.rxjava.transformer.observable.EdgeChain;
 import java.util.List;
 
 public class OpenAiChatCompletionProvider implements LLMProvider {
-    private final Endpoint endpoint;
+  private final Endpoint endpoint;
 
-    public OpenAiChatCompletionProvider(Endpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+  public OpenAiChatCompletionProvider(Endpoint endpoint) {
+    this.endpoint = endpoint;
+  }
 
-    public EdgeChain<String> request(String prompt) {
-        ChatCompletionRequest request = ChatCompletionRequest.builder()
-                .model(endpoint.getModel())
-                .temperature(endpoint.getTemperature())
-                .messages(List.of(new ChatMessage(endpoint.getRole(), prompt)))
-                .build();
-        return (new OpenAiClient()).createChatCompletion(endpoint, request);
-    }
+  public EdgeChain<String> request(String prompt) {
+    ChatCompletionRequest request =
+        ChatCompletionRequest.builder()
+            .model(endpoint.getModel())
+            .temperature(endpoint.getTemperature())
+            .messages(List.of(new ChatMessage(endpoint.getRole(), prompt)))
+            .build();
+    return (new OpenAiClient()).createChatCompletion(endpoint, request);
+  }
 }

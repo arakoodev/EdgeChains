@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class FlyflyApplication {
 
-	public static void main(String[] args) {
-		System.exit(SpringApplication.exit(SpringApplication.run(FlyflyApplication.class, args)));
-	}
-
+  public static void main(String[] args) {
+    System.exit(SpringApplication.exit(SpringApplication.run(FlyflyApplication.class, args)));
+  }
 }
