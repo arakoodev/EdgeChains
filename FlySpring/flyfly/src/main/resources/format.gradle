@@ -1,0 +1,24 @@
+initscript {
+  repositories {
+    maven { url 'https://plugins.gradle.org/m2' }
+  }
+  dependencies {
+    classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.12.0'
+  }
+}
+allprojects {
+  apply plugin: com.diffplug.gradle.spotless.SpotlessPlugin
+  spotless {
+    java {
+        target fileTree('.') {
+            include '**/*.java'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        toggleOffOn()
+        googleJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+  }
+}
