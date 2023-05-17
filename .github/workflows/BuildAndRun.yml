@@ -24,14 +24,14 @@ jobs:
         working-directory: ./FlySpring/flyfly
         run: mvn clean package -P gofly
 
-      - name: Run Edgechain
-        working-directory: ${{ github.workspace }}/EdgeChain
-        run: |
-          java -jar flyfly.jar run &
-          sleep 180
-          pkill --signal TERM -f "java -jar flyfly.jar run"
+      # - name: Run EdgeChain
+      #   working-directory: ${{ github.workspace }}/EdgeChain
+      #   run: |
+      #     java -jar flyfly.jar run &
+      #     sleep 180
+      #     pkill --signal TERM -f "java -jar flyfly.jar run"
 
-      - name: Upload Edgechain folder as artifact
+      - name: Upload EdgeChain folder as artifact
         uses: actions/upload-artifact@v2
         with:
           name: Edgechain-folder
