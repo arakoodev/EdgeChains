@@ -34,5 +34,5 @@ jobs:
       - name: Upload EdgeChain folder as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: Edgechain-folder
+          name: EdgeChain
           path: ./EdgeChain/
