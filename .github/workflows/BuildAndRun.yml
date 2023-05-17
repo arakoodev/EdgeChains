@@ -25,7 +25,7 @@ jobs:
         run: mvn clean package -P gofly
 
       - name: Run Edgechain
-        working-directory: ./Edgechain
+        working-directory: ${{ github.workspace }}/EdgeChain
         run: |
           java -jar flyfly.jar run &
           sleep 180
@@ -35,4 +35,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Edgechain-folder
-          path: ./Edgechain/
+          path: ./EdgeChain/
