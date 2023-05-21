@@ -4,7 +4,6 @@
 
   <img src="https://img.shields.io/github/repo-size/arakoodev/EdgeChains?style=for-the-badge" />
   <img src="https://img.shields.io/github/issues/arakoodev/EdgeChains?style=for-the-badge" />
-  <img src="https://img.shields.io/github/issues-closed-raw/arakoodev/EdgeChains?style=for-the-badge" />
   <img src="https://img.shields.io/github/issues-pr/arakoodev/EdgeChains?style=for-the-badge" />
   <img src="https://img.shields.io/github/issues-pr-closed-raw/arakoodev/EdgeChains?style=for-the-badge" />
   <img src="https://img.shields.io/github/license/arakoodev/EdgeChains?style=for-the-badge" />
