@@ -1,10 +1,7 @@
 # EdgeChains : LLM chains on-the-edge
 **chain-of-thought engineering for LLM and OpenAI GPT. Built for Java. Built for Enterprise. Built for Scale**
 <div align="center">
-<img src="https://forthebadge.com/images/badges/built-with-love.svg" />
-<img src="https://forthebadge.com/images/badges/uses-brains.svg" />
-<img src="https://forthebadge.com/images/badges/powered-by-responsibility.svg" />
-  <br>
+
   <img src="https://img.shields.io/github/repo-size/arakoodev/EdgeChains?style=for-the-badge" />
   <img src="https://img.shields.io/github/issues/arakoodev/EdgeChains?style=for-the-badge" />
   <img src="https://img.shields.io/github/issues-closed-raw/arakoodev/EdgeChains?style=for-the-badge" />
