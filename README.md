@@ -1,9 +1,20 @@
 # EdgeChains : LLM chains on-the-edge
 **chain-of-thought engineering for LLM and OpenAI GPT. Built for Java. Built for Enterprise. Built for Scale**
+<div align="center">
 
-
+  <img src="https://img.shields.io/github/repo-size/arakoodev/EdgeChains?style=for-the-badge" />
+  <img src="https://img.shields.io/github/issues/arakoodev/EdgeChains?style=for-the-badge" />
+  <img src="https://img.shields.io/github/issues-pr/arakoodev/EdgeChains?style=for-the-badge" />
+  <img src="https://img.shields.io/github/issues-pr-closed-raw/arakoodev/EdgeChains?style=for-the-badge" />
+  <img src="https://img.shields.io/github/license/arakoodev/EdgeChains?style=for-the-badge" />
+  <img src="https://img.shields.io/github/forks/arakoodev/EdgeChains?style=for-the-badge" />
+  <img src="https://img.shields.io/github/stars/arakoodev/EdgeChains?style=for-the-badge" />
+  <img src="https://img.shields.io/github/contributors/arakoodev/EdgeChains?style=for-the-badge" />
+  <img src="https://img.shields.io/github/last-commit/arakoodev/EdgeChains?style=for-the-badge" />
+  </div>
+<div align="center">
 <img src="https://user-images.githubusercontent.com/76883/226261289-21a6fd42-ff6f-4d7a-9c59-3c7f149e0f56.png" width="200" height="200">
-
+  </div>
 EdgeChains, a framework for building large-scale distributed machine learning systems. EdgeChains is built on top of JAX, and provides a number of features that make it well-suited for building distributed machine learning systems, including:
 
 * **Automatic parallelism**: EdgeChains automatically parallelizes LLM chains & chain-of-thought tasks across CPUs, GPUs, and TPUs using the JVM.
