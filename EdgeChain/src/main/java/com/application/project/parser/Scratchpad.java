@@ -43,22 +43,28 @@ public class Scratchpad {
     return actionContent;
   }
 
-
-  // method to extract the content between brackets for a given thought index
-public String getThoughtContent(int thoughtIndex) {
-  String thoughtContent = null;
-  for (String item : scratchpadList) {
-    if (item.startsWith("Thought " + thoughtIndex)) {
-      Pattern pattern = Pattern.compile("\\[(.*?)\\]");
-      Matcher matcher = pattern.matcher(item);
-      if (matcher.find()) {
-        thoughtContent = matcher.group(1);
-      }
-      break;
-    }
-  }
-  return thoughtContent;
+//Getter and Setter for scratchpadList
+public void setScratchpadList(List<String> scratchpadList) {
+    this.scratchpadList = scratchpadList;
 }
+
+public List<String> getScratchpadList() {
+    return scratchpadList;
+}
+
+
+//Method to remove an entry 
+  public void removeEntry(int index) {
+    if (index >= 0 && index < scratchpadList.size()) {
+        scratchpadList.remove(index);
+    }
+}
+
+//Method to add a new entry
+public void addEntry(String entry) {
+    scratchpadList.add(entry);
+}
+
 
   // Method to replace the content of an action by the given index with a new string called
   // wikiContentForAction
