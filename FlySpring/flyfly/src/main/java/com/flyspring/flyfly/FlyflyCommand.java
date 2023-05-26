@@ -12,5 +12,10 @@ import picocli.CommandLine.Command;
 @Component
 @Command(
     name = "flyfly",
-    subcommands = {RunCommand.class, FormatCommand.class, JbangCommand.class, CommandLine.HelpCommand.class})
+    subcommands = {
+      RunCommand.class,
+      FormatCommand.class,
+      JbangCommand.class,
+      CommandLine.HelpCommand.class
+    })
 public class FlyflyCommand {}
