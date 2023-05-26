@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -37,6 +37,11 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.11.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>
@@ -96,6 +101,58 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass> com.flyspring.flyfly.FlyflyApplication
+					</mainClass>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<id>download-and-unpack-jbang</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<!-- Download Jbang archive -->
+								<get src="https://github.com/jbangdev/jbang/releases/download/v0.107.0/jbang-0.107.0.zip"
+									 dest="${project.build.directory}/jbang-0.107.0.zip"
+									 skipexisting="true" />
+
+								<!-- Unpack Jbang archive -->
+								<unzip src="${project.build.directory}/jbang-0.107.0.zip"
+									   dest="${project.build.directory}/jbang" />
+
+								<!-- Copy only the 'jbang.jar' file to the 'src/main/resources' directory -->
+								<copy
+										file="${project.build.directory}/jbang/jbang-0.107.0/bin/jbang.jar"
+										tofile="${project.basedir}/src/main/resources/jbang.jar" />
+
+								<!-- Remove the temporary Jbang folder -->
+								<delete includeemptydirs="true">
+									<fileset dir="${project.build.directory}">
+										<include name="jbang/**" />
+									</fileset>
+								</delete>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
 	<profiles>
 		<profile>
 			<id>gofly</id>
@@ -109,7 +166,7 @@
 								<phase>package</phase>
 								<configuration>
 									<target>
-										<copy file="target/flyfly-0.0.1-SNAPSHOT.jar" tofile="${project.basedir}/../../EdgeChain/flyfly.jar"/>
+										<copy file="target/flyfly-0.0.1-SNAPSHOT.jar" tofile="${project.basedir}/../../Script/flyfly.jar"/>
 									</target>
 								</configuration>
 								<goals>
@@ -123,13 +180,13 @@
 		</profile>
 	</profiles>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+	<!--	<build>-->
+	<!--		<plugins>-->
+	<!--			<plugin>-->
+	<!--				<groupId>org.springframework.boot</groupId>-->
+	<!--				<artifactId>spring-boot-maven-plugin</artifactId>-->
+	<!--			</plugin>-->
+	<!--		</plugins>-->
+	<!--	</build>-->
 
 </project>
