@@ -61,6 +61,7 @@ git checkout newbranch    # Go to the new branch that still has the desired comm
 
 - Sandeep Srinivasa ([@sandys](https://twitter.com/sandeepssrin))
 - Rohan Guha ([@pizzaboi21](https://github.com/pizzaboi21))
+- Md Shahil ([@Shahil093](https://github.com/Shahil093))
 
 We love contributors! Feel free to contribute to this project but please read the [CLA](https://github.com/wootzapp/.github/blob/main/CLA.md) first!
 
