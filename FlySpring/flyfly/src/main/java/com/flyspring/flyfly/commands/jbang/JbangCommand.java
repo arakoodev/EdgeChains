@@ -47,24 +47,22 @@ public class JbangCommand implements Runnable {
   private void runJbang(File jarFile, String javaFile, String classPathJar) {
     try {
       // Step One: Execute the initial command to get the classpath
-      ProcessBuilder pb =
-          new ProcessBuilder(
-              "java",
-              "-cp",
-              jarFile.getAbsolutePath(),
-              "dev.jbang.Main",
-              "--cp",
-              classPathJar,
-              javaFile);
+      ProcessBuilder pb = new ProcessBuilder(
+          "java",
+          "-cp",
+          jarFile.getAbsolutePath(),
+          "dev.jbang.Main",
+          "--cp",
+          classPathJar,
+          javaFile);
       pb.redirectErrorStream(true);
       Process process = pb.start();
-      BufferedReader bufferedReader =
-          new BufferedReader(new InputStreamReader(process.getInputStream()));
+      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
       String classPath = extractClassPathFromOutput(bufferedReader);
 
       // Hardcoded main class value
-      String mainClass = "com.example.Flyopenaiwiki";
-
+      // String mainClass = "com.example.Flyopenaiwiki";
+      String mainClass = extractMainClassFromOutput(bufferedReader, javaFile);
       System.out.println("Extracted Classpath: " + classPath);
       System.out.println("Main Class: " + mainClass);
 
@@ -100,19 +98,18 @@ public class JbangCommand implements Runnable {
     return classPath;
   }
 
-  //    private String extractMainClassFromOutput(BufferedReader bufferedReader) throws IOException
-  // {
-  //        String line;
-  //        String mainClass = null;
-  //        while ((line = bufferedReader.readLine()) != null) {
-  //            System.out.println("Line: " + line); // added debug message
-  //            if (line.contains("com.example.Flyopenaiwiki")) {
-  //                mainClass = "com.example.Flyopenaiwiki";
-  //                break;
-  //            }
-  //        }
-  //        return mainClass;
-  //    }
+  private String extractMainClassFromOutput(BufferedReader bufferedReader, String javaFile) throws IOException {
+    String line;
+    String mainClass = null;
+    while ((line = bufferedReader.readLine()) != null) {
+      System.out.println("Line: " + line); // added debug message
+      if (line.contains(javaFile)) {
+        mainClass = line.trim();
+        break;
+      }
+    }
+    return mainClass;
+  }
 
   private void runJavaWithClassPath(String classPath, String mainClass) {
     try {
