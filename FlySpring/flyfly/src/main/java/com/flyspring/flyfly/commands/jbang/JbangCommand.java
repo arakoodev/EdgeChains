@@ -46,22 +46,19 @@ public class JbangCommand implements Runnable {
 
   private void runJbang(File jarFile, String javaFile, String classPathJar) {
     try {
-      String os = System.getProperty("os.name").toLowerCase();
-      if (os.contains("win")) {
-        // Windows
-        // Step One: Execute the initial command to get the classpath
-        ProcessBuilder pb = new ProcessBuilder(
-            "java",
-            "-cp",
-            jarFile.getAbsolutePath(),
-            "dev.jbang.Main",
-            "--cp",
-            classPathJar,
-            javaFile);
-        pb.redirectErrorStream(true);
-        Process process = pb.start();
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String classPath = extractClassPathFromOutput(bufferedReader);
+      // Step One: Execute the initial command to get the classpath
+      ProcessBuilder pb = new ProcessBuilder(
+          "java",
+          "-cp",
+          jarFile.getAbsolutePath(),
+          "dev.jbang.Main",
+          "--cp",
+          classPathJar,
+          javaFile);
+      pb.redirectErrorStream(true);
+      Process process = pb.start();
+      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      String classPath = extractClassPathFromOutput(bufferedReader);
 
         // The mainClass accepts any class name provided from the javaFile
         String mainClass = extractMainClassFromOutput(bufferedReader, javaFile);
@@ -125,7 +122,8 @@ public class JbangCommand implements Runnable {
     return classPath;
   }
 
-  private String extractMainClassFromOutput(BufferedReader bufferedReader, String javaFile) throws IOException {
+  private String extractMainClassFromOutput(BufferedReader bufferedReader, String javaFile)
+      throws IOException {
     String line;
     String mainClass = null;
     while ((line = bufferedReader.readLine()) != null) {
