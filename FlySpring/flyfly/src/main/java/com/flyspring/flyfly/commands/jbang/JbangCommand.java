@@ -47,19 +47,17 @@ public class JbangCommand implements Runnable {
   private void runJbang(File jarFile, String javaFile, String classPathJar) {
     try {
       // Step One: Execute the initial command to get the classpath
-      ProcessBuilder pb =
-          new ProcessBuilder(
-              "java",
-              "-cp",
-              jarFile.getAbsolutePath(),
-              "dev.jbang.Main",
-              "--cp",
-              classPathJar,
-              javaFile);
+      ProcessBuilder pb = new ProcessBuilder(
+          "java",
+          "-cp",
+          jarFile.getAbsolutePath(),
+          "dev.jbang.Main",
+          "--cp",
+          classPathJar,
+          javaFile);
       pb.redirectErrorStream(true);
       Process process = pb.start();
-      BufferedReader bufferedReader =
-          new BufferedReader(new InputStreamReader(process.getInputStream()));
+      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
       String classPath = extractClassPathFromOutput(bufferedReader);
 
       // The mainClass accepts any class name provided from the javaFile
