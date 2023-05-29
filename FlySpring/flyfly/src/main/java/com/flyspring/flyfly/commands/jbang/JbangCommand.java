@@ -60,8 +60,7 @@ public class JbangCommand implements Runnable {
       BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
       String classPath = extractClassPathFromOutput(bufferedReader);
 
-      // Hardcoded main class value
-      // String mainClass = "com.example.Flyopenaiwiki";
+      // The mainClass accepts any class name provided from the javaFile
       String mainClass = extractMainClassFromOutput(bufferedReader, javaFile);
       System.out.println("Extracted Classpath: " + classPath);
       System.out.println("Main Class: " + mainClass);
