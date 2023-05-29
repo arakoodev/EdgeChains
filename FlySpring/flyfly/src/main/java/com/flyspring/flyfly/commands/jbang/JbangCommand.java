@@ -46,23 +46,26 @@ public class JbangCommand implements Runnable {
 
   private void runJbang(File jarFile, String javaFile, String classPathJar) {
     try {
-      // Step One: Execute the initial command to get the classpath
-      ProcessBuilder pb = new ProcessBuilder(
-          "java",
-          "-cp",
-          jarFile.getAbsolutePath(),
-          "dev.jbang.Main",
-          "--cp",
-          classPathJar,
-          javaFile);
-      pb.redirectErrorStream(true);
-      Process process = pb.start();
-      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-      String classPath = extractClassPathFromOutput(bufferedReader);
+      // Checking the OS type
+      String os = System.getProperty("os.name").toLowerCase();
+      if (os.contains("win")) {
+        // Windows
+        // Step One: Execute the initial command to get the classpath
+        ProcessBuilder pb = new ProcessBuilder(
+            "java",
+            "-cp",
+            jarFile.getAbsolutePath(),
+            "dev.jbang.Main",
+            "--cp",
+            classPathJar,
+            javaFile);
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String classPath = extractClassPathFromOutput(bufferedReader);
 
         // The mainClass accepts any class name provided from the javaFile
         String mainClass = extractMainClassFromOutput(bufferedReader, javaFile);
-
         System.out.println("Extracted Classpath: " + classPath);
         System.out.println("Main Class: " + mainClass);
 
@@ -88,7 +91,9 @@ public class JbangCommand implements Runnable {
         pb.redirectErrorStream(true);
         Process process = pb.start();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        
+
+        // Step Two: Convert the command to suit linux and execute the final command
+        // with the extracted classpath
         StringBuilder output = new StringBuilder();
         String line;
         while ((line = bufferedReader.readLine()) != null) {
