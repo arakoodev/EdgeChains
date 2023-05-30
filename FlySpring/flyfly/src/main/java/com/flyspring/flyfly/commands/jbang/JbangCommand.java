@@ -50,21 +50,19 @@ public class JbangCommand implements Runnable {
       ProcessBuilder pb;
 
       if (osName.contains("win")) {
-        pb =
-            new ProcessBuilder(
-                "cmd.exe",
-                "/c",
-                "java",
-                "-cp",
-                jarFile.getAbsolutePath(),
-                "dev.jbang.Main",
-                "--cp",
-                classPathJar,
-                javaFile);
+        pb = new ProcessBuilder(
+            "cmd.exe",
+            "/c",
+            "java",
+            "-cp",
+            jarFile.getAbsolutePath(),
+            "dev.jbang.Main",
+            "--cp",
+            classPathJar,
+            javaFile);
       } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("mac")) {
-        pb =
-            new ProcessBuilder(
-                "java", "-cp", "jbang.jar", "dev.jbang.Main", "--cp", classPathJar, javaFile);
+        pb = new ProcessBuilder(
+            "java", "-cp", "jbang.jar", "dev.jbang.Main", "--cp", classPathJar, javaFile);
       } else {
         System.err.println("Unsupported operating system: " + osName);
         return;
@@ -72,8 +70,7 @@ public class JbangCommand implements Runnable {
 
       pb.redirectErrorStream(true);
       Process process = pb.start();
-      BufferedReader bufferedReader =
-          new BufferedReader(new InputStreamReader(process.getInputStream()));
+      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
       String classPath = extractClassPathFromOutput(bufferedReader);
 
       // The mainClass accepts any class name provided from the javaFile
