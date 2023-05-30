@@ -76,16 +76,28 @@ public class JbangCommand implements Runnable {
 
       pb.redirectErrorStream(true);
       Process process = pb.start();
-      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      BufferedReader bufferedReader =
+          new BufferedReader(new InputStreamReader(process.getInputStream()));
       String classPath = extractClassPathFromOutput(bufferedReader);
 
       // The mainClass accepts any class name provided from the javaFile
       String mainClass = extractMainClassFromOutput(bufferedReader, javaFile);
       System.out.println("Extracted Classpath: " + classPath);
       System.out.println("Main Class: " + mainClass);
+      // The mainClass accepts any class name provided from the javaFile
+      String mainClass = extractMainClassFromOutput(bufferedReader, javaFile);
+      System.out.println("Extracted Classpath: " + classPath);
+      System.out.println("Main Class: " + mainClass);
 
       process.waitFor();
+      process.waitFor();
 
+      // Step Two: Execute the final command with the extracted classpath
+      if (classPath != null && !classPath.isEmpty() && mainClass != null && !mainClass.isEmpty()) {
+        runJavaWithClassPath(classPath, mainClass);
+      } else {
+        System.out.println("Could not extract classpath or main class from the output.");
+      }
       // Step Two: Execute the final command with the extracted classpath
       if (classPath != null && !classPath.isEmpty() && mainClass != null && !mainClass.isEmpty()) {
         runJavaWithClassPath(classPath, mainClass);
