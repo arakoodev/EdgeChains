@@ -46,29 +46,32 @@ public class JbangCommand implements Runnable {
 
   private void runJbang(File jarFile, String javaFile, String classPathJar) {
     try {
-      String os = System.getProperty("os.name").toLowerCase();
-      boolean isWindows = os.contains("win");
-
-      // Step One: Execute the initial command to get the classpath
+      String osName = System.getProperty("os.name").toLowerCase();
       ProcessBuilder pb;
-      if (isWindows) {
+
+      if (osName.contains("win")) {
         pb = new ProcessBuilder(
+            "cmd.exe",
+            "/c",
             "java",
             "-cp",
             jarFile.getAbsolutePath(),
+            "dev.jbang.Main",
+            "--cp",
+            classPathJar,
+            javaFile);
+      } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("mac")) {
+        pb = new ProcessBuilder(
+            "java",
+            "-cp",
+            "jbang.jar",
             "dev.jbang.Main",
             "--cp",
             classPathJar,
             javaFile);
       } else {
-        pb = new ProcessBuilder(
-            "java",
-            "-cp",
-            jarFile.getAbsolutePath(),
-            "dev.jbang.Main",
-            "--cp",
-            classPathJar,
-            javaFile);
+        System.err.println("Unsupported operating system: " + osName);
+        return;
       }
 
       pb.redirectErrorStream(true);
@@ -85,39 +88,10 @@ public class JbangCommand implements Runnable {
 
       // Step Two: Execute the final command with the extracted classpath
       if (classPath != null && !classPath.isEmpty() && mainClass != null && !mainClass.isEmpty()) {
-        if (isWindows) {
-          runJavaWithClassPathWindows(classPath, mainClass);
-        } else {
-          runJavaWithClassPathLinux(classPath, mainClass);
-        }
+        runJavaWithClassPath(classPath, mainClass);
       } else {
         System.out.println("Could not extract classpath or main class from the output.");
       }
-    } catch (IOException | InterruptedException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void runJavaWithClassPathWindows(String classPath, String mainClass) {
-    try {
-      ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, mainClass);
-      pb.inheritIO();
-      pb.start().waitFor();
-    } catch (IOException | InterruptedException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void runJavaWithClassPathLinux(String classPath, String mainClass) {
-    try {
-      String command = String.format("java -classpath \"%s\" %s", classPath, mainClass);
-      Process process = Runtime.getRuntime().exec(command);
-      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-      String line;
-      while ((line = bufferedReader.readLine()) != null) {
-        System.out.println(line);
-      }
-      process.waitFor();
     } catch (IOException | InterruptedException e) {
       e.printStackTrace();
     }
