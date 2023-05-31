@@ -27,8 +27,8 @@ jobs:
         working-directory: ./EdgeChain
         run: ./gradlew clean build copyJar
 
-      - name: Upload Script folder as artifact
+      - name: Upload Example folder as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: Script
-          path: ./Script/
+          name: Example
+          path: ./Example/
