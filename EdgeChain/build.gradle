@@ -43,7 +43,7 @@ build {
 task copyJar(type: Copy) {
 	dependsOn shadowJar
 	from "build/libs"
-	into "../Script"
+	into "../Example"
 	include "demo-0.0.1-SNAPSHOT-all.jar"
 	rename "demo-0.0.1-SNAPSHOT-all.jar", "Edgechain.jar"
 }
