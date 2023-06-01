@@ -61,9 +61,15 @@ public class JbangCommand implements Runnable {
       BufferedReader bufferedReader =
           new BufferedReader(new InputStreamReader(process.getInputStream()));
       String classPath = extractClassPathFromOutput(bufferedReader);
+      String mainClass = null;
 
-      // Hardcoded main class value
-      String mainClass = "com.example.Flyopenaiwiki";
+      if(classPath.contains("EdgeChainApplication.java")) {
+        mainClass = "com.edgechain.app.EdgeChainApplication";
+      }
+
+      if(classPath.contains("EdgeChainServiceApplication.java")) {
+        mainClass = "com.edgechain.service.EdgeChainServiceApplication";
+      }
 
       System.out.println("Extracted Classpath: " + classPath);
       System.out.println("Main Class: " + mainClass);
@@ -86,7 +92,7 @@ public class JbangCommand implements Runnable {
     String classPath = null;
     final String pattern = "-classpath '";
     while ((line = bufferedReader.readLine()) != null) {
-      System.out.println("Line: " + line); // added debug message
+//      System.out.println("Line: " + line); // added debug message
       int startIndex = line.indexOf(pattern);
       if (startIndex > -1) {
         startIndex += pattern.length();
