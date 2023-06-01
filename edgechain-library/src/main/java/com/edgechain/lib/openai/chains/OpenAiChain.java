@@ -6,11 +6,11 @@ import io.reactivex.rxjava3.core.Observable;
 
 public class OpenAiChain extends EdgeChain<String> {
 
-    public OpenAiChain(Observable<String> observable) {
-        super(observable);
-    }
+  public OpenAiChain(Observable<String> observable) {
+    super(observable);
+  }
 
-    public OpenAiChain(Observable<String> observable, Endpoint endpoint) {
-        super(observable, endpoint);
-    }
+  public OpenAiChain(Observable<String> observable, Endpoint endpoint) {
+    super(observable, endpoint);
+  }
 }

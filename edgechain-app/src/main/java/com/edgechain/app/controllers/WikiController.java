@@ -22,26 +22,27 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/v1/wiki")
 public class WikiController {
 
-    private static final String OPENAI_CHAT_COMPLETION_API = "https://api.openai.com/v1/chat/completions";
-    @Autowired private PromptService promptService;
-    @Autowired private PluginService pluginService;
+  private static final String OPENAI_CHAT_COMPLETION_API =
+      "https://api.openai.com/v1/chat/completions";
+  @Autowired private PromptService promptService;
+  @Autowired private PluginService pluginService;
 
-    @Autowired private OpenAiService openAiService;
+  @Autowired private OpenAiService openAiService;
 
-    @GetMapping("/summary")
-    public Mono<ChainResponse> getSummary(@RequestParam("query") String query){
+  @GetMapping("/summary")
+  public Mono<ChainResponse> getSummary(@RequestParam("query") String query) {
 
-        Endpoint chatEndpoint = new Endpoint(
-                OPENAI_CHAT_COMPLETION_API,
-                WebConstants.OPENAI_AUTH_KEY,
-                "gpt-3.5-turbo",
-                "user",
-                0.4,
-                new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS)
-        );
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            WebConstants.OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.4,
+            new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
 
-        ToolService[] toolServices = {promptService, openAiService, pluginService};
-        ReactChain reactChain = new ReactChain(chatEndpoint, toolServices);
-        return reactChain.getWikiSummary(query);
-    }
+    ToolService[] toolServices = {promptService, openAiService, pluginService};
+    ReactChain reactChain = new ReactChain(chatEndpoint, toolServices);
+    return reactChain.getWikiSummary(query);
+  }
 }

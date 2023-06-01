@@ -8,5 +8,4 @@ import org.springframework.core.annotation.Order;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Configuration
 @EnableFeignClients(basePackages = {"com.edgechain.app"})
-public class WebConfiguration {
-}
+public class WebConfiguration {}

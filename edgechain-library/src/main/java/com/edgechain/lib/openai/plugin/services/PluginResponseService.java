@@ -14,77 +14,93 @@ import org.springframework.web.client.RestTemplate;
 
 public class PluginResponseService {
 
-    private RestTemplate restTemplate = new RestTemplate();
+  private RestTemplate restTemplate = new RestTemplate();
 
-    private final Endpoint pluginEndpoint;
-    private final Endpoint pluginSpecEndpoint;
+  private final Endpoint pluginEndpoint;
+  private final Endpoint pluginSpecEndpoint;
 
-    public PluginResponseService(Endpoint pluginEndpoint, Endpoint pluginSpecEndpoint) {
-        this.pluginEndpoint = pluginEndpoint;
-        this.pluginSpecEndpoint = pluginSpecEndpoint;
-    }
+  public PluginResponseService(Endpoint pluginEndpoint, Endpoint pluginSpecEndpoint) {
+    this.pluginEndpoint = pluginEndpoint;
+    this.pluginSpecEndpoint = pluginSpecEndpoint;
+  }
 
-    public PluginResponse getPluginResponse() {
-        return new PluginResponseChain(
-                Observable.create(emitter -> {
-                    try {
-                        Observable<PluginTool> obs1 = this.requestPluginAPI(pluginEndpoint).getScheduledObservableWithRetry();
-                        Observable<String> obs2 = this.requestSpecAPI(pluginSpecEndpoint).getScheduledObservableWithRetry();
+  public PluginResponse getPluginResponse() {
+    return new PluginResponseChain(
+            Observable.create(
+                emitter -> {
+                  try {
+                    Observable<PluginTool> obs1 =
+                        this.requestPluginAPI(pluginEndpoint).getScheduledObservableWithRetry();
+                    Observable<String> obs2 =
+                        this.requestSpecAPI(pluginSpecEndpoint).getScheduledObservableWithRetry();
 
-                        PluginResponse response = new EdgeChain<>(Observable.zip(obs1, obs2, PluginResponse::new)).getWithOutRetry();
+                    PluginResponse response =
+                        new EdgeChain<>(Observable.zip(obs1, obs2, PluginResponse::new))
+                            .getWithOutRetry();
 
-                        emitter.onNext(response);
-                        emitter.onComplete();
+                    emitter.onNext(response);
+                    emitter.onComplete();
 
-                    } catch (final Exception e) {
-                        emitter.onError(e);
-                    }
-                })
-        ).getWithOutRetry();
-    }
+                  } catch (final Exception e) {
+                    emitter.onError(e);
+                  }
+                }))
+        .getWithOutRetry();
+  }
 
-    private EdgeChain<PluginTool> requestPluginAPI(Endpoint pluginEndpoint) {
-        return new EdgeChain<>(
-                Observable.create(emitter -> {
-                    try {
+  private EdgeChain<PluginTool> requestPluginAPI(Endpoint pluginEndpoint) {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
 
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        headers.setBearerAuth(pluginEndpoint.getApiKey());
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.setBearerAuth(pluginEndpoint.getApiKey());
 
-                        PluginTool response = this.restTemplate.exchange(
-                                pluginEndpoint.getUrl(), HttpMethod.GET, new HttpEntity<>(headers), PluginTool.class).getBody();
+                PluginTool response =
+                    this.restTemplate
+                        .exchange(
+                            pluginEndpoint.getUrl(),
+                            HttpMethod.GET,
+                            new HttpEntity<>(headers),
+                            PluginTool.class)
+                        .getBody();
 
-                        emitter.onNext(response);
-                        emitter.onComplete();
+                emitter.onNext(response);
+                emitter.onComplete();
 
-                    } catch (final Exception e) {
-                        emitter.onError(e);
-                    }
-                })
-        );
-    }
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }));
+  }
 
-    private EdgeChain<String> requestSpecAPI(Endpoint pluginSpecEndpoint) {
-        return new EdgeChain<>(
-                Observable.create(emitter -> {
-                    try {
+  private EdgeChain<String> requestSpecAPI(Endpoint pluginSpecEndpoint) {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
 
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.setBearerAuth(pluginSpecEndpoint.getApiKey());
 
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        headers.setBearerAuth(pluginSpecEndpoint.getApiKey());
+                String response =
+                    this.restTemplate
+                        .exchange(
+                            pluginSpecEndpoint.getUrl(),
+                            HttpMethod.GET,
+                            new HttpEntity<>(headers),
+                            String.class)
+                        .getBody();
 
-                        String response = this.restTemplate.exchange(pluginSpecEndpoint.getUrl(), HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
+                emitter.onNext(response);
+                emitter.onComplete();
 
-                        emitter.onNext(response);
-                        emitter.onComplete();
-
-                    } catch (final Exception e) {
-                        emitter.onError(e);
-                    }
-                })
-        );
-    }
-
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }));
+  }
 }

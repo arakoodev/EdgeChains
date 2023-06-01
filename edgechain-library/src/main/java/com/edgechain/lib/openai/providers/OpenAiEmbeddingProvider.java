@@ -14,18 +14,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OpenAiEmbeddingProvider extends ChainProvider {
 
-    private final Endpoint endpoint;
+  private final Endpoint endpoint;
 
-    public OpenAiEmbeddingProvider(Endpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+  public OpenAiEmbeddingProvider(Endpoint endpoint) {
+    this.endpoint = endpoint;
+  }
 
-    @Override
-    public EdgeChain<ChainResponse> request(ChainRequest request) {
-        return new OpenAiClient()
-                .createEmbeddings(endpoint,new OpenAiEmbeddingRequest(endpoint.getModel(),request.getInput()))
-                .transform(response -> new ObjectMapper().readValue(response, OpenAiEmbeddingResponse.class))
-                .transform(embeddingResponse -> JsonUtils.convertToString(new WordVec(request.getInput(), embeddingResponse.getData().get(0).getEmbedding())))
-                .transform(ChainResponse::new);
-    }
+  @Override
+  public EdgeChain<ChainResponse> request(ChainRequest request) {
+    return new OpenAiClient()
+        .createEmbeddings(
+            endpoint, new OpenAiEmbeddingRequest(endpoint.getModel(), request.getInput()))
+        .transform(
+            response -> new ObjectMapper().readValue(response, OpenAiEmbeddingResponse.class))
+        .transform(
+            embeddingResponse ->
+                JsonUtils.convertToString(
+                    new WordVec(
+                        request.getInput(), embeddingResponse.getData().get(0).getEmbedding())))
+        .transform(ChainResponse::new);
+  }
 }

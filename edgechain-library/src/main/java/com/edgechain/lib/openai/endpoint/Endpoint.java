@@ -19,15 +19,14 @@ public class Endpoint {
   private Double temperature;
   private ChainProvider chainProvider;
 
-  public Endpoint() {
-  }
+  public Endpoint() {}
 
   public Endpoint(String url) {
-    this(url, null, null, null, new FixedDelay(3,4, TimeUnit.SECONDS));
+    this(url, null, null, null, new FixedDelay(3, 4, TimeUnit.SECONDS));
   }
 
   public Endpoint(String url, String apiKey) {
-    this(url, apiKey, null, null, new FixedDelay(3,4, TimeUnit.SECONDS));
+    this(url, apiKey, null, null, new FixedDelay(3, 4, TimeUnit.SECONDS));
   }
 
   public Endpoint(String url, String apiKey, RetryPolicy retryPolicy) {
@@ -47,12 +46,12 @@ public class Endpoint {
   }
 
   public Endpoint(
-          String url,
-          String apiKey,
-          String model,
-          String role,
-          Double temperature,
-          RetryPolicy retryPolicy) {
+      String url,
+      String apiKey,
+      String model,
+      String role,
+      Double temperature,
+      RetryPolicy retryPolicy) {
     this.url = url;
     this.apiKey = apiKey;
     this.retryPolicy = retryPolicy;
@@ -93,21 +92,19 @@ public class Endpoint {
     return this.temperature;
   }
 
-
   public String toString() {
     return "Endpoint{url='"
-            + this.url
-            + "', apiKey='"
-            + this.apiKey
-            + "', retryPolicy="
-            + this.retryPolicy
-            + ", model='"
-            + this.model
-            + "', role='"
-            + this.role
-            + "', temperature="
-            + this.temperature
-            + "}";
+        + this.url
+        + "', apiKey='"
+        + this.apiKey
+        + "', retryPolicy="
+        + this.retryPolicy
+        + ", model='"
+        + this.model
+        + "', role='"
+        + this.role
+        + "', temperature="
+        + this.temperature
+        + "}";
   }
 }
-
