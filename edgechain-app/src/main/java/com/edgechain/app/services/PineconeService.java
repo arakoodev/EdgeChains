@@ -9,24 +9,19 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(
-        name = "pineconeService",
-        url = "${feign.url}/index/pinecone"
-)
+@FeignClient(name = "pineconeService", url = "${feign.url}/index/pinecone")
 @Component
 public interface PineconeService extends IndexService {
 
-    @Override
-    @PostMapping("/upsert")
-    ChainResponse upsert(@RequestBody PineconeRequest request);
+  @Override
+  @PostMapping("/upsert")
+  ChainResponse upsert(@RequestBody PineconeRequest request);
 
-    @Override
-    @PostMapping("/query")
-    ChainResponse query(@RequestBody PineconeRequest request);
+  @Override
+  @PostMapping("/query")
+  ChainResponse query(@RequestBody PineconeRequest request);
 
-    @Override
-    @DeleteMapping("/delete")
-    ChainResponse delete(@RequestBody PineconeRequest request);
-
-
+  @Override
+  @DeleteMapping("/delete")
+  ChainResponse delete(@RequestBody PineconeRequest request);
 }

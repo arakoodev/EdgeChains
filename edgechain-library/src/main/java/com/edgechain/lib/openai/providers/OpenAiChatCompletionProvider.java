@@ -16,29 +16,31 @@ import java.util.List;
 
 public class OpenAiChatCompletionProvider extends ChainProvider {
 
-    private final Endpoint endpoint;
+  private final Endpoint endpoint;
 
-    public OpenAiChatCompletionProvider(Endpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+  public OpenAiChatCompletionProvider(Endpoint endpoint) {
+    this.endpoint = endpoint;
+  }
 
-    @Override
-    public EdgeChain<ChainResponse> request(ChainRequest request) {
+  @Override
+  public EdgeChain<ChainResponse> request(ChainRequest request) {
 
-        ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest.builder()
-                .model(endpoint.getModel())
-                .temperature(endpoint.getTemperature())
-                .messages(List.of(new ChatMessage(endpoint.getRole(), request.getInput())))
-                .build();
+    ChatCompletionRequest chatCompletionRequest =
+        ChatCompletionRequest.builder()
+            .model(endpoint.getModel())
+            .temperature(endpoint.getTemperature())
+            .messages(List.of(new ChatMessage(endpoint.getRole(), request.getInput())))
+            .build();
 
-        return new OpenAiClient().createChatCompletion(endpoint,chatCompletionRequest)
-                .transform(s -> new ChainResponse(this.parse(s)));
-    }
+    return new OpenAiClient()
+        .createChatCompletion(endpoint, chatCompletionRequest)
+        .transform(s -> new ChainResponse(this.parse(s)));
+  }
 
-    private String parse(String body) throws JsonProcessingException {
-        JsonNode outputJsonNode = new ObjectMapper().readTree(body);
-        System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
+  private String parse(String body) throws JsonProcessingException {
+    JsonNode outputJsonNode = new ObjectMapper().readTree(body);
+    System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
 
-        return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
-    }
+    return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
+  }
 }
