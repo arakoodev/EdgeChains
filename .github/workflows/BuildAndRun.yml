@@ -36,7 +36,7 @@ jobs:
         run: cp ./edgechain-app/target/edgechain-app-1.0.0.jar ./Script/
 
       - name: Upload Script folder as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: Script
-          path: ./Script/
+          name: Output
+          path: Script/
