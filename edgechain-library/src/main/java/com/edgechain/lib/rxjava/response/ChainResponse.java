@@ -2,19 +2,21 @@ package com.edgechain.lib.rxjava.response;
 
 public class ChainResponse {
 
-  private String response;
 
-  public ChainResponse() {}
+    private String response;
 
-  public ChainResponse(String response) {
-    this.response = response;
-  }
+    public ChainResponse() {
+    }
 
-  public String getResponse() {
-    return response;
-  }
+    public ChainResponse(String response) {
+        this.response = response;
+    }
 
-  public void setResponse(String response) {
-    this.response = response;
-  }
+    public String getResponse() {
+        return response;
+    }
+
+    public void setResponse(String response) {
+        this.response = response;
+    }
 }
