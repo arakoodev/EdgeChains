@@ -20,12 +20,20 @@ jobs:
         working-directory: ./FlySpring/flyfly
         run: mvn clean package -P gofly
 
-      - name: Set execute permissions on gradlew
-        run: chmod +x ./EdgeChain/gradlew
+      - name: Build edgechain-lib project
+        working-directory: ./edgechain-library
+        run: mvn clean package
 
-      - name: Build EdgeChain project
-        working-directory: ./EdgeChain
-        run: ./gradlew clean build copyJar
+      - name: Install edgechain-lib JAR to local repository
+        working-directory: ./edgechain-library/target
+        run: mvn install:install-file -Dfile=edgechain-lib-1.0.0.jar -DgroupId=com.flyspring -DartifactId=edgechain-lib -Dversion=1.0.0 -Dpackaging=jar
+
+      - name: Build edgechain-app project
+        working-directory: ./edgechain-app
+        run: mvn clean package
+
+      - name: Copy edgechain-app JAR to Script folder
+        run: cp ./edgechain-app/target/edgechain-app-1.0.0.jar ./Script/
 
       - name: Upload Script folder as artifact
         uses: actions/upload-artifact@v2
