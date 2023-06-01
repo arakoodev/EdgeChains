@@ -13,29 +13,31 @@ import java.util.Objects;
 
 public class PluginJSONProvider extends ChainProvider {
 
-    private final OpenAiCompletionProvider provider;
-    private final PluginJSONParser parser;
-    private PromptTemplate promptTemplate;
+  private final OpenAiCompletionProvider provider;
+  private final PluginJSONParser parser;
+  private PromptTemplate promptTemplate;
 
-    public PluginJSONProvider(OpenAiCompletionProvider provider, PluginJSONParser parser) {
-        this.provider = provider;
-        this.parser = parser;
+  public PluginJSONProvider(OpenAiCompletionProvider provider, PluginJSONParser parser) {
+    this.provider = provider;
+    this.parser = parser;
+  }
+
+  public PluginJSONProvider(
+      OpenAiCompletionProvider provider, PluginJSONParser parser, PromptTemplate promptTemplate) {
+    this.provider = provider;
+    this.parser = parser;
+    this.promptTemplate = promptTemplate;
+  }
+
+  @Override
+  public EdgeChain<ChainResponse> request(ChainRequest request) {
+
+    if (Objects.isNull(promptTemplate)) {
+      return PluginBuilder.requestJSON(provider, parser, request.getInput())
+          .transform(ChainResponse::new);
     }
 
-    public PluginJSONProvider(OpenAiCompletionProvider provider, PluginJSONParser parser, PromptTemplate promptTemplate) {
-        this.provider = provider;
-        this.parser = parser;
-        this.promptTemplate = promptTemplate;
-    }
-
-
-    @Override
-    public EdgeChain<ChainResponse> request(ChainRequest request) {
-
-        if(Objects.isNull(promptTemplate)) {
-            return PluginBuilder.requestJSON(provider,parser,request.getInput()).transform(ChainResponse::new);
-        }
-
-        return PluginBuilder.requestJSON(provider,parser,promptTemplate,request.getInput()).transform(ChainResponse::new);
-    }
+    return PluginBuilder.requestJSON(provider, parser, promptTemplate, request.getInput())
+        .transform(ChainResponse::new);
+  }
 }

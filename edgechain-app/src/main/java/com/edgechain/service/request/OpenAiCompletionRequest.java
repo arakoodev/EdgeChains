@@ -4,31 +4,29 @@ import com.edgechain.lib.openai.endpoint.Endpoint;
 
 public class OpenAiCompletionRequest {
 
-    private Endpoint endpoint;
-    private String input;
+  private Endpoint endpoint;
+  private String input;
 
-    public OpenAiCompletionRequest(Endpoint endpoint, String input) {
-        this.endpoint = endpoint;
-        this.input = input;
-    }
+  public OpenAiCompletionRequest(Endpoint endpoint, String input) {
+    this.endpoint = endpoint;
+    this.input = input;
+  }
 
-    public OpenAiCompletionRequest() {
-    }
+  public OpenAiCompletionRequest() {}
 
-    public String getInput() {
-        return input;
-    }
+  public String getInput() {
+    return input;
+  }
 
-    public void setInput(String input) {
-        this.input = input;
-    }
+  public void setInput(String input) {
+    this.input = input;
+  }
 
+  public Endpoint getEndpoint() {
+    return endpoint;
+  }
 
-    public Endpoint getEndpoint() {
-        return endpoint;
-    }
-
-    public void setEndpoint(Endpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+  public void setEndpoint(Endpoint endpoint) {
+    this.endpoint = endpoint;
+  }
 }

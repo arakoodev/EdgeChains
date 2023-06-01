@@ -4,33 +4,33 @@ import com.edgechain.lib.openai.endpoint.Endpoint;
 
 public class OpenAiEmbeddingsRequest {
 
-    private Endpoint endpoint;
-    private String input;
+  private Endpoint endpoint;
+  private String input;
 
-    public OpenAiEmbeddingsRequest() {}
+  public OpenAiEmbeddingsRequest() {}
 
-    public String getInput() {
-        return input;
-    }
+  public String getInput() {
+    return input;
+  }
 
-    public void setInput(String input) {
-        this.input = input;
-    }
+  public void setInput(String input) {
+    this.input = input;
+  }
 
-    public Endpoint getEndpoint() {
-        return endpoint;
-    }
+  public Endpoint getEndpoint() {
+    return endpoint;
+  }
 
-    public void setEndpoint(Endpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+  public void setEndpoint(Endpoint endpoint) {
+    this.endpoint = endpoint;
+  }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("OpenAiEmbeddingsRequest{");
-        sb.append("endpoint=").append(endpoint);
-        sb.append(", input='").append(input).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("OpenAiEmbeddingsRequest{");
+    sb.append("endpoint=").append(endpoint);
+    sb.append(", input='").append(input).append('\'');
+    sb.append('}');
+    return sb.toString();
+  }
 }
