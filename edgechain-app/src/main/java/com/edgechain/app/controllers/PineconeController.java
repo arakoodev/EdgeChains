@@ -72,7 +72,8 @@ public class PineconeController {
 
         Endpoint pineconeEndpoint = new Endpoint(
                 PINECONE_QUERY_API,
-                PINECONE_AUTH_KEY
+                PINECONE_AUTH_KEY,
+                new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS)
         );
 
         Endpoint chatEndpoint = new Endpoint(
