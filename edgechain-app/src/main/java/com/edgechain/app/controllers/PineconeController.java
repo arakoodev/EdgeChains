@@ -24,7 +24,7 @@ public class PineconeController {
 
     private static final String OPENAI_CHAT_COMPLETION_API = "https://api.openai.com/v1/chat/completions";
     private static final String OPENAI_EMBEDDINGS_API = "https://api.openai.com/v1/embeddings";
-    private static final String PINECONE_AUTH_KEY = "5964811a-7020-4fa7-bdbe-6db2084e4d77";
+    private static final String PINECONE_AUTH_KEY = "";
     private static final String PINECONE_QUERY_API = "https://pinecone-index-a464f61.svc.us-east-1-aws.pinecone.io/query";
     private static final String PINECONE_UPSERT_API = "https://pinecone-index-a464f61.svc.us-east-1-aws.pinecone.io/vectors/upsert";
     private static final String PINECONE_DELETE_API = "https://pinecone-index-a464f61.svc.us-east-1-aws.pinecone.io/vectors/delete";
