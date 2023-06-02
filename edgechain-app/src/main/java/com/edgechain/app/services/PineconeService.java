@@ -15,14 +15,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface PineconeService extends IndexService {
 
   @Override
-  @PostMapping(value = "/upsert",consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(
+      value = "/upsert",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse upsert(@RequestBody PineconeRequest request);
 
   @Override
-  @PostMapping(value = "/query", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(
+      value = "/query",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse query(@RequestBody PineconeRequest request);
 
   @Override
-  @DeleteMapping(value = "/delete", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
+  @DeleteMapping(
+      value = "/delete",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse delete(@RequestBody PineconeRequest request);
 }
