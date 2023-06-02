@@ -8,8 +8,8 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 public class WikiProvider extends ChainProvider {
 
-    @Override
-    public EdgeChain<ChainResponse> request(ChainRequest request) {
-        return new WikiService().getPageContent(request.getInput());
-    }
+  @Override
+  public EdgeChain<ChainResponse> request(ChainRequest request) {
+    return new WikiService().getPageContent(request.getInput());
+  }
 }

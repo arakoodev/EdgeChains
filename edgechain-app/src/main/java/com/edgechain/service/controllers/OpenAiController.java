@@ -22,31 +22,33 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/openai")
 public class OpenAiController {
 
-    @PostMapping("/chat-completion")
-    public Mono<ChainResponse> chatCompletion(@RequestBody OpenAiChatRequest request) {
+  @PostMapping("/chat-completion")
+  public Mono<ChainResponse> chatCompletion(@RequestBody OpenAiChatRequest request) {
 
-        OpenAiChatCompletionProvider chatCompletion = new OpenAiChatCompletionProvider(request.getEndpoint());
+    OpenAiChatCompletionProvider chatCompletion =
+        new OpenAiChatCompletionProvider(request.getEndpoint());
 
-        ChainWrapper wrapper = new ChainWrapper();
-        return RxJava3Adapter.singleToMono(wrapper.chains(new ChainRequest(request.getInput()),chatCompletion).toSingleWithRetry());
-    }
+    ChainWrapper wrapper = new ChainWrapper();
+    return RxJava3Adapter.singleToMono(
+        wrapper.chains(new ChainRequest(request.getInput()), chatCompletion).toSingleWithRetry());
+  }
 
-    @PostMapping("/completion")
-    public Mono<ChainResponse> completion(@RequestBody OpenAiCompletionRequest request) {
+  @PostMapping("/completion")
+  public Mono<ChainResponse> completion(@RequestBody OpenAiCompletionRequest request) {
 
-        OpenAiCompletionProvider provider = new OpenAiCompletionProvider(request.getEndpoint());
+    OpenAiCompletionProvider provider = new OpenAiCompletionProvider(request.getEndpoint());
 
-        ChainWrapper wrapper = new ChainWrapper();
-        return RxJava3Adapter.singleToMono(wrapper.chains(new ChainRequest(request.getInput()),provider).toSingleWithRetry());
-    }
+    ChainWrapper wrapper = new ChainWrapper();
+    return RxJava3Adapter.singleToMono(
+        wrapper.chains(new ChainRequest(request.getInput()), provider).toSingleWithRetry());
+  }
 
-    @PostMapping("/embeddings")
-    public Mono<ChainResponse> embeddings(@RequestBody OpenAiEmbeddingsRequest request) {
-        ChainProvider embeddings = new OpenAiEmbeddingProvider(request.getEndpoint());
+  @PostMapping("/embeddings")
+  public Mono<ChainResponse> embeddings(@RequestBody OpenAiEmbeddingsRequest request) {
+    ChainProvider embeddings = new OpenAiEmbeddingProvider(request.getEndpoint());
 
-        ChainWrapper wrapper = new ChainWrapper();
-        return RxJava3Adapter.singleToMono(wrapper.chains(new ChainRequest(request.getInput()),embeddings).toSingleWithRetry());
-    }
-
-
+    ChainWrapper wrapper = new ChainWrapper();
+    return RxJava3Adapter.singleToMono(
+        wrapper.chains(new ChainRequest(request.getInput()), embeddings).toSingleWithRetry());
+  }
 }

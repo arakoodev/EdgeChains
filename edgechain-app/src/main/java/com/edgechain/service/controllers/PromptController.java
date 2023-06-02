@@ -12,14 +12,13 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/prompt")
 public class PromptController {
 
+  @GetMapping("/wiki-summary")
+  public Mono<ChainResponse> getWikiSummaryPrompt() {
+    return Mono.just(new ChainResponse(new WikiSummaryPrompt().getPrompt()));
+  }
 
-    @GetMapping("/wiki-summary")
-    public Mono<ChainResponse> getWikiSummaryPrompt() {
-        return Mono.just(new ChainResponse(new WikiSummaryPrompt().getPrompt()));
-    }
-
-    @GetMapping("/index-query")
-    public Mono<ChainResponse> getIndexQueryPrompt() {
-        return Mono.just(new ChainResponse(new IndexQueryPrompt().getPrompt()));
-    }
+  @GetMapping("/index-query")
+  public Mono<ChainResponse> getIndexQueryPrompt() {
+    return Mono.just(new ChainResponse(new IndexQueryPrompt().getPrompt()));
+  }
 }

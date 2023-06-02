@@ -15,71 +15,92 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PluginBuilder {
 
-    public static EdgeChain<String> requestAPI(OpenAiCompletionProvider provider, Endpoint pluginAPI, Endpoint specAPI, String query) {
+  public static EdgeChain<String> requestAPI(
+      OpenAiCompletionProvider provider, Endpoint pluginAPI, Endpoint specAPI, String query) {
 
-        // Create PluginResponseService Constructor
-        PluginResponseService pluginResponseService = new PluginResponseService(pluginAPI, specAPI);
+    // Create PluginResponseService Constructor
+    PluginResponseService pluginResponseService = new PluginResponseService(pluginAPI, specAPI);
 
-        // Fetch Plugin Information
-        PluginResponse pluginResponse = pluginResponseService.getPluginResponse();
+    // Fetch Plugin Information
+    PluginResponse pluginResponse = pluginResponseService.getPluginResponse();
 
-        // Use Plugin Service
-        PluginService pluginService = new PluginService(provider, pluginResponse, new CompletionPrompt(pluginResponse).getPrompt(), query);
+    // Use Plugin Service
+    PluginService pluginService =
+        new PluginService(
+            provider, pluginResponse, new CompletionPrompt(pluginResponse).getPrompt(), query);
 
-        return pluginService.request();
+    return pluginService.request();
+  }
+
+  public static EdgeChain<String> requestAPI(
+      OpenAiCompletionProvider provider,
+      Endpoint pluginAPI,
+      Endpoint specAPI,
+      PromptTemplate promptTemplate,
+      String query) {
+
+    // Create PluginResponseService Constructor
+    PluginResponseService pluginResponseService = new PluginResponseService(pluginAPI, specAPI);
+
+    // Fetch Plugin Information
+    PluginResponse pluginResponse = pluginResponseService.getPluginResponse();
+
+    // Use Plugin Service
+    PluginService pluginService =
+        new PluginService(provider, pluginResponse, promptTemplate.getPrompt(), query);
+
+    return pluginService.request();
+  }
+
+  public static EdgeChain<String> requestJSON(
+      OpenAiCompletionProvider provider, PluginJSONParser pluginJSONParser, String query) {
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+
+      PluginTool pluginTool =
+          objectMapper.readValue(pluginJSONParser.getPluginJSON(), PluginTool.class);
+      pluginTool.setApi(
+          objectMapper.readValue(pluginJSONParser.getApiConfigJson(), ApiConfig.class));
+
+      PluginResponse pluginResponse =
+          new PluginResponse(pluginTool, pluginJSONParser.getSpecAPIJson());
+
+      // Use Plugin Service
+      PluginService pluginService =
+          new PluginService(
+              provider, pluginResponse, new CompletionPrompt(pluginResponse).getPrompt(), query);
+
+      return pluginService.request();
+    } catch (final Exception e) {
+      throw new RuntimeException(e.getMessage());
     }
+  }
 
-    public static EdgeChain<String> requestAPI(OpenAiCompletionProvider provider, Endpoint pluginAPI, Endpoint specAPI, PromptTemplate promptTemplate, String query) {
+  public static EdgeChain<String> requestJSON(
+      OpenAiCompletionProvider provider,
+      PluginJSONParser pluginJSONParser,
+      PromptTemplate promptTemplate,
+      String query) {
+    try {
 
-        // Create PluginResponseService Constructor
-        PluginResponseService pluginResponseService = new PluginResponseService(pluginAPI, specAPI);
+      ObjectMapper objectMapper = new ObjectMapper();
 
-        // Fetch Plugin Information
-        PluginResponse pluginResponse = pluginResponseService.getPluginResponse();
+      PluginTool pluginTool =
+          objectMapper.readValue(pluginJSONParser.getPluginJSON(), PluginTool.class);
+      pluginTool.setApi(
+          objectMapper.readValue(pluginJSONParser.getApiConfigJson(), ApiConfig.class));
 
-        // Use Plugin Service
-        PluginService pluginService = new PluginService(provider, pluginResponse, promptTemplate.getPrompt(), query);
+      PluginResponse pluginResponse =
+          new PluginResponse(pluginTool, pluginJSONParser.getSpecAPIJson());
 
-        return pluginService.request();
+      // Use Plugin Service
+      PluginService pluginService =
+          new PluginService(provider, pluginResponse, promptTemplate.getPrompt(), query);
+
+      return pluginService.request();
+
+    } catch (final Exception e) {
+      throw new RuntimeException(e.getMessage());
     }
-
-    public static EdgeChain<String> requestJSON(OpenAiCompletionProvider provider, PluginJSONParser pluginJSONParser, String query)  {
-        try{
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            PluginTool pluginTool = objectMapper.readValue(pluginJSONParser.getPluginJSON(), PluginTool.class);
-            pluginTool.setApi(objectMapper.readValue(pluginJSONParser.getApiConfigJson(), ApiConfig.class));
-
-            PluginResponse pluginResponse = new PluginResponse(pluginTool, pluginJSONParser.getSpecAPIJson());
-
-            // Use Plugin Service
-            PluginService pluginService = new PluginService(provider, pluginResponse, new CompletionPrompt(pluginResponse).getPrompt(), query);
-
-            return pluginService.request();
-        }catch (final Exception e){
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-
-    public static EdgeChain<String> requestJSON(OpenAiCompletionProvider provider, PluginJSONParser pluginJSONParser, PromptTemplate promptTemplate, String query) {
-        try{
-
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            PluginTool pluginTool = objectMapper.readValue(pluginJSONParser.getPluginJSON(), PluginTool.class);
-            pluginTool.setApi(objectMapper.readValue(pluginJSONParser.getApiConfigJson(), ApiConfig.class));
-
-            PluginResponse pluginResponse = new PluginResponse(pluginTool, pluginJSONParser.getSpecAPIJson());
-
-            // Use Plugin Service
-            PluginService pluginService = new PluginService(provider, pluginResponse, promptTemplate.getPrompt(), query);
-
-            return pluginService.request();
-
-
-        }catch (final Exception e){
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-
+  }
 }
