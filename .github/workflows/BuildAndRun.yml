@@ -18,7 +18,10 @@ jobs:
 
       - name: Build flyfly project
         working-directory: ./FlySpring/flyfly
-        run: mvn clean package -P gofly
+        run: mvn clean package 
+
+      - name: Copy flyfly JAR to Examples folder and rename
+        run: cp ./FlySpring/flyfly/target/flyfly-0.0.1-SNAPSHOT.jar ./Examples/flyfly.jar
 
       - name: Build edgechain-lib project
         working-directory: ./edgechain-library
@@ -32,11 +35,11 @@ jobs:
         working-directory: ./edgechain-app
         run: mvn clean package
 
-      - name: Copy edgechain-app JAR to Script folder
-        run: cp ./edgechain-app/target/edgechain-app-1.0.0.jar ./Script/
+      - name: Copy edgechain-app JAR to Examples folder
+        run: cp ./edgechain-app/target/edgechain-app-1.0.0.jar ./Examples/
 
-      - name: Upload Script folder as artifact
+      - name: Upload Examples folder as artifact
         uses: actions/upload-artifact@v3
         with:
           name: Output
-          path: Script/
+          path: Examples/

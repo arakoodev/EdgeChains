@@ -1,32 +1,34 @@
 package com.edgechain.service.request;
 
+
 import com.edgechain.lib.openai.endpoint.Endpoint;
 
 public class OpenAiChatRequest {
 
-  private Endpoint endpoint;
-  private String input;
+    private Endpoint endpoint;
+    private String input;
 
-  public OpenAiChatRequest(Endpoint endpoint, String input) {
-    this.endpoint = endpoint;
-    this.input = input;
-  }
 
-  public OpenAiChatRequest() {}
+    public OpenAiChatRequest(Endpoint endpoint, String input) {
+        this.endpoint = endpoint;
+        this.input = input;
+    }
 
-  public String getInput() {
-    return input;
-  }
+    public OpenAiChatRequest() {}
 
-  public void setInput(String input) {
-    this.input = input;
-  }
+    public String getInput() {
+        return input;
+    }
 
-  public Endpoint getEndpoint() {
-    return endpoint;
-  }
+    public void setInput(String input) {
+        this.input = input;
+    }
 
-  public void setEndpoint(Endpoint endpoint) {
-    this.endpoint = endpoint;
-  }
+    public Endpoint getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(Endpoint endpoint) {
+        this.endpoint = endpoint;
+    }
 }

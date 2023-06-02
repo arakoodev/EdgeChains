@@ -16,82 +16,78 @@ import java.util.Objects;
 @Service
 public class OpenAiClient {
 
-  private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplate();
 
-  public OpenAiChain createChatCompletion(Endpoint endpoint, ChatCompletionRequest request) {
+    public OpenAiChain createChatCompletion(Endpoint endpoint, ChatCompletionRequest request) {
 
-    return new OpenAiChain(
-        Observable.create(
-            emitter -> {
-              try {
+        return new OpenAiChain(
+                Observable.create(emitter -> {
+                    try {
 
-                System.out.println("Logging....");
+                        System.out.println("Logging....");
 
-                // Create headers
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.setBearerAuth(endpoint.getApiKey());
+                        // Create headers
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        headers.setBearerAuth(endpoint.getApiKey());
 
-                HttpEntity<ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
+                        HttpEntity<ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
 
-                // Send the POST request
-                ResponseEntity<String> response =
-                    restTemplate.exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                        // Send the POST request
+                        ResponseEntity<String> response = restTemplate.exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
 
-                emitter.onNext(Objects.requireNonNullElse(response.getBody(), ""));
-                emitter.onComplete();
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
-  }
 
-  public OpenAiChain createCompletion(Endpoint endpoint, CompletionRequest request) {
-    return new OpenAiChain(
-        Observable.create(
-            emitter -> {
-              try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.setBearerAuth(endpoint.getApiKey());
+                        emitter.onNext(Objects.requireNonNullElse(response.getBody(), ""));
+                        emitter.onComplete();
+                    } catch (final Exception e) {
+                        emitter.onError(e);
+                    }
 
-                HttpEntity<CompletionRequest> entity = new HttpEntity<>(request, headers);
+                }), endpoint
+        );
 
-                ResponseEntity<String> response =
-                    this.restTemplate.exchange(
-                        endpoint.getUrl(), HttpMethod.POST, entity, String.class);
-                emitter.onNext(response.getBody());
-                emitter.onComplete();
+    }
 
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
-  }
+    public OpenAiChain createCompletion(Endpoint endpoint, CompletionRequest request) {
+        return new OpenAiChain(
+                Observable.create(emitter -> {
+                    try {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        headers.setBearerAuth(endpoint.getApiKey());
 
-  public EdgeChain<String> createEmbeddings(Endpoint endpoint, OpenAiEmbeddingRequest request) {
-    return new OpenAiChain(
-        Observable.create(
-            emitter -> {
-              try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.setBearerAuth(endpoint.getApiKey());
-                HttpEntity<OpenAiEmbeddingRequest> entity = new HttpEntity<>(request, headers);
+                        HttpEntity<CompletionRequest> entity = new HttpEntity<>(request, headers);
 
-                ResponseEntity<String> response =
-                    this.restTemplate.exchange(
-                        endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                        ResponseEntity<String> response = this.restTemplate.exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                        emitter.onNext(response.getBody());
+                        emitter.onComplete();
 
-                emitter.onNext(response.getBody());
-                emitter.onComplete();
+                    } catch (final Exception e) {
+                        emitter.onError(e);
+                    }
+                }), endpoint
+        );
+    }
 
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
-  }
+    public EdgeChain<String> createEmbeddings(Endpoint endpoint, OpenAiEmbeddingRequest request) {
+        return new OpenAiChain(
+                Observable.create(emitter -> {
+                    try {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        headers.setBearerAuth(endpoint.getApiKey());
+                        HttpEntity<OpenAiEmbeddingRequest> entity = new HttpEntity<>(request, headers);
+
+                        ResponseEntity<String> response = this.restTemplate.exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+
+                        emitter.onNext(response.getBody());
+                        emitter.onComplete();
+
+                    } catch (final Exception e) {
+                        emitter.onError(e);
+                    }
+                }), endpoint
+        );
+    }
+
 }

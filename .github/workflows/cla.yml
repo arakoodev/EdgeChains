@@ -12,7 +12,7 @@ jobs:
       - name: "CLA Assistant"
         if: (github.event.comment.body == 'recheck' || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA') || github.event_name == 'pull_request_target'
         # Beta Release
-        uses: contributor-assistant/github-action@v2.3.0
+        uses: contributor-assistant/github-action@v2.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # the below token should have repo scope and must be manually added by you in the repository's secret
@@ -22,7 +22,7 @@ jobs:
           path-to-document: 'https://github.com/arakoodev/.github/blob/main/CLA.md' # e.g. a CLA or a DCO document
           # branch should not be protected
           branch: 'main'
-          allowlist: user1,github-actions,bot*
+          allowlist: user1,bot*
           custom-pr-sign-comment: 'I have read the Arakoo CLA Document and I hereby sign the CLA'
           custom-notsigned-prcomment: 'Thank you for your submission, we really appreciate it. Before we can accept your contribution, we ask that you sign the [Arakoo Contributor License Agreement](https://github.com/arakoodev/.github/blob/main/CLA.md). You can sign the CLA by adding a new comment to this pull request and pasting exactly the following text.'
           remote-organization-name: arakoodev

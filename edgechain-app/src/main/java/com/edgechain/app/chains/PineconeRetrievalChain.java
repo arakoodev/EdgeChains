@@ -21,81 +21,51 @@ import java.util.StringTokenizer;
 
 public class PineconeRetrievalChain extends RetrievalChain {
 
-  public PineconeRetrievalChain(
-      Endpoint embeddingEndpoint,
-      Endpoint indexEndpoint,
-      OpenAiService openAiService,
-      IndexService indexService) {
-    super(embeddingEndpoint, indexEndpoint, openAiService, indexService);
-  }
 
-  public PineconeRetrievalChain(
-      Endpoint embeddingEndpoint,
-      Endpoint indexEndpoint,
-      Endpoint chatEndpoint,
-      OpenAiService openAiService,
-      PromptService promptService,
-      IndexService indexService) {
-    super(
-        embeddingEndpoint, indexEndpoint, chatEndpoint, openAiService, promptService, indexService);
-  }
+    public PineconeRetrievalChain(Endpoint embeddingEndpoint, Endpoint indexEndpoint, OpenAiService openAiService, IndexService indexService) {
+        super(embeddingEndpoint, indexEndpoint, openAiService, indexService);
+    }
 
-  public PineconeRetrievalChain(Endpoint indexEndpoint, IndexService indexService) {
-    super(indexEndpoint, indexService);
-  }
+    public PineconeRetrievalChain(Endpoint embeddingEndpoint, Endpoint indexEndpoint, Endpoint chatEndpoint, OpenAiService openAiService, PromptService promptService, IndexService indexService) {
+        super(embeddingEndpoint, indexEndpoint, chatEndpoint, openAiService, promptService, indexService);
+    }
 
-  @Override
-  public void upsert(String input) {
-    Completable.fromObservable(
-            Observable.just(
-                    this.getOpenAiService()
-                        .embeddings(new OpenAiEmbeddingsRequest(this.getEmbeddingEndpoint(), input))
-                        .getResponse())
-                .map(
-                    embeddingOutput ->
-                        this.getIndexService()
-                            .upsert(new PineconeRequest(this.getIndexEndpoint(), embeddingOutput))
-                            .getResponse()))
-        .blockingAwait();
-  }
+    public PineconeRetrievalChain(Endpoint indexEndpoint, IndexService indexService) {
+        super(indexEndpoint, indexService);
+    }
 
-  @Override
-  public Mono<List<ChainResponse>> query(String queryText, int topK) {
-    List<ChainResponse> chainResponseList = new ArrayList<>();
+    @Override
+    public void upsert(String input) {
+        Completable.fromObservable(
+                Observable.just(this.getOpenAiService().embeddings(new OpenAiEmbeddingsRequest(this.getEmbeddingEndpoint(), input)).getResponse())
+                        .map(embeddingOutput -> this.getIndexService().upsert(new PineconeRequest(this.getIndexEndpoint(), embeddingOutput)).getResponse())
+        ).blockingAwait();
+    }
 
-    return RxJava3Adapter.singleToMono(
-        Observable.just(
-                this.getOpenAiService()
-                    .embeddings(new OpenAiEmbeddingsRequest(this.getEmbeddingEndpoint(), queryText))
-                    .getResponse())
-            .map(
-                embeddingOutput -> {
-                  String promptResponse =
-                      this.getPromptService().getIndexQueryPrompt().getResponse();
+    @Override
+    public Mono<List<ChainResponse>> query(String queryText, int topK) {
+        List<ChainResponse> chainResponseList = new ArrayList<>();
 
-                  StringTokenizer tokenizer =
-                      new StringTokenizer(
-                          this.getIndexService()
-                              .query(
-                                  new PineconeRequest(
-                                      this.getIndexEndpoint(), embeddingOutput, topK))
-                              .getResponse(),
-                          "\n");
-                  while (tokenizer.hasMoreTokens()) {
-                    String input = tokenizer.nextToken() + "\n" + promptResponse;
-                    chainResponseList.add(
-                        this.getOpenAiService()
-                            .chatCompletion(new OpenAiChatRequest(this.getChatEndpoint(), input)));
-                  }
+        return RxJava3Adapter.singleToMono(
+                Observable.just(this.getOpenAiService().embeddings(new OpenAiEmbeddingsRequest(this.getEmbeddingEndpoint(), queryText)).getResponse())
+                        .map(embeddingOutput -> {
+                            String promptResponse = this.getPromptService().getIndexQueryPrompt().getResponse();
 
-                  return chainResponseList;
-                })
-            .subscribeOn(Schedulers.io())
-            .firstOrError());
-  }
+                            StringTokenizer tokenizer = new StringTokenizer(this.getIndexService().query(new PineconeRequest(this.getIndexEndpoint(), embeddingOutput, topK)).getResponse(),"\n");
+                            while (tokenizer.hasMoreTokens()) {
+                                String input = tokenizer.nextToken() + "\n" + promptResponse;
+                                chainResponseList.add(this.getOpenAiService().chatCompletion(new OpenAiChatRequest(this.getChatEndpoint(), input)));
+                            }
 
-  @Override
-  public ChainResponse delete() {
-    return this.getIndexService().delete(new PineconeRequest(this.getIndexEndpoint()));
-  }
+                            return chainResponseList;
+                        })
+                        .subscribeOn(Schedulers.io())
+                        .firstOrError()
+        );
+    }
+
+    @Override
+    public ChainResponse delete() {
+        return this.getIndexService().delete(new PineconeRequest(this.getIndexEndpoint()));
+    }
 }
