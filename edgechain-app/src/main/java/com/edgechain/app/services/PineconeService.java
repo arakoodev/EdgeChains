@@ -4,6 +4,7 @@ import com.edgechain.app.request.PineconeRequest;
 import com.edgechain.app.services.abstracts.IndexService;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,14 +15,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface PineconeService extends IndexService {
 
   @Override
-  @PostMapping("/upsert")
+  @PostMapping(value = "/upsert",consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse upsert(@RequestBody PineconeRequest request);
 
   @Override
-  @PostMapping("/query")
+  @PostMapping(value = "/query", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse query(@RequestBody PineconeRequest request);
 
   @Override
-  @DeleteMapping("/delete")
+  @DeleteMapping(value = "/delete", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse delete(@RequestBody PineconeRequest request);
 }
