@@ -15,13 +15,13 @@ import org.springframework.core.annotation.Order;
 @EnableFeignClients(basePackages = {"com.edgechain.app"})
 public class WebConfiguration {
 
-    @Bean
-    public Decoder decoder() {
-        return new JacksonDecoder();
-    }
+  @Bean
+  public Decoder decoder() {
+    return new JacksonDecoder();
+  }
 
-    @Bean
-    public Encoder encoder() {
-        return new JacksonEncoder();
-    }
+  @Bean
+  public Encoder encoder() {
+    return new JacksonEncoder();
+  }
 }

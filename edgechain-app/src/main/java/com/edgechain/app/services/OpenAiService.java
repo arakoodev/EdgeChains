@@ -14,13 +14,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Component
 public interface OpenAiService extends ToolService {
 
-  @PostMapping(value = "/chat-completion", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(
+      value = "/chat-completion",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse chatCompletion(@RequestBody OpenAiChatRequest request);
 
-  @PostMapping(value = "/completion", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(
+      value = "/completion",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse completion(@RequestBody OpenAiCompletionRequest request);
 
-  @PostMapping(value = "/embeddings", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(
+      value = "/embeddings",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse embeddings(@RequestBody OpenAiEmbeddingsRequest request);
-
 }
