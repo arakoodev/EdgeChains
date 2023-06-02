@@ -63,11 +63,11 @@ public class JbangCommand implements Runnable {
       String classPath = extractClassPathFromOutput(bufferedReader);
       String mainClass = null;
 
-      if(classPath.contains("EdgeChainApplication.java")) {
+      if (classPath.contains("EdgeChainApplication.java")) {
         mainClass = "com.edgechain.app.EdgeChainApplication";
       }
 
-      if(classPath.contains("EdgeChainServiceApplication.java")) {
+      if (classPath.contains("EdgeChainServiceApplication.java")) {
         mainClass = "com.edgechain.service.EdgeChainServiceApplication";
       }
 
@@ -92,7 +92,7 @@ public class JbangCommand implements Runnable {
     String classPath = null;
     final String pattern = "-classpath '";
     while ((line = bufferedReader.readLine()) != null) {
-//      System.out.println("Line: " + line); // added debug message
+      //      System.out.println("Line: " + line); // added debug message
       int startIndex = line.indexOf(pattern);
       if (startIndex > -1) {
         startIndex += pattern.length();

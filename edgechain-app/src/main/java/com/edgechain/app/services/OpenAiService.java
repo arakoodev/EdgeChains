@@ -8,19 +8,17 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @FeignClient(name = "openAiService", url = "${feign.url}/openai")
 @Component
 public interface OpenAiService extends ToolService {
 
-    @PostMapping("/chat-completion")
-    ChainResponse chatCompletion(@RequestBody OpenAiChatRequest request);
+  @PostMapping("/chat-completion")
+  ChainResponse chatCompletion(@RequestBody OpenAiChatRequest request);
 
-    @PostMapping("/completion")
-    ChainResponse completion(@RequestBody OpenAiCompletionRequest request);
+  @PostMapping("/completion")
+  ChainResponse completion(@RequestBody OpenAiCompletionRequest request);
 
-    @PostMapping("/embeddings")
-    ChainResponse embeddings(@RequestBody OpenAiEmbeddingsRequest request);
-
+  @PostMapping("/embeddings")
+  ChainResponse embeddings(@RequestBody OpenAiEmbeddingsRequest request);
 }

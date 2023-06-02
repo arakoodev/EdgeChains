@@ -16,19 +16,21 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/plugins")
 public class PluginController {
 
-    @GetMapping("/wiki")
-    public Mono<ChainResponse> wikiContent(@RequestParam("query") String query) {
-        WikiProvider wikiProvider = new WikiProvider();
-        ChainWrapper wrapper = new ChainWrapper();
-        return RxJava3Adapter.singleToMono(wrapper.chains(new ChainRequest(query), wikiProvider).toSingleWithRetry());
-    }
+  @GetMapping("/wiki")
+  public Mono<ChainResponse> wikiContent(@RequestParam("query") String query) {
+    WikiProvider wikiProvider = new WikiProvider();
+    ChainWrapper wrapper = new ChainWrapper();
+    return RxJava3Adapter.singleToMono(
+        wrapper.chains(new ChainRequest(query), wikiProvider).toSingleWithRetry());
+  }
 
-    @PostMapping("/with-api")
-    public Mono<ChainResponse> getAPI(@RequestBody PluginAPIRequest request) {
-        OpenAiCompletionProvider provider = new OpenAiCompletionProvider(request.getEndpoint());
-        ChainProvider chainProvider = new PluginAPIProvider(provider, request.getPluginEndpoint(), request.getSpecEndpoint());
-        ChainWrapper wrapper  = new ChainWrapper();
-        return RxJava3Adapter.singleToMono(wrapper.chains(new ChainRequest(request.getInput()),chainProvider).toSingleWithRetry());
-    }
-
+  @PostMapping("/with-api")
+  public Mono<ChainResponse> getAPI(@RequestBody PluginAPIRequest request) {
+    OpenAiCompletionProvider provider = new OpenAiCompletionProvider(request.getEndpoint());
+    ChainProvider chainProvider =
+        new PluginAPIProvider(provider, request.getPluginEndpoint(), request.getSpecEndpoint());
+    ChainWrapper wrapper = new ChainWrapper();
+    return RxJava3Adapter.singleToMono(
+        wrapper.chains(new ChainRequest(request.getInput()), chainProvider).toSingleWithRetry());
+  }
 }
