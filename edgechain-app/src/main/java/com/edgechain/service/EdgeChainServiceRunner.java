@@ -19,7 +19,6 @@ import java.io.FileInputStream;
 @Import(EdgeChainAutoConfiguration.class)
 public class EdgeChainServiceRunner  {
 
-
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @PostConstruct
@@ -28,19 +27,22 @@ public class EdgeChainServiceRunner  {
   }
 
   public static void main(String[] args) {
-    System.setProperty("spring.application.name", "edgechain-service");
+
     System.setProperty("server.port", "8002");
 
     System.setProperty("spring.data.redis.host","");
     System.setProperty("spring.data.redis.port","");
     System.setProperty("spring.data.redis.username","");
     System.setProperty("spring.data.redis.password", "");
+    System.setProperty("spring.data.redis.connect-timeout","");
+
+
 
     SpringApplication.run(EdgeChainServiceRunner.class, args);
   }
 
   private void readEmbeddingDoc2VecModel() throws Exception {
-    String modelPath = "R:\\EdgeChain\\edgechain-app\\model\\doc_vectors.bin";
+    String modelPath = "Your Directory";
 
     File file = new File(modelPath);
 
