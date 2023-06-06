@@ -1,7 +1,7 @@
 package com.edgechain.app.chains;
 
 import com.edgechain.lib.openai.endpoint.Endpoint;
-import com.edgechain.app.request.OpenAiChatRequest;
+import com.edgechain.lib.request.OpenAiChatRequest;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PluginService;
 import com.edgechain.app.services.PromptService;
