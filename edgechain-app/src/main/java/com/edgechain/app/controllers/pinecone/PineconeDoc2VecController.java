@@ -2,7 +2,6 @@ package com.edgechain.app.controllers.pinecone;
 
 import com.edgechain.app.chains.abstracts.RetrievalChain;
 import com.edgechain.app.chains.retrieval.doc2vec.PineconeDoc2VecRetrievalChain;
-import com.edgechain.app.chains.retrieval.openai.PineconeOpenAiRetrievalChain;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PromptService;
 import com.edgechain.app.services.embeddings.EmbeddingService;
@@ -15,10 +14,7 @@ import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 
@@ -79,12 +75,12 @@ public class PineconeDoc2VecController {
         RetrievalChain retrievalChain = new PineconeDoc2VecRetrievalChain
                 (pineconeEndpoint, chatEndpoint, embeddingService, pineconeService, promptService, openAiService );
 
-        return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")), redisHistoryContextService);
+        return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
     }
 
 
-    @PostMapping("/query/context-json")
-    public Mono<List<ChainResponse>> queryContextJson(@RequestBody HashMap<String, String> mapper) {
+    @PostMapping("/query/context/{contextId}")
+    public Mono<ChainResponse> queryContextJson(@PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
         Endpoint pineconeEndpoint = new Endpoint(
                 PINECONE_QUERY_API,
@@ -105,18 +101,15 @@ public class PineconeDoc2VecController {
                 new PineconeDoc2VecRetrievalChain
                         (pineconeEndpoint, chatEndpoint, embeddingService, pineconeService, promptService, openAiService );
 
-        return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")), redisHistoryContextService);
+        return retrievalChain.query(
+                contextId,
+                redisHistoryContextService,
+                mapper.get("query"));
     }
 
-    @PostMapping("/query/context-file")
-    public Mono<ChainResponse> queryContextFile(@RequestBody HashMap<String, String> mapper) {
+    @PostMapping("/query/context/file/{contextId}")
+    public Mono<ChainResponse> queryContextFile(@PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
-        Endpoint embeddingEndpoint =
-                new Endpoint(
-                        OPENAI_EMBEDDINGS_API,
-                        OPENAI_AUTH_KEY,
-                        "text-embedding-ada-002",
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
         Endpoint pineconeEndpoint = new Endpoint(
                 PINECONE_QUERY_API,
@@ -138,10 +131,10 @@ public class PineconeDoc2VecController {
                         (pineconeEndpoint, chatEndpoint, embeddingService, pineconeService, promptService, openAiService );
 
         return retrievalChain.query(
-                mapper.get("query"),
-                Integer.parseInt(mapper.get("topK")),
+                contextId,
                 redisHistoryContextService,
-                new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename")));
+                new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename"))
+        );
 
     }
 

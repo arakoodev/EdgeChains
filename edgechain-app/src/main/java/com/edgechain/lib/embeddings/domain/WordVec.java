@@ -23,6 +23,11 @@ public class WordVec implements Serializable {
     this.score = score;
   }
 
+  public WordVec(String id, String score) {
+    this.id = id;
+    this.score = score;
+  }
+
   public String getId() {
     return id;
   }

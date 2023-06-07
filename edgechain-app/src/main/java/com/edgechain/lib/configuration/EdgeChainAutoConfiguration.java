@@ -6,7 +6,7 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 
 
 @Configuration
-@ComponentScan(basePackages = {"com.edgechain.lib"})
+@ComponentScan(basePackages = {"com.edgechain.lib", "com.edgechain.lib.configuration"})
 @EnableRedisRepositories(basePackages = {"com.edgechain.lib.context.repository"})
 public class EdgeChainAutoConfiguration {
 

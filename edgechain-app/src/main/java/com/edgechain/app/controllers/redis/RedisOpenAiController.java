@@ -1,7 +1,6 @@
 package com.edgechain.app.controllers.redis;
 
 import com.edgechain.app.chains.abstracts.RetrievalChain;
-import com.edgechain.app.chains.retrieval.openai.PineconeOpenAiRetrievalChain;
 import com.edgechain.app.chains.retrieval.openai.RedisOpenAiRetrievalChain;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PromptService;
@@ -31,24 +30,18 @@ import static com.edgechain.app.constants.WebConstants.*;
 @RequestMapping("/v1/redis/openai")
 public class RedisOpenAiController {
 
-    @Autowired
-    private EmbeddingService embeddingService;
-    @Autowired
-    private RedisService redisService;
-    @Autowired
-    private PromptService promptService;
-    @Autowired
-    private OpenAiService openAiService;
-    @Autowired
-    private RedisHistoryContextService redisHistoryContextService;
-    @Autowired
-    private PdfReader pdfReader;
+    @Autowired private EmbeddingService embeddingService;
+    @Autowired private RedisService redisService;
+    @Autowired private PromptService promptService;
+    @Autowired private OpenAiService openAiService;
+    @Autowired private RedisHistoryContextService redisHistoryContextService;
+    @Autowired private PdfReader pdfReader;
 
 
-    @PostMapping(value = "/upsertByChunkSize", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void upsertByChunk(@RequestParam(value = "file") MultipartFile file) {
 
-        String[] arr = pdfReader.readByChunkSize(file, 512);
+        String[] arr = pdfReader.readBySentence(file);
 
         IntStream.range(0, arr.length)
                 .parallel()
@@ -98,8 +91,8 @@ public class RedisOpenAiController {
         return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
     }
 
-    @PostMapping("/query/context-json")
-    public Mono<List<ChainResponse>> queryContextJson(@RequestBody HashMap<String, String> mapper) {
+    @PostMapping("/query/context/{contextId}")
+    public Mono<ChainResponse> queryContextJson(@PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
         Endpoint embeddingEndpoint =
                 new Endpoint(
@@ -108,11 +101,6 @@ public class RedisOpenAiController {
                         "text-embedding-ada-002",
                         new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint pineconeEndpoint = new Endpoint(
-                PINECONE_QUERY_API,
-                PINECONE_AUTH_KEY,
-                new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS)
-        );
 
         Endpoint chatEndpoint =
                 new Endpoint(
@@ -133,12 +121,14 @@ public class RedisOpenAiController {
                         openAiService
                 );
 
-
-        return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")), redisHistoryContextService);
+        return retrievalChain.query(
+                contextId,
+                redisHistoryContextService,
+                mapper.get("query"));
     }
 
-    @PostMapping("/query/context-file")
-    public Mono<ChainResponse> queryContextFile(@RequestBody HashMap<String, String> mapper) {
+    @PostMapping("/query/context/file/{contextId}")
+    public Mono<ChainResponse> queryContextFile(@PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
         Endpoint embeddingEndpoint =
                 new Endpoint(
@@ -146,12 +136,6 @@ public class RedisOpenAiController {
                         OPENAI_AUTH_KEY,
                         "text-embedding-ada-002",
                         new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-        Endpoint pineconeEndpoint = new Endpoint(
-                PINECONE_QUERY_API,
-                PINECONE_AUTH_KEY,
-                new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS)
-        );
 
         Endpoint chatEndpoint =
                 new Endpoint(
@@ -172,12 +156,11 @@ public class RedisOpenAiController {
                         openAiService
                 );
 
-
         return retrievalChain.query(
-                mapper.get("query"),
-                Integer.parseInt(mapper.get("topK")),
+                contextId,
                 redisHistoryContextService,
-                new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename")));
+                new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename"))
+        );
 
     }
 }

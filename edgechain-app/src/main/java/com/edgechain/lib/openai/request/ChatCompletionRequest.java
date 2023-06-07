@@ -9,6 +9,9 @@ public class ChatCompletionRequest {
   private Double temperature;
   private List<ChatMessage> messages;
 
+  public ChatCompletionRequest() {
+  }
+
   public ChatCompletionRequest(String model, List<ChatMessage> messages, Double temperature) {
     this.model = model;
     this.messages = messages;

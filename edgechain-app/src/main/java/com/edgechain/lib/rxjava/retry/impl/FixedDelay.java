@@ -12,8 +12,8 @@ public class FixedDelay extends RetryPolicy {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private int maxRetries = 4;
-  private int retryDelay = 3;
+  private int maxRetries = 3;
+  private int retryDelay = 5;
   private TimeUnit unit = TimeUnit.SECONDS;
   private int retryCount;
 

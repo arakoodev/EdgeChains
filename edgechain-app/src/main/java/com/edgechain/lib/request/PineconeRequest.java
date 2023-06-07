@@ -5,6 +5,7 @@ import com.edgechain.lib.openai.endpoint.Endpoint;
 import java.util.List;
 
 public class PineconeRequest {
+
   private Endpoint endpoint;
   private String input;
   private List<String> vectorIds;

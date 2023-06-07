@@ -1,5 +1,11 @@
 package com.edgechain.lib.chunk;
 
+import com.edgechain.lib.constants.LibConstants;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.stream.IntStream;
 
 public class Chunker {
@@ -19,31 +25,19 @@ public class Chunker {
                 .toArray(String[]::new);
     }
 
-//    public String[] bySentence(String input) {
-//
-//        StanfordCoreNLP stanfordCoreNLP = Pipeline.getPipeline();
-//
-//        CoreDocument coreDocument = new CoreDocument(input);
-//
-//        stanfordCoreNLP.annotate(coreDocument);
-//
-//        List<CoreSentence> sentences = coreDocument.sentences();
-//
-//        return sentences.stream().parallel().map(CoreSentence::text).toArray(String[]::new);
-//    }
-//
-//
-//    public String[] bySentence(String input, int limit) {
-//
-//        StanfordCoreNLP stanfordCoreNLP = Pipeline.getPipeline();
-//
-//        CoreDocument coreDocument = new CoreDocument(input);
-//
-//        stanfordCoreNLP.annotate(coreDocument);
-//
-//        List<CoreSentence> sentences = coreDocument.sentences();
-//
-//        return sentences.stream().parallel().map(c -> c.text().length() > limit ? c.text().substring(0, limit) : c.text() ).toArray(String[]::new);
-//    }
+    public String[] bySentence(String input)  {
+
+        SentenceModel model = null;
+        try {
+            model = new SentenceModel(LibConstants.sentenceModel);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        SentenceDetectorME sdetector = new SentenceDetectorME(model);
+
+        // detect sentences in the paragraph
+        return sdetector.sentDetect(input);
+    }
+
 
 }

@@ -1,10 +1,14 @@
 package com.edgechain.lib.index.services.impl;
 
 import com.edgechain.lib.embeddings.domain.WordVec;
+import com.edgechain.lib.index.responses.RedisDocument;
+import com.edgechain.lib.index.responses.RedisProperty;
+import com.edgechain.lib.index.responses.RedisResponse;
 import com.edgechain.lib.index.services.IndexChainService;
 import com.edgechain.lib.openai.chains.IndexChain;
 import com.edgechain.lib.openai.endpoint.Endpoint;
 import com.edgechain.lib.rxjava.response.ChainResponse;
+import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.utils.FloatUtils;
 import com.edgechain.lib.utils.JsonUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -44,7 +48,7 @@ public class RedisIndexChain extends IndexChainService {
                        map.put("values".getBytes(), FloatUtils.toByteArray(FloatUtils.toFloatArray(wordVec.getValues())));
                        long v = jedisPooled.hset((PREFIXES + UUID.randomUUID()).getBytes(), map);
 
-                       emitter.onNext(new ChainResponse("Created ~ "+v));
+                        emitter.onNext(new ChainResponse("Created ~ "+v));
                         emitter.onComplete();
                    }catch (final Exception e){
                        emitter.onError(e);
@@ -54,38 +58,33 @@ public class RedisIndexChain extends IndexChainService {
     }
 
     @Override
-    public IndexChain query(WordVec wordVec, int topK) {
+    public EdgeChain<List<WordVec>> query(WordVec wordVec, int topK) {
 
-        return new IndexChain(Observable.create(emitter -> {
+        return new EdgeChain<>(Observable.create(emitter -> {
             try {
                 Query query = new Query("*=>[KNN $k @values $values]")
                         .addParam("values", FloatUtils.toByteArray(FloatUtils.toFloatArray(wordVec.getValues())))
                         .addParam("k", topK)
-//                        .returnFields("id", "__values_score")
-                        .returnFields("id")
+                        .returnFields("id", "__values_score")
                         .setSortBy("__values_score", false)
                         .dialect(2);
+
                 SearchResult searchResult = jedisPooled.ftSearch(INDEX_NAME, query);
 
                 String body = JsonUtils.convertToString(searchResult);
-                System.out.println(body);
 
-                StringBuilder stringBuilder = new StringBuilder();
+                RedisResponse redisResponse = JsonUtils.convertToObject(body, RedisResponse.class);
 
-                List<Document> documents = searchResult.getDocuments();
-                for(Document d: documents){
+                Iterator<RedisDocument> iterator = redisResponse.getDocuments().iterator();
 
-                    Iterator<Map.Entry<String, Object>> iterator = d.getProperties().iterator();
+                List<WordVec> wordVecList = new ArrayList<>();
 
-                    while (iterator.hasNext()) {
-                        Map.Entry<String, Object> entry = iterator.next();
-                        stringBuilder.append(entry.getValue()).append("\n");
-                    }
-
+                while (iterator.hasNext()) {
+                    ArrayList<RedisProperty> properties = iterator.next().getProperties();
+                    wordVecList.add(new WordVec(properties.get(1).getId(), String.valueOf(properties.get(0).get__values_score())));
                 }
-                stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 
-                emitter.onNext(new ChainResponse(stringBuilder.toString()));
+                emitter.onNext(wordVecList);
                 emitter.onComplete();
 
             }catch (final Exception e){
@@ -133,3 +132,18 @@ public class RedisIndexChain extends IndexChainService {
 
     }
 }
+
+///                StringBuilder stringBuilder = new StringBuilder();
+//
+//                List<RedisDocument> documents = searchResult.getDocuments();
+//                for(RedisDocument d: documents){
+//
+//                    Iterator<Map.Entry<String, Object>> iterator = d.getProperties().iterator();
+//
+//                    while (iterator.hasNext()) {
+//                        Map.Entry<String, Object> entry = iterator.next();
+//                        stringBuilder.append(entry.getValue()).append("\n");
+//                    }
+//
+//                }
+//                stringBuilder.deleteCharAt(stringBuilder.length() - 1);

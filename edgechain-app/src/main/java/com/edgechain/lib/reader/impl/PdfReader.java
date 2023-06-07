@@ -31,37 +31,21 @@ public class PdfReader extends Reader {
         }
     }
 
-//    @Override
-//    public String[] readBySentence(MultipartFile file) {
-//        try {
-//            BodyContentHandler contentHandler = new BodyContentHandler(-1);
-//            Metadata data = new Metadata();
-//            ParseContext context = new ParseContext();
-//            PDFParser pdfparser = new PDFParser();
-//            pdfparser.parse(file.getInputStream(), contentHandler, data, context);
-//
-//            Chunker chunker = new Chunker();
-//            return chunker.bySentence(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
-//
-//        } catch (final Exception e) {
-//            throw new RuntimeException(e.getMessage());
-//        }
-//    }
-//
-//    @Override
-//    public String[] readBySentence(MultipartFile file, int limit) {
-//        try {
-//            BodyContentHandler contentHandler = new BodyContentHandler(-1);
-//            Metadata data = new Metadata();
-//            ParseContext context = new ParseContext();
-//            PDFParser pdfparser = new PDFParser();
-//            pdfparser.parse(file.getInputStream(), contentHandler, data, context);
-//
-//            Chunker chunker = new Chunker();
-//            return chunker.bySentence(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "), limit);
-//
-//        } catch (final Exception e) {
-//            throw new RuntimeException(e.getMessage());
-//        }
+    @Override
+    public String[] readBySentence(MultipartFile file) {
+    try {
+            BodyContentHandler contentHandler = new BodyContentHandler(-1);
+            Metadata data = new Metadata();
+            ParseContext context = new ParseContext();
+            PDFParser pdfparser = new PDFParser();
+            pdfparser.parse(file.getInputStream(), contentHandler, data, context);
+
+            Chunker chunker = new Chunker();
+            return chunker.bySentence(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
+
+        } catch (final Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
 
 }

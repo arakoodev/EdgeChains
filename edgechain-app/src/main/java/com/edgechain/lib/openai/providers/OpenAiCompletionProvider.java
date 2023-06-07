@@ -28,6 +28,6 @@ public class OpenAiCompletionProvider extends ChainProvider {
 
     return new OpenAiClient()
         .createCompletion(endpoint, completionRequest)
-        .transform(ChainResponse::new);
+        .transform(s -> new ChainResponse(s.getChoices().get(0).getText()));
   }
 }

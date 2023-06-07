@@ -31,43 +31,30 @@ import static com.edgechain.app.constants.WebConstants.*;
 @RequestMapping("/v1/redis/doc2vec")
 public class RedisDoc2VecController {
 
-    @Autowired
-    private EmbeddingService embeddingService;
-    @Autowired
-    private RedisService redisService;
-    @Autowired
-    private PromptService promptService;
-    @Autowired
-    private OpenAiService openAiService;
-    @Autowired
-    private RedisHistoryContextService redisHistoryContextService;
-    @Autowired
-    private PdfReader pdfReader;
+    @Autowired private EmbeddingService embeddingService;
+    @Autowired private RedisService redisService;
+    @Autowired private PromptService promptService;
+    @Autowired private OpenAiService openAiService;
+    @Autowired private RedisHistoryContextService redisHistoryContextService;
+    @Autowired private PdfReader pdfReader;
 
-
-    @PostMapping(value = "/upsertByChunkSize", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void upsertByChunk(@RequestParam(value = "file") MultipartFile file) {
 
-        String[] arr = pdfReader.readByChunkSize(file, 512);
+        String[] arr = pdfReader.readByChunkSize(file,512);
 
         IntStream.range(0, arr.length)
                 .parallel()
                 .forEach(
                         i -> {
                             RetrievalChain retrievalChain = new RedisDoc2VecRetrievalChain(embeddingService, redisService);
-
                             retrievalChain.upsert(arr[i]);
                         });
     }
 
     @PostMapping("/query")
     public Mono<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
-        Endpoint embeddingEndpoint =
-                new Endpoint(
-                        OPENAI_EMBEDDINGS_API,
-                        OPENAI_AUTH_KEY,
-                        "text-embedding-ada-002",
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
 
         Endpoint chatEndpoint =
                 new Endpoint(
@@ -78,8 +65,7 @@ public class RedisDoc2VecController {
                         0.3,
                         new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        RetrievalChain retrievalChain = new RedisOpenAiRetrievalChain(
-                embeddingEndpoint,
+        RetrievalChain retrievalChain = new RedisDoc2VecRetrievalChain(
                 chatEndpoint,
                 embeddingService,
                 redisService,
@@ -90,21 +76,8 @@ public class RedisDoc2VecController {
         return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
     }
 
-    @PostMapping("/query/context-json")
-    public Mono<List<ChainResponse>> queryContextJson(@RequestBody HashMap<String, String> mapper) {
-
-        Endpoint embeddingEndpoint =
-                new Endpoint(
-                        OPENAI_EMBEDDINGS_API,
-                        OPENAI_AUTH_KEY,
-                        "text-embedding-ada-002",
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-        Endpoint pineconeEndpoint = new Endpoint(
-                PINECONE_QUERY_API,
-                PINECONE_AUTH_KEY,
-                new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS)
-        );
+    @PostMapping("/query/context/{contextId}")
+    public Mono<ChainResponse> queryContextJson(@PathVariable String contextId,@RequestBody HashMap<String, String> mapper) {
 
         Endpoint chatEndpoint =
                 new Endpoint(
@@ -115,35 +88,22 @@ public class RedisDoc2VecController {
                         0.6,
                         new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        RetrievalChain retrievalChain =
-                new RedisOpenAiRetrievalChain(
-                        embeddingEndpoint,
-                        chatEndpoint,
-                        embeddingService,
-                        redisService,
-                        promptService,
-                        openAiService
-                );
+        RetrievalChain retrievalChain = new RedisDoc2VecRetrievalChain(
+                chatEndpoint,
+                embeddingService,
+                redisService,
+                promptService,
+                openAiService
+        );
 
-
-        return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")), redisHistoryContextService);
+        return retrievalChain.query(
+                contextId,
+                redisHistoryContextService,
+                mapper.get("query"));
     }
 
-    @PostMapping("/query/context-file")
-    public Mono<ChainResponse> queryContextFile(@RequestBody HashMap<String, String> mapper) {
-
-        Endpoint embeddingEndpoint =
-                new Endpoint(
-                        OPENAI_EMBEDDINGS_API,
-                        OPENAI_AUTH_KEY,
-                        "text-embedding-ada-002",
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-        Endpoint pineconeEndpoint = new Endpoint(
-                PINECONE_QUERY_API,
-                PINECONE_AUTH_KEY,
-                new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS)
-        );
+    @PostMapping("/query/context/file/{contextId}")
+    public Mono<ChainResponse> queryContextFile(@PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
         Endpoint chatEndpoint =
                 new Endpoint(
@@ -154,22 +114,19 @@ public class RedisDoc2VecController {
                         0.7,
                         new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        RetrievalChain retrievalChain =
-                new RedisOpenAiRetrievalChain(
-                        embeddingEndpoint,
-                        chatEndpoint,
-                        embeddingService,
-                        redisService,
-                        promptService,
-                        openAiService
-                );
-
+        RetrievalChain retrievalChain = new RedisDoc2VecRetrievalChain(
+                chatEndpoint,
+                embeddingService,
+                redisService,
+                promptService,
+                openAiService
+        );
 
         return retrievalChain.query(
-                mapper.get("query"),
-                Integer.parseInt(mapper.get("topK")),
+                contextId,
                 redisHistoryContextService,
-                new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename")));
+                new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename"))
+        );
 
     }
 }

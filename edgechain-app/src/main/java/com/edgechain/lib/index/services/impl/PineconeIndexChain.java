@@ -5,6 +5,7 @@ import com.edgechain.lib.embeddings.domain.WordVec;
 import com.edgechain.lib.index.services.IndexChainService;
 import com.edgechain.lib.openai.endpoint.Endpoint;
 import com.edgechain.lib.rxjava.response.ChainResponse;
+import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
@@ -67,9 +68,9 @@ public class PineconeIndexChain extends IndexChainService {
   }
 
   @Override
-  public IndexChain query(WordVec wordVec, int topK) {
+  public EdgeChain<List<WordVec>> query(WordVec wordVec, int topK) {
 
-    return new IndexChain(
+    return new EdgeChain<>(
             Observable.create(
                     emitter -> {
                       try {
@@ -90,18 +91,8 @@ public class PineconeIndexChain extends IndexChainService {
                                 new RestTemplate()
                                         .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
 
-                        Iterator<WordVec> iterator = this.parsePredict(response.getBody()).iterator();
 
-                        StringBuilder stringBuilder = new StringBuilder();
-
-                        while (iterator.hasNext()) {
-                          stringBuilder.append(iterator.next().getId());
-                          if (iterator.hasNext()) {
-                            stringBuilder.append("\n");
-                          }
-                        }
-
-                        emitter.onNext(new ChainResponse(stringBuilder.toString()));
+                        emitter.onNext(this.parsePredict(response.getBody()));
 
                       } catch (final Exception e) {
                         emitter.onError(e);

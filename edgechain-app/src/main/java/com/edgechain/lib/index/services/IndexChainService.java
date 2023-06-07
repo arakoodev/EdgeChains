@@ -2,6 +2,7 @@ package com.edgechain.lib.index.services;
 
 import com.edgechain.lib.embeddings.domain.WordVec;
 import com.edgechain.lib.openai.chains.IndexChain;
+import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 import java.io.Serializable;
 import java.util.List;
@@ -12,7 +13,7 @@ public abstract class IndexChainService implements Serializable {
 
   public abstract IndexChain upsert(WordVec wordVec);
 
-  public abstract IndexChain query(WordVec wordVec, int topK);
+  public abstract EdgeChain<List<WordVec>> query(WordVec wordVec, int topK);
 
   public abstract IndexChain deleteByIds(List<String> vectorIds);
 

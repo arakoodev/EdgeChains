@@ -1,57 +1,124 @@
 package com.edgechain.lib.context.services.impl;
 
-import com.edgechain.lib.context.HistoryContext;
-import com.edgechain.lib.context.repository.RedisHistoryContextRepository;
+import com.edgechain.lib.context.domain.HistoryContext;
+import com.edgechain.lib.context.domain.HistoryContextRequest;
+import com.edgechain.lib.context.domain.HistoryContextResponse;
 import com.edgechain.lib.context.services.HistoryContextService;
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Single;
+import com.edgechain.lib.rxjava.response.ChainResponse;
+import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import io.reactivex.rxjava3.core.Observable;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
+
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
-@Service
+@Repository
 public class RedisHistoryContextService implements HistoryContextService {
 
-    @Autowired private RedisHistoryContextRepository redisHistoryContextRepository;
+    private static final String PREFIX = "historycontext-";
+
+    @Autowired private RedisTemplate redisTemplate;
+
+    @Value("${spring.redis.ttl}")
+    private long ttl;
 
     @Override
-    public Single<HistoryContext> put(String value) {
+    public EdgeChain<HistoryContextResponse> create(HistoryContextRequest contextRequest) {
+        return new EdgeChain<>(
+                Observable.create(emitter -> {
+                    try{
+                        String key = PREFIX + UUID.randomUUID();
+
+                        HistoryContext context = new HistoryContext();
+                        context.setResponse("");
+                        context.setMaxTokens(contextRequest.getMaxTokens());
+
+                        this.redisTemplate.opsForValue().set(key, context);
+                        this.redisTemplate.expire(key, ttl, TimeUnit.SECONDS);
 
 
-        return Single.create(emitter ->  {
-            try{
-                HistoryContext context = new HistoryContext();
-                context.setValue(value);
+                        HistoryContextResponse response = new HistoryContextResponse();
+                        response.setId(key);
+                        response.setMessage("Session is created. Now you can start conversational question and answer");
+                        response.setMaxTokens(contextRequest.getMaxTokens());
 
-                HistoryContext returnValue = redisHistoryContextRepository.save(context);
-                System.out.println(returnValue);
+                        emitter.onNext(response);
+                        emitter.onComplete();
 
-                emitter.onSuccess(returnValue);
-            }catch (final Exception e){
-                emitter.onError(e);
-            }
-        });
+                    }catch (final Exception e){
+                        emitter.onError(e);
+                    }
+                })
+        );
     }
 
     @Override
-    public Single<HistoryContext> findById(String id) {
-        return Single.create(emitter -> emitter.onSuccess(
-                redisHistoryContextRepository.findById(id).orElseThrow(() -> new RuntimeException("Context id is not found"))
+    public EdgeChain<HistoryContext> put(String key, String response) {
+        return new EdgeChain<>(
+                Observable.create(emitter -> {
+                    try{
+
+                        HistoryContext historyContext = this.get(key).toSingleWithRetry().blockingGet();
+                        historyContext.setResponse(response);
+
+                        this.redisTemplate.opsForValue().set(key, historyContext);
+                        this.redisTemplate.expire(key, ttl, TimeUnit.SECONDS);
+
+                        System.out.println("Updated");
+
+                        emitter.onNext(historyContext);
+                        emitter.onComplete();
+
+                    }catch (final Exception e){
+                        emitter.onError(e);
+                    }
+                })
+        );
+    }
+
+    @Override
+    public EdgeChain<HistoryContext> get(String key) {
+        return new EdgeChain<>(
+                Observable.create(emitter -> {
+                  try{
+                      Boolean b = this.redisTemplate.hasKey(key);
+                      if (Boolean.TRUE.equals(b)) {
+                          emitter.onNext(Objects.requireNonNull((HistoryContext) this.redisTemplate.opsForValue().get(key) ));
+                          emitter.onComplete();
+                      } else {
+                          throw new RuntimeException("Redis key isn't found");
+                      }
+
+                  }catch (final Exception e){
+                      emitter.onError(e);
+                  }
+                })
+        );
+    }
+
+    @Override
+    public EdgeChain<ChainResponse> delete(String key) {
+
+        return new EdgeChain<>(Observable.create(
+                emitter -> {
+                    try{
+                        this.get(key).toSingleWithRetry().blockingGet();
+                        this.redisTemplate.delete(key);
+
+                        emitter.onNext(new ChainResponse("Session completed ~ "+key));
+                        emitter.onComplete();
+
+                    }catch (final Exception e){
+                        emitter.onError(e);
+                    }
+                }
         ));
-    }
 
-    @Override
-    public Completable deleteAllByIds(List<String> ids) {
-        return Completable.create(emitter -> {
-            try{
-                redisHistoryContextRepository.deleteAllById(ids);
-                emitter.onComplete();
-            }catch (final Exception e){
-                emitter.onError(e);
-            }
-        });
     }
-
 }

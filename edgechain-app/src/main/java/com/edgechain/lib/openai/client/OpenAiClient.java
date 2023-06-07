@@ -1,10 +1,12 @@
 package com.edgechain.lib.openai.client;
 
-import com.edgechain.lib.openai.chains.OpenAiChain;
 import com.edgechain.lib.embeddings.domain.openai.OpenAiEmbeddingRequest;
+import com.edgechain.lib.embeddings.domain.openai.OpenAiEmbeddingResponse;
 import com.edgechain.lib.openai.endpoint.Endpoint;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
 import com.edgechain.lib.openai.request.CompletionRequest;
+import com.edgechain.lib.openai.response.ChatCompletionResponse;
+import com.edgechain.lib.openai.response.CompletionResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
 import org.springframework.http.*;
@@ -18,9 +20,9 @@ public class OpenAiClient {
 
   private final RestTemplate restTemplate = new RestTemplate();
 
-  public OpenAiChain createChatCompletion(Endpoint endpoint, ChatCompletionRequest request) {
+  public EdgeChain<ChatCompletionResponse> createChatCompletion(Endpoint endpoint, ChatCompletionRequest request) {
 
-    return new OpenAiChain(
+    return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
@@ -37,11 +39,12 @@ public class OpenAiClient {
                 System.out.println(entity.getBody());
 
                 // Send the POST request
-                ResponseEntity<String> response =
-                    restTemplate.exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                ResponseEntity<ChatCompletionResponse> response =
+                    restTemplate.exchange(endpoint.getUrl(), HttpMethod.POST, entity, ChatCompletionResponse.class);
 
-                emitter.onNext(Objects.requireNonNullElse(response.getBody(), ""));
+                emitter.onNext(Objects.requireNonNull(response.getBody()));
                 emitter.onComplete();
+
               } catch (final Exception e) {
                 emitter.onError(e);
               }
@@ -49,8 +52,8 @@ public class OpenAiClient {
         endpoint);
   }
 
-  public OpenAiChain createCompletion(Endpoint endpoint, CompletionRequest request) {
-    return new OpenAiChain(
+  public EdgeChain<CompletionResponse> createCompletion(Endpoint endpoint, CompletionRequest request) {
+    return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
@@ -60,10 +63,10 @@ public class OpenAiClient {
 
                 HttpEntity<CompletionRequest> entity = new HttpEntity<>(request, headers);
 
-                ResponseEntity<String> response =
+                ResponseEntity<CompletionResponse> response =
                     this.restTemplate.exchange(
-                        endpoint.getUrl(), HttpMethod.POST, entity, String.class);
-                emitter.onNext(response.getBody());
+                        endpoint.getUrl(), HttpMethod.POST, entity, CompletionResponse.class);
+                emitter.onNext(Objects.requireNonNull(response.getBody()));
                 emitter.onComplete();
 
               } catch (final Exception e) {
@@ -73,8 +76,8 @@ public class OpenAiClient {
         endpoint);
   }
 
-  public EdgeChain<String> createEmbeddings(Endpoint endpoint, OpenAiEmbeddingRequest request) {
-    return new OpenAiChain(
+  public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(Endpoint endpoint, OpenAiEmbeddingRequest request) {
+    return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
@@ -83,11 +86,11 @@ public class OpenAiClient {
                 headers.setBearerAuth(endpoint.getApiKey());
                 HttpEntity<OpenAiEmbeddingRequest> entity = new HttpEntity<>(request, headers);
 
-                ResponseEntity<String> response =
+                ResponseEntity<OpenAiEmbeddingResponse> response =
                     this.restTemplate.exchange(
-                        endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                        endpoint.getUrl(), HttpMethod.POST, entity, OpenAiEmbeddingResponse.class);
 
-                emitter.onNext(response.getBody());
+                emitter.onNext(Objects.requireNonNull(response.getBody()));
                 emitter.onComplete();
 
               } catch (final Exception e) {

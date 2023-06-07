@@ -15,8 +15,8 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
 
   private static final long serialVersionUID = 297269864039510096L;
 
-  private static final int MAX_RETRIES = 4;
-  private static final int FIXED_DELAY = 3;
+  private static final int MAX_RETRIES = 3;
+  private static final int FIXED_DELAY = 4;
   private static final TimeUnit UNIT = TimeUnit.SECONDS;
 
   private Endpoint endpoint;

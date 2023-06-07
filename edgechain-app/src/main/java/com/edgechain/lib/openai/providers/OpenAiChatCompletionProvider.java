@@ -34,13 +34,13 @@ public class OpenAiChatCompletionProvider extends ChainProvider {
 
     return new OpenAiClient()
         .createChatCompletion(endpoint, chatCompletionRequest)
-        .transform(s -> new ChainResponse(this.parse(s)));
+        .transform(s -> new ChainResponse(s.getChoices().get(0).getMessage().getContent()));
   }
 
-  private String parse(String body) throws JsonProcessingException {
-    JsonNode outputJsonNode = new ObjectMapper().readTree(body);
-    System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
-
-    return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
-  }
+//  private String parse(String body) throws JsonProcessingException {
+//    JsonNode outputJsonNode = new ObjectMapper().readTree(body);
+//    System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
+//
+//    return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
+//  }
 }

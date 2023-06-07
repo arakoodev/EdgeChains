@@ -17,14 +17,14 @@ public class LocalFileResourceHandler extends ResourceHandler {
     }
 
     @Override
-    public void upload(StringBuilder stringBuilder) {
+    public void upload(String input) {
 
         try {
             File directory = new File(folder);
             if(!directory.exists()) directory.mkdirs();
 
             PrintWriter pw = new PrintWriter(directory + File.separator + filename);
-            pw.write(stringBuilder.toString().replaceAll("\n","."));
+            pw.write(input);
             pw.flush();
             pw.close();;
         } catch (FileNotFoundException e) {

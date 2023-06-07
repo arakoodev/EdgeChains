@@ -26,12 +26,8 @@ public class OpenAiEmbeddingProvider extends ChainProvider {
         .createEmbeddings(
             endpoint, new OpenAiEmbeddingRequest(endpoint.getModel(), request.getInput()))
         .transform(
-            response -> new ObjectMapper().readValue(response, OpenAiEmbeddingResponse.class))
-        .transform(
             embeddingResponse ->
-                JsonUtils.convertToString(
-                    new WordVec(
-                        request.getInput(), embeddingResponse.getData().get(0).getEmbedding())))
+                    JsonUtils.convertToString(new WordVec(request.getInput(), embeddingResponse.getData().get(0).getEmbedding())))
         .transform(ChainResponse::new);
   }
 }

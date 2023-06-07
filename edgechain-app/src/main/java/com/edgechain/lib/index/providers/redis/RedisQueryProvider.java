@@ -9,6 +9,8 @@ import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.utils.JsonUtils;
 
+import java.util.Iterator;
+
 public class RedisQueryProvider extends ChainProvider {
     private final RedisIndexChain redisIndexChain;
     private final int topK;
@@ -20,6 +22,20 @@ public class RedisQueryProvider extends ChainProvider {
 
     @Override
     public EdgeChain<ChainResponse> request(ChainRequest request) {
-        return this.redisIndexChain.query(JsonUtils.convertToObject(request.getInput(), WordVec.class),topK);
+        return this.redisIndexChain.query(JsonUtils.convertToObject(request.getInput(), WordVec.class),topK)
+                .transform(w -> {
+                    Iterator<WordVec> iterator = w.iterator();
+
+                    StringBuilder stringBuilder = new StringBuilder();
+
+                    while (iterator.hasNext()) {
+                        stringBuilder.append(iterator.next().getId());
+                        if (iterator.hasNext()) {
+                            stringBuilder.append("\n");
+                        }
+                    }
+
+                    return new ChainResponse(stringBuilder.toString());
+                });
     }
 }

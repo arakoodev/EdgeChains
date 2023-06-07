@@ -11,7 +11,6 @@ public abstract class Reader implements Serializable {
     public Reader() {}
 
     public abstract String[] readByChunkSize(MultipartFile file, int chunkSize);
-//    public abstract String[] readBySentence(MultipartFile file);
-//
-//    public abstract String[] readBySentence(MultipartFile file, int limit);
+    public abstract String[] readBySentence(MultipartFile file);
+
 }

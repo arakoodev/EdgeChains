@@ -13,7 +13,14 @@ public abstract class RetrievalChain {
 
     public abstract Mono<List<ChainResponse>> query(String queryText, int topK);
 
-    public abstract Mono<List<ChainResponse>> query(String queryText, int topK, HistoryContextService contextService);
+    public abstract Mono<ChainResponse> query(
+            String contextId,
+            HistoryContextService contextService,
+            String queryText);
 
-    public abstract Mono<ChainResponse> query(String queryText, int topK, HistoryContextService contextService, ResourceHandler resourceHandler);
+    public abstract Mono<ChainResponse> query(
+            String contextId,
+            HistoryContextService contextService,
+            ResourceHandler resourceHandler
+    );
 }
