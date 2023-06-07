@@ -1,6 +1,5 @@
 package com.edgechain.app.services.abstracts;
 
-import com.edgechain.lib.request.PineconeRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import org.springframework.web.bind.annotation.RequestBody;
 

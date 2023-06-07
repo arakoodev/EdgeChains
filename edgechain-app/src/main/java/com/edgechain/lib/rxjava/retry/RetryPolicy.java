@@ -10,8 +10,7 @@ import java.io.Serializable;
 public abstract class RetryPolicy
     implements Function<Observable<? extends Throwable>, Observable<?>>, Serializable {
 
-  public RetryPolicy() {
-  }
+  public RetryPolicy() {}
 
   private static final long serialVersionUID = -3531903621076848363L;
 }

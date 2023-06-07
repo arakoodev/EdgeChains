@@ -48,7 +48,6 @@ public class WordVec implements Serializable {
     this.id = id;
   }
 
-
   public void setScore(String score) {
     this.score = score;
   }

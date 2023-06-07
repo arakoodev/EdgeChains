@@ -30,167 +30,152 @@ import static com.edgechain.app.constants.WebConstants.*;
 @RequestMapping("/v1/pinecone/openai")
 public class PineconeOpenAiController {
 
-    @Autowired private EmbeddingService embeddingService;
-    @Autowired private OpenAiService openAiService;
-    @Autowired private PromptService promptService;
-    @Autowired private PineconeService pineconeService;
+  @Autowired private EmbeddingService embeddingService;
+  @Autowired private OpenAiService openAiService;
+  @Autowired private PromptService promptService;
+  @Autowired private PineconeService pineconeService;
 
-    @Autowired private RedisHistoryContextService redisHistoryContextService;
+  @Autowired private RedisHistoryContextService redisHistoryContextService;
 
-    @Autowired private PdfReader pdfReader;
+  @Autowired private PdfReader pdfReader;
 
-    @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void upsertByChunk(@RequestParam(value = "file") MultipartFile file) throws IOException {
+  @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public void upsertByChunk(@RequestParam(value = "file") MultipartFile file) throws IOException {
 
-        String[] arr = pdfReader.readByChunkSize(file.getInputStream(), 512);
-        IntStream.range(0, arr.length)
-                .parallel()
-                .forEach(
-                        i -> {
-                            Endpoint embeddingEndpoint =
-                                    new Endpoint(
-                                            OPENAI_EMBEDDINGS_API,
-                                            OPENAI_AUTH_KEY,
-                                            "text-embedding-ada-002",
-                                            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    String[] arr = pdfReader.readByChunkSize(file.getInputStream(), 512);
+    IntStream.range(0, arr.length)
+        .parallel()
+        .forEach(
+            i -> {
+              Endpoint embeddingEndpoint =
+                  new Endpoint(
+                      OPENAI_EMBEDDINGS_API,
+                      OPENAI_AUTH_KEY,
+                      "text-embedding-ada-002",
+                      new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-                            Endpoint pineconeEndpoint =
-                                    new Endpoint(
-                                            PINECONE_UPSERT_API,
-                                            PINECONE_AUTH_KEY,
-                                            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+              Endpoint pineconeEndpoint =
+                  new Endpoint(
+                      PINECONE_UPSERT_API,
+                      PINECONE_AUTH_KEY,
+                      new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-                            RetrievalChain retrievalChain =
-                                    new PineconeOpenAiRetrievalChain
-                                            (embeddingEndpoint, pineconeEndpoint, embeddingService, pineconeService);
+              RetrievalChain retrievalChain =
+                  new PineconeOpenAiRetrievalChain(
+                      embeddingEndpoint, pineconeEndpoint, embeddingService, pineconeService);
 
-                            retrievalChain.upsert(arr[i]);
-                        });
-    }
+              retrievalChain.upsert(arr[i]);
+            });
+  }
 
+  @PostMapping("/query")
+  public Mono<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
 
+    Endpoint embeddingEndpoint =
+        new Endpoint(
+            OPENAI_EMBEDDINGS_API,
+            OPENAI_AUTH_KEY,
+            "text-embedding-ada-002",
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    @PostMapping("/query")
-    public Mono<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
+    Endpoint pineconeEndpoint =
+        new Endpoint(
+            PINECONE_QUERY_API, PINECONE_AUTH_KEY, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint embeddingEndpoint =
-                new Endpoint(
-                        OPENAI_EMBEDDINGS_API,
-                        OPENAI_AUTH_KEY,
-                        "text-embedding-ada-002",
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.3,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint pineconeEndpoint = new Endpoint(
-                PINECONE_QUERY_API,
-                PINECONE_AUTH_KEY,
-                new ExponentialDelay(3,3,2,TimeUnit.SECONDS)
-        );
+    RetrievalChain retrievalChain =
+        new PineconeOpenAiRetrievalChain(
+            embeddingEndpoint,
+            pineconeEndpoint,
+            chatEndpoint,
+            embeddingService,
+            pineconeService,
+            promptService,
+            openAiService);
+    return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
+  }
 
-        Endpoint chatEndpoint =
-                new Endpoint(
-                        OPENAI_CHAT_COMPLETION_API,
-                        OPENAI_AUTH_KEY,
-                        "gpt-3.5-turbo",
-                        "user",
-                        0.3,
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+  @PostMapping("/query/context/{contextId}")
+  public Mono<ChainResponse> queryContextJson(
+      @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
-        RetrievalChain retrievalChain =
-                new PineconeOpenAiRetrievalChain(
-                        embeddingEndpoint,
-                        pineconeEndpoint,
-                        chatEndpoint,
-                        embeddingService,
-                        pineconeService,
-                        promptService,
-                        openAiService
-                        );
-        return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
-    }
+    Endpoint embeddingEndpoint =
+        new Endpoint(
+            OPENAI_EMBEDDINGS_API,
+            OPENAI_AUTH_KEY,
+            "text-embedding-ada-002",
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    @PostMapping("/query/context/{contextId}")
-    public Mono<ChainResponse> queryContextJson(@PathVariable String contextId,  @RequestBody HashMap<String, String> mapper) {
+    Endpoint pineconeEndpoint =
+        new Endpoint(
+            PINECONE_QUERY_API, PINECONE_AUTH_KEY, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint embeddingEndpoint =
-                new Endpoint(
-                        OPENAI_EMBEDDINGS_API,
-                        OPENAI_AUTH_KEY,
-                        "text-embedding-ada-002",
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint pineconeEndpoint = new Endpoint(
-                PINECONE_QUERY_API,
-                PINECONE_AUTH_KEY,
-                new ExponentialDelay(3,3,2,TimeUnit.SECONDS)
-        );
+    RetrievalChain retrievalChain =
+        new PineconeOpenAiRetrievalChain(
+            embeddingEndpoint,
+            pineconeEndpoint,
+            chatEndpoint,
+            embeddingService,
+            pineconeService,
+            promptService,
+            openAiService);
+    return retrievalChain.query(contextId, redisHistoryContextService, mapper.get("query"));
+  }
 
-        Endpoint chatEndpoint =
-                new Endpoint(
-                        OPENAI_CHAT_COMPLETION_API,
-                        OPENAI_AUTH_KEY,
-                        "gpt-3.5-turbo",
-                        "user",
-                        0.7,
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+  @PostMapping("/query/context/file/{contextId}")
+  public Mono<ChainResponse> queryContextFile(
+      @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
-        RetrievalChain retrievalChain =
-                new PineconeOpenAiRetrievalChain(
-                        embeddingEndpoint,
-                        pineconeEndpoint,
-                        chatEndpoint,
-                        embeddingService,
-                        pineconeService,
-                        promptService,
-                        openAiService
-                );
-        return retrievalChain.query(
-                contextId,
-                redisHistoryContextService,
-                mapper.get("query"));
-    }
+    Endpoint embeddingEndpoint =
+        new Endpoint(
+            OPENAI_EMBEDDINGS_API,
+            OPENAI_AUTH_KEY,
+            "text-embedding-ada-002",
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    @PostMapping("/query/context/file/{contextId}")
-    public Mono<ChainResponse> queryContextFile(@PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
+    Endpoint pineconeEndpoint =
+        new Endpoint(
+            PINECONE_QUERY_API, PINECONE_AUTH_KEY, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint embeddingEndpoint =
-                new Endpoint(
-                        OPENAI_EMBEDDINGS_API,
-                        OPENAI_AUTH_KEY,
-                        "text-embedding-ada-002",
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint pineconeEndpoint = new Endpoint(
-                PINECONE_QUERY_API,
-                PINECONE_AUTH_KEY,
-                new ExponentialDelay(3,3,2,TimeUnit.SECONDS)
-        );
+    RetrievalChain retrievalChain =
+        new PineconeOpenAiRetrievalChain(
+            embeddingEndpoint,
+            pineconeEndpoint,
+            chatEndpoint,
+            embeddingService,
+            pineconeService,
+            promptService,
+            openAiService);
 
-        Endpoint chatEndpoint =
-                new Endpoint(
-                        OPENAI_CHAT_COMPLETION_API,
-                        OPENAI_AUTH_KEY,
-                        "gpt-3.5-turbo",
-                        "user",
-                        0.7,
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-        RetrievalChain retrievalChain =
-                new PineconeOpenAiRetrievalChain(
-                        embeddingEndpoint,
-                        pineconeEndpoint,
-                        chatEndpoint,
-                        embeddingService,
-                        pineconeService,
-                        promptService,
-                        openAiService
-                );
-
-        return retrievalChain.query(
-                contextId,
-                redisHistoryContextService,
-                new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename")));
-
-
-    }
-
+    return retrievalChain.query(
+        contextId,
+        redisHistoryContextService,
+        new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename")));
+  }
 }

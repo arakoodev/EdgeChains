@@ -30,20 +30,17 @@ public class EdgeChainAppRunner {
     System.setProperty("PINECONE_UPSERT_API", "");
     System.setProperty("PINECONE_DELETE_API", "");
 
-    System.setProperty("spring.data.redis.host","");
-    System.setProperty("spring.data.redis.port","6379");
-    System.setProperty("spring.data.redis.username","default");
+    System.setProperty("spring.data.redis.host", "");
+    System.setProperty("spring.data.redis.port", "6379");
+    System.setProperty("spring.data.redis.username", "default");
     System.setProperty("spring.data.redis.password", "");
-    System.setProperty("spring.data.redis.connect-timeout","120000");
-    System.setProperty("spring.redis.ttl","3600");
+    System.setProperty("spring.data.redis.connect-timeout", "120000");
+    System.setProperty("spring.redis.ttl", "3600");
 
     SpringApplication.run(EdgeChainAppRunner.class, args);
-
   }
 
   private void loadSentenceModel() {
     WebConstants.sentenceModel = this.getClass().getResourceAsStream("/en-sent.zip");
   }
-
-
 }

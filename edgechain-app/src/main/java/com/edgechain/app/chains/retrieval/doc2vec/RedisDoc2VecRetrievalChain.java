@@ -24,133 +24,159 @@ import java.util.StringTokenizer;
 
 public class RedisDoc2VecRetrievalChain extends RetrievalChain {
 
-    private Endpoint chatEndpoint;
-    private final EmbeddingService embeddingService;
-    private final RedisService redisService;
-    private PromptService promptService;
-    private OpenAiService openAiService;
+  private Endpoint chatEndpoint;
+  private final EmbeddingService embeddingService;
+  private final RedisService redisService;
+  private PromptService promptService;
+  private OpenAiService openAiService;
 
+  // For Upsert
+  public RedisDoc2VecRetrievalChain(EmbeddingService embeddingService, RedisService redisService) {
+    this.embeddingService = embeddingService;
+    this.redisService = redisService;
+  }
 
-    // For Upsert
-    public RedisDoc2VecRetrievalChain(EmbeddingService embeddingService, RedisService redisService) {
-        this.embeddingService = embeddingService;
-        this.redisService = redisService;
-    }
+  // For Query
+  public RedisDoc2VecRetrievalChain(
+      Endpoint chatEndpoint,
+      EmbeddingService embeddingService,
+      RedisService redisService,
+      PromptService promptService,
+      OpenAiService openAiService) {
+    this.chatEndpoint = chatEndpoint;
+    this.embeddingService = embeddingService;
+    this.redisService = redisService;
+    this.promptService = promptService;
+    this.openAiService = openAiService;
+  }
 
-    // For Query
-    public RedisDoc2VecRetrievalChain(Endpoint chatEndpoint, EmbeddingService embeddingService, RedisService redisService, PromptService promptService, OpenAiService openAiService) {
-        this.chatEndpoint = chatEndpoint;
-        this.embeddingService = embeddingService;
-        this.redisService = redisService;
-        this.promptService = promptService;
-        this.openAiService = openAiService;
-    }
+  @Override
+  public void upsert(String input) {
+    Completable.fromObservable(
+            Observable.just(
+                    this.embeddingService
+                        .doc2Vec(new Doc2VecEmbeddingsRequest(input))
+                        .getResponse())
+                .map(
+                    embeddingOutput ->
+                        this.redisService.upsert(new RedisRequest(embeddingOutput)).getResponse()))
+        .blockingAwait();
+  }
 
+  @Override
+  public Mono<List<ChainResponse>> query(String queryText, int topK) {
 
-    @Override
-    public void upsert(String input) {
-        Completable.fromObservable(
-                        Observable.just(
-                                this.embeddingService.doc2Vec(new Doc2VecEmbeddingsRequest(input)).getResponse()).map(
-                                embeddingOutput ->
-                                        this.redisService
-                                                .upsert(new RedisRequest(embeddingOutput))
-                                                .getResponse()))
-                .blockingAwait();
-    }
+    return RxJava3Adapter.singleToMono(
+        Observable.just(
+                this.embeddingService
+                    .doc2Vec(new Doc2VecEmbeddingsRequest(queryText))
+                    .getResponse())
+            .map(
+                embeddingOutput -> {
+                  List<ChainResponse> chainResponseList = new ArrayList<>();
 
+                  String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
 
+                  StringTokenizer tokenizer =
+                      new StringTokenizer(
+                          this.redisService
+                              .query(new RedisRequest(embeddingOutput, topK))
+                              .getResponse(),
+                          "\n");
+                  while (tokenizer.hasMoreTokens()) {
 
-    @Override
-    public Mono<List<ChainResponse>> query(String queryText, int topK) {
+                    String input = promptResponse + "\n" + tokenizer.nextToken();
+                    chainResponseList.add(
+                        this.openAiService.chatCompletion(
+                            new OpenAiChatRequest(this.chatEndpoint, input)));
+                  }
 
-        return RxJava3Adapter.singleToMono(
+                  return chainResponseList;
+                })
+            .subscribeOn(Schedulers.io())
+            .firstOrError());
+  }
+
+  @Override
+  public Mono<ChainResponse> query(
+      String contextId, HistoryContextService contextService, String queryText) {
+    return RxJava3Adapter.singleToMono(
+        new EdgeChain<>(
                 Observable.just(
-                                this.embeddingService.doc2Vec(new Doc2VecEmbeddingsRequest(queryText))
-                                        .getResponse())
-                        .map(
-                                embeddingOutput -> {
+                        this.embeddingService
+                            .doc2Vec(new Doc2VecEmbeddingsRequest(queryText))
+                            .getResponse())
+                    .map(
+                        embeddingOutput ->
+                            this.queryWithChatHistory(
+                                embeddingOutput, contextId, contextService, queryText)))
+            .toSingleWithRetry());
+  }
 
-                                    List<ChainResponse> chainResponseList = new ArrayList<>();
+  @Override
+  public Mono<ChainResponse> query(
+      String contextId, HistoryContextService contextService, ResourceHandler resourceHandler) {
+    HistoryContext context = contextService.get(contextId).getWithRetry();
+    resourceHandler.upload(context.getResponse());
+    return Mono.just(
+        new ChainResponse("File is successfully uploaded to the provided destination"));
+  }
 
-                                    String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
+  private ChainResponse queryWithChatHistory(
+      String embeddingOutput,
+      String contextId,
+      HistoryContextService contextService,
+      String queryText) {
 
-                                    StringTokenizer tokenizer =
-                                            new StringTokenizer(
-                                                    this.redisService.query(new RedisRequest(embeddingOutput, topK)).getResponse(),
-                                                    "\n");
-                                    while (tokenizer.hasMoreTokens()) {
+    // Get the Prompt & The Context History
 
-                                        String input = promptResponse + "\n" + tokenizer.nextToken();
-                                        chainResponseList.add(
-                                                this.openAiService
-                                                        .chatCompletion(new OpenAiChatRequest(this.chatEndpoint, input)));
-                                    }
+    String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
+    HistoryContext historyContext = contextService.get(contextId).toSingleWithRetry().blockingGet();
 
-                                    return chainResponseList;
-                                })
-                        .subscribeOn(Schedulers.io())
-                        .firstOrError());
+    String chatHistory = historyContext.getResponse();
+
+    String indexResponse =
+        this.redisService.query(new RedisRequest(embeddingOutput, 1)).getResponse();
+
+    int totalTokens =
+        promptResponse.length()
+            + chatHistory.length()
+            + indexResponse.length()
+            + queryText.length();
+
+    if (totalTokens > historyContext.getMaxTokens()) {
+      int diff = historyContext.getMaxTokens() - totalTokens;
+      chatHistory = chatHistory.substring(diff + 1);
     }
 
-    @Override
-    public Mono<ChainResponse> query(String contextId, HistoryContextService contextService, String queryText) {
-        return RxJava3Adapter.singleToMono(
-                new EdgeChain<>(
-                        Observable.just(this.embeddingService.doc2Vec(new Doc2VecEmbeddingsRequest(queryText)).getResponse())
-                                .map(embeddingOutput ->
-                                        this.queryWithChatHistory(embeddingOutput, contextId, contextService, queryText)
-                                )
-                ).toSingleWithRetry());
+    // Then, Create Prompt For OpenAI
+    String prompt;
+
+    if (chatHistory.length() > 0) {
+      prompt =
+          "Question: "
+              + queryText
+              + "\n "
+              + promptResponse
+              + "\n"
+              + indexResponse
+              + "\nChat history:\n"
+              + chatHistory;
+    } else {
+      prompt = "Question: " + queryText + "\n " + promptResponse + "\n" + indexResponse;
     }
 
-    @Override
-    public Mono<ChainResponse> query(String contextId, HistoryContextService contextService, ResourceHandler resourceHandler) {
-        HistoryContext context = contextService.get(contextId).getWithRetry();
-        resourceHandler.upload(context.getResponse());
-        return Mono.just(new ChainResponse("File is successfully uploaded to the provided destination"));
-    }
+    System.out.println("Prompt: " + prompt);
 
-    private ChainResponse queryWithChatHistory(
-            String embeddingOutput, String contextId, HistoryContextService contextService, String queryText) {
+    ChainResponse openAiResponse =
+        this.openAiService.chatCompletion(new OpenAiChatRequest(this.chatEndpoint, prompt));
 
-        // Get the Prompt & The Context History
+    String redisHistory = chatHistory + queryText + openAiResponse.getResponse();
 
-        String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
-        HistoryContext historyContext = contextService.get(contextId).toSingleWithRetry().blockingGet();
+    //      System.out.println("Chat History: "+redisHistory);
 
-        String chatHistory = historyContext.getResponse();
+    contextService.put(contextId, redisHistory).execute();
 
-        String indexResponse = this.redisService.query(new RedisRequest(embeddingOutput, 1)).getResponse();
-
-        int totalTokens = promptResponse.length() + chatHistory.length() + indexResponse.length() + queryText.length();
-
-        if (totalTokens > historyContext.getMaxTokens()) {
-            int diff = historyContext.getMaxTokens() - totalTokens;
-            chatHistory = chatHistory.substring(diff + 1);
-        }
-
-        // Then, Create Prompt For OpenAI
-        String prompt;
-
-        if (chatHistory.length() > 0) {
-            prompt = "Question: " + queryText + "\n " + promptResponse + "\n" + indexResponse + "\nChat history:\n" + chatHistory;
-        } else {
-            prompt = "Question: " + queryText + "\n " + promptResponse + "\n" + indexResponse;
-        }
-
-        System.out.println("Prompt: " + prompt);
-
-        ChainResponse openAiResponse = this.openAiService.chatCompletion(new OpenAiChatRequest(this.chatEndpoint, prompt));
-
-        String redisHistory = chatHistory + queryText + openAiResponse.getResponse();
-
-//      System.out.println("Chat History: "+redisHistory);
-
-        contextService.put(contextId, redisHistory).execute();
-
-        return openAiResponse;
-    }
-
-
+    return openAiResponse;
+  }
 }

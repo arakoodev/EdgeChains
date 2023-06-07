@@ -2,7 +2,6 @@ package com.edgechain.app.controllers.redis;
 
 import com.edgechain.app.chains.abstracts.RetrievalChain;
 import com.edgechain.app.chains.retrieval.doc2vec.RedisDoc2VecRetrievalChain;
-import com.edgechain.app.chains.retrieval.openai.RedisOpenAiRetrievalChain;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PromptService;
 import com.edgechain.app.services.embeddings.EmbeddingService;
@@ -27,107 +26,91 @@ import java.util.stream.IntStream;
 
 import static com.edgechain.app.constants.WebConstants.*;
 
-
 @RestController
 @RequestMapping("/v1/redis/doc2vec")
 public class RedisDoc2VecController {
 
-    @Autowired private EmbeddingService embeddingService;
-    @Autowired private RedisService redisService;
-    @Autowired private PromptService promptService;
-    @Autowired private OpenAiService openAiService;
-    @Autowired private RedisHistoryContextService redisHistoryContextService;
-    @Autowired private PdfReader pdfReader;
+  @Autowired private EmbeddingService embeddingService;
+  @Autowired private RedisService redisService;
+  @Autowired private PromptService promptService;
+  @Autowired private OpenAiService openAiService;
+  @Autowired private RedisHistoryContextService redisHistoryContextService;
+  @Autowired private PdfReader pdfReader;
 
-    @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void upsertByChunk(@RequestParam(value = "file") MultipartFile file) throws IOException {
+  @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public void upsertByChunk(@RequestParam(value = "file") MultipartFile file) throws IOException {
 
-        String[] arr = pdfReader.readByChunkSize(file.getInputStream(),512);
+    String[] arr = pdfReader.readByChunkSize(file.getInputStream(), 512);
 
-        IntStream.range(0, arr.length)
-                .parallel()
-                .forEach(
-                        i -> {
-                            RetrievalChain retrievalChain = new RedisDoc2VecRetrievalChain(embeddingService, redisService);
-                            retrievalChain.upsert(arr[i]);
-                        });
-    }
+    IntStream.range(0, arr.length)
+        .parallel()
+        .forEach(
+            i -> {
+              RetrievalChain retrievalChain =
+                  new RedisDoc2VecRetrievalChain(embeddingService, redisService);
+              retrievalChain.upsert(arr[i]);
+            });
+  }
 
-    @PostMapping("/query")
-    public Mono<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
+  @PostMapping("/query")
+  public Mono<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
 
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.3,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint chatEndpoint =
-                new Endpoint(
-                        OPENAI_CHAT_COMPLETION_API,
-                        OPENAI_AUTH_KEY,
-                        "gpt-3.5-turbo",
-                        "user",
-                        0.3,
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    RetrievalChain retrievalChain =
+        new RedisDoc2VecRetrievalChain(
+            chatEndpoint, embeddingService, redisService, promptService, openAiService);
 
-        RetrievalChain retrievalChain = new RedisDoc2VecRetrievalChain(
-                chatEndpoint,
-                embeddingService,
-                redisService,
-                promptService,
-                openAiService
-        );
+    return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
+  }
 
-        return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
-    }
+  @PostMapping("/query/context/{contextId}")
+  public Mono<ChainResponse> queryContextJson(
+      @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
-    @PostMapping("/query/context/{contextId}")
-    public Mono<ChainResponse> queryContextJson(@PathVariable String contextId,@RequestBody HashMap<String, String> mapper) {
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.6,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint chatEndpoint =
-                new Endpoint(
-                        OPENAI_CHAT_COMPLETION_API,
-                        OPENAI_AUTH_KEY,
-                        "gpt-3.5-turbo",
-                        "user",
-                        0.6,
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    RetrievalChain retrievalChain =
+        new RedisDoc2VecRetrievalChain(
+            chatEndpoint, embeddingService, redisService, promptService, openAiService);
 
-        RetrievalChain retrievalChain = new RedisDoc2VecRetrievalChain(
-                chatEndpoint,
-                embeddingService,
-                redisService,
-                promptService,
-                openAiService
-        );
+    return retrievalChain.query(contextId, redisHistoryContextService, mapper.get("query"));
+  }
 
-        return retrievalChain.query(
-                contextId,
-                redisHistoryContextService,
-                mapper.get("query"));
-    }
+  @PostMapping("/query/context/file/{contextId}")
+  public Mono<ChainResponse> queryContextFile(
+      @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
-    @PostMapping("/query/context/file/{contextId}")
-    public Mono<ChainResponse> queryContextFile(@PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint chatEndpoint =
-                new Endpoint(
-                        OPENAI_CHAT_COMPLETION_API,
-                        OPENAI_AUTH_KEY,
-                        "gpt-3.5-turbo",
-                        "user",
-                        0.7,
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    RetrievalChain retrievalChain =
+        new RedisDoc2VecRetrievalChain(
+            chatEndpoint, embeddingService, redisService, promptService, openAiService);
 
-        RetrievalChain retrievalChain = new RedisDoc2VecRetrievalChain(
-                chatEndpoint,
-                embeddingService,
-                redisService,
-                promptService,
-                openAiService
-        );
-
-        return retrievalChain.query(
-                contextId,
-                redisHistoryContextService,
-                new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename"))
-        );
-
-    }
+    return retrievalChain.query(
+        contextId,
+        redisHistoryContextService,
+        new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename")));
+  }
 }
