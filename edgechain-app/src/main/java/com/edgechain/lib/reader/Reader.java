@@ -6,11 +6,11 @@ import java.io.Serializable;
 
 public abstract class Reader implements Serializable {
 
-    private static final long serialVersionUID = 5990895695593800211L;
+  private static final long serialVersionUID = 5990895695593800211L;
 
-    public Reader() {}
+  public Reader() {}
 
-    public abstract String[] readByChunkSize(MultipartFile file, int chunkSize);
-    public abstract String[] readBySentence(MultipartFile file);
+  public abstract String[] readByChunkSize(MultipartFile file, int chunkSize);
 
+  public abstract String[] readBySentence(MultipartFile file);
 }

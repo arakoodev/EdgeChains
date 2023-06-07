@@ -27,7 +27,8 @@ public class PineconeController {
 
   @PostMapping("/query")
   public Mono<ChainResponse> query(@RequestBody PineconeRequest request) {
-    ChainProvider pineconeQuery = new PineconeQueryProvider(request.getEndpoint(), request.getTopK());
+    ChainProvider pineconeQuery =
+        new PineconeQueryProvider(request.getEndpoint(), request.getTopK());
 
     ChainWrapper wrapper = new ChainWrapper();
     return RxJava3Adapter.singleToMono(
@@ -36,9 +37,10 @@ public class PineconeController {
 
   @DeleteMapping("/delete")
   public Mono<ChainResponse> deleteByKey(@RequestBody PineconeRequest request) {
-      return RxJava3Adapter.singleToMono(
-              new PineconeIndexChain(request.getEndpoint()).deleteByIds(request.getVectorIds()).toSingleWithRetry()
-      );
+    return RxJava3Adapter.singleToMono(
+        new PineconeIndexChain(request.getEndpoint())
+            .deleteByIds(request.getVectorIds())
+            .toSingleWithRetry());
   }
 
   @DeleteMapping("/deleteAll")

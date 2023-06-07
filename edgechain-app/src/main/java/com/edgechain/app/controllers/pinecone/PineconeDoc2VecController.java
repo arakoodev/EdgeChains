@@ -29,113 +29,119 @@ import static com.edgechain.app.constants.WebConstants.*;
 @RequestMapping("/v1/pinecone/doc2vec")
 public class PineconeDoc2VecController {
 
-    @Autowired private EmbeddingService embeddingService;
-    @Autowired private OpenAiService openAiService;
-    @Autowired private PromptService promptService;
-    @Autowired private PineconeService pineconeService;
-    @Autowired private RedisHistoryContextService redisHistoryContextService;
+  @Autowired private EmbeddingService embeddingService;
+  @Autowired private OpenAiService openAiService;
+  @Autowired private PromptService promptService;
+  @Autowired private PineconeService pineconeService;
+  @Autowired private RedisHistoryContextService redisHistoryContextService;
 
+  @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public void upsert(@RequestBody MultipartFile file) {
 
-    @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void upsert(@RequestBody MultipartFile file) {
+    PdfReader pdfReader = new PdfReader();
 
-        PdfReader pdfReader = new PdfReader();
+    String[] arr = pdfReader.readByChunkSize(file, 512);
+    IntStream.range(0, arr.length)
+        .parallel()
+        .forEach(
+            i -> {
+              Endpoint pineconeEndpoint =
+                  new Endpoint(
+                      PINECONE_UPSERT_API,
+                      PINECONE_AUTH_KEY,
+                      new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        String[] arr = pdfReader.readByChunkSize(file, 512);
-        IntStream.range(0, arr.length)
-                .parallel()
-                .forEach(
-                        i -> {
-                            Endpoint pineconeEndpoint =
-                                    new Endpoint(
-                                            PINECONE_UPSERT_API,
-                                            PINECONE_AUTH_KEY,
-                                            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+              RetrievalChain retrievalChain =
+                  new PineconeDoc2VecRetrievalChain(
+                      pineconeEndpoint, embeddingService, pineconeService);
+              retrievalChain.upsert(arr[i]);
+            });
+  }
 
-                            RetrievalChain retrievalChain = new PineconeDoc2VecRetrievalChain(pineconeEndpoint, embeddingService, pineconeService);
-                            retrievalChain.upsert(arr[i]);
-                        });
-    }
+  @PostMapping("/query")
+  public Mono<List<ChainResponse>> queryWithDoc2Vec(@RequestBody HashMap<String, String> mapper) {
 
-    @PostMapping("/query")
-    public Mono<List<ChainResponse>> queryWithDoc2Vec(@RequestBody HashMap<String, String> mapper) {
+    Endpoint pineconeEndpoint = new Endpoint(PINECONE_QUERY_API, PINECONE_AUTH_KEY);
 
-        Endpoint pineconeEndpoint = new Endpoint(
-                PINECONE_QUERY_API, PINECONE_AUTH_KEY);
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint chatEndpoint =
-                new Endpoint(
-                        OPENAI_CHAT_COMPLETION_API,
-                        OPENAI_AUTH_KEY,
-                        "gpt-3.5-turbo",
-                        "user",
-                        0.7,
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    RetrievalChain retrievalChain =
+        new PineconeDoc2VecRetrievalChain(
+            pineconeEndpoint,
+            chatEndpoint,
+            embeddingService,
+            pineconeService,
+            promptService,
+            openAiService);
 
-        RetrievalChain retrievalChain = new PineconeDoc2VecRetrievalChain
-                (pineconeEndpoint, chatEndpoint, embeddingService, pineconeService, promptService, openAiService );
+    return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
+  }
 
-        return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
-    }
+  @PostMapping("/query/context/{contextId}")
+  public Mono<ChainResponse> queryContextJson(
+      @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
+    Endpoint pineconeEndpoint =
+        new Endpoint(
+            PINECONE_QUERY_API, PINECONE_AUTH_KEY, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    @PostMapping("/query/context/{contextId}")
-    public Mono<ChainResponse> queryContextJson(@PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.6,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        Endpoint pineconeEndpoint = new Endpoint(
-                PINECONE_QUERY_API,
-                PINECONE_AUTH_KEY,
-                new ExponentialDelay(3,3,2,TimeUnit.SECONDS)
-        );
+    RetrievalChain retrievalChain =
+        new PineconeDoc2VecRetrievalChain(
+            pineconeEndpoint,
+            chatEndpoint,
+            embeddingService,
+            pineconeService,
+            promptService,
+            openAiService);
 
-        Endpoint chatEndpoint =
-                new Endpoint(
-                        OPENAI_CHAT_COMPLETION_API,
-                        OPENAI_AUTH_KEY,
-                        "gpt-3.5-turbo",
-                        "user",
-                        0.6,
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    return retrievalChain.query(contextId, redisHistoryContextService, mapper.get("query"));
+  }
 
-        RetrievalChain retrievalChain =
-                new PineconeDoc2VecRetrievalChain
-                        (pineconeEndpoint, chatEndpoint, embeddingService, pineconeService, promptService, openAiService );
+  @PostMapping("/query/context/file/{contextId}")
+  public Mono<ChainResponse> queryContextFile(
+      @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
-        return retrievalChain.query(
-                contextId,
-                redisHistoryContextService,
-                mapper.get("query"));
-    }
+    Endpoint pineconeEndpoint =
+        new Endpoint(
+            PINECONE_QUERY_API, PINECONE_AUTH_KEY, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    @PostMapping("/query/context/file/{contextId}")
-    public Mono<ChainResponse> queryContextFile(@PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
+    RetrievalChain retrievalChain =
+        new PineconeDoc2VecRetrievalChain(
+            pineconeEndpoint,
+            chatEndpoint,
+            embeddingService,
+            pineconeService,
+            promptService,
+            openAiService);
 
-        Endpoint pineconeEndpoint = new Endpoint(
-                PINECONE_QUERY_API,
-                PINECONE_AUTH_KEY,
-                new ExponentialDelay(3,3,2,TimeUnit.SECONDS)
-        );
-
-        Endpoint chatEndpoint =
-                new Endpoint(
-                        OPENAI_CHAT_COMPLETION_API,
-                        OPENAI_AUTH_KEY,
-                        "gpt-3.5-turbo",
-                        "user",
-                        0.7,
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-        RetrievalChain retrievalChain =
-                new PineconeDoc2VecRetrievalChain
-                        (pineconeEndpoint, chatEndpoint, embeddingService, pineconeService, promptService, openAiService );
-
-        return retrievalChain.query(
-                contextId,
-                redisHistoryContextService,
-                new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename"))
-        );
-
-    }
-
+    return retrievalChain.query(
+        contextId,
+        redisHistoryContextService,
+        new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename")));
+  }
 }

@@ -9,14 +9,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
 @FeignClient(name = "embeddingService", url = "${feign.url}/embeddings")
 @Component
 public interface EmbeddingService {
 
-    @PostMapping(value = "/openai", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    ChainResponse openAi(@RequestBody OpenAiEmbeddingsRequest request);
+  @PostMapping(
+      value = "/openai",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  ChainResponse openAi(@RequestBody OpenAiEmbeddingsRequest request);
 
-    @PostMapping(value = "/doc2vec", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    ChainResponse doc2Vec(@RequestBody Doc2VecEmbeddingsRequest request);
+  @PostMapping(
+      value = "/doc2vec",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  ChainResponse doc2Vec(@RequestBody Doc2VecEmbeddingsRequest request);
 }

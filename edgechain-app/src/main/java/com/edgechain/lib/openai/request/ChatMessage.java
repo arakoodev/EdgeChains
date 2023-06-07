@@ -9,8 +9,7 @@ public class ChatMessage {
     this.content = content;
   }
 
-  public ChatMessage() {
-  }
+  public ChatMessage() {}
 
   public String getRole() {
     return role;

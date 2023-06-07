@@ -39,5 +39,4 @@ public class OpenAiController {
     return RxJava3Adapter.singleToMono(
         wrapper.chains(new ChainRequest(request.getInput()), provider).toSingleWithRetry());
   }
-
 }
