@@ -20,8 +20,7 @@ public class OpenAiClient {
 
   private final RestTemplate restTemplate = new RestTemplate();
 
-  public EdgeChain<ChatCompletionResponse> createChatCompletion(
-      Endpoint endpoint, ChatCompletionRequest request) {
+  public EdgeChain<ChatCompletionResponse> createChatCompletion(Endpoint endpoint, ChatCompletionRequest request) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -41,8 +40,7 @@ public class OpenAiClient {
 
                 // Send the POST request
                 ResponseEntity<ChatCompletionResponse> response =
-                    restTemplate.exchange(
-                        endpoint.getUrl(), HttpMethod.POST, entity, ChatCompletionResponse.class);
+                    restTemplate.exchange(endpoint.getUrl(), HttpMethod.POST, entity, ChatCompletionResponse.class);
 
                 emitter.onNext(Objects.requireNonNull(response.getBody()));
                 emitter.onComplete();
@@ -54,8 +52,7 @@ public class OpenAiClient {
         endpoint);
   }
 
-  public EdgeChain<CompletionResponse> createCompletion(
-      Endpoint endpoint, CompletionRequest request) {
+  public EdgeChain<CompletionResponse> createCompletion(Endpoint endpoint, CompletionRequest request) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -79,8 +76,7 @@ public class OpenAiClient {
         endpoint);
   }
 
-  public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(
-      Endpoint endpoint, OpenAiEmbeddingRequest request) {
+  public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(Endpoint endpoint, OpenAiEmbeddingRequest request) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {

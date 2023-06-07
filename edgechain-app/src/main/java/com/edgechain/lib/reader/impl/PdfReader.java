@@ -8,45 +8,50 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.pdf.PDFParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+
+
+import java.io.InputStream;
 
 @Service
 public class PdfReader extends Reader {
 
-  @Override
-  public String[] readByChunkSize(MultipartFile file, int chunkSize) {
-    try {
+    @Override
+    public String[] readByChunkSize(InputStream inputStream, int chunkSize) {
+        try {
+            BodyContentHandler contentHandler = new BodyContentHandler(-1);
+            Metadata data = new Metadata();
+            ParseContext context = new ParseContext();
+            PDFParser pdfparser = new PDFParser();
+            pdfparser.parse(inputStream, contentHandler, data, context);
 
-      BodyContentHandler contentHandler = new BodyContentHandler(-1);
-      Metadata data = new Metadata();
-      ParseContext context = new ParseContext();
-      PDFParser pdfparser = new PDFParser();
-      pdfparser.parse(file.getInputStream(), contentHandler, data, context);
+            Chunker chunker = new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
+            return chunker.byChunkSize(chunkSize);
 
-      Chunker chunker = new Chunker();
-      return chunker.byChunkSize(
-          Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "), chunkSize);
-
-    } catch (final Exception e) {
-      throw new RuntimeException(e.getMessage());
+        } catch (final Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
-  }
+    /**
+     * If you are using Reader & Chunker in a different project; make sure you import OpenNLP & also use en-sent.zip file as an InputStream
+     */
+    @Override
+    public String[] readBySentence(InputStream modelInputStream, InputStream fileInputStream) {
+        try {
+            BodyContentHandler contentHandler = new BodyContentHandler(-1);
+            Metadata data = new Metadata();
+            ParseContext context = new ParseContext();
+            PDFParser pdfparser = new PDFParser();
+            pdfparser.parse(fileInputStream, contentHandler, data, context);
 
-  @Override
-  public String[] readBySentence(MultipartFile file) {
-    try {
-      BodyContentHandler contentHandler = new BodyContentHandler(-1);
-      Metadata data = new Metadata();
-      ParseContext context = new ParseContext();
-      PDFParser pdfparser = new PDFParser();
-      pdfparser.parse(file.getInputStream(), contentHandler, data, context);
+            Chunker chunker = new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
+            return chunker.bySentence(modelInputStream);
 
-      Chunker chunker = new Chunker();
-      return chunker.bySentence(
-          Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
-
-    } catch (final Exception e) {
-      throw new RuntimeException(e.getMessage());
+        } catch (final Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
-  }
+
+
+
+
 }

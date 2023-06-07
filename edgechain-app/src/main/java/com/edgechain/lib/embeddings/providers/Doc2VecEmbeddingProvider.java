@@ -14,17 +14,16 @@ import java.util.List;
 
 public class Doc2VecEmbeddingProvider extends ChainProvider {
 
-  private final ParagraphVectors paragraphVectors;
+    private final ParagraphVectors paragraphVectors;
 
-  public Doc2VecEmbeddingProvider(ParagraphVectors paragraphVectors) {
-    this.paragraphVectors = paragraphVectors;
-  }
+    public Doc2VecEmbeddingProvider(ParagraphVectors paragraphVectors) {
+        this.paragraphVectors = paragraphVectors;
+    }
 
-  @Override
-  public EdgeChain<ChainResponse> request(ChainRequest request) {
-    List<Float> embeddings =
-        new Doc2VecInference(paragraphVectors, request.getInput()).inferVectors();
-    WordVec wordVec = new WordVec(request.getInput(), embeddings);
-    return new EdgeChain<>(Observable.just(new ChainResponse(JsonUtils.convertToString(wordVec))));
-  }
+    @Override
+    public EdgeChain<ChainResponse> request(ChainRequest request) {
+        List<Float> embeddings = new Doc2VecInference(paragraphVectors, request.getInput()).inferVectors();
+        WordVec wordVec = new WordVec(request.getInput(), embeddings);
+        return new EdgeChain<>(Observable.just(new ChainResponse(JsonUtils.convertToString(wordVec))));
+    }
 }

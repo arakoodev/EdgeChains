@@ -1,7 +1,7 @@
 package com.edgechain.app;
 
+import com.edgechain.app.constants.WebConstants;
 import com.edgechain.lib.configuration.EdgeChainAutoConfiguration;
-import com.edgechain.lib.constants.LibConstants;
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -30,17 +30,20 @@ public class EdgeChainApplication {
     System.setProperty("PINECONE_UPSERT_API", "");
     System.setProperty("PINECONE_DELETE_API", "");
 
-    System.setProperty("spring.data.redis.host", "");
-    System.setProperty("spring.data.redis.port", "6379");
-    System.setProperty("spring.data.redis.username", "default");
+    System.setProperty("spring.data.redis.host","");
+    System.setProperty("spring.data.redis.port","6379");
+    System.setProperty("spring.data.redis.username","default");
     System.setProperty("spring.data.redis.password", "");
-    System.setProperty("spring.data.redis.connect-timeout", "120000");
-    System.setProperty("spring.redis.ttl", "3600");
+    System.setProperty("spring.data.redis.connect-timeout","120000");
+    System.setProperty("spring.redis.ttl","3600");
 
     SpringApplication.run(EdgeChainApplication.class, args);
+
   }
 
   private void loadSentenceModel() {
-    LibConstants.sentenceModel = this.getClass().getResourceAsStream("/en-sent.zip");
+    WebConstants.sentenceModel = this.getClass().getResourceAsStream("/en-sent.zip");
   }
+
+
 }
