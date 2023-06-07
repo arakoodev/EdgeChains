@@ -11,9 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Component
 public interface PluginService extends ToolService {
 
-  @GetMapping(
-      value = "/wiki",
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+  @GetMapping(value = "/wiki", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse wikiContent(@RequestParam("query") String query);
 }

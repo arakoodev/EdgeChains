@@ -17,7 +17,8 @@ public class FixedDelay extends RetryPolicy {
   private TimeUnit unit = TimeUnit.SECONDS;
   private int retryCount;
 
-  public FixedDelay() {}
+  public FixedDelay() {
+  }
 
   public FixedDelay(int maxRetries, int retryDelay, TimeUnit unit) {
     this.maxRetries = maxRetries;

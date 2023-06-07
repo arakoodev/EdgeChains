@@ -19,17 +19,18 @@ import static com.edgechain.app.constants.WebConstants.PINECONE_DELETE_API;
 @RequestMapping("/v1/pinecone")
 public class PineconeController {
 
-  @Autowired private PineconeService pineconeService;
+    @Autowired private PineconeService pineconeService;
 
-  @DeleteMapping("/deleteAll")
-  public ChainResponse delete() {
+    @DeleteMapping("/deleteAll")
+    public ChainResponse delete() {
 
-    Endpoint pineconeEndpoint =
-        new Endpoint(
-            PINECONE_DELETE_API,
-            PINECONE_AUTH_KEY,
-            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+        Endpoint pineconeEndpoint =
+                new Endpoint(
+                        PINECONE_DELETE_API,
+                        PINECONE_AUTH_KEY,
+                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    return this.pineconeService.deleteAll(new PineconeRequest(pineconeEndpoint));
-  }
+        return this.pineconeService.deleteAll(new PineconeRequest(pineconeEndpoint));
+    }
+
 }

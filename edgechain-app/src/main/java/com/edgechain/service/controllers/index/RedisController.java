@@ -18,21 +18,18 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/index/redis")
 public class RedisController {
 
-  @PostMapping("/upsert")
-  public Mono<ChainResponse> upsert(@RequestBody RedisRequest request) {
-    ChainProvider redisUpsert = new RedisUpsertProvider();
+    @PostMapping("/upsert")
+    public Mono<ChainResponse> upsert(@RequestBody RedisRequest request) {
+        ChainProvider redisUpsert = new RedisUpsertProvider();
 
-    ChainWrapper wrapper = new ChainWrapper();
-    return RxJava3Adapter.singleToMono(
-        wrapper.chains(new ChainRequest(request.getInput()), redisUpsert).toSingleWithRetry());
-  }
+        ChainWrapper wrapper = new ChainWrapper();
+        return RxJava3Adapter.singleToMono(wrapper.chains(new ChainRequest(request.getInput()), redisUpsert).toSingleWithRetry());
+    }
+    @PostMapping("/query")
+    public Mono<ChainResponse> query(@RequestBody RedisRequest request) {
+        ChainProvider redisQuery = new RedisQueryProvider(request.getTopK());
 
-  @PostMapping("/query")
-  public Mono<ChainResponse> query(@RequestBody RedisRequest request) {
-    ChainProvider redisQuery = new RedisQueryProvider(request.getTopK());
-
-    ChainWrapper wrapper = new ChainWrapper();
-    return RxJava3Adapter.singleToMono(
-        wrapper.chains(new ChainRequest(request.getInput()), redisQuery).toSingleWithRetry());
-  }
+        ChainWrapper wrapper = new ChainWrapper();
+        return RxJava3Adapter.singleToMono(wrapper.chains(new ChainRequest(request.getInput()), redisQuery).toSingleWithRetry());
+    }
 }
