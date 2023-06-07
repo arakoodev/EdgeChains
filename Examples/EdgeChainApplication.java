@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Import;
 @Import(EdgeChainAutoConfiguration.class)
 public class EdgeChainApplication {
 
-
   @PostConstruct
   public void init() {
     this.loadSentenceModel();
@@ -22,7 +21,7 @@ public class EdgeChainApplication {
 
   public static void main(String[] args) {
 
-    System.setProperty("server.port", "8003"); 
+    System.setProperty("server.port", "8003");
 
     System.setProperty("OPENAI_AUTH_KEY", "");
     System.setProperty("PINECONE_AUTH_KEY", "");
@@ -31,20 +30,17 @@ public class EdgeChainApplication {
     System.setProperty("PINECONE_UPSERT_API", "");
     System.setProperty("PINECONE_DELETE_API", "");
 
-    System.setProperty("spring.data.redis.host","");
-    System.setProperty("spring.data.redis.port","6379");
-    System.setProperty("spring.data.redis.username","default");
+    System.setProperty("spring.data.redis.host", "");
+    System.setProperty("spring.data.redis.port", "6379");
+    System.setProperty("spring.data.redis.username", "default");
     System.setProperty("spring.data.redis.password", "");
-    System.setProperty("spring.data.redis.connect-timeout","120000");
-    System.setProperty("spring.redis.ttl","3600");
+    System.setProperty("spring.data.redis.connect-timeout", "120000");
+    System.setProperty("spring.redis.ttl", "3600");
 
     SpringApplication.run(EdgeChainApplication.class, args);
-
   }
 
   private void loadSentenceModel() {
     LibConstants.sentenceModel = this.getClass().getResourceAsStream("/en-sent.zip");
   }
-
-
 }

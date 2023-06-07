@@ -20,20 +20,21 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/embeddings")
 public class EmbeddingController {
 
-    @PostMapping("/openai")
-    public Mono<ChainResponse> openAiEmbeddings(@RequestBody OpenAiEmbeddingsRequest request) {
-        ChainProvider embeddings = new OpenAiEmbeddingProvider(request.getEndpoint());
+  @PostMapping("/openai")
+  public Mono<ChainResponse> openAiEmbeddings(@RequestBody OpenAiEmbeddingsRequest request) {
+    ChainProvider embeddings = new OpenAiEmbeddingProvider(request.getEndpoint());
 
-        ChainWrapper wrapper = new ChainWrapper();
-        return RxJava3Adapter.singleToMono(wrapper.chains(new ChainRequest(request.getInput()), embeddings).toSingleWithRetry());
-    }
+    ChainWrapper wrapper = new ChainWrapper();
+    return RxJava3Adapter.singleToMono(
+        wrapper.chains(new ChainRequest(request.getInput()), embeddings).toSingleWithRetry());
+  }
 
-    @PostMapping("/doc2vec")
-    public Mono<ChainResponse> doc2VecEmbeddings(@RequestBody Doc2VecEmbeddingsRequest request) {
-        ChainProvider embeddings = new Doc2VecEmbeddingProvider(ServiceConstants.embeddingDoc2VecModel);
-        ChainWrapper wrapper = new ChainWrapper();
+  @PostMapping("/doc2vec")
+  public Mono<ChainResponse> doc2VecEmbeddings(@RequestBody Doc2VecEmbeddingsRequest request) {
+    ChainProvider embeddings = new Doc2VecEmbeddingProvider(ServiceConstants.embeddingDoc2VecModel);
+    ChainWrapper wrapper = new ChainWrapper();
 
-        return RxJava3Adapter.singleToMono(wrapper.chains(new ChainRequest(request.getInput()), embeddings).toSingleWithRetry());
-    }
-
+    return RxJava3Adapter.singleToMono(
+        wrapper.chains(new ChainRequest(request.getInput()), embeddings).toSingleWithRetry());
+  }
 }

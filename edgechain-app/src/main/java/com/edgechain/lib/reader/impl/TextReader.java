@@ -17,41 +17,41 @@ import java.io.IOException;
 @Service
 public class TextReader extends Reader {
 
-    @Override
-    public String[] readByChunkSize(MultipartFile file, int chunkSize) {
+  @Override
+  public String[] readByChunkSize(MultipartFile file, int chunkSize) {
 
-        BodyContentHandler contentHandler = new BodyContentHandler();
-        Metadata metadata = new Metadata();
-        ParseContext parseContext=new ParseContext();
-        TXTParser TexTParser = new TXTParser();
+    BodyContentHandler contentHandler = new BodyContentHandler();
+    Metadata metadata = new Metadata();
+    ParseContext parseContext = new ParseContext();
+    TXTParser TexTParser = new TXTParser();
 
-        try {
-            TexTParser.parse(file.getInputStream(), contentHandler, metadata,parseContext);
-            Chunker chunker = new Chunker();
-            return chunker.byChunkSize(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "), chunkSize);
+    try {
+      TexTParser.parse(file.getInputStream(), contentHandler, metadata, parseContext);
+      Chunker chunker = new Chunker();
+      return chunker.byChunkSize(
+          Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "), chunkSize);
 
-        } catch (IOException | SAXException | TikaException e) {
-            throw new RuntimeException(e);
-        }
-
+    } catch (IOException | SAXException | TikaException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    @Override
-    public String[] readBySentence(MultipartFile file) {
-        BodyContentHandler contentHandler = new BodyContentHandler();
-        Metadata metadata = new Metadata();
-        ParseContext parseContext=new ParseContext();
-        TXTParser TexTParser = new TXTParser();
+  @Override
+  public String[] readBySentence(MultipartFile file) {
+    BodyContentHandler contentHandler = new BodyContentHandler();
+    Metadata metadata = new Metadata();
+    ParseContext parseContext = new ParseContext();
+    TXTParser TexTParser = new TXTParser();
 
-        try {
-            TexTParser.parse(file.getInputStream(), contentHandler, metadata,parseContext);
+    try {
+      TexTParser.parse(file.getInputStream(), contentHandler, metadata, parseContext);
 
-            Chunker chunker = new Chunker();
-            return chunker.bySentence(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
+      Chunker chunker = new Chunker();
+      return chunker.bySentence(
+          Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
 
-        } catch (IOException | SAXException | TikaException e) {
-            throw new RuntimeException(e);
-        }
+    } catch (IOException | SAXException | TikaException e) {
+      throw new RuntimeException(e);
     }
-
+  }
 }
