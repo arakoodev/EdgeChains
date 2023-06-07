@@ -1,8 +1,8 @@
 package com.edgechain.app.services;
 
-import com.edgechain.app.request.OpenAiChatRequest;
-import com.edgechain.app.request.OpenAiCompletionRequest;
-import com.edgechain.app.request.OpenAiEmbeddingsRequest;
+import com.edgechain.lib.request.OpenAiChatRequest;
+import com.edgechain.lib.request.OpenAiCompletionRequest;
+import com.edgechain.lib.request.OpenAiEmbeddingsRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -14,21 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Component
 public interface OpenAiService extends ToolService {
 
-  @PostMapping(
-      value = "/chat-completion",
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(value = "/chat-completion", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse chatCompletion(@RequestBody OpenAiChatRequest request);
 
-  @PostMapping(
-      value = "/completion",
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(value = "/completion", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse completion(@RequestBody OpenAiCompletionRequest request);
 
-  @PostMapping(
-      value = "/embeddings",
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-  ChainResponse embeddings(@RequestBody OpenAiEmbeddingsRequest request);
+
 }

@@ -10,15 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Component
 public interface PromptService extends ToolService {
 
-  @GetMapping(
-      value = "/wiki-summary",
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+  @GetMapping(value = "/wiki-summary", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse getWikiSummaryPrompt();
 
-  @GetMapping(
-      value = "/index-query",
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+  @GetMapping(value = "/index-query", consumes = {MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse getIndexQueryPrompt();
 }
