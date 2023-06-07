@@ -106,15 +106,15 @@
                     <artifactId>hdf5</artifactId>
                 </exclusion>
 
-                <exclusion>
-                    <groupId>org.bytedeco</groupId>
-                    <artifactId>javacpp</artifactId>
-                </exclusion>
+<!--                <exclusion>-->
+<!--                    <groupId>org.bytedeco</groupId>-->
+<!--                    <artifactId>javacpp</artifactId>-->
+<!--                </exclusion>-->
 
-                <exclusion>
-                    <groupId>org.bytedeco</groupId>
-                    <artifactId>openblas</artifactId>
-                </exclusion>
+<!--                <exclusion>-->
+<!--                    <groupId>org.bytedeco</groupId>-->
+<!--                    <artifactId>openblas</artifactId>-->
+<!--                </exclusion>-->
 
                 <exclusion>
                     <groupId>org.bytedeco</groupId>
@@ -128,18 +128,8 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>openblas</artifactId>
-            <version>0.3.5-1.4.4</version>
-        </dependency>
 
 
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>openblas-platform</artifactId>
-            <version>0.3.5-1.4.4</version>
-        </dependency>
 
         <dependency>
             <groupId>org.deeplearning4j</groupId>
@@ -153,10 +143,10 @@
             <version>1.0.0-M2.1</version>
             <exclusions>
 
-                <exclusion>
-                    <groupId>org.bytedeco</groupId>
-                    <artifactId>openblas-platform</artifactId>
-                </exclusion>
+<!--                <exclusion>-->
+<!--                    <groupId>org.bytedeco</groupId>-->
+<!--                    <artifactId>openblas-platform</artifactId>-->
+<!--                </exclusion>-->
 
                 <exclusion>
                     <groupId>org.bytedeco</groupId>
