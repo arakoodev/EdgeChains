@@ -129,6 +129,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>openblas</artifactId>
+            <version>0.2.20-1.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>openblas-platform</artifactId>
+            <version>0.2.20-1.4</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-nlp</artifactId>
             <version>1.0.0-M2.1</version>
