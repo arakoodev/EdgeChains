@@ -17,24 +17,51 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>4.3.1</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>io.reactivex.rxjava3</groupId>
-            <artifactId>rxjava</artifactId>
-            <version>3.1.6</version>
-        </dependency>
 
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-jackson</artifactId>
             <version>9.7.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.opennlp/opennlp-tools -->
+        <dependency>
+            <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-tools</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.reactivex.rxjava3</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>3.1.6</version>
         </dependency>
 
         <dependency>
@@ -47,12 +74,6 @@
             <groupId>io.projectreactor.addons</groupId>
             <artifactId>reactor-adapter</artifactId>
             <version>3.5.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.flyspring</groupId>
-            <artifactId>edgechain-lib</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <dependency>
@@ -73,13 +94,100 @@
             <version>2.7.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.deeplearning4j/deeplearning4j-core -->
+        <dependency>
+            <groupId>org.deeplearning4j</groupId>
+            <artifactId>deeplearning4j-core</artifactId>
+            <version>1.0.0-M2.1</version>
+            <exclusions>
+
+                <exclusion>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>hdf5</artifactId>
+                </exclusion>
+
+<!--                <exclusion>-->
+<!--                    <groupId>org.bytedeco</groupId>-->
+<!--                    <artifactId>javacpp</artifactId>-->
+<!--                </exclusion>-->
+
+<!--                <exclusion>-->
+<!--                    <groupId>org.bytedeco</groupId>-->
+<!--                    <artifactId>openblas</artifactId>-->
+<!--                </exclusion>-->
+
+                <exclusion>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>hdf5-platform</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>org.datavec</groupId>
+                    <artifactId>datavec-data-image</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+
+
+        <dependency>
+            <groupId>org.deeplearning4j</groupId>
+            <artifactId>deeplearning4j-nlp</artifactId>
+            <version>1.0.0-M2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native-platform</artifactId>
+            <version>1.0.0-M2.1</version>
+            <exclusions>
+
+<!--                <exclusion>-->
+<!--                    <groupId>org.bytedeco</groupId>-->
+<!--                    <artifactId>openblas-platform</artifactId>-->
+<!--                </exclusion>-->
+
+                <exclusion>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>mkl-platform</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>org.nd4j</groupId>
+                    <artifactId>nd4j-native</artifactId>
+                </exclusion>
+
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native</artifactId>
+            <version>1.0.0-M2.1</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native</artifactId>
+            <version>1.0.0-M2.1</version>
+            <classifier>windows-x86_64</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native</artifactId>
+            <version>1.0.0-M2.1</version>
+            <classifier>linux-x86_64</classifier>
+        </dependency>
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
 
 
     </dependencies>
@@ -114,6 +222,7 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                 </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
@@ -163,5 +272,7 @@
                 </plugin>
             </plugins>
         </build>
+
+
 
 </project>

@@ -18,18 +18,10 @@ jobs:
 
       - name: Build flyfly project
         working-directory: ./FlySpring/flyfly
-        run: mvn clean package 
+        run: mvn clean package
 
       - name: Copy flyfly JAR to Examples folder and rename
         run: cp ./FlySpring/flyfly/target/flyfly-0.0.1-SNAPSHOT.jar ./Examples/flyfly.jar
-
-      - name: Build edgechain-lib project
-        working-directory: ./edgechain-library
-        run: mvn clean package
-
-      - name: Install edgechain-lib JAR to local repository
-        working-directory: ./edgechain-library/target
-        run: mvn install:install-file -Dfile=edgechain-lib-1.0.0.jar -DgroupId=com.flyspring -DartifactId=edgechain-lib -Dversion=1.0.0 -Dpackaging=jar
 
       - name: Build edgechain-app project
         working-directory: ./edgechain-app
