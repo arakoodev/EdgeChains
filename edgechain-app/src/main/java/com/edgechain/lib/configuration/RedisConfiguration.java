@@ -16,45 +16,43 @@ import redis.clients.jedis.JedisPooled;
 @EnableRedisRepositories
 public class RedisConfiguration {
 
-    @Value("${spring.data.redis.host}")
-    private String url;
+  @Value("${spring.data.redis.host}")
+  private String url;
 
-    @Value("${spring.data.redis.port}")
-    private int port;
+  @Value("${spring.data.redis.port}")
+  private int port;
 
-    @Value("${spring.data.redis.username}")
-    private String username;
+  @Value("${spring.data.redis.username}")
+  private String username;
 
-    @Value("${spring.data.redis.password}")
-    private String password;
+  @Value("${spring.data.redis.password}")
+  private String password;
 
-    @Bean
-    public JedisPooled jedisPooled() {
-        return new JedisPooled(url, port,username,password);
-    }
+  @Bean
+  public JedisPooled jedisPooled() {
+    return new JedisPooled(url, port, username, password);
+  }
 
-    @Bean
-    public JedisConnectionFactory jedisConnectionFactory() {
-        RedisStandaloneConfiguration redisConfiguration = new RedisStandaloneConfiguration();
-        redisConfiguration.setUsername(username);
-        redisConfiguration.setPassword(RedisPassword.of(password));
-        redisConfiguration.setPort(port);
-        redisConfiguration.setHostName(url);
-        return new JedisConnectionFactory(redisConfiguration);
-    }
+  @Bean
+  public JedisConnectionFactory jedisConnectionFactory() {
+    RedisStandaloneConfiguration redisConfiguration = new RedisStandaloneConfiguration();
+    redisConfiguration.setUsername(username);
+    redisConfiguration.setPassword(RedisPassword.of(password));
+    redisConfiguration.setPort(port);
+    redisConfiguration.setHostName(url);
+    return new JedisConnectionFactory(redisConfiguration);
+  }
 
-
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(jedisConnectionFactory());
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashKeySerializer(new GenericJackson2JsonRedisSerializer());
-        redisTemplate.setHashKeySerializer(new GenericJackson2JsonRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        redisTemplate.setEnableTransactionSupport(true);
-        redisTemplate.afterPropertiesSet();
-        return redisTemplate;
-    }
+  @Bean
+  public RedisTemplate<String, Object> redisTemplate() {
+    RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+    redisTemplate.setConnectionFactory(jedisConnectionFactory());
+    redisTemplate.setKeySerializer(new StringRedisSerializer());
+    redisTemplate.setHashKeySerializer(new GenericJackson2JsonRedisSerializer());
+    redisTemplate.setHashKeySerializer(new GenericJackson2JsonRedisSerializer());
+    redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+    redisTemplate.setEnableTransactionSupport(true);
+    redisTemplate.afterPropertiesSet();
+    return redisTemplate;
+  }
 }

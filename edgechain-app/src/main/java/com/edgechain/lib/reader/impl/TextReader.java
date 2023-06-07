@@ -9,7 +9,6 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.txt.TXTParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -18,45 +17,44 @@ import java.io.InputStream;
 @Service
 public class TextReader extends Reader {
 
-    @Override
-    public String[] readByChunkSize(InputStream inputStream, int chunkSize) {
+  @Override
+  public String[] readByChunkSize(InputStream inputStream, int chunkSize) {
 
-        BodyContentHandler contentHandler = new BodyContentHandler();
-        Metadata metadata = new Metadata();
-        ParseContext parseContext=new ParseContext();
-        TXTParser txtParser = new TXTParser();
+    BodyContentHandler contentHandler = new BodyContentHandler();
+    Metadata metadata = new Metadata();
+    ParseContext parseContext = new ParseContext();
+    TXTParser txtParser = new TXTParser();
 
-        try {
-            txtParser.parse(inputStream, contentHandler, metadata,parseContext);
-            Chunker chunker = new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
-            return chunker.byChunkSize(chunkSize);
+    try {
+      txtParser.parse(inputStream, contentHandler, metadata, parseContext);
+      Chunker chunker =
+          new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
+      return chunker.byChunkSize(chunkSize);
 
-        } catch (IOException | SAXException | TikaException e) {
-            throw new RuntimeException(e);
-        }
-
+    } catch (IOException | SAXException | TikaException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    /**
-     * If you are using Reader & Chunker in a different project; make sure you import OpenNLP & also use en-sent.zip file as an InputStream
-     */
-    @Override
-    public String[] readBySentence(InputStream modelInputStream, InputStream fileInputStream) {
-        BodyContentHandler contentHandler = new BodyContentHandler();
-        Metadata metadata = new Metadata();
-        ParseContext parseContext=new ParseContext();
-        TXTParser txtParser = new TXTParser();
+  /**
+   * If you are using Reader & Chunker in a different project; make sure you import OpenNLP & also
+   * use en-sent.zip file as an InputStream
+   */
+  @Override
+  public String[] readBySentence(InputStream modelInputStream, InputStream fileInputStream) {
+    BodyContentHandler contentHandler = new BodyContentHandler();
+    Metadata metadata = new Metadata();
+    ParseContext parseContext = new ParseContext();
+    TXTParser txtParser = new TXTParser();
 
-        try {
-            txtParser.parse(fileInputStream, contentHandler, metadata,parseContext);
-            Chunker chunker = new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
-            return chunker.bySentence(modelInputStream);
+    try {
+      txtParser.parse(fileInputStream, contentHandler, metadata, parseContext);
+      Chunker chunker =
+          new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
+      return chunker.bySentence(modelInputStream);
 
-        } catch (IOException | SAXException | TikaException e) {
-            throw new RuntimeException(e);
-        }
+    } catch (IOException | SAXException | TikaException e) {
+      throw new RuntimeException(e);
     }
-
-
-
+  }
 }

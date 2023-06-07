@@ -10,8 +10,7 @@ public class CompletionRequest {
   private Double frequency_penalty;
   private Double presence_penalty;
 
-  public CompletionRequest() {
-  }
+  public CompletionRequest() {}
 
   public CompletionRequest(
       String prompt,
