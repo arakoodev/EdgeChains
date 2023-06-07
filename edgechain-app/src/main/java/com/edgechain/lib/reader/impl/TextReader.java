@@ -13,45 +13,50 @@ import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 public class TextReader extends Reader {
 
-  @Override
-  public String[] readByChunkSize(MultipartFile file, int chunkSize) {
+    @Override
+    public String[] readByChunkSize(InputStream inputStream, int chunkSize) {
 
-    BodyContentHandler contentHandler = new BodyContentHandler();
-    Metadata metadata = new Metadata();
-    ParseContext parseContext = new ParseContext();
-    TXTParser TexTParser = new TXTParser();
+        BodyContentHandler contentHandler = new BodyContentHandler();
+        Metadata metadata = new Metadata();
+        ParseContext parseContext=new ParseContext();
+        TXTParser txtParser = new TXTParser();
 
-    try {
-      TexTParser.parse(file.getInputStream(), contentHandler, metadata, parseContext);
-      Chunker chunker = new Chunker();
-      return chunker.byChunkSize(
-          Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "), chunkSize);
+        try {
+            txtParser.parse(inputStream, contentHandler, metadata,parseContext);
+            Chunker chunker = new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
+            return chunker.byChunkSize(chunkSize);
 
-    } catch (IOException | SAXException | TikaException e) {
-      throw new RuntimeException(e);
+        } catch (IOException | SAXException | TikaException e) {
+            throw new RuntimeException(e);
+        }
+
     }
-  }
 
-  @Override
-  public String[] readBySentence(MultipartFile file) {
-    BodyContentHandler contentHandler = new BodyContentHandler();
-    Metadata metadata = new Metadata();
-    ParseContext parseContext = new ParseContext();
-    TXTParser TexTParser = new TXTParser();
+    /**
+     * If you are using Reader & Chunker in a different project; make sure you import OpenNLP & also use en-sent.zip file as an InputStream
+     */
+    @Override
+    public String[] readBySentence(InputStream modelInputStream, InputStream fileInputStream) {
+        BodyContentHandler contentHandler = new BodyContentHandler();
+        Metadata metadata = new Metadata();
+        ParseContext parseContext=new ParseContext();
+        TXTParser txtParser = new TXTParser();
 
-    try {
-      TexTParser.parse(file.getInputStream(), contentHandler, metadata, parseContext);
+        try {
+            txtParser.parse(fileInputStream, contentHandler, metadata,parseContext);
+            Chunker chunker = new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
+            return chunker.bySentence(modelInputStream);
 
-      Chunker chunker = new Chunker();
-      return chunker.bySentence(
-          Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
-
-    } catch (IOException | SAXException | TikaException e) {
-      throw new RuntimeException(e);
+        } catch (IOException | SAXException | TikaException e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
+
+
+
 }

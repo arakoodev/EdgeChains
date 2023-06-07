@@ -8,6 +8,9 @@ import com.edgechain.lib.rxjava.provider.ChainProvider;
 import com.edgechain.lib.rxjava.request.ChainRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -34,10 +37,10 @@ public class OpenAiChatCompletionProvider extends ChainProvider {
         .transform(s -> new ChainResponse(s.getChoices().get(0).getMessage().getContent()));
   }
 
-  //  private String parse(String body) throws JsonProcessingException {
-  //    JsonNode outputJsonNode = new ObjectMapper().readTree(body);
-  //    System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
-  //
-  //    return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
-  //  }
+//  private String parse(String body) throws JsonProcessingException {
+//    JsonNode outputJsonNode = new ObjectMapper().readTree(body);
+//    System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
+//
+//    return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
+//  }
 }

@@ -35,77 +35,76 @@ public class PineconeIndexChain extends IndexChainService {
   @Override
   public IndexChain upsert(WordVec wordVec) {
     return new IndexChain(
-        Observable.create(
-            emitter -> {
-              try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.set("Api-Key", endpoint.getApiKey());
+            Observable.create(
+                    emitter -> {
+                      try {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        headers.set("Api-Key", endpoint.getApiKey());
 
-                Map<String, Object> embeddings = new HashMap<>();
+                        Map<String, Object> embeddings = new HashMap<>();
 
-                embeddings.put("id", wordVec.getId());
-                embeddings.put("values", wordVec.getValues());
+                        embeddings.put("id", wordVec.getId());
+                        embeddings.put("values", wordVec.getValues());
 
-                MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-                body.add("vectors", embeddings);
-                if (!namespace.isBlank()) body.add("namespace", namespace);
+                        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+                        body.add("vectors", embeddings);
+                        if (!namespace.isBlank()) body.add("namespace", namespace);
 
-                HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
+                        HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
-                ResponseEntity<String> response =
-                    new RestTemplate()
-                        .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                        ResponseEntity<String> response =
+                                new RestTemplate().exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
 
-                emitter.onNext(new ChainResponse(response.getBody()));
-                emitter.onComplete();
+                        emitter.onNext(new ChainResponse(response.getBody()));
+                        emitter.onComplete();
 
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
+                      } catch (final Exception e) {
+                        emitter.onError(e);
+                      }
+                    }),
+            endpoint);
   }
 
   @Override
   public EdgeChain<List<WordVec>> query(WordVec wordVec, int topK) {
 
     return new EdgeChain<>(
-        Observable.create(
-            emitter -> {
-              try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.set("Api-Key", endpoint.getApiKey());
+            Observable.create(
+                    emitter -> {
+                      try {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        headers.set("Api-Key", endpoint.getApiKey());
 
-                // Prepare the request payload using a LinkedHashMap to maintain key order
-                Map<String, Object> payload = new LinkedHashMap<>();
-                payload.put("includeValues", true);
-                payload.put("includeMetadata", false);
-                payload.put("vector", wordVec.getValues());
-                payload.put("top_k", topK);
+                        // Prepare the request payload using a LinkedHashMap to maintain key order
+                        Map<String, Object> payload = new LinkedHashMap<>();
+                        payload.put("includeValues", true);
+                        payload.put("includeMetadata", false);
+                        payload.put("vector", wordVec.getValues());
+                        payload.put("top_k", topK);
 
-                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
-                ResponseEntity<String> response =
-                    new RestTemplate()
-                        .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+                        ResponseEntity<String> response =
+                                new RestTemplate()
+                                        .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
 
-                emitter.onNext(this.parsePredict(response.getBody()));
 
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
+                        emitter.onNext(this.parsePredict(response.getBody()));
+
+                      } catch (final Exception e) {
+                        emitter.onError(e);
+                      }
+                    }),
+            endpoint);
   }
 
   @Override
   public IndexChain deleteByIds(List<String> vectorIds) {
     return new IndexChain(
-        Observable.create(
-            emitter -> {
+            Observable.create(emitter -> {
               try {
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -114,55 +113,53 @@ public class PineconeIndexChain extends IndexChainService {
 
                 Map<String, Object> body = new HashMap<>();
 
-                body.put("ids", vectorIds);
+                body.put("ids",vectorIds);
                 body.put("deleteAll", false);
 
                 if (!namespace.isEmpty()) body.put("namespace", namespace);
 
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-                new RestTemplate()
-                    .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                new RestTemplate().exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
 
-                emitter.onNext(
-                    new ChainResponse(
-                        "Word embeddings of the provided ids are successfully deleted"));
+                emitter.onNext(new ChainResponse("Word embeddings of the provided ids are successfully deleted"));
                 emitter.onComplete();
 
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            })
+    );
   }
 
   @Override
   public IndexChain deleteAll() {
     return new IndexChain(
-        Observable.create(
-            emitter -> {
-              try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.set("Api-Key", endpoint.getApiKey());
+            Observable.create(
+                    emitter -> {
+                      try {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        headers.set("Api-Key", endpoint.getApiKey());
 
-                Map<String, Object> body = new HashMap<>();
-                body.put("deleteAll", true);
+                        Map<String, Object> body = new HashMap<>();
+                        body.put("deleteAll", true);
 
-                if (!namespace.isEmpty()) body.put("namespace", namespace);
+                        if (!namespace.isEmpty()) body.put("namespace", namespace);
 
-                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+                        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-                new RestTemplate()
-                    .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                        new RestTemplate()
+                                .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
 
-                emitter.onNext(new ChainResponse("Word embeddings deleted successfully."));
-                emitter.onComplete();
+                        emitter.onNext(new ChainResponse("Word embeddings deleted successfully."));
+                        emitter.onComplete();
 
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }));
+                      } catch (final Exception e) {
+                        emitter.onError(e);
+                      }
+                    }));
   }
 
   private List<WordVec> parsePredict(String body) throws IOException {

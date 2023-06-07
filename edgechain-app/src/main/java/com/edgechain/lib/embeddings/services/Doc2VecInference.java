@@ -12,23 +12,24 @@ import java.util.List;
 
 public class Doc2VecInference {
 
-  private final ParagraphVectors paragraphVectors;
-  private final String input;
+    private final ParagraphVectors paragraphVectors;
+    private final String input;
 
-  public Doc2VecInference(ParagraphVectors paragraphVectors, String input) {
-    this.paragraphVectors = paragraphVectors;
-    this.input = input;
-  }
+    public Doc2VecInference(ParagraphVectors paragraphVectors, String input) {
+        this.paragraphVectors = paragraphVectors;
+        this.input = input;
+    }
 
-  public List<Float> inferVectors() {
 
-    TokenizerFactory t = new DefaultTokenizerFactory();
-    t.setTokenPreProcessor(new CommonPreprocessor());
+    public List<Float> inferVectors() {
 
-    paragraphVectors.setTokenizerFactory(t);
-    INDArray indArray = paragraphVectors.inferVector(input);
+        TokenizerFactory t = new DefaultTokenizerFactory();
+        t.setTokenPreProcessor(new CommonPreprocessor());
 
-    Float[] floatArray = ArrayUtils.toObject(indArray.toFloatVector());
-    return Arrays.asList(floatArray);
-  }
+        paragraphVectors.setTokenizerFactory(t);
+        INDArray indArray = paragraphVectors.inferVector(input);
+
+        Float[] floatArray = ArrayUtils.toObject(indArray.toFloatVector());
+        return Arrays.asList(floatArray);
+    }
 }

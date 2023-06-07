@@ -7,7 +7,8 @@ public class OpenAiEmbeddingsRequest {
   private Endpoint endpoint;
   private String input;
 
-  public OpenAiEmbeddingsRequest() {}
+  public OpenAiEmbeddingsRequest() {
+  }
 
   public OpenAiEmbeddingsRequest(Endpoint endpoint, String input) {
     this.endpoint = endpoint;
