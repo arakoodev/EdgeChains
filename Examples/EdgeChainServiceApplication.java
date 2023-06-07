@@ -42,8 +42,6 @@ public class EdgeChainServiceApplication implements CommandLineRunner {
 
   private void readEmbeddingDoc2VecModel() throws Exception {
 
-    LibConstants.sentenceModel = this.getClass().getResourceAsStream("/en-sent.zip");
-
     String modelPath = "R:\\doc_vector.bin";
 
     File file = new File(modelPath);

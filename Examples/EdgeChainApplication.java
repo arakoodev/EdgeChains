@@ -41,6 +41,6 @@ public class EdgeChainApplication {
   }
 
   private void loadSentenceModel() {
-    LibConstants.sentenceModel = this.getClass().getResourceAsStream("/en-sent.zip");
+    WebConstants.sentenceModel = this.getClass().getResourceAsStream("/en-sent.zip");
   }
 }
