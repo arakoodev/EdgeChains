@@ -57,12 +57,12 @@ public class EdgeChainApplication {
 
     if (!file.exists()) {
       logger.warn(
-              "It seems like, you haven't trained the model or correctly specified Doc2Vec model"
-                      + " path.");
+          "It seems like, you haven't trained the model or correctly specified Doc2Vec model"
+              + " path.");
     } else {
       logger.info("Loading...");
       ServiceConstants.embeddingDoc2VecModel =
-              WordVectorSerializer.readParagraphVectors(new FileInputStream(modelPath));
+          WordVectorSerializer.readParagraphVectors(new FileInputStream(modelPath));
       logger.info("Doc2Vec model is successfully loaded...");
     }
   }

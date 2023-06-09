@@ -1,6 +1,5 @@
 package com.edgechain.lib.reader;
 
-
 import java.io.InputStream;
 import java.io.Serializable;
 
