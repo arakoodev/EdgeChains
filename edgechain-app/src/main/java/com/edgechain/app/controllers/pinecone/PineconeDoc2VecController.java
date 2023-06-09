@@ -35,24 +35,25 @@ public class PineconeDoc2VecController {
   @Autowired private PineconeService pineconeService;
   @Autowired private RedisHistoryContextService redisHistoryContextService;
 
+  @Autowired private PdfReader pdfReader;
+
   @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public void upsert(@RequestBody MultipartFile file) throws IOException {
 
-    PdfReader pdfReader = new PdfReader();
+    final Endpoint pineconeEndpoint =
+        new Endpoint(
+            PINECONE_UPSERT_API,
+            PINECONE_AUTH_KEY,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
+    RetrievalChain retrievalChain =
+        new PineconeRetrievalChain(pineconeEndpoint, embeddingService, pineconeService);
 
     String[] arr = pdfReader.readByChunkSize(file.getInputStream(), 512);
     IntStream.range(0, arr.length)
         .parallel()
         .forEach(
             i -> {
-              Endpoint pineconeEndpoint =
-                  new Endpoint(
-                      PINECONE_UPSERT_API,
-                      PINECONE_AUTH_KEY,
-                      new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-              RetrievalChain retrievalChain =
-                  new PineconeRetrievalChain(pineconeEndpoint, embeddingService, pineconeService);
               retrievalChain.upsert(arr[i]);
             });
   }

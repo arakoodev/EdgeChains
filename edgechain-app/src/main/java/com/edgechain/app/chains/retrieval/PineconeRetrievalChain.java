@@ -17,10 +17,14 @@ import io.reactivex.rxjava3.core.Observable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.adapter.rxjava.RxJava3Adapter;
 import reactor.core.publisher.Mono;
 
 public class PineconeRetrievalChain extends RetrievalChain {
+
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private Endpoint embeddingEndpoint;
 
@@ -41,6 +45,7 @@ public class PineconeRetrievalChain extends RetrievalChain {
     this.indexEndpoint = indexEndpoint;
     this.embeddingService = embeddingService;
     this.pineconeService = pineconeService;
+    logger.info("Using OpenAI Embedding Provider");
   }
 
   public PineconeRetrievalChain(
@@ -58,6 +63,7 @@ public class PineconeRetrievalChain extends RetrievalChain {
     this.openAiService = openAiService;
     this.promptService = promptService;
     this.pineconeService = pineconeService;
+    logger.info("Using OpenAI Embedding Provider");
   }
 
   // For Doc2Vec
@@ -66,6 +72,7 @@ public class PineconeRetrievalChain extends RetrievalChain {
     this.indexEndpoint = indexEndpoint;
     this.embeddingService = embeddingService;
     this.pineconeService = pineconeService;
+    logger.info("Using Doc2Vec Embedding Provider");
   }
 
   public PineconeRetrievalChain(
@@ -81,6 +88,7 @@ public class PineconeRetrievalChain extends RetrievalChain {
     this.pineconeService = pineconeService;
     this.promptService = promptService;
     this.openAiService = openAiService;
+    logger.info("Using Doc2Vec Embedding Provider");
   }
 
   @Override

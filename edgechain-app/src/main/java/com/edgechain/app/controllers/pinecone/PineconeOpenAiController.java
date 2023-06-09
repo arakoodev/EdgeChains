@@ -42,29 +42,25 @@ public class PineconeOpenAiController {
   public void upsertByChunk(@RequestParam(value = "file") MultipartFile file) throws IOException {
 
     String[] arr = pdfReader.readByChunkSize(file.getInputStream(), 512);
-    IntStream.range(0, arr.length)
-        .parallel()
-        .forEach(
-            i -> {
-              Endpoint embeddingEndpoint =
-                  new Endpoint(
-                      OPENAI_EMBEDDINGS_API,
-                      OPENAI_AUTH_KEY,
-                      "text-embedding-ada-002",
-                      new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-              Endpoint pineconeEndpoint =
-                  new Endpoint(
-                      PINECONE_UPSERT_API,
-                      PINECONE_AUTH_KEY,
-                      new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    final Endpoint embeddingEndpoint =
+        new Endpoint(
+            OPENAI_EMBEDDINGS_API,
+            OPENAI_AUTH_KEY,
+            "text-embedding-ada-002",
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-              RetrievalChain retrievalChain =
-                  new PineconeRetrievalChain(
-                      embeddingEndpoint, pineconeEndpoint, embeddingService, pineconeService);
+    final Endpoint pineconeEndpoint =
+        new Endpoint(
+            PINECONE_UPSERT_API,
+            PINECONE_AUTH_KEY,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-              retrievalChain.upsert(arr[i]);
-            });
+    RetrievalChain retrievalChain =
+        new PineconeRetrievalChain(
+            embeddingEndpoint, pineconeEndpoint, embeddingService, pineconeService);
+
+    IntStream.range(0, arr.length).parallel().forEach(i -> retrievalChain.upsert(arr[i]));
   }
 
   @PostMapping("/query")

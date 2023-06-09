@@ -40,15 +40,9 @@ public class RedisDoc2VecController {
   public void upsertByChunk(@RequestParam(value = "file") MultipartFile file) throws IOException {
 
     String[] arr = pdfReader.readByChunkSize(file.getInputStream(), 512);
+    RetrievalChain retrievalChain = new RedisRetrievalChain(embeddingService, redisService);
 
-    IntStream.range(0, arr.length)
-        .parallel()
-        .forEach(
-            i -> {
-              RetrievalChain retrievalChain =
-                  new RedisRetrievalChain(embeddingService, redisService);
-              retrievalChain.upsert(arr[i]);
-            });
+    IntStream.range(0, arr.length).parallel().forEach(i -> retrievalChain.upsert(arr[i]));
   }
 
   @PostMapping("/query")

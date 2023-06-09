@@ -14,10 +14,14 @@ import io.reactivex.rxjava3.core.Observable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.adapter.rxjava.RxJava3Adapter;
 import reactor.core.publisher.Mono;
 
 public class RedisRetrievalChain extends RetrievalChain {
+
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private Endpoint embeddingEndpoint;
   private Endpoint chatEndpoint;
@@ -32,6 +36,7 @@ public class RedisRetrievalChain extends RetrievalChain {
     this.embeddingEndpoint = embeddingEndpoint;
     this.embeddingService = embeddingService;
     this.redisService = redisService;
+    logger.info("Using OpenAI Embedding Provider");
   }
 
   public RedisRetrievalChain(
@@ -47,12 +52,14 @@ public class RedisRetrievalChain extends RetrievalChain {
     this.redisService = redisService;
     this.promptService = promptService;
     this.openAiService = openAiService;
+    logger.info("Using OpenAI Embedding Provider");
   }
 
   // For Doc2Vec
   public RedisRetrievalChain(EmbeddingService embeddingService, RedisService redisService) {
     this.embeddingService = embeddingService;
     this.redisService = redisService;
+    logger.info("Using Doc2Vec Embedding Provider");
   }
 
   public RedisRetrievalChain(
@@ -66,6 +73,7 @@ public class RedisRetrievalChain extends RetrievalChain {
     this.redisService = redisService;
     this.promptService = promptService;
     this.openAiService = openAiService;
+    logger.info("Using Doc2Vec Embedding Provider");
   }
 
   @Override

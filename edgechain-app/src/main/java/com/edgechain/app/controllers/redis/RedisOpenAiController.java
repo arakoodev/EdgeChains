@@ -40,27 +40,23 @@ public class RedisOpenAiController {
 
     //    String[] arr = pdfReader.readBySentence(WebConstants.sentenceModel,
     // file.getInputStream());
+    Endpoint embeddingEndpoint =
+        new Endpoint(
+            OPENAI_EMBEDDINGS_API,
+            OPENAI_AUTH_KEY,
+            "text-embedding-ada-002",
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
+    RetrievalChain retrievalChain =
+        new RedisRetrievalChain(embeddingEndpoint, embeddingService, redisService);
+
     String[] arr = pdfReader.readByChunkSize(file.getInputStream(), 512);
-    IntStream.range(0, arr.length)
-        .parallel()
-        .forEach(
-            i -> {
-              Endpoint embeddingEndpoint =
-                  new Endpoint(
-                      OPENAI_EMBEDDINGS_API,
-                      OPENAI_AUTH_KEY,
-                      "text-embedding-ada-002",
-                      new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-              RetrievalChain retrievalChain =
-                  new RedisRetrievalChain(embeddingEndpoint, embeddingService, redisService);
-
-              retrievalChain.upsert(arr[i]);
-            });
+    IntStream.range(0, arr.length).parallel().forEach(i -> retrievalChain.upsert(arr[i]));
   }
 
   @PostMapping("/query")
   public Mono<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
+
     Endpoint embeddingEndpoint =
         new Endpoint(
             OPENAI_EMBEDDINGS_API,
