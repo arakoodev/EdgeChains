@@ -11,14 +11,13 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.utils.FloatUtils;
 import com.edgechain.lib.utils.JsonUtils;
 import io.reactivex.rxjava3.core.Observable;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.search.*;
-
-import java.util.*;
 
 @Service
 public class RedisIndexChain extends IndexChainService {
@@ -109,7 +108,6 @@ public class RedisIndexChain extends IndexChainService {
   }
 
   private void createSearchIndex() {
-
     try {
       Map<String, Object> map = jedisPooled.ftInfo(INDEX_NAME);
       if (Objects.nonNull(map)) {
@@ -137,18 +135,3 @@ public class RedisIndexChain extends IndexChainService {
     logger.info("Redis search vector_index created ~ " + ftCreate);
   }
 }
-
-///                StringBuilder stringBuilder = new StringBuilder();
-//
-//                List<RedisDocument> documents = searchResult.getDocuments();
-//                for(RedisDocument d: documents){
-//
-//                    Iterator<Map.Entry<String, Object>> iterator = d.getProperties().iterator();
-//
-//                    while (iterator.hasNext()) {
-//                        Map.Entry<String, Object> entry = iterator.next();
-//                        stringBuilder.append(entry.getValue()).append("\n");
-//                    }
-//
-//                }
-//                stringBuilder.deleteCharAt(stringBuilder.length() - 1);

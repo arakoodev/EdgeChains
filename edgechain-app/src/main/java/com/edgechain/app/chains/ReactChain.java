@@ -1,20 +1,19 @@
 package com.edgechain.app.chains;
 
-import com.edgechain.lib.openai.endpoint.Endpoint;
-import com.edgechain.lib.request.OpenAiChatRequest;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PluginService;
 import com.edgechain.app.services.PromptService;
-import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.app.services.ToolService;
+import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.request.OpenAiChatRequest;
+import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.utils.Atom;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import java.util.Objects;
 import me.xuender.unidecode.Unidecode;
 import reactor.adapter.rxjava.RxJava3Adapter;
 import reactor.core.publisher.Mono;
-
-import java.util.Objects;
 
 public class ReactChain {
 

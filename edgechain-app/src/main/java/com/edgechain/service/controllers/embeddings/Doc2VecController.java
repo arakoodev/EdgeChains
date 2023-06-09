@@ -5,12 +5,11 @@ import com.edgechain.lib.embeddings.services.Doc2VecBuilder;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import java.io.File;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.File;
 
 @RestController
 @RequestMapping("/v1/doc2vec")
