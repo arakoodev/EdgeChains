@@ -1,17 +1,16 @@
-package com.edgechain.service.services;
+package com.edgechain.lib.wiki.service;
 
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
+import java.util.Collections;
+import java.util.Objects;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Collections;
-import java.util.Objects;
 
 public class WikiService {
 

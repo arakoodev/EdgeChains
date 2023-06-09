@@ -1,4 +1,4 @@
-package com.edgechain.app.services.embeddings;
+package com.edgechain.app.services;
 
 import com.edgechain.lib.request.Doc2VecEmbeddingsRequest;
 import com.edgechain.lib.request.OpenAiEmbeddingsRequest;

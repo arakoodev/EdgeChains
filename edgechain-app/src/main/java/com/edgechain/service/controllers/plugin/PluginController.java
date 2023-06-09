@@ -1,13 +1,13 @@
 package com.edgechain.service.controllers.plugin;
 
-import com.edgechain.lib.request.PluginAPIRequest;
-import com.edgechain.service.wiki.WikiProvider;
 import com.edgechain.lib.openai.plugin.providers.PluginAPIProvider;
 import com.edgechain.lib.openai.providers.OpenAiCompletionProvider;
+import com.edgechain.lib.request.PluginAPIRequest;
 import com.edgechain.lib.rxjava.provider.ChainProvider;
 import com.edgechain.lib.rxjava.request.ChainRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.wrapper.ChainWrapper;
+import com.edgechain.lib.wiki.provider.WikiProvider;
 import org.springframework.web.bind.annotation.*;
 import reactor.adapter.rxjava.RxJava3Adapter;
 import reactor.core.publisher.Mono;

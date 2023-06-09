@@ -1,48 +1,81 @@
-package com.edgechain.app.chains.retrieval.doc2vec;
+package com.edgechain.app.chains.retrieval;
 
-import com.edgechain.app.chains.abstracts.RetrievalChain;
+import com.edgechain.app.services.EmbeddingService;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PromptService;
-import com.edgechain.app.services.embeddings.EmbeddingService;
 import com.edgechain.app.services.index.PineconeService;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.context.services.HistoryContextService;
 import com.edgechain.lib.openai.endpoint.Endpoint;
 import com.edgechain.lib.request.Doc2VecEmbeddingsRequest;
 import com.edgechain.lib.request.OpenAiChatRequest;
+import com.edgechain.lib.request.OpenAiEmbeddingsRequest;
 import com.edgechain.lib.request.PineconeRequest;
-import com.edgechain.lib.resource.ResourceHandler;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
-import reactor.adapter.rxjava.RxJava3Adapter;
-import reactor.core.publisher.Mono;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.adapter.rxjava.RxJava3Adapter;
+import reactor.core.publisher.Mono;
 
-public class PineconeDoc2VecRetrievalChain extends RetrievalChain {
+public class PineconeRetrievalChain extends RetrievalChain {
+
+  private final Logger logger = LoggerFactory.getLogger(getClass());
+
+  private Endpoint embeddingEndpoint;
 
   private final Endpoint indexEndpoint;
   private Endpoint chatEndpoint;
   private final EmbeddingService embeddingService;
-  private final PineconeService pineconeService;
-  private PromptService promptService;
   private OpenAiService openAiService;
+  private PromptService promptService;
+  private final PineconeService pineconeService;
 
-  // For Upsert
-  public PineconeDoc2VecRetrievalChain(
+  // OpenAI (Upsert)
+  public PineconeRetrievalChain(
+      Endpoint embeddingEndpoint,
+      Endpoint indexEndpoint,
+      EmbeddingService embeddingService,
+      PineconeService pineconeService) {
+    this.embeddingEndpoint = embeddingEndpoint;
+    this.indexEndpoint = indexEndpoint;
+    this.embeddingService = embeddingService;
+    this.pineconeService = pineconeService;
+    logger.info("Using OpenAI Embedding Provider");
+  }
+
+  public PineconeRetrievalChain(
+      Endpoint embeddingEndpoint,
+      Endpoint indexEndpoint,
+      Endpoint chatEndpoint,
+      EmbeddingService embeddingService,
+      PineconeService pineconeService,
+      PromptService promptService,
+      OpenAiService openAiService) {
+    this.embeddingEndpoint = embeddingEndpoint;
+    this.indexEndpoint = indexEndpoint;
+    this.chatEndpoint = chatEndpoint;
+    this.embeddingService = embeddingService;
+    this.openAiService = openAiService;
+    this.promptService = promptService;
+    this.pineconeService = pineconeService;
+    logger.info("Using OpenAI Embedding Provider");
+  }
+
+  // For Doc2Vec
+  public PineconeRetrievalChain(
       Endpoint indexEndpoint, EmbeddingService embeddingService, PineconeService pineconeService) {
     this.indexEndpoint = indexEndpoint;
     this.embeddingService = embeddingService;
     this.pineconeService = pineconeService;
+    logger.info("Using Doc2Vec Embedding Provider");
   }
 
-  // For Query
-  public PineconeDoc2VecRetrievalChain(
+  public PineconeRetrievalChain(
       Endpoint indexEndpoint,
       Endpoint chatEndpoint,
       EmbeddingService embeddingService,
@@ -55,32 +88,26 @@ public class PineconeDoc2VecRetrievalChain extends RetrievalChain {
     this.pineconeService = pineconeService;
     this.promptService = promptService;
     this.openAiService = openAiService;
+    logger.info("Using Doc2Vec Embedding Provider");
   }
 
   @Override
   public void upsert(String input) {
-    Completable.fromObservable(
-            Observable.just(
-                    this.embeddingService
-                        .doc2Vec(new Doc2VecEmbeddingsRequest(input))
-                        .getResponse())
-                .map(
-                    embeddingOutput ->
-                        this.pineconeService
-                            .upsert(new PineconeRequest(this.indexEndpoint, embeddingOutput))
-                            .getResponse()))
-        .blockingAwait();
+
+    this.embeddingOutput(input)
+        .transform(
+            embeddingOutput ->
+                this.pineconeService
+                    .upsert(new PineconeRequest(this.indexEndpoint, embeddingOutput))
+                    .getResponse())
+        .awaitWithoutRetry();
   }
 
   @Override
   public Mono<List<ChainResponse>> query(String queryText, int topK) {
-
     return RxJava3Adapter.singleToMono(
-        Observable.just(
-                this.embeddingService
-                    .doc2Vec(new Doc2VecEmbeddingsRequest(queryText))
-                    .getResponse())
-            .map(
+        this.embeddingOutput(queryText)
+            .transform(
                 embeddingOutput -> {
                   String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
 
@@ -101,33 +128,43 @@ public class PineconeDoc2VecRetrievalChain extends RetrievalChain {
 
                   return chainResponseList;
                 })
-            .subscribeOn(Schedulers.io())
-            .firstOrError());
+            .toSingleWithOutRetry());
   }
 
   @Override
   public Mono<ChainResponse> query(
       String contextId, HistoryContextService contextService, String queryText) {
+
     return RxJava3Adapter.singleToMono(
-        new EdgeChain<>(
-                Observable.just(
-                        this.embeddingService
-                            .doc2Vec(new Doc2VecEmbeddingsRequest(queryText))
-                            .getResponse())
-                    .map(
-                        embeddingOutput ->
-                            this.queryWithChatHistory(
-                                embeddingOutput, contextId, contextService, queryText)))
-            .toSingleWithRetry());
+        this.embeddingOutput(queryText)
+            .transform(
+                embeddingOutput ->
+                    this.queryWithChatHistory(
+                        embeddingOutput, contextId, contextService, queryText))
+            .toSingleWithOutRetry());
   }
 
-  @Override
-  public Mono<ChainResponse> query(
-      String contextId, HistoryContextService contextService, ResourceHandler resourceHandler) {
-    HistoryContext context = contextService.get(contextId).getWithRetry();
-    resourceHandler.upload(context.getResponse());
-    return Mono.just(
-        new ChainResponse("File is successfully uploaded to the provided destination"));
+  private EdgeChain<String> embeddingOutput(String input) {
+
+    EdgeChain<String> edgeChain;
+
+    if (embeddingEndpoint != null) {
+      edgeChain =
+          new EdgeChain<>(
+              Observable.just(
+                  this.embeddingService
+                      .openAi(new OpenAiEmbeddingsRequest(this.embeddingEndpoint, input))
+                      .getResponse()));
+    } else {
+      edgeChain =
+          new EdgeChain<>(
+              Observable.just(
+                  this.embeddingService
+                      .doc2Vec(new Doc2VecEmbeddingsRequest(input))
+                      .getResponse()));
+    }
+
+    return edgeChain;
   }
 
   private ChainResponse queryWithChatHistory(

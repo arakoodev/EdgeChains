@@ -221,6 +221,9 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <mainClass>${spring.boot.mainclass}</mainClass>
+                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -272,6 +275,25 @@
                 </plugin>
             </plugins>
         </build>
+
+    <profiles>
+
+        <profile>
+            <id>app</id>
+            <properties>
+                <spring.boot.mainclass>com.edgechain.app.EdgeChainAppRunner</spring.boot.mainclass>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>service</id>
+            <properties>
+                <spring.boot.mainclass>com.edgechain.service.EdgeChainServiceRunner</spring.boot.mainclass>
+            </properties>
+        </profile>
+
+
+    </profiles>
 
 
 

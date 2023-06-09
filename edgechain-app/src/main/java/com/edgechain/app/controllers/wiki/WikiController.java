@@ -1,22 +1,21 @@
 package com.edgechain.app.controllers.wiki;
 
-import com.edgechain.app.services.OpenAiService;
-import com.edgechain.lib.openai.endpoint.Endpoint;
-import com.edgechain.lib.rxjava.response.ChainResponse;
-import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import com.edgechain.app.chains.ReactChain;
 import com.edgechain.app.constants.WebConstants;
+import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PluginService;
 import com.edgechain.app.services.PromptService;
 import com.edgechain.app.services.ToolService;
+import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.rxjava.response.ChainResponse;
+import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-
-import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/v1/wiki")
