@@ -43,28 +43,26 @@ public class Scratchpad {
     return actionContent;
   }
 
-//Getter and Setter for scratchpadList
-public void setScratchpadList(List<String> scratchpadList) {
+  // Getter and Setter for scratchpadList
+  public void setScratchpadList(List<String> scratchpadList) {
     this.scratchpadList = scratchpadList;
-}
+  }
 
-public List<String> getScratchpadList() {
+  public List<String> getScratchpadList() {
     return scratchpadList;
-}
+  }
 
-
-//Method to remove an entry 
+  // Method to remove an entry
   public void removeEntry(int index) {
     if (index >= 0 && index < scratchpadList.size()) {
-        scratchpadList.remove(index);
+      scratchpadList.remove(index);
     }
-}
+  }
 
-//Method to add a new entry
-public void addEntry(String entry) {
+  // Method to add a new entry
+  public void addEntry(String entry) {
     scratchpadList.add(entry);
-}
-
+  }
 
   // Method to replace the content of an action by the given index with a new string called
   // wikiContentForAction
@@ -90,6 +88,5 @@ public void addEntry(String entry) {
     if (observationIndex >= 0 && observationIndex < scratchpadList.size() - 1) {
       scratchpadList.subList(observationIndex + 1, scratchpadList.size()).clear();
     }
-
   }
 }
