@@ -1,43 +1,61 @@
-package com.edgechain.app.chains.retrieval.doc2vec;
+package com.edgechain.app.chains.retrieval;
 
-import com.edgechain.app.chains.abstracts.RetrievalChain;
+import com.edgechain.app.services.EmbeddingService;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PromptService;
-import com.edgechain.app.services.embeddings.EmbeddingService;
 import com.edgechain.app.services.index.RedisService;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.context.services.HistoryContextService;
 import com.edgechain.lib.openai.endpoint.Endpoint;
 import com.edgechain.lib.request.*;
-import com.edgechain.lib.resource.ResourceHandler;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
-import reactor.adapter.rxjava.RxJava3Adapter;
-import reactor.core.publisher.Mono;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import reactor.adapter.rxjava.RxJava3Adapter;
+import reactor.core.publisher.Mono;
 
-public class RedisDoc2VecRetrievalChain extends RetrievalChain {
+public class RedisRetrievalChain extends RetrievalChain {
 
+  private Endpoint embeddingEndpoint;
   private Endpoint chatEndpoint;
   private final EmbeddingService embeddingService;
   private final RedisService redisService;
   private PromptService promptService;
   private OpenAiService openAiService;
 
-  // For Upsert
-  public RedisDoc2VecRetrievalChain(EmbeddingService embeddingService, RedisService redisService) {
+  // For OpenAI
+  public RedisRetrievalChain(
+      Endpoint embeddingEndpoint, EmbeddingService embeddingService, RedisService redisService) {
+    this.embeddingEndpoint = embeddingEndpoint;
     this.embeddingService = embeddingService;
     this.redisService = redisService;
   }
 
-  // For Query
-  public RedisDoc2VecRetrievalChain(
+  public RedisRetrievalChain(
+      Endpoint embeddingEndpoint,
+      Endpoint chatEndpoint,
+      EmbeddingService embeddingService,
+      RedisService redisService,
+      PromptService promptService,
+      OpenAiService openAiService) {
+    this.embeddingEndpoint = embeddingEndpoint;
+    this.chatEndpoint = chatEndpoint;
+    this.embeddingService = embeddingService;
+    this.redisService = redisService;
+    this.promptService = promptService;
+    this.openAiService = openAiService;
+  }
+
+  // For Doc2Vec
+  public RedisRetrievalChain(EmbeddingService embeddingService, RedisService redisService) {
+    this.embeddingService = embeddingService;
+    this.redisService = redisService;
+  }
+
+  public RedisRetrievalChain(
       Endpoint chatEndpoint,
       EmbeddingService embeddingService,
       RedisService redisService,
@@ -52,26 +70,19 @@ public class RedisDoc2VecRetrievalChain extends RetrievalChain {
 
   @Override
   public void upsert(String input) {
-    Completable.fromObservable(
-            Observable.just(
-                    this.embeddingService
-                        .doc2Vec(new Doc2VecEmbeddingsRequest(input))
-                        .getResponse())
-                .map(
-                    embeddingOutput ->
-                        this.redisService.upsert(new RedisRequest(embeddingOutput)).getResponse()))
-        .blockingAwait();
+
+    this.embeddingOutput(input)
+        .transform(
+            embeddingOutput ->
+                this.redisService.upsert(new RedisRequest(embeddingOutput)).getResponse())
+        .awaitWithoutRetry();
   }
 
   @Override
   public Mono<List<ChainResponse>> query(String queryText, int topK) {
-
     return RxJava3Adapter.singleToMono(
-        Observable.just(
-                this.embeddingService
-                    .doc2Vec(new Doc2VecEmbeddingsRequest(queryText))
-                    .getResponse())
-            .map(
+        this.embeddingOutput(queryText)
+            .transform(
                 embeddingOutput -> {
                   List<ChainResponse> chainResponseList = new ArrayList<>();
 
@@ -93,33 +104,45 @@ public class RedisDoc2VecRetrievalChain extends RetrievalChain {
 
                   return chainResponseList;
                 })
-            .subscribeOn(Schedulers.io())
-            .firstOrError());
+            .toSingleWithOutRetry());
   }
 
   @Override
   public Mono<ChainResponse> query(
       String contextId, HistoryContextService contextService, String queryText) {
     return RxJava3Adapter.singleToMono(
-        new EdgeChain<>(
-                Observable.just(
-                        this.embeddingService
-                            .doc2Vec(new Doc2VecEmbeddingsRequest(queryText))
-                            .getResponse())
-                    .map(
-                        embeddingOutput ->
-                            this.queryWithChatHistory(
-                                embeddingOutput, contextId, contextService, queryText)))
+        this.embeddingOutput(queryText)
+            .transform(
+                embeddingOutput ->
+                    this.queryWithChatHistory(
+                        embeddingOutput, contextId, contextService, queryText))
             .toSingleWithRetry());
   }
 
-  @Override
-  public Mono<ChainResponse> query(
-      String contextId, HistoryContextService contextService, ResourceHandler resourceHandler) {
-    HistoryContext context = contextService.get(contextId).getWithRetry();
-    resourceHandler.upload(context.getResponse());
-    return Mono.just(
-        new ChainResponse("File is successfully uploaded to the provided destination"));
+  /*
+  The RetrievalChain code is duplicated; shall be abstracted.
+   */
+  private EdgeChain<String> embeddingOutput(String input) {
+
+    EdgeChain<String> edgeChain;
+
+    if (embeddingEndpoint != null) {
+      edgeChain =
+          new EdgeChain<>(
+              Observable.just(
+                  this.embeddingService
+                      .openAi(new OpenAiEmbeddingsRequest(this.embeddingEndpoint, input))
+                      .getResponse()));
+    } else {
+      edgeChain =
+          new EdgeChain<>(
+              Observable.just(
+                  this.embeddingService
+                      .doc2Vec(new Doc2VecEmbeddingsRequest(input))
+                      .getResponse()));
+    }
+
+    return edgeChain;
   }
 
   private ChainResponse queryWithChatHistory(
@@ -129,7 +152,6 @@ public class RedisDoc2VecRetrievalChain extends RetrievalChain {
       String queryText) {
 
     // Get the Prompt & The Context History
-
     String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
     HistoryContext historyContext = contextService.get(contextId).toSingleWithRetry().blockingGet();
 

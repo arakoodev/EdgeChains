@@ -20,6 +20,14 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/embeddings")
 public class EmbeddingController {
 
+  /**
+   * ChainProvider is a middle-ware which helps to execute multiple tasks simultaneously. E.g.
+   * wrapper.chains(chain1, chain2, chain3) ... You can actually use service implementation directly
+   * as well...
+   *
+   * @param request
+   * @return
+   */
   @PostMapping("/openai")
   public Mono<ChainResponse> openAiEmbeddings(@RequestBody OpenAiEmbeddingsRequest request) {
     ChainProvider embeddings = new OpenAiEmbeddingProvider(request.getEndpoint());

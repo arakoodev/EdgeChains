@@ -1,30 +1,29 @@
 package com.edgechain.app.controllers.pinecone;
 
-import com.edgechain.app.chains.abstracts.RetrievalChain;
-import com.edgechain.app.chains.retrieval.openai.PineconeOpenAiRetrievalChain;
-import com.edgechain.lib.context.services.impl.RedisHistoryContextService;
-import com.edgechain.lib.reader.impl.PdfReader;
+import static com.edgechain.app.constants.WebConstants.*;
+
+import com.edgechain.app.chains.retrieval.PineconeRetrievalChain;
+import com.edgechain.app.chains.retrieval.RetrievalChain;
+import com.edgechain.app.services.EmbeddingService;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PromptService;
-import com.edgechain.app.services.embeddings.EmbeddingService;
 import com.edgechain.app.services.index.PineconeService;
+import com.edgechain.lib.context.services.impl.RedisHistoryContextService;
 import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.reader.impl.PdfReader;
 import com.edgechain.lib.resource.impl.LocalFileResourceHandler;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import reactor.core.publisher.Mono;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
-
-import static com.edgechain.app.constants.WebConstants.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/v1/pinecone/openai")
@@ -61,7 +60,7 @@ public class PineconeOpenAiController {
                       new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
               RetrievalChain retrievalChain =
-                  new PineconeOpenAiRetrievalChain(
+                  new PineconeRetrievalChain(
                       embeddingEndpoint, pineconeEndpoint, embeddingService, pineconeService);
 
               retrievalChain.upsert(arr[i]);
@@ -92,7 +91,7 @@ public class PineconeOpenAiController {
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
-        new PineconeOpenAiRetrievalChain(
+        new PineconeRetrievalChain(
             embeddingEndpoint,
             pineconeEndpoint,
             chatEndpoint,
@@ -128,7 +127,7 @@ public class PineconeOpenAiController {
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
-        new PineconeOpenAiRetrievalChain(
+        new PineconeRetrievalChain(
             embeddingEndpoint,
             pineconeEndpoint,
             chatEndpoint,
@@ -164,7 +163,7 @@ public class PineconeOpenAiController {
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
-        new PineconeOpenAiRetrievalChain(
+        new PineconeRetrievalChain(
             embeddingEndpoint,
             pineconeEndpoint,
             chatEndpoint,

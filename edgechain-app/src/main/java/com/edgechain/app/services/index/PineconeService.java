@@ -1,7 +1,7 @@
 package com.edgechain.app.services.index;
 
-import com.edgechain.lib.request.PineconeRequest;
 import com.edgechain.app.services.abstracts.IndexService;
+import com.edgechain.lib.request.PineconeRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
