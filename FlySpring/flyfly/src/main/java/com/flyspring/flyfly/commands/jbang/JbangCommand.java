@@ -5,6 +5,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
 import java.io.*;
+import java.util.HashMap;
 
 @Component
 @Command(name = "jbang", description = "Activate jbang through the jar placed in resources")
@@ -89,36 +90,58 @@ public class JbangCommand implements Runnable {
 
   private String extractClassPathFromOutput(BufferedReader bufferedReader) throws IOException {
     String line;
+    HashMap<String, String> sepMap = new HashMap<String, String>();
+    HashMap<String, String> cpPatternMap = new HashMap<String, String>();
+    HashMap<String, String> cpEndPatternMap = new HashMap<String, String>();
+
+    sepMap.put("Linux", "/");
+    sepMap.put("Windows", "\\");
+
+    cpPatternMap.put("Linux", "-classpath ");
+    cpPatternMap.put("Windows", "-classpath '");
+
+    cpEndPatternMap.put("Linux", " ");
+    cpEndPatternMap.put("Windows", "\'");
+
     String classPath = null;
-    final String pattern = "-classpath '";
+    String platformName = System.getProperty("os.name");
+    if (platformName.contains("Windows")) {
+      platformName = "Windows";
+    }
+    // final String pattern = "-classpath '";
+    final String pattern = cpPatternMap.get(platformName);
     while ((line = bufferedReader.readLine()) != null) {
-      //      System.out.println("Line: " + line); // added debug message
+      // System.out.println("Line: " + line); // added debug message
+      System.out.println("Line received = " + line);
       int startIndex = line.indexOf(pattern);
       if (startIndex > -1) {
         startIndex += pattern.length();
-        int endIndex = line.indexOf('\'', startIndex);
+        int endIndex = line.indexOf(cpEndPatternMap.get(platformName).charAt(0), startIndex);
         if (endIndex > startIndex) {
           classPath = line.substring(startIndex, endIndex);
           break;
         }
       }
     }
+
+    System.out.println("Extracted ClassPath = " + classPath);
     return classPath;
   }
 
-  //    private String extractMainClassFromOutput(BufferedReader bufferedReader) throws IOException
+  // private String extractMainClassFromOutput(BufferedReader bufferedReader)
+  // throws IOException
   // {
-  //        String line;
-  //        String mainClass = null;
-  //        while ((line = bufferedReader.readLine()) != null) {
-  //            System.out.println("Line: " + line); // added debug message
-  //            if (line.contains("com.example.Flyopenaiwiki")) {
-  //                mainClass = "com.example.Flyopenaiwiki";
-  //                break;
-  //            }
-  //        }
-  //        return mainClass;
-  //    }
+  // String line;
+  // String mainClass = null;
+  // while ((line = bufferedReader.readLine()) != null) {
+  // System.out.println("Line: " + line); // added debug message
+  // if (line.contains("com.example.Flyopenaiwiki")) {
+  // mainClass = "com.example.Flyopenaiwiki";
+  // break;
+  // }
+  // }
+  // return mainClass;
+  // }
 
   private void runJavaWithClassPath(String classPath, String mainClass) {
     try {
