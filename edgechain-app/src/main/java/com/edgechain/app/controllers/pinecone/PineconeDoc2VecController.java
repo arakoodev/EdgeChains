@@ -1,10 +1,12 @@
 package com.edgechain.app.controllers.pinecone;
 
-import com.edgechain.app.chains.abstracts.RetrievalChain;
-import com.edgechain.app.chains.retrieval.doc2vec.PineconeDoc2VecRetrievalChain;
+import static com.edgechain.app.constants.WebConstants.*;
+
+import com.edgechain.app.chains.retrieval.PineconeRetrievalChain;
+import com.edgechain.app.chains.retrieval.RetrievalChain;
+import com.edgechain.app.services.EmbeddingService;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PromptService;
-import com.edgechain.app.services.embeddings.EmbeddingService;
 import com.edgechain.app.services.index.PineconeService;
 import com.edgechain.lib.context.services.impl.RedisHistoryContextService;
 import com.edgechain.lib.openai.endpoint.Endpoint;
@@ -12,19 +14,16 @@ import com.edgechain.lib.reader.impl.PdfReader;
 import com.edgechain.lib.resource.impl.LocalFileResourceHandler;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import reactor.core.publisher.Mono;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
-
-import static com.edgechain.app.constants.WebConstants.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/v1/pinecone/doc2vec")
@@ -36,25 +35,25 @@ public class PineconeDoc2VecController {
   @Autowired private PineconeService pineconeService;
   @Autowired private RedisHistoryContextService redisHistoryContextService;
 
+  @Autowired private PdfReader pdfReader;
+
   @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public void upsert(@RequestBody MultipartFile file) throws IOException {
 
-    PdfReader pdfReader = new PdfReader();
+    final Endpoint pineconeEndpoint =
+        new Endpoint(
+            PINECONE_UPSERT_API,
+            PINECONE_AUTH_KEY,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
+    RetrievalChain retrievalChain =
+        new PineconeRetrievalChain(pineconeEndpoint, embeddingService, pineconeService);
 
     String[] arr = pdfReader.readByChunkSize(file.getInputStream(), 512);
     IntStream.range(0, arr.length)
         .parallel()
         .forEach(
             i -> {
-              Endpoint pineconeEndpoint =
-                  new Endpoint(
-                      PINECONE_UPSERT_API,
-                      PINECONE_AUTH_KEY,
-                      new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-              RetrievalChain retrievalChain =
-                  new PineconeDoc2VecRetrievalChain(
-                      pineconeEndpoint, embeddingService, pineconeService);
               retrievalChain.upsert(arr[i]);
             });
   }
@@ -74,7 +73,7 @@ public class PineconeDoc2VecController {
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
-        new PineconeDoc2VecRetrievalChain(
+        new PineconeRetrievalChain(
             pineconeEndpoint,
             chatEndpoint,
             embeddingService,
@@ -103,7 +102,7 @@ public class PineconeDoc2VecController {
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
-        new PineconeDoc2VecRetrievalChain(
+        new PineconeRetrievalChain(
             pineconeEndpoint,
             chatEndpoint,
             embeddingService,
@@ -132,7 +131,7 @@ public class PineconeDoc2VecController {
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
-        new PineconeDoc2VecRetrievalChain(
+        new PineconeRetrievalChain(
             pineconeEndpoint,
             chatEndpoint,
             embeddingService,
