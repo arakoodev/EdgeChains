@@ -48,19 +48,17 @@ public class JbangCommand implements Runnable {
   private void runJbang(File jarFile, String javaFile, String classPathJar) {
     try {
       // Step One: Execute the initial command to get the classpath
-      ProcessBuilder pb =
-          new ProcessBuilder(
-              "java",
-              "-cp",
-              jarFile.getAbsolutePath(),
-              "dev.jbang.Main",
-              "--cp",
-              classPathJar,
-              javaFile);
+      ProcessBuilder pb = new ProcessBuilder(
+          "java",
+          "-cp",
+          jarFile.getAbsolutePath(),
+          "dev.jbang.Main",
+          "--cp",
+          classPathJar,
+          javaFile);
       pb.redirectErrorStream(true);
       Process process = pb.start();
-      BufferedReader bufferedReader =
-          new BufferedReader(new InputStreamReader(process.getInputStream()));
+      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
       String classPath = extractClassPathFromOutput(bufferedReader);
       String mainClass = null;
 
@@ -107,12 +105,12 @@ public class JbangCommand implements Runnable {
     String platformName = System.getProperty("os.name");
     if (platformName.contains("Windows")) {
       platformName = "Windows";
+    } else {
+      // Mac and Linux have the same representations.
+      platformName = "Linux";
     }
-    // final String pattern = "-classpath '";
     final String pattern = cpPatternMap.get(platformName);
     while ((line = bufferedReader.readLine()) != null) {
-      // System.out.println("Line: " + line); // added debug message
-      System.out.println("Line received = " + line);
       int startIndex = line.indexOf(pattern);
       if (startIndex > -1) {
         startIndex += pattern.length();
@@ -127,21 +125,6 @@ public class JbangCommand implements Runnable {
     System.out.println("Extracted ClassPath = " + classPath);
     return classPath;
   }
-
-  // private String extractMainClassFromOutput(BufferedReader bufferedReader)
-  // throws IOException
-  // {
-  // String line;
-  // String mainClass = null;
-  // while ((line = bufferedReader.readLine()) != null) {
-  // System.out.println("Line: " + line); // added debug message
-  // if (line.contains("com.example.Flyopenaiwiki")) {
-  // mainClass = "com.example.Flyopenaiwiki";
-  // break;
-  // }
-  // }
-  // return mainClass;
-  // }
 
   private void runJavaWithClassPath(String classPath, String mainClass) {
     try {
