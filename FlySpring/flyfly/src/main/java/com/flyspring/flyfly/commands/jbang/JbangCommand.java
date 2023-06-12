@@ -107,12 +107,12 @@ public class JbangCommand implements Runnable {
     String platformName = System.getProperty("os.name");
     if (platformName.contains("Windows")) {
       platformName = "Windows";
+    } else {
+      // Mac and Linux have the same representations.
+      platformName = "Linux";
     }
-    // final String pattern = "-classpath '";
     final String pattern = cpPatternMap.get(platformName);
     while ((line = bufferedReader.readLine()) != null) {
-      // System.out.println("Line: " + line); // added debug message
-      System.out.println("Line received = " + line);
       int startIndex = line.indexOf(pattern);
       if (startIndex > -1) {
         startIndex += pattern.length();
@@ -127,21 +127,6 @@ public class JbangCommand implements Runnable {
     System.out.println("Extracted ClassPath = " + classPath);
     return classPath;
   }
-
-  // private String extractMainClassFromOutput(BufferedReader bufferedReader)
-  // throws IOException
-  // {
-  // String line;
-  // String mainClass = null;
-  // while ((line = bufferedReader.readLine()) != null) {
-  // System.out.println("Line: " + line); // added debug message
-  // if (line.contains("com.example.Flyopenaiwiki")) {
-  // mainClass = "com.example.Flyopenaiwiki";
-  // break;
-  // }
-  // }
-  // return mainClass;
-  // }
 
   private void runJavaWithClassPath(String classPath, String mainClass) {
     try {
