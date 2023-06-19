@@ -11,7 +11,6 @@ import com.edgechain.service.constants.ServiceConstants;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Map;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.slf4j.Logger;
@@ -97,7 +96,7 @@ public class EdgeChainLocalModel {
     System.setProperty("doc2vec.filepath", "R:\\doc_vector.bin");
     readDoc2Vec();
     loadSentenceModel();
-    
+
     try {
       /*
        * Creating ONNX environment and session
