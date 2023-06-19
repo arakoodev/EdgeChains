@@ -68,6 +68,11 @@ public class JbangCommand implements Runnable {
         mainClass = "com.edgechain.app.EdgeChainApplication";
       }
 
+      if(classPath.contains("EdgeChainLocalModel.java")) {
+        mainClass = "com.edgechain.app.EdgeChainLocalModel";
+      }
+
+
       if (classPath.contains("EdgeChainServiceApplication.java")) {
         mainClass = "com.edgechain.service.EdgeChainServiceApplication";
       }
