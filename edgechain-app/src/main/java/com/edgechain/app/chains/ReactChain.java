@@ -118,7 +118,7 @@ public class ReactChain {
   public Mono<ChainResponse> getCustomQuery(String customQuery, HashMap<String, String> extVarSettings) {
 
     // TODO: Convert it from Hardcoded string to user input later
-    String jsonnetCodeLocation = WebConstants.jsonnetLocation;
+    String jsonnetCodeLocation = WebConstants.JSONNET_LOCATION;
     String jsonnetPrompt = new JsonnetRunner()
         .executor(jsonnetCodeLocation, extVarSettings)
         .get("prompt").getAsString();
@@ -161,7 +161,7 @@ public class ReactChain {
                   extVarMap.put("contextLength", "4096"); // Must be in string, can be later specified in environment
                                                           // variables or web constants, or programmatically
                   return (promptService.get()
-                      .getCustomQueryPrompt(jsonnetCodeLocation, extVarMap).getResponse() + "\n"
+                      .getCustomQueryPrompt(extVarMap).getResponse() + "\n"
                       + customOutput);
                 })
             // .map(

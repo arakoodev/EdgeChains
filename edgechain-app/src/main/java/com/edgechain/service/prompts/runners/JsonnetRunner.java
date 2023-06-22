@@ -86,25 +86,25 @@ public class JsonnetRunner {
         // Use Gson to parse the JSON
         JsonParser parser = new JsonParser();
         JsonElement jsonElement = parser.parse(stdoutOutput);
-        // System.out.println(jsonElement.getAsString());
+        System.out.println(jsonElement.getAsString());
         return jsonElement.getAsJsonObject();
     }
 
-    // public static void main(String[] args) {
-    // JsonnetRunner ob = new JsonnetRunner();
-    // Map<String, String> extVarsSettings = new HashMap<String, String>();
-    // extVarsSettings.put("keepContext", "true");
-    // extVarsSettings.put("capContext", "true");
-    // extVarsSettings.put("contextLength", "4096");
-    // extVarsSettings.put("context", "You are supposed to ");
+    public static void main(String[] args) {
+        JsonnetRunner ob = new JsonnetRunner();
+        Map<String, String> extVarsSettings = new HashMap<String, String>();
+        extVarsSettings.put("keepContext", "true");
+        extVarsSettings.put("capContext", "true");
+        extVarsSettings.put("contextLength", "4096");
+        extVarsSettings.put("context", "You are supposed to ");
 
-    // JsonObject jsonObject = ob.executor(
-    // "/media/anuran/Samsung_SSD_970_EVO_1TB/Internship/GSSoC_2k23/EdgeChains/EdgeChains/Examples/jsonnet_impl/src/main/java/com/jsonnet/new.jsonnet",
-    // extVarsSettings);
-    // String prompt = jsonObject.get("prompt").getAsString();
-    // String typeString = jsonObject.get("type").getAsString();
-    // int promptLength = jsonObject.get("promptLength").getAsInt();
+        JsonObject jsonObject = ob.executor(
+                "/media/anuran/Samsung_SSD_970_EVO_1TB/Internship/GSSoC_2k23/EdgeChains/EdgeChains/Examples/jsonnet_impl/src/main/java/com/jsonnet/new.jsonnet",
+                extVarsSettings);
+        String prompt = jsonObject.get("prompt").getAsString();
+        String typeString = jsonObject.get("type").getAsString();
+        int promptLength = jsonObject.get("promptLength").getAsInt();
 
-    // System.out.println("Final Prompt = " + prompt);
-    // }
+        System.out.println("Final Prompt = " + prompt);
+    }
 }

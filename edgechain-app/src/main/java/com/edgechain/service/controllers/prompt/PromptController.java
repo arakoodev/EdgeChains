@@ -6,9 +6,12 @@ import com.edgechain.service.prompts.RapPrompt;
 import com.edgechain.service.prompts.WikiSummaryPrompt;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -29,8 +32,10 @@ public class PromptController {
     return Mono.just(new ChainResponse(new RapPrompt().getPrompt()));
   }
 
-  @GetMapping("/custom-query")
-  public Mono<ChainResponse> getCustomQueryPrompt(String jsonnetLocation, Map<String, String> extVarSettings) {
+  @PostMapping("/custom-query")
+  public Mono<ChainResponse> getCustomQueryPrompt(@RequestBody Map<String, String> extVars) {
+    String jsonnetLocation = WebConstants.JSONNET_LOCATION;
+    Map<String, String> extVarSettings = extVars;
     return Mono
         .just(new ChainResponse(new CustomPrompt(jsonnetLocation).addExtVarSettings(extVarSettings).getPrompt()));
   }

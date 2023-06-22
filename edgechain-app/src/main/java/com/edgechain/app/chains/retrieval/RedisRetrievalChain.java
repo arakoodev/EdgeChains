@@ -111,7 +111,7 @@ public class RedisRetrievalChain extends RetrievalChain {
                                                           // variables or web constants, or programmatically
 
                   String promptResponse = this.promptService
-                      .getCustomQueryPrompt(WebConstants.jsonnetLocation, extVarMap)
+                      .getCustomQueryPrompt(extVarMap)
                       .getResponse();
 
                   StringTokenizer tokenizer = new StringTokenizer(
@@ -173,8 +173,20 @@ public class RedisRetrievalChain extends RetrievalChain {
       HistoryContextService contextService,
       String queryText) {
 
+    Map<String, String> totalMap = new HashMap<String, String>();
+
+    // Default Settings
+    totalMap.put("query", queryText);
+    totalMap.put("keepContext", "true");
+    totalMap.put("capContext", "true");
+    totalMap.put("contextLength", "3072");
+
     // Get the Prompt & The Context History
-    String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
+    // String promptResponse =
+    // this.promptService.getIndexQueryPrompt().getResponse();
+    // String promptResponse =
+    // this.promptService.getCustomQueryPrompt(totalMap).getResponse();
+    String promptResponse = "";
     HistoryContext historyContext = contextService.get(contextId).toSingleWithRetry().blockingGet();
 
     String chatHistory = historyContext.getResponse();
@@ -194,18 +206,22 @@ public class RedisRetrievalChain extends RetrievalChain {
     // Then, Create Prompt For OpenAI
     String prompt;
 
-    if (chatHistory.length() > 0) {
-      prompt = "Question: "
-          + queryText
-          + "\n "
-          + promptResponse
-          + "\n"
-          + indexResponse
-          + "\nChat history:\n"
-          + chatHistory;
-    } else {
-      prompt = "Question: " + queryText + "\n " + promptResponse + "\n" + indexResponse;
-    }
+    // if (chatHistory.length() > 0) {
+    // prompt = "Question: "
+    // + queryText
+    // + "\n "
+    // + promptResponse
+    // + "\n"
+    // + indexResponse
+    // + "\nChat history:\n"
+    // + chatHistory;
+    // } else {
+    // prompt = "Question: " + queryText + "\n " + promptResponse + "\n" +
+    // indexResponse;
+    // }
+
+    totalMap.put("context", indexResponse);
+    prompt = this.promptService.getCustomQueryPrompt(totalMap).getResponse();
 
     System.out.println("Prompt: " + prompt);
 
