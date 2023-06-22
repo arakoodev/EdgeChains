@@ -48,7 +48,11 @@
             <artifactId>tokenizers</artifactId>
             <version>0.22.1</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.microsoft.onnxruntime</groupId>
+            <artifactId>onnxruntime_gpu</artifactId>
+            <version>1.14.0</version>
+        </dependency>
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>sjsonnet_2.13</artifactId>
