@@ -39,7 +39,7 @@ public class EdgeChainServiceRunner implements CommandLineRunner {
 
     System.setProperty("server.port", "8002");
 
-    //  System.setProperty("OPENAI_AUTH_KEY","");
+    System.setProperty("OPENAI_AUTH_KEY", "");
 
     System.setProperty("spring.data.redis.host", "");
     System.setProperty("spring.data.redis.port", "6379");
@@ -47,7 +47,6 @@ public class EdgeChainServiceRunner implements CommandLineRunner {
     System.setProperty("spring.data.redis.password", "");
     System.setProperty("spring.data.redis.connect-timeout", "120000");
     System.setProperty("spring.redis.ttl", "3600");
-
     System.setProperty("doc2vec.filepath", "R:\\doc_vector.bin");
 
     readDoc2Vec();
