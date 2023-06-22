@@ -6,6 +6,6 @@ public class WikiSummaryPrompt implements PromptTemplate {
 
   @Override
   public String getPrompt() {
-    return "Create a 5-bullet point summary of: ";
+    return "Create a 10-bullet point summary of: ";
   }
 }

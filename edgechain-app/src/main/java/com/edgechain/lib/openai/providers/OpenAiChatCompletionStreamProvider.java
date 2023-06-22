@@ -4,7 +4,6 @@ import com.edgechain.lib.openai.client.OpenAiClient;
 import com.edgechain.lib.openai.endpoint.Endpoint;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
 import com.edgechain.lib.openai.request.ChatMessage;
-import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.rxjava.provider.ChainProvider;
 import com.edgechain.lib.rxjava.request.ChainRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
@@ -12,11 +11,11 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 import java.util.List;
 
-public class OpenAiChatCompletionProvider extends ChainProvider {
+public class OpenAiChatCompletionStreamProvider extends ChainProvider {
 
   private final Endpoint endpoint;
 
-  public OpenAiChatCompletionProvider(Endpoint endpoint) {
+  public OpenAiChatCompletionStreamProvider(Endpoint endpoint) {
     this.endpoint = endpoint;
   }
 
@@ -28,17 +27,11 @@ public class OpenAiChatCompletionProvider extends ChainProvider {
             .model(endpoint.getModel())
             .temperature(endpoint.getTemperature())
             .messages(List.of(new ChatMessage(endpoint.getRole(), request.getInput())))
+            .stream(true)
             .build();
 
     return new OpenAiClient()
-        .createChatCompletion(endpoint, chatCompletionRequest)
+        .createChatCompletionStream(endpoint, chatCompletionRequest)
         .transform(s -> new ChainResponse(s.getChoices().get(0).getMessage().getContent()));
   }
-
-  //  private String parse(String body) throws JsonProcessingException {
-  //    JsonNode outputJsonNode = new ObjectMapper().readTree(body);
-  //    System.out.println("Pretty String: " + outputJsonNode.toPrettyString());
-  //
-  //    return outputJsonNode.get("choices").get(0).get("message").get("content").asText();
-  //  }
 }

@@ -3,6 +3,7 @@ package com.edgechain.app.services;
 import com.edgechain.lib.request.OpenAiChatRequest;
 import com.edgechain.lib.request.OpenAiCompletionRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
+import io.reactivex.rxjava3.core.Observable;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;

@@ -9,12 +9,17 @@ public class ChatCompletionRequest {
   private Double temperature;
   private List<ChatMessage> messages;
 
+  private Integer max_tokens;
+  private Boolean stream;
+
   public ChatCompletionRequest() {}
 
-  public ChatCompletionRequest(String model, List<ChatMessage> messages, Double temperature) {
+  public ChatCompletionRequest(
+      String model, List<ChatMessage> messages, Double temperature, Boolean stream) {
     this.model = model;
+    this.temperature = temperature;
     this.messages = messages;
-    this.temperature = Objects.isNull(temperature) ? 0.7 : temperature;
+    this.stream = stream;
   }
 
   public String getModel() {
@@ -41,12 +46,21 @@ public class ChatCompletionRequest {
     this.temperature = temperature;
   }
 
+  public Boolean getStream() {
+    return stream;
+  }
+
+  public void setStream(Boolean stream) {
+    this.stream = stream;
+  }
+
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("ChatCompletionRequest{");
     sb.append("model='").append(model).append('\'');
     sb.append(", temperature=").append(temperature);
     sb.append(", messages=").append(messages);
+    sb.append(", stream=").append(stream);
     sb.append('}');
     return sb.toString();
   }
@@ -59,6 +73,8 @@ public class ChatCompletionRequest {
     private String model;
     private Double temperature;
     private List<ChatMessage> messages;
+
+    private Boolean stream = Boolean.FALSE;
 
     public ChatCompletionRequestBuilder model(String model) {
       this.model = model;
@@ -75,8 +91,13 @@ public class ChatCompletionRequest {
       return this;
     }
 
+    public ChatCompletionRequestBuilder stream(Boolean value) {
+      this.stream = value;
+      return this;
+    }
+
     public ChatCompletionRequest build() {
-      return new ChatCompletionRequest(model, messages, temperature);
+      return new ChatCompletionRequest(model, messages, temperature, stream);
     }
   }
 }

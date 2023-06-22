@@ -7,6 +7,7 @@ import com.edgechain.lib.rxjava.provider.ChainProvider;
 import com.edgechain.lib.rxjava.request.ChainRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.wrapper.ChainWrapper;
+import io.reactivex.rxjava3.core.Single;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,20 +20,18 @@ import reactor.core.publisher.Mono;
 public class RedisController {
 
   @PostMapping("/upsert")
-  public Mono<ChainResponse> upsert(@RequestBody RedisRequest request) {
+  public Single<ChainResponse> upsert(@RequestBody RedisRequest request) {
     ChainProvider redisUpsert = new RedisUpsertProvider();
 
     ChainWrapper wrapper = new ChainWrapper();
-    return RxJava3Adapter.singleToMono(
-        wrapper.chains(new ChainRequest(request.getInput()), redisUpsert).toSingleWithRetry());
+    return wrapper.chains(new ChainRequest(request.getInput()), redisUpsert).toSingleWithRetry();
   }
 
   @PostMapping("/query")
-  public Mono<ChainResponse> query(@RequestBody RedisRequest request) {
+  public Single<ChainResponse> query(@RequestBody RedisRequest request) {
     ChainProvider redisQuery = new RedisQueryProvider(request.getTopK());
 
     ChainWrapper wrapper = new ChainWrapper();
-    return RxJava3Adapter.singleToMono(
-        wrapper.chains(new ChainRequest(request.getInput()), redisQuery).toSingleWithRetry());
+    return wrapper.chains(new ChainRequest(request.getInput()), redisQuery).toSingleWithRetry();
   }
 }

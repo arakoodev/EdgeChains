@@ -8,6 +8,9 @@ import com.edgechain.lib.rxjava.request.ChainRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.wrapper.ChainWrapper;
 import com.edgechain.lib.wiki.provider.WikiProvider;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.adapter.rxjava.RxJava3Adapter;
 import reactor.core.publisher.Mono;
@@ -16,21 +19,22 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/plugins")
 public class PluginController {
 
-  @GetMapping("/wiki")
-  public Mono<ChainResponse> wikiContent(@RequestParam("query") String query) {
+  @GetMapping(
+      value = "/wiki",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  public Single<ChainResponse> wikiContent(@RequestParam("query") String query) {
     WikiProvider wikiProvider = new WikiProvider();
     ChainWrapper wrapper = new ChainWrapper();
-    return RxJava3Adapter.singleToMono(
-        wrapper.chains(new ChainRequest(query), wikiProvider).toSingleWithRetry());
+    return wrapper.chains(new ChainRequest(query), wikiProvider).toSingleWithRetry();
   }
 
   @PostMapping("/with-api")
-  public Mono<ChainResponse> getAPI(@RequestBody PluginAPIRequest request) {
+  public Single<ChainResponse> getAPI(@RequestBody PluginAPIRequest request) {
     OpenAiCompletionProvider provider = new OpenAiCompletionProvider(request.getEndpoint());
     ChainProvider chainProvider =
         new PluginAPIProvider(provider, request.getPluginEndpoint(), request.getSpecEndpoint());
     ChainWrapper wrapper = new ChainWrapper();
-    return RxJava3Adapter.singleToMono(
-        wrapper.chains(new ChainRequest(request.getInput()), chainProvider).toSingleWithRetry());
+    return wrapper.chains(new ChainRequest(request.getInput()), chainProvider).toSingleWithRetry();
   }
 }

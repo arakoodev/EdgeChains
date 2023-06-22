@@ -1,5 +1,6 @@
 package com.edgechain.lib.openai.client;
 
+import com.edgechain.app.constants.WebConstants;
 import com.edgechain.lib.embeddings.domain.openai.OpenAiEmbeddingRequest;
 import com.edgechain.lib.embeddings.domain.openai.OpenAiEmbeddingResponse;
 import com.edgechain.lib.openai.endpoint.Endpoint;
@@ -8,10 +9,14 @@ import com.edgechain.lib.openai.request.CompletionRequest;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.openai.response.CompletionResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.adapter.rxjava.RxJava3Adapter;
 
 import java.util.Objects;
 
@@ -52,6 +57,31 @@ public class OpenAiClient {
               }
             }),
         endpoint);
+  }
+
+  public EdgeChain<ChatCompletionResponse> createChatCompletionStream(
+      Endpoint endpoint, ChatCompletionRequest request) {
+
+    try {
+      return new EdgeChain<>(
+          RxJava3Adapter.fluxToObservable(
+              WebClient.builder()
+                  .build()
+                  .post()
+                  .uri(WebConstants.OPENAI_CHAT_COMPLETION_API)
+                  .accept(MediaType.TEXT_EVENT_STREAM)
+                  .headers(
+                      httpHeaders -> {
+                        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                        httpHeaders.setBearerAuth(WebConstants.OPENAI_AUTH_KEY);
+                      })
+                  .bodyValue(new ObjectMapper().writeValueAsString(request))
+                  .retrieve()
+                  .bodyToFlux(ChatCompletionResponse.class)),
+          endpoint);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public EdgeChain<CompletionResponse> createCompletion(

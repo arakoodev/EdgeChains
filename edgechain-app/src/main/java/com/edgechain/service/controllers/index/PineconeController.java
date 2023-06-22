@@ -8,6 +8,7 @@ import com.edgechain.lib.rxjava.provider.ChainProvider;
 import com.edgechain.lib.rxjava.request.ChainRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.wrapper.ChainWrapper;
+import io.reactivex.rxjava3.core.Single;
 import org.springframework.web.bind.annotation.*;
 import reactor.adapter.rxjava.RxJava3Adapter;
 import reactor.core.publisher.Mono;
@@ -17,35 +18,31 @@ import reactor.core.publisher.Mono;
 public class PineconeController {
 
   @PostMapping("/upsert")
-  public Mono<ChainResponse> upsert(@RequestBody PineconeRequest request) {
+  public Single<ChainResponse> upsert(@RequestBody PineconeRequest request) {
     ChainProvider pineconeUpsert = new PineconeUpsertProvider(request.getEndpoint());
 
     ChainWrapper wrapper = new ChainWrapper();
-    return RxJava3Adapter.singleToMono(
-        wrapper.chains(new ChainRequest(request.getInput()), pineconeUpsert).toSingleWithRetry());
+    return wrapper.chains(new ChainRequest(request.getInput()), pineconeUpsert).toSingleWithRetry();
   }
 
   @PostMapping("/query")
-  public Mono<ChainResponse> query(@RequestBody PineconeRequest request) {
+  public Single<ChainResponse> query(@RequestBody PineconeRequest request) {
     ChainProvider pineconeQuery =
         new PineconeQueryProvider(request.getEndpoint(), request.getTopK());
 
     ChainWrapper wrapper = new ChainWrapper();
-    return RxJava3Adapter.singleToMono(
-        wrapper.chains(new ChainRequest(request.getInput()), pineconeQuery).toSingleWithRetry());
+    return wrapper.chains(new ChainRequest(request.getInput()), pineconeQuery).toSingleWithRetry();
   }
 
   @DeleteMapping("/delete")
-  public Mono<ChainResponse> deleteByKey(@RequestBody PineconeRequest request) {
-    return RxJava3Adapter.singleToMono(
-        new PineconeIndexChain(request.getEndpoint())
-            .deleteByIds(request.getVectorIds())
-            .toSingleWithRetry());
+  public Single<ChainResponse> deleteByKey(@RequestBody PineconeRequest request) {
+    return new PineconeIndexChain(request.getEndpoint())
+        .deleteByIds(request.getVectorIds())
+        .toSingleWithRetry();
   }
 
   @DeleteMapping("/deleteAll")
-  public Mono<ChainResponse> deleteAll(@RequestBody PineconeRequest request) {
-    return RxJava3Adapter.singleToMono(
-        new PineconeIndexChain(request.getEndpoint()).deleteAll().toSingleWithRetry());
+  public Single<ChainResponse> deleteAll(@RequestBody PineconeRequest request) {
+    return new PineconeIndexChain(request.getEndpoint()).deleteAll().toSingleWithRetry();
   }
 }

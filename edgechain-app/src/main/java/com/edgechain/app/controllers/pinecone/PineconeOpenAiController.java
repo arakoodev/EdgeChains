@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
+
+import io.reactivex.rxjava3.core.Single;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -43,14 +45,14 @@ public class PineconeOpenAiController {
 
     String[] arr = pdfReader.readByChunkSize(file.getInputStream(), 512);
 
-    final Endpoint embeddingEndpoint =
+    Endpoint embeddingEndpoint =
         new Endpoint(
             OPENAI_EMBEDDINGS_API,
             OPENAI_AUTH_KEY,
             "text-embedding-ada-002",
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    final Endpoint pineconeEndpoint =
+    Endpoint pineconeEndpoint =
         new Endpoint(
             PINECONE_UPSERT_API,
             PINECONE_AUTH_KEY,
@@ -64,7 +66,7 @@ public class PineconeOpenAiController {
   }
 
   @PostMapping("/query")
-  public Mono<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
+  public Single<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
 
     Endpoint embeddingEndpoint =
         new Endpoint(
@@ -84,6 +86,7 @@ public class PineconeOpenAiController {
             "gpt-3.5-turbo",
             "user",
             0.3,
+            false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
@@ -99,7 +102,7 @@ public class PineconeOpenAiController {
   }
 
   @PostMapping("/query/context/{contextId}")
-  public Mono<ChainResponse> queryContextJson(
+  public Single<ChainResponse> queryContextJson(
       @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
     Endpoint embeddingEndpoint =
@@ -120,6 +123,7 @@ public class PineconeOpenAiController {
             "gpt-3.5-turbo",
             "user",
             0.7,
+            false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
@@ -135,7 +139,7 @@ public class PineconeOpenAiController {
   }
 
   @PostMapping("/query/context/file/{contextId}")
-  public Mono<ChainResponse> queryContextFile(
+  public Single<ChainResponse> queryContextFile(
       @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
     Endpoint embeddingEndpoint =
@@ -156,6 +160,7 @@ public class PineconeOpenAiController {
             "gpt-3.5-turbo",
             "user",
             0.7,
+            false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =

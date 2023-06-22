@@ -15,4 +15,7 @@ public class WebConstants {
   public static final String PINECONE_QUERY_API = System.getProperty("PINECONE_QUERY_API");
   public static final String PINECONE_UPSERT_API = System.getProperty("PINECONE_UPSERT_API");
   public static final String PINECONE_DELETE_API = System.getProperty("PINECONE_DELETE_API");
+
+  public static final String CHAT_STREAM_EVENT_COMPLETION_MESSAGE =
+      "OpenAI Chat Completion Finished";
 }

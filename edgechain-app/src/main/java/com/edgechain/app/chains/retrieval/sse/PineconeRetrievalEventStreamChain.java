@@ -1,9 +1,11 @@
-package com.edgechain.app.chains.retrieval;
+package com.edgechain.app.chains.retrieval.sse;
 
+import com.edgechain.app.constants.WebConstants;
 import com.edgechain.app.services.EmbeddingService;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PromptService;
 import com.edgechain.app.services.index.PineconeService;
+import com.edgechain.app.services.streams.OpenAiStreamService;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.context.services.HistoryContextService;
 import com.edgechain.lib.openai.endpoint.Endpoint;
@@ -13,18 +15,13 @@ import com.edgechain.lib.request.OpenAiEmbeddingsRequest;
 import com.edgechain.lib.request.PineconeRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import com.edgechain.lib.rxjava.utils.AtomInteger;
 import io.reactivex.rxjava3.core.Observable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
 
-import io.reactivex.rxjava3.core.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.adapter.rxjava.RxJava3Adapter;
-import reactor.core.publisher.Mono;
 
-public class PineconeRetrievalChain extends RetrievalChain {
+public class PineconeRetrievalEventStreamChain extends RetrievalEventStreamChain {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -33,12 +30,11 @@ public class PineconeRetrievalChain extends RetrievalChain {
   private final Endpoint indexEndpoint;
   private Endpoint chatEndpoint;
   private final EmbeddingService embeddingService;
-  private OpenAiService openAiService;
   private PromptService promptService;
   private final PineconeService pineconeService;
 
   // OpenAI (Upsert)
-  public PineconeRetrievalChain(
+  public PineconeRetrievalEventStreamChain(
       Endpoint embeddingEndpoint,
       Endpoint indexEndpoint,
       EmbeddingService embeddingService,
@@ -50,26 +46,24 @@ public class PineconeRetrievalChain extends RetrievalChain {
     logger.info("Using OpenAI Embedding Provider");
   }
 
-  public PineconeRetrievalChain(
+  public PineconeRetrievalEventStreamChain(
       Endpoint embeddingEndpoint,
       Endpoint indexEndpoint,
       Endpoint chatEndpoint,
       EmbeddingService embeddingService,
       PineconeService pineconeService,
-      PromptService promptService,
-      OpenAiService openAiService) {
+      PromptService promptService) {
     this.embeddingEndpoint = embeddingEndpoint;
     this.indexEndpoint = indexEndpoint;
     this.chatEndpoint = chatEndpoint;
     this.embeddingService = embeddingService;
-    this.openAiService = openAiService;
     this.promptService = promptService;
     this.pineconeService = pineconeService;
     logger.info("Using OpenAI Embedding Provider");
   }
 
   // For Doc2Vec
-  public PineconeRetrievalChain(
+  public PineconeRetrievalEventStreamChain(
       Endpoint indexEndpoint, EmbeddingService embeddingService, PineconeService pineconeService) {
     this.indexEndpoint = indexEndpoint;
     this.embeddingService = embeddingService;
@@ -77,100 +71,56 @@ public class PineconeRetrievalChain extends RetrievalChain {
     logger.info("Using Doc2Vec Embedding Provider");
   }
 
-  public PineconeRetrievalChain(
+  public PineconeRetrievalEventStreamChain(
       Endpoint indexEndpoint,
       Endpoint chatEndpoint,
       EmbeddingService embeddingService,
       PineconeService pineconeService,
-      PromptService promptService,
-      OpenAiService openAiService) {
+      PromptService promptService) {
     this.indexEndpoint = indexEndpoint;
     this.chatEndpoint = chatEndpoint;
     this.embeddingService = embeddingService;
     this.pineconeService = pineconeService;
     this.promptService = promptService;
-    this.openAiService = openAiService;
     logger.info("Using Doc2Vec Embedding Provider");
   }
 
   @Override
-  public void upsert(String input) {
+  public Observable<?> query(OpenAiService openAiService, String queryText, int topK) {
 
-    this.embeddingOutput(input)
-        .transform(
-            embeddingOutput ->
-                this.pineconeService
-                    .upsert(new PineconeRequest(this.indexEndpoint, embeddingOutput))
-                    .getResponse())
-        .awaitWithoutRetry();
+    String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
+    String pineconeQuery =
+        this.pineconeService
+            .query(new PineconeRequest(this.indexEndpoint, this.embeddingOutput(queryText), topK))
+            .getResponse();
+    String[] tokens = pineconeQuery.split("\n");
+
+    AtomInteger currentTopK = AtomInteger.of(0);
+    return new EdgeChain<>(
+            Observable.create(
+                emitter -> {
+                  try {
+                    String input = promptResponse + "\n" + tokens[currentTopK.getAndIncrement()];
+
+                    emitter.onNext(
+                        openAiService.chatCompletion(
+                            new OpenAiChatRequest(this.chatEndpoint, input)));
+                    emitter.onComplete();
+                  } catch (final Exception e) {
+                    emitter.onError(e);
+                  }
+                }))
+        .doWhileLoop(() -> currentTopK.get() == topK)
+        .getScheduledObservableWithoutRetry();
   }
 
   @Override
-  public Single<List<ChainResponse>> query(String queryText, int topK) {
-    return this.embeddingOutput(queryText)
-        .transform(
-            embeddingOutput -> {
-              String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
-
-              List<ChainResponse> chainResponseList = new ArrayList<>();
-
-              StringTokenizer tokenizer =
-                  new StringTokenizer(
-                      this.pineconeService
-                          .query(new PineconeRequest(this.indexEndpoint, embeddingOutput, topK))
-                          .getResponse(),
-                      "\n");
-              while (tokenizer.hasMoreTokens()) {
-                String input = promptResponse + "\n" + tokenizer.nextToken();
-                chainResponseList.add(
-                    this.openAiService.chatCompletion(
-                        new OpenAiChatRequest(this.chatEndpoint, input)));
-              }
-
-              return chainResponseList;
-            })
-        .toSingleWithOutRetry();
-  }
-
-  @Override
-  public Single<ChainResponse> query(
-      String contextId, HistoryContextService contextService, String queryText) {
-
-    return this.embeddingOutput(queryText)
-        .transform(
-            embeddingOutput ->
-                this.queryWithChatHistory(embeddingOutput, contextId, contextService, queryText))
-        .toSingleWithOutRetry();
-  }
-
-  private EdgeChain<String> embeddingOutput(String input) {
-
-    EdgeChain<String> edgeChain;
-
-    if (embeddingEndpoint != null) {
-      edgeChain =
-          new EdgeChain<>(
-              Observable.just(
-                  this.embeddingService
-                      .openAi(new OpenAiEmbeddingsRequest(this.embeddingEndpoint, input))
-                      .getResponse()));
-    } else {
-      edgeChain =
-          new EdgeChain<>(
-              Observable.just(
-                  this.embeddingService
-                      .doc2Vec(new Doc2VecEmbeddingsRequest(input))
-                      .getResponse()));
-    }
-
-    return edgeChain;
-  }
-
-  private ChainResponse queryWithChatHistory(
-      String embeddingOutput,
+  public Observable<ChainResponse> query(
+      OpenAiStreamService openAiStreamService,
       String contextId,
       HistoryContextService contextService,
       String queryText) {
+
     // Get the Prompt & The Context History
     String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
     HistoryContext historyContext = contextService.get(contextId).toSingleWithRetry().blockingGet();
@@ -179,7 +129,7 @@ public class PineconeRetrievalChain extends RetrievalChain {
 
     String indexResponse =
         this.pineconeService
-            .query(new PineconeRequest(this.indexEndpoint, embeddingOutput, 1))
+            .query(new PineconeRequest(this.indexEndpoint, this.embeddingOutput(queryText), 1))
             .getResponse();
 
     int totalTokens =
@@ -212,15 +162,39 @@ public class PineconeRetrievalChain extends RetrievalChain {
 
     System.out.println("Prompt: " + prompt);
 
-    ChainResponse openAiResponse =
-        this.openAiService.chatCompletion(new OpenAiChatRequest(this.chatEndpoint, prompt));
+    StringBuilder openAiResponseBuilder = new StringBuilder();
+    final String finalChatHistory = chatHistory;
 
-    String redisHistory = chatHistory + queryText + openAiResponse.getResponse();
+    return openAiStreamService
+        .chatCompletionStream(new OpenAiChatRequest(this.chatEndpoint, prompt))
+        .doOnNext(
+            v -> {
+              if (v.getResponse().equals(WebConstants.CHAT_STREAM_EVENT_COMPLETION_MESSAGE)) {
+                String redisHistory =
+                    finalChatHistory
+                        + queryText
+                        + openAiResponseBuilder.toString().replaceAll("[\t\n\r]+", " ");
+                System.out.println(redisHistory);
+                contextService.put(contextId, redisHistory).getWithRetry();
+              } else {
+                openAiResponseBuilder.append(v.getResponse());
+              }
+            });
+  }
 
-    //      System.out.println("Chat History: "+redisHistory);
+  private String embeddingOutput(String input) {
 
-    contextService.put(contextId, redisHistory).getWithRetry();
+    String embeddings;
 
-    return openAiResponse;
+    if (embeddingEndpoint != null) {
+      embeddings =
+          this.embeddingService
+              .openAi(new OpenAiEmbeddingsRequest(this.embeddingEndpoint, input))
+              .getResponse();
+    } else {
+      embeddings = this.embeddingService.doc2Vec(new Doc2VecEmbeddingsRequest(input)).getResponse();
+    }
+
+    return embeddings;
   }
 }

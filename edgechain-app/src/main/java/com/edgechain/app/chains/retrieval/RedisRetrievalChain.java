@@ -14,6 +14,8 @@ import io.reactivex.rxjava3.core.Observable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import io.reactivex.rxjava3.core.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.adapter.rxjava.RxJava3Adapter;
@@ -87,44 +89,41 @@ public class RedisRetrievalChain extends RetrievalChain {
   }
 
   @Override
-  public Mono<List<ChainResponse>> query(String queryText, int topK) {
-    return RxJava3Adapter.singleToMono(
-        this.embeddingOutput(queryText)
-            .transform(
-                embeddingOutput -> {
-                  List<ChainResponse> chainResponseList = new ArrayList<>();
+  public Single<List<ChainResponse>> query(String queryText, int topK) {
+    return this.embeddingOutput(queryText)
+        .transform(
+            embeddingOutput -> {
+              List<ChainResponse> chainResponseList = new ArrayList<>();
 
-                  String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
+              String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
 
-                  StringTokenizer tokenizer =
-                      new StringTokenizer(
-                          this.redisService
-                              .query(new RedisRequest(embeddingOutput, topK))
-                              .getResponse(),
-                          "\n");
-                  while (tokenizer.hasMoreTokens()) {
+              StringTokenizer tokenizer =
+                  new StringTokenizer(
+                      this.redisService
+                          .query(new RedisRequest(embeddingOutput, topK))
+                          .getResponse(),
+                      "\n");
+              while (tokenizer.hasMoreTokens()) {
 
-                    String input = promptResponse + "\n" + tokenizer.nextToken();
-                    chainResponseList.add(
-                        this.openAiService.chatCompletion(
-                            new OpenAiChatRequest(this.chatEndpoint, input)));
-                  }
+                String input = promptResponse + "\n" + tokenizer.nextToken();
+                chainResponseList.add(
+                    this.openAiService.chatCompletion(
+                        new OpenAiChatRequest(this.chatEndpoint, input)));
+              }
 
-                  return chainResponseList;
-                })
-            .toSingleWithOutRetry());
+              return chainResponseList;
+            })
+        .toSingleWithOutRetry();
   }
 
   @Override
-  public Mono<ChainResponse> query(
+  public Single<ChainResponse> query(
       String contextId, HistoryContextService contextService, String queryText) {
-    return RxJava3Adapter.singleToMono(
-        this.embeddingOutput(queryText)
-            .transform(
-                embeddingOutput ->
-                    this.queryWithChatHistory(
-                        embeddingOutput, contextId, contextService, queryText))
-            .toSingleWithRetry());
+    return this.embeddingOutput(queryText)
+        .transform(
+            embeddingOutput ->
+                this.queryWithChatHistory(embeddingOutput, contextId, contextService, queryText))
+        .toSingleWithRetry();
   }
 
   /*
@@ -205,7 +204,7 @@ public class RedisRetrievalChain extends RetrievalChain {
 
     //      System.out.println("Chat History: "+redisHistory);
 
-    contextService.put(contextId, redisHistory).execute();
+    contextService.put(contextId, redisHistory).getWithRetry();
 
     return openAiResponse;
   }

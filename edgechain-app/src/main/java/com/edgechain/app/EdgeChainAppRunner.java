@@ -1,11 +1,14 @@
 package com.edgechain.app;
 
 import com.edgechain.app.constants.WebConstants;
+import com.edgechain.app.services.streams.OpenAiStreamService;
 import com.edgechain.lib.configuration.EdgeChainAutoConfiguration;
 import java.io.IOException;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,8 +18,9 @@ import org.springframework.context.annotation.Import;
 @SpringBootApplication(scanBasePackages = {"com.edgechain.app"})
 @ImportAutoConfiguration({FeignAutoConfiguration.class})
 @Import(EdgeChainAutoConfiguration.class)
-public class EdgeChainAppRunner {
+public class EdgeChainAppRunner implements CommandLineRunner {
 
+  @Autowired private OpenAiStreamService openAiStreamService;
   public static final Logger logger = LoggerFactory.getLogger(EdgeChainAppRunner.class);
 
   public static void main(String[] args) throws Exception {
@@ -36,7 +40,6 @@ public class EdgeChainAppRunner {
     System.setProperty("spring.data.redis.password", "");
     System.setProperty("spring.data.redis.connect-timeout", "120000");
     System.setProperty("spring.redis.ttl", "3600");
-
     loadSentenceModel();
 
     SpringApplication.run(EdgeChainAppRunner.class, args);
@@ -48,4 +51,7 @@ public class EdgeChainAppRunner {
       logger.error("en-sent.zip file isn't loaded from the resources.'");
     }
   }
+
+  @Override
+  public void run(String... args) throws Exception {}
 }

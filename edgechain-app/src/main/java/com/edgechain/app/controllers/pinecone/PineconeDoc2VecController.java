@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
+
+import io.reactivex.rxjava3.core.Single;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +42,7 @@ public class PineconeDoc2VecController {
   @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public void upsert(@RequestBody MultipartFile file) throws IOException {
 
-    final Endpoint pineconeEndpoint =
+    Endpoint pineconeEndpoint =
         new Endpoint(
             PINECONE_UPSERT_API,
             PINECONE_AUTH_KEY,
@@ -59,7 +61,7 @@ public class PineconeDoc2VecController {
   }
 
   @PostMapping("/query")
-  public Mono<List<ChainResponse>> queryWithDoc2Vec(@RequestBody HashMap<String, String> mapper) {
+  public Single<List<ChainResponse>> queryWithDoc2Vec(@RequestBody HashMap<String, String> mapper) {
 
     Endpoint pineconeEndpoint = new Endpoint(PINECONE_QUERY_API, PINECONE_AUTH_KEY);
 
@@ -70,6 +72,7 @@ public class PineconeDoc2VecController {
             "gpt-3.5-turbo",
             "user",
             0.7,
+            false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
@@ -85,7 +88,7 @@ public class PineconeDoc2VecController {
   }
 
   @PostMapping("/query/context/{contextId}")
-  public Mono<ChainResponse> queryContextJson(
+  public Single<ChainResponse> queryContextJson(
       @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
     Endpoint pineconeEndpoint =
@@ -99,6 +102,7 @@ public class PineconeDoc2VecController {
             "gpt-3.5-turbo",
             "user",
             0.6,
+            false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
@@ -114,7 +118,7 @@ public class PineconeDoc2VecController {
   }
 
   @PostMapping("/query/context/file/{contextId}")
-  public Mono<ChainResponse> queryContextFile(
+  public Single<ChainResponse> queryContextFile(
       @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
     Endpoint pineconeEndpoint =
@@ -128,6 +132,7 @@ public class PineconeDoc2VecController {
             "gpt-3.5-turbo",
             "user",
             0.7,
+            false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =

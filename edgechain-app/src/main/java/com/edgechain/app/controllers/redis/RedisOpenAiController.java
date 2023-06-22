@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
+
+import io.reactivex.rxjava3.core.Single;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +57,7 @@ public class RedisOpenAiController {
   }
 
   @PostMapping("/query")
-  public Mono<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
+  public Single<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
 
     Endpoint embeddingEndpoint =
         new Endpoint(
@@ -71,6 +73,7 @@ public class RedisOpenAiController {
             "gpt-3.5-turbo",
             "user",
             0.3,
+            false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
@@ -86,7 +89,7 @@ public class RedisOpenAiController {
   }
 
   @PostMapping("/query/context/{contextId}")
-  public Mono<ChainResponse> queryContextJson(
+  public Single<ChainResponse> queryContextJson(
       @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
     Endpoint embeddingEndpoint =
@@ -103,6 +106,7 @@ public class RedisOpenAiController {
             "gpt-3.5-turbo",
             "user",
             0.6,
+            false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
@@ -118,7 +122,7 @@ public class RedisOpenAiController {
   }
 
   @PostMapping("/query/context/file/{contextId}")
-  public Mono<ChainResponse> queryContextFile(
+  public Single<ChainResponse> queryContextFile(
       @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
 
     Endpoint embeddingEndpoint =
@@ -135,6 +139,7 @@ public class RedisOpenAiController {
             "gpt-3.5-turbo",
             "user",
             0.7,
+            false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
