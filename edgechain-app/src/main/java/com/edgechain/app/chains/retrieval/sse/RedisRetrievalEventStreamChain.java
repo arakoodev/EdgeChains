@@ -73,11 +73,11 @@ public class RedisRetrievalEventStreamChain extends RetrievalEventStreamChain {
   @Override
   public Observable<?> query(OpenAiService openAiService, String queryText, int topK) {
     String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
-    String pineconeQuery =
+    String redisQuery =
         this.redisService
             .query(new RedisRequest(this.embeddingOutput(queryText), topK))
             .getResponse();
-    String[] tokens = pineconeQuery.split("\n");
+    String[] tokens = redisQuery.split("\n");
 
     AtomInteger currentTopK = AtomInteger.of(0);
     return new EdgeChain<>(
@@ -100,43 +100,53 @@ public class RedisRetrievalEventStreamChain extends RetrievalEventStreamChain {
 
   @Override
   public Observable<ChainResponse> query(
-      OpenAiStreamService openAiStreamService,
-      String contextId,
-      HistoryContextService contextService,
-      String queryText) {
+          OpenAiStreamService openAiStreamService,
+          String contextId,
+          HistoryContextService contextService,
+          String queryText,
+          int topK) {
+
     // Get the Prompt & The Context History
     String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
     HistoryContext historyContext = contextService.get(contextId).toSingleWithRetry().blockingGet();
 
     String chatHistory = historyContext.getResponse();
+    String modifiedHistory;
 
     String indexResponse =
-        this.redisService.query(new RedisRequest(this.embeddingOutput(queryText), 1)).getResponse();
+        this.redisService
+            .query(new RedisRequest(this.embeddingOutput(queryText), topK))
+            .getResponse();
+
+    System.out.printf("Query-%s: %s\n", topK, indexResponse);
 
     int totalTokens =
-        promptResponse.length()
-            + chatHistory.length()
-            + indexResponse.length()
-            + queryText.length();
+            promptResponse.length()
+                    + chatHistory.length()
+                    + indexResponse.length()
+                    + queryText.length();
 
     if (totalTokens > historyContext.getMaxTokens()) {
-      int diff = historyContext.getMaxTokens() - totalTokens;
-      chatHistory = chatHistory.substring(diff + 1);
+      int diff = Math.abs(historyContext.getMaxTokens() - totalTokens);
+      System.out.println("Difference Value: "+diff);
+      modifiedHistory = chatHistory.substring(diff + 1);
+    }else {
+      modifiedHistory = chatHistory;
     }
 
     // Then, Create Prompt For OpenAI
     String prompt;
 
-    if (chatHistory.length() > 0) {
+    if (modifiedHistory.length() > 0) {
       prompt =
-          "Question: "
-              + queryText
-              + "\n "
-              + promptResponse
-              + "\n"
-              + indexResponse
-              + "\nChat history:\n"
-              + chatHistory;
+              "Question: "
+                      + queryText
+                      + "\n "
+                      + promptResponse
+                      + "\n"
+                      + indexResponse
+                      + "\nChat history:\n"
+                      + modifiedHistory;
     } else {
       prompt = "Question: " + queryText + "\n " + promptResponse + "\n" + indexResponse;
     }
@@ -147,20 +157,20 @@ public class RedisRetrievalEventStreamChain extends RetrievalEventStreamChain {
     final String finalChatHistory = chatHistory;
 
     return openAiStreamService
-        .chatCompletionStream(new OpenAiChatRequest(this.chatEndpoint, prompt))
-        .doOnNext(
-            v -> {
-              if (v.getResponse().equals(WebConstants.CHAT_STREAM_EVENT_COMPLETION_MESSAGE)) {
-                String redisHistory =
-                    finalChatHistory
-                        + queryText
-                        + openAiResponseBuilder.toString().replaceAll("[\t\n\r]+", " ");
-                System.out.println(redisHistory);
-                contextService.put(contextId, redisHistory).getWithRetry();
-              } else {
-                openAiResponseBuilder.append(v.getResponse());
-              }
-            });
+            .chatCompletionStream(new OpenAiChatRequest(this.chatEndpoint, prompt))
+            .doOnNext(
+                    v -> {
+                      if (v.getResponse().equals(WebConstants.CHAT_STREAM_EVENT_COMPLETION_MESSAGE)) {
+                        String redisHistory =
+                                finalChatHistory
+                                        + queryText
+                                        + openAiResponseBuilder.toString().replaceAll("[\t\n\r]+", " ");
+                        System.out.println("Redis History: "+redisHistory);
+                        contextService.put(contextId, redisHistory).getWithRetry();
+                      } else {
+                        openAiResponseBuilder.append(v.getResponse());
+                      }
+                    });
   }
 
   private String embeddingOutput(String input) {

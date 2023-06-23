@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -35,7 +36,7 @@ public class PineconeDoc2VecController {
   @Autowired private OpenAiService openAiService;
   @Autowired private PromptService promptService;
   @Autowired private PineconeService pineconeService;
-  @Autowired private RedisHistoryContextService redisHistoryContextService;
+  @Autowired private RedisHistoryContextService contextService;
 
   @Autowired private PdfReader pdfReader;
 
@@ -60,8 +61,8 @@ public class PineconeDoc2VecController {
             });
   }
 
-  @PostMapping("/query")
-  public Single<List<ChainResponse>> queryWithDoc2Vec(@RequestBody HashMap<String, String> mapper) {
+  @GetMapping(value = "/query", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+  public Observable<?> query(@RequestParam Integer topK, @RequestParam Boolean stream, @RequestParam String query) {
 
     Endpoint pineconeEndpoint = new Endpoint(PINECONE_QUERY_API, PINECONE_AUTH_KEY);
 
@@ -72,7 +73,7 @@ public class PineconeDoc2VecController {
             "gpt-3.5-turbo",
             "user",
             0.7,
-            false,
+            stream,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
@@ -84,12 +85,15 @@ public class PineconeDoc2VecController {
             promptService,
             openAiService);
 
-    return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
+    return retrievalChain.query(query, topK);
   }
 
-  @PostMapping("/query/context/{contextId}")
-  public Single<ChainResponse> queryContextJson(
-      @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
+  @GetMapping(value = "/query/context", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+  public Observable<?> queryWithContext(
+          @RequestParam String contextId,
+          @RequestParam Integer topK,
+          @RequestParam Boolean stream,
+          @RequestParam String query) {
 
     Endpoint pineconeEndpoint =
         new Endpoint(
@@ -102,7 +106,7 @@ public class PineconeDoc2VecController {
             "gpt-3.5-turbo",
             "user",
             0.6,
-            false,
+            stream,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
@@ -114,7 +118,7 @@ public class PineconeDoc2VecController {
             promptService,
             openAiService);
 
-    return retrievalChain.query(contextId, redisHistoryContextService, mapper.get("query"));
+    return retrievalChain.query(contextId, contextService,query,topK);
   }
 
   @PostMapping("/query/context/file/{contextId}")
@@ -146,7 +150,7 @@ public class PineconeDoc2VecController {
 
     return retrievalChain.query(
         contextId,
-        redisHistoryContextService,
+        contextService,
         new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename")));
   }
 }

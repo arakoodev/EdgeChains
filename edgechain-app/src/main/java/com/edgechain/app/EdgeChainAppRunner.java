@@ -27,10 +27,12 @@ public class EdgeChainAppRunner implements CommandLineRunner {
 
     System.setProperty("OPENAI_AUTH_KEY", "");
 
+    System.setProperty("OPENAI_AUTH_KEY", "");
+
     System.setProperty("PINECONE_AUTH_KEY", "");
     System.setProperty("PINECONE_QUERY_API", "");
-    System.setProperty("PINECONE_UPSERT_API", "");
-    System.setProperty("PINECONE_DELETE_API", "");
+    System.setProperty("PINECONE_UPSERT_API","");
+    System.setProperty("PINECONE_DELETE_API","");
 
     System.setProperty("spring.data.redis.host", "");
     System.setProperty("spring.data.redis.port", "6379");

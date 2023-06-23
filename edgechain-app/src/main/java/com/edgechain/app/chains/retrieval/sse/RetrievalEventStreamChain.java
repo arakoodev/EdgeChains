@@ -15,5 +15,6 @@ public abstract class RetrievalEventStreamChain {
       OpenAiStreamService openAiStreamService,
       String contextId,
       HistoryContextService contextService,
-      String queryText);
+      String queryText,
+      int topK);
 }

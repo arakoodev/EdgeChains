@@ -1,6 +1,7 @@
 package com.edgechain.lib.openai.endpoint;
 
 import com.edgechain.lib.openai.providers.OpenAiChatCompletionProvider;
+import com.edgechain.lib.openai.providers.OpenAiChatCompletionStreamProvider;
 import com.edgechain.lib.openai.providers.OpenAiCompletionProvider;
 import com.edgechain.lib.embeddings.providers.OpenAiEmbeddingProvider;
 import com.edgechain.lib.rxjava.provider.ChainProvider;
@@ -71,7 +72,7 @@ public class Endpoint {
     } else if (Objects.isNull(role)) {
       this.chainProvider = new OpenAiCompletionProvider(this);
     } else if (Objects.nonNull(stream) && stream.equals(Boolean.TRUE)) {
-      this.chainProvider = new OpenAiChatCompletionProvider(this);
+      this.chainProvider = new OpenAiChatCompletionStreamProvider(this);
     } else {
       this.chainProvider = new OpenAiChatCompletionProvider(this);
     }

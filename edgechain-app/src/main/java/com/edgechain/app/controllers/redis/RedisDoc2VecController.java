@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -35,7 +36,7 @@ public class RedisDoc2VecController {
   @Autowired private RedisService redisService;
   @Autowired private PromptService promptService;
   @Autowired private OpenAiService openAiService;
-  @Autowired private RedisHistoryContextService redisHistoryContextService;
+  @Autowired private RedisHistoryContextService contextService;
   @Autowired private PdfReader pdfReader;
 
   @PostMapping(value = "/upsert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -47,8 +48,8 @@ public class RedisDoc2VecController {
     IntStream.range(0, arr.length).parallel().forEach(i -> retrievalChain.upsert(arr[i]));
   }
 
-  @PostMapping("/query")
-  public Single<List<ChainResponse>> query(@RequestBody HashMap<String, String> mapper) {
+  @GetMapping(value = "/query", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+  public Observable<?> query(@RequestParam Integer topK, @RequestParam Boolean stream, @RequestParam String query) {
 
     Endpoint chatEndpoint =
         new Endpoint(
@@ -57,19 +58,23 @@ public class RedisDoc2VecController {
             "gpt-3.5-turbo",
             "user",
             0.3,
-            false,
+            stream,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
         new RedisRetrievalChain(
             chatEndpoint, embeddingService, redisService, promptService, openAiService);
 
-    return retrievalChain.query(mapper.get("query"), Integer.parseInt(mapper.get("topK")));
+    return retrievalChain.query(query,topK);
+
   }
 
-  @PostMapping("/query/context/{contextId}")
-  public Single<ChainResponse> queryContextJson(
-      @PathVariable String contextId, @RequestBody HashMap<String, String> mapper) {
+  @GetMapping(value = "/query/context", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+  public Observable<?> queryWithContext(
+          @RequestParam String contextId,
+          @RequestParam Integer topK,
+          @RequestParam Boolean stream,
+          @RequestParam String query) {
 
     Endpoint chatEndpoint =
         new Endpoint(
@@ -78,14 +83,14 @@ public class RedisDoc2VecController {
             "gpt-3.5-turbo",
             "user",
             0.6,
-            false,
+            stream,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     RetrievalChain retrievalChain =
         new RedisRetrievalChain(
             chatEndpoint, embeddingService, redisService, promptService, openAiService);
 
-    return retrievalChain.query(contextId, redisHistoryContextService, mapper.get("query"));
+    return retrievalChain.query(contextId, contextService,query,topK);
   }
 
   @PostMapping("/query/context/file/{contextId}")
@@ -108,7 +113,7 @@ public class RedisDoc2VecController {
 
     return retrievalChain.query(
         contextId,
-        redisHistoryContextService,
+        contextService,
         new LocalFileResourceHandler(mapper.get("folder"), mapper.get("filename")));
   }
 }

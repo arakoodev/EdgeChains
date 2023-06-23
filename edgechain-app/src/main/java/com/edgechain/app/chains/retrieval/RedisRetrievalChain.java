@@ -89,7 +89,7 @@ public class RedisRetrievalChain extends RetrievalChain {
   }
 
   @Override
-  public Single<List<ChainResponse>> query(String queryText, int topK) {
+  public Observable<List<ChainResponse>> query(String queryText, int topK) {
     return this.embeddingOutput(queryText)
         .transform(
             embeddingOutput -> {
@@ -112,18 +112,17 @@ public class RedisRetrievalChain extends RetrievalChain {
               }
 
               return chainResponseList;
-            })
-        .toSingleWithOutRetry();
+            }).getScheduledObservableWithoutRetry();
   }
 
   @Override
-  public Single<ChainResponse> query(
-      String contextId, HistoryContextService contextService, String queryText) {
+  public Observable<ChainResponse> query(
+      String contextId, HistoryContextService contextService, String queryText, int topK) {
     return this.embeddingOutput(queryText)
         .transform(
             embeddingOutput ->
-                this.queryWithChatHistory(embeddingOutput, contextId, contextService, queryText))
-        .toSingleWithRetry();
+                this.queryWithChatHistory(embeddingOutput, contextId, contextService, queryText, topK))
+        .getScheduledObservableWithoutRetry();
   }
 
   /*
@@ -153,44 +152,53 @@ public class RedisRetrievalChain extends RetrievalChain {
   }
 
   private ChainResponse queryWithChatHistory(
-      String embeddingOutput,
-      String contextId,
-      HistoryContextService contextService,
-      String queryText) {
+          String embeddingOutput,
+          String contextId,
+          HistoryContextService contextService,
+          String queryText,
+          int topK) {
 
     // Get the Prompt & The Context History
     String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
     HistoryContext historyContext = contextService.get(contextId).toSingleWithRetry().blockingGet();
 
     String chatHistory = historyContext.getResponse();
+    String modifiedHistory;
 
     String indexResponse =
-        this.redisService.query(new RedisRequest(embeddingOutput, 1)).getResponse();
+            this.redisService
+                    .query(new RedisRequest(embeddingOutput, topK))
+                    .getResponse();
+
+    System.out.printf("Query-%s: %s\n", topK, indexResponse);
 
     int totalTokens =
-        promptResponse.length()
-            + chatHistory.length()
-            + indexResponse.length()
-            + queryText.length();
+            promptResponse.length()
+                    + chatHistory.length()
+                    + indexResponse.length()
+                    + queryText.length();
 
     if (totalTokens > historyContext.getMaxTokens()) {
-      int diff = historyContext.getMaxTokens() - totalTokens;
-      chatHistory = chatHistory.substring(diff + 1);
+      int diff = Math.abs(historyContext.getMaxTokens() - totalTokens);
+      System.out.println("Difference Value: "+diff);
+      modifiedHistory = chatHistory.substring(diff + 1);
+    }else {
+      modifiedHistory = chatHistory;
     }
 
     // Then, Create Prompt For OpenAI
     String prompt;
 
-    if (chatHistory.length() > 0) {
+    if (modifiedHistory.length() > 0) {
       prompt =
-          "Question: "
-              + queryText
-              + "\n "
-              + promptResponse
-              + "\n"
-              + indexResponse
-              + "\nChat history:\n"
-              + chatHistory;
+              "Question: "
+                      + queryText
+                      + "\n "
+                      + promptResponse
+                      + "\n"
+                      + indexResponse
+                      + "\nChat history:\n"
+                      + modifiedHistory;
     } else {
       prompt = "Question: " + queryText + "\n " + promptResponse + "\n" + indexResponse;
     }
@@ -198,11 +206,9 @@ public class RedisRetrievalChain extends RetrievalChain {
     System.out.println("Prompt: " + prompt);
 
     ChainResponse openAiResponse =
-        this.openAiService.chatCompletion(new OpenAiChatRequest(this.chatEndpoint, prompt));
+            this.openAiService.chatCompletion(new OpenAiChatRequest(this.chatEndpoint, prompt));
 
     String redisHistory = chatHistory + queryText + openAiResponse.getResponse();
-
-    //      System.out.println("Chat History: "+redisHistory);
 
     contextService.put(contextId, redisHistory).getWithRetry();
 

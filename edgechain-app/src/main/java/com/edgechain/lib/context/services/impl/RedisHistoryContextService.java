@@ -93,7 +93,7 @@ public class RedisHistoryContextService implements HistoryContextService {
                           (HistoryContext) this.redisTemplate.opsForValue().get(key)));
                   emitter.onComplete();
                 } else {
-                  throw new RuntimeException("Redis key isn't found");
+                  throw new RuntimeException("Redis HistoryContext key isn't found ==> Either you have incorrectly defined contextId or create it via /v1/history-context/create & use the historyContextId");
                 }
 
               } catch (final Exception e) {

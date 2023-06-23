@@ -119,34 +119,41 @@ public class PineconeRetrievalEventStreamChain extends RetrievalEventStreamChain
       OpenAiStreamService openAiStreamService,
       String contextId,
       HistoryContextService contextService,
-      String queryText) {
+      String queryText,
+      int topK) {
 
     // Get the Prompt & The Context History
     String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
     HistoryContext historyContext = contextService.get(contextId).toSingleWithRetry().blockingGet();
 
     String chatHistory = historyContext.getResponse();
+    String modifiedHistory;
 
     String indexResponse =
         this.pineconeService
-            .query(new PineconeRequest(this.indexEndpoint, this.embeddingOutput(queryText), 1))
+            .query(new PineconeRequest(this.indexEndpoint, this.embeddingOutput(queryText), topK))
             .getResponse();
 
+    System.out.printf("Query-%s: %s\n", topK, indexResponse);
+
     int totalTokens =
-        promptResponse.length()
-            + chatHistory.length()
-            + indexResponse.length()
-            + queryText.length();
+            promptResponse.length()
+                    + chatHistory.length()
+                    + indexResponse.length()
+                    + queryText.length();
 
     if (totalTokens > historyContext.getMaxTokens()) {
-      int diff = historyContext.getMaxTokens() - totalTokens;
-      chatHistory = chatHistory.substring(diff + 1);
+      int diff = Math.abs(historyContext.getMaxTokens() - totalTokens);
+      System.out.println("Difference Value: "+diff);
+      modifiedHistory = chatHistory.substring(diff + 1);
+    }else {
+      modifiedHistory = chatHistory;
     }
 
     // Then, Create Prompt For OpenAI
     String prompt;
 
-    if (chatHistory.length() > 0) {
+    if (modifiedHistory.length() > 0) {
       prompt =
           "Question: "
               + queryText
@@ -155,7 +162,7 @@ public class PineconeRetrievalEventStreamChain extends RetrievalEventStreamChain
               + "\n"
               + indexResponse
               + "\nChat history:\n"
-              + chatHistory;
+              + modifiedHistory;
     } else {
       prompt = "Question: " + queryText + "\n " + promptResponse + "\n" + indexResponse;
     }
@@ -174,7 +181,7 @@ public class PineconeRetrievalEventStreamChain extends RetrievalEventStreamChain
                     finalChatHistory
                         + queryText
                         + openAiResponseBuilder.toString().replaceAll("[\t\n\r]+", " ");
-                System.out.println(redisHistory);
+                System.out.println("Redis History: "+redisHistory);
                 contextService.put(contextId, redisHistory).getWithRetry();
               } else {
                 openAiResponseBuilder.append(v.getResponse());

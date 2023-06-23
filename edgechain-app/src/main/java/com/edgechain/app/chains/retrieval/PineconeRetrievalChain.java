@@ -21,6 +21,7 @@ import java.util.StringTokenizer;
 import io.reactivex.rxjava3.core.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.web.WebProperties;
 import reactor.adapter.rxjava.RxJava3Adapter;
 import reactor.core.publisher.Mono;
 
@@ -106,7 +107,7 @@ public class PineconeRetrievalChain extends RetrievalChain {
   }
 
   @Override
-  public Single<List<ChainResponse>> query(String queryText, int topK) {
+  public Observable<List<ChainResponse>> query(String queryText, int topK) {
     return this.embeddingOutput(queryText)
         .transform(
             embeddingOutput -> {
@@ -128,19 +129,17 @@ public class PineconeRetrievalChain extends RetrievalChain {
               }
 
               return chainResponseList;
-            })
-        .toSingleWithOutRetry();
+            }).getScheduledObservableWithoutRetry();
   }
 
   @Override
-  public Single<ChainResponse> query(
-      String contextId, HistoryContextService contextService, String queryText) {
+  public Observable<ChainResponse>query(
+      String contextId, HistoryContextService contextService, String queryText, int topK) {
 
     return this.embeddingOutput(queryText)
         .transform(
             embeddingOutput ->
-                this.queryWithChatHistory(embeddingOutput, contextId, contextService, queryText))
-        .toSingleWithOutRetry();
+                this.queryWithChatHistory(embeddingOutput, contextId, contextService, queryText, topK)).getScheduledObservableWithoutRetry();
   }
 
   private EdgeChain<String> embeddingOutput(String input) {
@@ -170,17 +169,21 @@ public class PineconeRetrievalChain extends RetrievalChain {
       String embeddingOutput,
       String contextId,
       HistoryContextService contextService,
-      String queryText) {
+      String queryText, int topK) {
+
     // Get the Prompt & The Context History
     String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
     HistoryContext historyContext = contextService.get(contextId).toSingleWithRetry().blockingGet();
 
     String chatHistory = historyContext.getResponse();
+    String modifiedHistory;
 
     String indexResponse =
         this.pineconeService
-            .query(new PineconeRequest(this.indexEndpoint, embeddingOutput, 1))
+            .query(new PineconeRequest(this.indexEndpoint, embeddingOutput, topK))
             .getResponse();
+
+    System.out.printf("Query-%s: %s\n", topK, indexResponse);
 
     int totalTokens =
         promptResponse.length()
@@ -189,14 +192,17 @@ public class PineconeRetrievalChain extends RetrievalChain {
             + queryText.length();
 
     if (totalTokens > historyContext.getMaxTokens()) {
-      int diff = historyContext.getMaxTokens() - totalTokens;
-      chatHistory = chatHistory.substring(diff + 1);
+      int diff = Math.abs(historyContext.getMaxTokens() - totalTokens);
+      System.out.println("Difference Value: "+diff);
+      modifiedHistory = chatHistory.substring(diff + 1);
+    }else {
+      modifiedHistory = chatHistory;
     }
 
     // Then, Create Prompt For OpenAI
     String prompt;
 
-    if (chatHistory.length() > 0) {
+    if (modifiedHistory.length() > 0) {
       prompt =
           "Question: "
               + queryText
@@ -205,7 +211,7 @@ public class PineconeRetrievalChain extends RetrievalChain {
               + "\n"
               + indexResponse
               + "\nChat history:\n"
-              + chatHistory;
+              + modifiedHistory;
     } else {
       prompt = "Question: " + queryText + "\n " + promptResponse + "\n" + indexResponse;
     }
@@ -216,8 +222,6 @@ public class PineconeRetrievalChain extends RetrievalChain {
         this.openAiService.chatCompletion(new OpenAiChatRequest(this.chatEndpoint, prompt));
 
     String redisHistory = chatHistory + queryText + openAiResponse.getResponse();
-
-    //      System.out.println("Chat History: "+redisHistory);
 
     contextService.put(contextId, redisHistory).getWithRetry();
 
