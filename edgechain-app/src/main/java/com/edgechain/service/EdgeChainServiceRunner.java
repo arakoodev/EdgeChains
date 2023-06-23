@@ -11,7 +11,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
 
-@SpringBootApplication(scanBasePackages = {"com.edgechain.service"})
+@SpringBootApplication(scanBasePackages = { "com.edgechain.service" })
 @Import(EdgeChainAutoConfiguration.class)
 public class EdgeChainServiceRunner {
 
@@ -27,7 +27,8 @@ public class EdgeChainServiceRunner {
     System.setProperty("spring.data.redis.password", "");
     System.setProperty("spring.data.redis.connect-timeout", "120000");
     System.setProperty("spring.redis.ttl", "3600");
-
+    System.setProperty("jsonnet.target.location", "");
+    System.setProperty("openai.api.key", "");
     System.setProperty("doc2vec.filepath", "R:\\doc_vector.bin");
 
     readDoc2Vec();
@@ -47,8 +48,8 @@ public class EdgeChainServiceRunner {
               + " path.");
     } else {
       logger.info("Loading...");
-      ServiceConstants.embeddingDoc2VecModel =
-          WordVectorSerializer.readParagraphVectors(new FileInputStream(modelPath));
+      ServiceConstants.embeddingDoc2VecModel = WordVectorSerializer
+          .readParagraphVectors(new FileInputStream(modelPath));
       logger.info("Doc2Vec model is successfully loaded...");
     }
   }
