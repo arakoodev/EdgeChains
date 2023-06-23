@@ -1,7 +1,6 @@
 package com.edgechain.app;
 
 import com.edgechain.app.constants.WebConstants;
-import com.edgechain.app.services.streams.OpenAiStreamService;
 import com.edgechain.lib.configuration.EdgeChainAutoConfiguration;
 import java.io.IOException;
 import java.util.Objects;
@@ -20,7 +19,6 @@ import org.springframework.context.annotation.Import;
 @Import(EdgeChainAutoConfiguration.class)
 public class EdgeChainAppRunner implements CommandLineRunner {
 
-  @Autowired private OpenAiStreamService openAiStreamService;
   public static final Logger logger = LoggerFactory.getLogger(EdgeChainAppRunner.class);
 
   public static void main(String[] args) throws Exception {

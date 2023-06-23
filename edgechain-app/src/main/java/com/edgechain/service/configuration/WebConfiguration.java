@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Configuration
+@Configuration("ServiceConfiguration")
 public class WebConfiguration {
 
   @Bean

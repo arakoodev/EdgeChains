@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Configuration
+@Configuration("WebConfiguration")
 @EnableFeignClients(basePackages = {"com.edgechain.app"})
 public class WebConfiguration {
 
