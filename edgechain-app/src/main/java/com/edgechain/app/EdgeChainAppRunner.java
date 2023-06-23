@@ -26,9 +26,7 @@ public class EdgeChainAppRunner implements CommandLineRunner {
     System.setProperty("server.port", "8003");
 
     System.setProperty("OPENAI_AUTH_KEY", "");
-
-    System.setProperty("OPENAI_AUTH_KEY", "");
-
+    
     System.setProperty("PINECONE_AUTH_KEY", "");
     System.setProperty("PINECONE_QUERY_API", "");
     System.setProperty("PINECONE_UPSERT_API","");
