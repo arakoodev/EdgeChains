@@ -86,7 +86,8 @@ public class JsonnetRunner {
         // Use Gson to parse the JSON
         JsonParser parser = new JsonParser();
         JsonElement jsonElement = parser.parse(stdoutOutput);
-        System.out.println(jsonElement.getAsString());
+        System.out.println("Generated JSON = ");
+        System.out.println(stdoutOutput);
         return jsonElement.getAsJsonObject();
     }
 
@@ -97,6 +98,7 @@ public class JsonnetRunner {
         extVarsSettings.put("capContext", "true");
         extVarsSettings.put("contextLength", "4096");
         extVarsSettings.put("context", "You are supposed to ");
+        extVarsSettings.put("history", " ");
 
         JsonObject jsonObject = ob.executor(
                 "/media/anuran/Samsung_SSD_970_EVO_1TB/Internship/GSSoC_2k23/EdgeChains/EdgeChains/Examples/jsonnet_impl/src/main/java/com/jsonnet/new.jsonnet",

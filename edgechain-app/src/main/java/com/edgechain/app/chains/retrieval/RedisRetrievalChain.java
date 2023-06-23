@@ -191,7 +191,7 @@ public class RedisRetrievalChain extends RetrievalChain {
 
     String chatHistory = historyContext.getResponse();
 
-    String indexResponse = this.redisService.query(new RedisRequest(embeddingOutput, 1)).getResponse();
+    String indexResponse = this.redisService.query(new RedisRequest(embeddingOutput, 5)).getResponse();
 
     int totalTokens = promptResponse.length()
         + chatHistory.length()
@@ -220,7 +220,11 @@ public class RedisRetrievalChain extends RetrievalChain {
     // indexResponse;
     // }
 
+    if (chatHistory == "") {
+      chatHistory = " ";
+    }
     totalMap.put("context", indexResponse);
+    totalMap.put("history", chatHistory);
     prompt = this.promptService.getCustomQueryPrompt(totalMap).getResponse();
 
     System.out.println("Prompt: " + prompt);
@@ -229,7 +233,7 @@ public class RedisRetrievalChain extends RetrievalChain {
 
     String redisHistory = chatHistory + queryText + openAiResponse.getResponse();
 
-    // System.out.println("Chat History: "+redisHistory);
+    System.out.println("Chat History: " + redisHistory);
 
     contextService.put(contextId, redisHistory).execute();
 
