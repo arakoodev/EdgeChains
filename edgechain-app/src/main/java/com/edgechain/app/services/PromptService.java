@@ -13,19 +13,27 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Component
 public interface PromptService extends ToolService {
 
-  @GetMapping(value = "/wiki-summary", consumes = { MediaType.APPLICATION_JSON_VALUE }, produces = {
-      MediaType.APPLICATION_JSON_VALUE })
+  @GetMapping(
+      value = "/wiki-summary",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse getWikiSummaryPrompt();
 
-  @GetMapping(value = "/rap-query", consumes = { MediaType.APPLICATION_JSON_VALUE }, produces = {
-      MediaType.APPLICATION_JSON_VALUE })
+  @GetMapping(
+      value = "/rap-query",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse getRapQueryPrompt();
 
-  @GetMapping(value = "/custom-query", consumes = { MediaType.APPLICATION_JSON_VALUE }, produces = {
-      MediaType.APPLICATION_JSON_VALUE })
+  @GetMapping(
+      value = "/custom-query",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse getCustomQueryPrompt(Map<String, String> extVarSettings);
 
-  @GetMapping(value = "/index-query", consumes = { MediaType.APPLICATION_JSON_VALUE }, produces = {
-      MediaType.APPLICATION_JSON_VALUE })
+  @GetMapping(
+      value = "/index-query",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse getIndexQueryPrompt();
 }

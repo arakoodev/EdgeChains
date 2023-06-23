@@ -12,8 +12,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
-@SpringBootApplication(scanBasePackages = { "com.edgechain.app" })
-@ImportAutoConfiguration({ FeignAutoConfiguration.class })
+@SpringBootApplication(scanBasePackages = {"com.edgechain.app"})
+@ImportAutoConfiguration({FeignAutoConfiguration.class})
 @Import(EdgeChainAutoConfiguration.class)
 public class EdgeChainAppRunner {
 

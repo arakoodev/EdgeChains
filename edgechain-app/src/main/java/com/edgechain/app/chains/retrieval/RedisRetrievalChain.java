@@ -1,6 +1,5 @@
 package com.edgechain.app.chains.retrieval;
 
-import com.edgechain.app.constants.WebConstants;
 import com.edgechain.app.services.EmbeddingService;
 import com.edgechain.app.services.OpenAiService;
 import com.edgechain.app.services.PromptService;
@@ -11,7 +10,6 @@ import com.edgechain.lib.openai.endpoint.Endpoint;
 import com.edgechain.lib.request.*;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import com.edgechain.service.prompts.runners.JsonnetRunner;
 
 import io.reactivex.rxjava3.core.Observable;
 import java.util.ArrayList;
@@ -86,7 +84,8 @@ public class RedisRetrievalChain extends RetrievalChain {
 
     this.embeddingOutput(input)
         .transform(
-            embeddingOutput -> this.redisService.upsert(new RedisRequest(embeddingOutput)).getResponse())
+            embeddingOutput ->
+                this.redisService.upsert(new RedisRequest(embeddingOutput)).getResponse())
         .awaitWithoutRetry();
   }
 
@@ -103,22 +102,28 @@ public class RedisRetrievalChain extends RetrievalChain {
                   // Settings Map
 
                   Map<String, String> extVarMap = new HashMap<String, String>();
-                  extVarMap.put("keepContext", "true"); // Must be in string, can be later specified in environment
-                                                        // variables or web constants, or programmatically
-                  extVarMap.put("capContext", "true"); // Must be in string, can be later specified in environment
-                                                       // variables or web constants, or programmatically
-                  extVarMap.put("contextLength", "4096"); // Must be in string, can be later specified in environment
-                                                          // variables or web constants, or programmatically
+                  extVarMap.put(
+                      "keepContext",
+                      "true"); // Must be in string, can be later specified in environment
+                  // variables or web constants, or programmatically
+                  extVarMap.put(
+                      "capContext",
+                      "true"); // Must be in string, can be later specified in environment
+                  // variables or web constants, or programmatically
+                  extVarMap.put(
+                      "contextLength",
+                      "4096"); // Must be in string, can be later specified in environment
+                  // variables or web constants, or programmatically
 
-                  String promptResponse = this.promptService
-                      .getCustomQueryPrompt(extVarMap)
-                      .getResponse();
+                  String promptResponse =
+                      this.promptService.getCustomQueryPrompt(extVarMap).getResponse();
 
-                  StringTokenizer tokenizer = new StringTokenizer(
-                      this.redisService
-                          .query(new RedisRequest(embeddingOutput, topK))
-                          .getResponse(),
-                      "\n");
+                  StringTokenizer tokenizer =
+                      new StringTokenizer(
+                          this.redisService
+                              .query(new RedisRequest(embeddingOutput, topK))
+                              .getResponse(),
+                          "\n");
                   while (tokenizer.hasMoreTokens()) {
 
                     String input = promptResponse + "\n" + tokenizer.nextToken();
@@ -138,8 +143,9 @@ public class RedisRetrievalChain extends RetrievalChain {
     return RxJava3Adapter.singleToMono(
         this.embeddingOutput(queryText)
             .transform(
-                embeddingOutput -> this.queryWithChatHistory(
-                    embeddingOutput, contextId, contextService, queryText))
+                embeddingOutput ->
+                    this.queryWithChatHistory(
+                        embeddingOutput, contextId, contextService, queryText))
             .toSingleWithRetry());
   }
 
@@ -151,17 +157,19 @@ public class RedisRetrievalChain extends RetrievalChain {
     EdgeChain<String> edgeChain;
 
     if (embeddingEndpoint != null) {
-      edgeChain = new EdgeChain<>(
-          Observable.just(
-              this.embeddingService
-                  .openAi(new OpenAiEmbeddingsRequest(this.embeddingEndpoint, input))
-                  .getResponse()));
+      edgeChain =
+          new EdgeChain<>(
+              Observable.just(
+                  this.embeddingService
+                      .openAi(new OpenAiEmbeddingsRequest(this.embeddingEndpoint, input))
+                      .getResponse()));
     } else {
-      edgeChain = new EdgeChain<>(
-          Observable.just(
-              this.embeddingService
-                  .doc2Vec(new Doc2VecEmbeddingsRequest(input))
-                  .getResponse()));
+      edgeChain =
+          new EdgeChain<>(
+              Observable.just(
+                  this.embeddingService
+                      .doc2Vec(new Doc2VecEmbeddingsRequest(input))
+                      .getResponse()));
     }
 
     return edgeChain;
@@ -191,12 +199,14 @@ public class RedisRetrievalChain extends RetrievalChain {
 
     String chatHistory = historyContext.getResponse();
 
-    String indexResponse = this.redisService.query(new RedisRequest(embeddingOutput, 5)).getResponse();
+    String indexResponse =
+        this.redisService.query(new RedisRequest(embeddingOutput, 5)).getResponse();
 
-    int totalTokens = promptResponse.length()
-        + chatHistory.length()
-        + indexResponse.length()
-        + queryText.length();
+    int totalTokens =
+        promptResponse.length()
+            + chatHistory.length()
+            + indexResponse.length()
+            + queryText.length();
 
     if (totalTokens > historyContext.getMaxTokens()) {
       int diff = historyContext.getMaxTokens() - totalTokens;
@@ -229,7 +239,8 @@ public class RedisRetrievalChain extends RetrievalChain {
 
     System.out.println("Prompt: " + prompt);
 
-    ChainResponse openAiResponse = this.openAiService.chatCompletion(new OpenAiChatRequest(this.chatEndpoint, prompt));
+    ChainResponse openAiResponse =
+        this.openAiService.chatCompletion(new OpenAiChatRequest(this.chatEndpoint, prompt));
 
     String redisHistory = chatHistory + queryText + openAiResponse.getResponse();
 
