@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.nd4j.shade.j2objc.annotations.Weak;
 
 import me.xuender.unidecode.Unidecode;
 import reactor.adapter.rxjava.RxJava3Adapter;
@@ -67,9 +66,11 @@ public class ReactChain {
         Observable.just(pluginService.get().wikiContent(wikiQuery).getResponse())
             .map(wikiOutput -> Unidecode.decode(wikiOutput).replaceAll("[\t\n\r]+", " "))
             .map(
-                wikiOutput -> promptService.get().getWikiSummaryPrompt().getResponse() + "\n" + wikiOutput)
+                wikiOutput ->
+                    promptService.get().getWikiSummaryPrompt().getResponse() + "\n" + wikiOutput)
             .map(
-                wikiOutput -> wikiOutput.length() >= 4097 ? wikiOutput.substring(0, 4097) : wikiOutput)
+                wikiOutput ->
+                    wikiOutput.length() >= 4097 ? wikiOutput.substring(0, 4097) : wikiOutput)
             .map(input -> openService.get().chatCompletion(new OpenAiChatRequest(endpoint, input)))
             .subscribeOn(Schedulers.io())
             .firstOrError());
@@ -107,21 +108,24 @@ public class ReactChain {
         Observable.just(pluginService.get().wikiContent(rapQuery).getResponse())
             .map(rapOutput -> Unidecode.decode(rapOutput).replaceAll("[\t\n\r]+", " "))
             .map(
-                rapOutput -> promptService.get().getRapQueryPrompt().getResponse() + "\n" + rapOutput)
-            .map(
-                rapOutput -> rapOutput.length() >= 4097 ? rapOutput.substring(0, 4097) : rapOutput)
+                rapOutput ->
+                    promptService.get().getRapQueryPrompt().getResponse() + "\n" + rapOutput)
+            .map(rapOutput -> rapOutput.length() >= 4097 ? rapOutput.substring(0, 4097) : rapOutput)
             .map(input -> openService.get().chatCompletion(new OpenAiChatRequest(endpoint, input)))
             .subscribeOn(Schedulers.io())
             .firstOrError());
   }
 
-  public Mono<ChainResponse> getCustomQuery(String customQuery, HashMap<String, String> extVarSettings) {
+  public Mono<ChainResponse> getCustomQuery(
+      String customQuery, HashMap<String, String> extVarSettings) {
 
     // TODO: Convert it from Hardcoded string to user input later
     String jsonnetCodeLocation = WebConstants.JSONNET_LOCATION;
-    String jsonnetPrompt = new JsonnetRunner()
-        .executor(jsonnetCodeLocation, extVarSettings)
-        .get("prompt").getAsString();
+    String jsonnetPrompt =
+        new JsonnetRunner()
+            .executor(jsonnetCodeLocation, extVarSettings)
+            .get("prompt")
+            .getAsString();
     Atom<PromptService> promptService = Atom.of(null);
     Atom<PluginService> pluginService = Atom.of(null);
     Atom<OpenAiService> openService = Atom.of(null);
@@ -154,14 +158,20 @@ public class ReactChain {
             .map(
                 customOutput -> {
                   Map<String, String> extVarMap = new HashMap<String, String>();
-                  extVarMap.put("keepContext", "true"); // Must be in string, can be later specified in environment
-                                                        // variables or web constants, or programmatically
-                  extVarMap.put("capContext", "true"); // Must be in string, can be later specified in environment
-                                                       // variables or web constants, or programmatically
-                  extVarMap.put("contextLength", "4096"); // Must be in string, can be later specified in environment
-                                                          // variables or web constants, or programmatically
-                  return (promptService.get()
-                      .getCustomQueryPrompt(extVarMap).getResponse() + "\n"
+                  extVarMap.put(
+                      "keepContext",
+                      "true"); // Must be in string, can be later specified in environment
+                  // variables or web constants, or programmatically
+                  extVarMap.put(
+                      "capContext",
+                      "true"); // Must be in string, can be later specified in environment
+                  // variables or web constants, or programmatically
+                  extVarMap.put(
+                      "contextLength",
+                      "4096"); // Must be in string, can be later specified in environment
+                  // variables or web constants, or programmatically
+                  return (promptService.get().getCustomQueryPrompt(extVarMap).getResponse()
+                      + "\n"
                       + customOutput);
                 })
             // .map(

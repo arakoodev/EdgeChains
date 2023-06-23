@@ -21,28 +21,27 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/custom")
 public class RapController {
 
-    private static final String OPENAI_CHAT_COMPLETION_API = "https://api.openai.com/v1/chat/completions";
-    @Autowired
-    private PromptService promptService;
-    @Autowired
-    private PluginService pluginService;
+  private static final String OPENAI_CHAT_COMPLETION_API =
+      "https://api.openai.com/v1/chat/completions";
+  @Autowired private PromptService promptService;
+  @Autowired private PluginService pluginService;
 
-    @Autowired
-    private OpenAiService openAiService;
+  @Autowired private OpenAiService openAiService;
 
-    @GetMapping("/rap")
-    public Mono<ChainResponse> getRap(@RequestParam("query") String query) {
+  @GetMapping("/rap")
+  public Mono<ChainResponse> getRap(@RequestParam("query") String query) {
 
-        Endpoint chatEndpoint = new Endpoint(
-                OPENAI_CHAT_COMPLETION_API,
-                WebConstants.OPENAI_AUTH_KEY,
-                "gpt-3.5-turbo",
-                "user",
-                0.7, // Adjusted for better creativity
-                new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
+    Endpoint chatEndpoint =
+        new Endpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            WebConstants.OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.7, // Adjusted for better creativity
+            new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
 
-        ToolService[] toolServices = { promptService, openAiService, pluginService };
-        ReactChain reactChain = new ReactChain(chatEndpoint, toolServices);
-        return reactChain.getRap(query);
-    }
+    ToolService[] toolServices = {promptService, openAiService, pluginService};
+    ReactChain reactChain = new ReactChain(chatEndpoint, toolServices);
+    return reactChain.getRap(query);
+  }
 }

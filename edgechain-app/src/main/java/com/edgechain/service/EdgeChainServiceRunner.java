@@ -11,7 +11,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
 
-@SpringBootApplication(scanBasePackages = { "com.edgechain.service" })
+@SpringBootApplication(scanBasePackages = {"com.edgechain.service"})
 @Import(EdgeChainAutoConfiguration.class)
 public class EdgeChainServiceRunner {
 
@@ -48,8 +48,8 @@ public class EdgeChainServiceRunner {
               + " path.");
     } else {
       logger.info("Loading...");
-      ServiceConstants.embeddingDoc2VecModel = WordVectorSerializer
-          .readParagraphVectors(new FileInputStream(modelPath));
+      ServiceConstants.embeddingDoc2VecModel =
+          WordVectorSerializer.readParagraphVectors(new FileInputStream(modelPath));
       logger.info("Doc2Vec model is successfully loaded...");
     }
   }
