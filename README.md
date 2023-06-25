@@ -250,7 +250,62 @@ Here are a few fun tutorials that can help you get started!
 EdgeChains can be used to chat with a document. For example, you can chat with a document about the topic of "Bitcoin" or "Machine Learning". To do this, you can use the `EdgeChainService` class. 
 
 1. First, fill up the `EdgeChainApplication.java` and `EdgeChainServiceApplication.java` files with the appropriate OpenAI and Redis credentials.
-2. 
+2. Then run the commands on two separate terminals:
+  
+  ```bash
+  java -jar flyfly.jar jbang EdgeChainServiceApplication.java edgechain-app-1.0.0.jar
+  ```
+
+  and 
+
+  ```bash
+  java -jar flyfly.jar jbang EdgeChainApplication.java edgechain-app-1.0.0.jar
+  ```
+3. Now, you have to create a context for the chat. Think of it like a Chat Session in ChatGPT. You can do it by:
+  ```bash
+  curl  -X POST \
+  'localhost:8003/v1/history-context/create' \
+  --header 'Accept: */*' \
+  --header 'User-Agent: Thunder Client (https://www.thunderclient.com)' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "maxTokens": 4096
+  }'
+  ```
+You'll get a response like:
+
+```json
+{
+  "id": "historycontext-571b0c2c-8d07-452b-a1d8-96bd5f82234e",
+  "maxTokens": 4096,
+  "message": "Session is created. Now you can start conversational question and answer"
+}
+```
+Save the `id` somewhere. You'll need it later.
+
+4. Now you need to upsert a document to EdgeChains. You can do it so by:
+
+```bash
+curl  -X POST \
+  'localhost:8003/v1/redis/openai/upsert' \
+  --header 'Accept: */*' \
+  --header 'User-Agent: Thunder Client (https://www.thunderclient.com)' \
+  --form 'file=@./8946-Article Text-12474-1-2-20201228.pdf'
+```
+
+5. Now, you can start chatting with the document. For example, we ask the question "What is the transformer architecture?". We do this by:
+
+```bash
+curl  -X POST \
+  'localhost:8003/v1/redis/openai/query/context/<HISTORY_CONTEXT_VALUE>' \
+  --header 'Accept: */*' \
+  --header 'User-Agent: Thunder Client (https://www.thunderclient.com)' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "query": "What is the transformer architecture?"
+}
+'
+```
 Here is a demo using the famous research paper [**Attention is all you need**](https://arxiv.org/pdf/1706.03762.pdf):
 
 ![](https://gifyu.com/image/SQ6y0)
