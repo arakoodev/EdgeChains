@@ -21,9 +21,239 @@ EdgeChains, a framework for building large-scale distributed machine learning sy
 * **Fault tolerance**: EdgeChains is designed to be fault-tolerant, and can continue to retry & backoff even if some of the requests in the system fail.
 * **Scalability**: EdgeChains is designed to be scalable, and can be used to write your chain-of-thought applications on large number of APIs, prompt lengths and vector datasets.
 
-# What does it look like ?
+## What does it look like ?
 
-![image](/.github/assets/code.png)
+### EdgeChains Basic Architecture
+
+EdgeChains is based on the Spring Framework. It uses the Spring Boot framework to provide a robust, scalable, and fault-tolerant architecture for building large-scale LLM Operation Systems.
+
+The EdgeChainsApp is built from the `edgechain-app` directory, which contains all the required endpoints and methods to operate on LLMs. It is divided into three parts:
+1. `app`: Contains the APIs that the user is going to directly communicate with. 
+2. `lib`: Contains methods, classes and wrappers that are used by the `app` and `service` modules.
+3. `service`: The APIs that the `app` uses. This has been made into a separate entity to facilitate the microservice architecture, without compromising on developer experience.
+
+### TL;DR: Architecture Summary
+
+```mermaid
+graph TD
+  FlyFlyCLI <--> Entrypoint <--> EdgeChainsApp <--> FlyFlyCLI
+```
+
+<!-- ![image](/.github/assets/code.png) -->
+
+## Getting Started
+
+Getting started with EdgeChains is easy. Just follow along!
+
+### Clone the Repo
+
+1. First, clone the EdgeChains Repo
+```bash
+git clone https://github.com/arakoodev/EdgeChains.git
+cd edgechains
+```
+
+### Build the FlyFly CLI
+2. Now, build the FlySpring CLI with Maven:
+
+```bash
+cd FlySpring/autoroute
+mvn clean package -P gofly
+cd ../flyfly
+mvn clean package -P gofly
+```
+3. Now, the FlySpring JAR will be built inside the `Script/` directory
+
+### Build the EdgeChains Example App
+4. Now, build the EdgeChains Example App:
+
+```bash
+cd ../../edgechain-app
+mvn clean package
+```
+Please wait till the EdgeChain App is built. This will take a while.
+
+
+1. Now, copy the EdgeChains App Jar a directory of your choice. For the sake of simplicity, we will use the the `Script/` directory in our example:
+
+```bash
+cp target/edgechain-app-1.0.0.jar ../Script/
+```
+
+### Specifying an Entry Point
+
+EdgeChains uses JBang, so you have to specify an entrypoint for EdgeChains to work. Right now, an entrypoint should be either called `EdgeChainApplication.java`, or `EdgeChainServiceApplication.java`.
+
+For example, these are the files you will have to run this Example App:
+
+- `EdgeChainApplication.java`
+
+```java
+// EdgeChainApplication.java
+
+package com.edgechain.app;
+
+import com.edgechain.app.constants.WebConstants;
+import com.edgechain.lib.configuration.EdgeChainAutoConfiguration;
+import com.edgechain.service.constants.ServiceConstants;
+import java.io.File;
+import java.io.FileInputStream;
+import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.springframework.context.annotation.Import;
+
+@SpringBootApplication(scanBasePackages = { "com.edgechain.app", "com.edgechain.service" })
+@ImportAutoConfiguration({ FeignAutoConfiguration.class })
+@Import(EdgeChainAutoConfiguration.class)
+public class EdgeChainApplication {
+
+  private static final Logger logger = LoggerFactory.getLogger(EdgeChainApplication.class);
+
+  public static void main(String[] args) throws Exception {
+
+    System.setProperty("server.port", "8003");
+    System.setProperty("spring.data.redis.host", "");
+    System.setProperty("spring.data.redis.port", "");
+    System.setProperty("spring.data.redis.username", "");
+    System.setProperty("spring.data.redis.password", "");
+    System.setProperty("spring.data.redis.connect-timeout", "120000");
+    System.setProperty("spring.redis.ttl", "3600");
+    System.setProperty("jsonnet.target.location", "./foo.jsonnet");
+
+    System.setProperty("openai.api.key", "");
+
+    System.setProperty("doc2vec.filepath", "./model.bin");
+    readDoc2Vec();
+    loadSentenceModel();
+    SpringApplication.run(EdgeChainApplication.class, args);
+  }
+
+  private static void loadSentenceModel() {
+    WebConstants.sentenceModel = EdgeChainApplication.class.getResourceAsStream("/en-sent.zip");
+  }
+
+  private static void readDoc2Vec() throws Exception {
+
+    String modelPath = System.getProperty("doc2vec.filepath");
+
+    File file = new File(modelPath);
+
+    if (!file.exists()) {
+      logger.warn(
+          "It seems like, you haven't trained the model or correctly specified Doc2Vec model"
+              + " path.");
+    } else {
+      logger.info("Loading...");
+      ServiceConstants.embeddingDoc2VecModel = WordVectorSerializer
+          .readParagraphVectors(new FileInputStream(modelPath));
+      logger.info("Doc2Vec model is successfully loaded...");
+    }
+  }
+}
+```
+
+- and for `EdgeChainServiceApplication.java`:
+
+```java
+package com.edgechain.service;
+
+import com.edgechain.lib.configuration.EdgeChainAutoConfiguration;
+import com.edgechain.service.constants.ServiceConstants;
+import jakarta.annotation.PostConstruct;
+import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
+
+import java.io.File;
+import java.io.FileInputStream;
+
+@SpringBootApplication(scanBasePackages = { "com.edgechain.service" })
+@Import(EdgeChainAutoConfiguration.class)
+public class EdgeChainServiceApplication implements CommandLineRunner {
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+  @PostConstruct
+  public void init() throws Exception {
+    this.readEmbeddingDoc2VecModel();
+  }
+
+  public static void main(String[] args) {
+
+    System.setProperty("server.port", "8002");
+
+    System.setProperty("spring.data.redis.host", "");
+    System.setProperty("spring.data.redis.port", "");
+    System.setProperty("spring.data.redis.username", "");
+    System.setProperty("spring.data.redis.password", "");
+    System.setProperty("spring.data.redis.connect-timeout", "120000");
+    System.setProperty("spring.redis.ttl", "3600");
+    System.setProperty("jsonnet.target.location",
+        "./new.jsonnet");
+
+    System.setProperty("openai.api.key", "");
+
+    SpringApplication.run(EdgeChainServiceApplication.class, args);
+  }
+
+  private void readEmbeddingDoc2VecModel() throws Exception {
+
+    String modelPath = "./doc_vector.bin";
+    File file = new File(modelPath);
+
+    if (!file.exists()) {
+      logger.warn(
+          "It seems like, you haven't trained the model or correctly specified Doc2Vec model"
+              + " path.");
+    } else {
+      logger.info("Loading...");
+      ServiceConstants.embeddingDoc2VecModel = WordVectorSerializer
+          .readParagraphVectors(new FileInputStream(modelPath));
+      logger.info("Doc2Vec model is successfully loaded...");
+    }
+  }
+
+  @Override
+  public void run(String... args) throws Exception {
+  }
+}
+```
+
+Copy these files to the `Script/` Directory:
+### Running EdgeChains
+
+Now, you can run EdgeChains as a service or as an application using:
+
+```bash
+java -jar flyfly.jar jbang EdgeChainServiceApplication.java edgechain-app-1.0.0.jar
+```
+to start the service and
+```bash
+java -jar flyfly.jar jbang EdgeChainApplication.java edgechain-app-1.0.0.jar
+```
+to start the application.
+
+## Usage
+
+Here are a few fun tutorials that can help you get started!
+
+### Document-based Chatting with EdgeChains
+
+EdgeChains can be used to chat with a document. For example, you can chat with a document about the topic of "Bitcoin" or "Machine Learning". To do this, you can use the `EdgeChainService` class. 
+
+1. First, fill up the `EdgeChainApplication.java` and `EdgeChainServiceApplication.java` files with the appropriate OpenAI and Redis credentials.
+2. 
+Here is a demo using the famous research paper [**Attention is all you need**](https://arxiv.org/pdf/1706.03762.pdf):
+
+![](https://gifyu.com/image/SQ6Zk)
 
 ## 🎊 Community
 
@@ -49,6 +279,7 @@ git checkout master       # checkout master, this is the place you want to go ba
 git reset --hard HEAD~3   # Move master back by 3 commits (Make sure you know how many commits you need to go back)
 git checkout newbranch    # Go to the new branch that still has the desired commits. NOW CREATE A PULL REQUEST
 ```
+
 
 ## 💌 Acknowledgements
 
