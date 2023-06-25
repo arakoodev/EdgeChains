@@ -253,7 +253,7 @@ EdgeChains can be used to chat with a document. For example, you can chat with a
 2. 
 Here is a demo using the famous research paper [**Attention is all you need**](https://arxiv.org/pdf/1706.03762.pdf):
 
-![](https://gifyu.com/image/SQ6Zk)
+![](https://gifyu.com/image/SQ6y0)
 
 ## 🎊 Community
 
@@ -292,6 +292,7 @@ git checkout newbranch    # Go to the new branch that still has the desired comm
 
 - Sandeep Srinivasa ([@sandys](https://twitter.com/sandeepssrin))
 - Rohan Guha ([@pizzaboi21](https://github.com/pizzaboi21))
+- Anuran Roy ([@anuran-roy](https://github.com/anuran-roy))
 
 We love contributors! Feel free to contribute to this project but please read the [CLA](https://github.com/wootzapp/.github/blob/main/CLA.md) first!
 
