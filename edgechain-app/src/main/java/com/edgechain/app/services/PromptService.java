@@ -1,6 +1,9 @@
 package com.edgechain.app.services;
 
 import com.edgechain.lib.rxjava.response.ChainResponse;
+
+import java.util.Map;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -15,6 +18,18 @@ public interface PromptService extends ToolService {
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE})
   ChainResponse getWikiSummaryPrompt();
+
+  @GetMapping(
+      value = "/rap-query",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  ChainResponse getRapQueryPrompt();
+
+  @GetMapping(
+      value = "/custom-query",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  ChainResponse getCustomQueryPrompt(Map<String, String> extVarSettings);
 
   @GetMapping(
       value = "/index-query",

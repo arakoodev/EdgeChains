@@ -36,6 +36,9 @@ public class EdgeChainAppRunner {
     System.setProperty("spring.data.redis.password", "");
     System.setProperty("spring.data.redis.connect-timeout", "120000");
     System.setProperty("spring.redis.ttl", "3600");
+    System.setProperty("jsonnet.target.location", "");
+    System.setProperty("openai.api.key", "");
+    System.setProperty("doc2vec.filepath", "");
 
     loadSentenceModel();
 

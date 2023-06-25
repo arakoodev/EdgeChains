@@ -10,9 +10,12 @@ import com.edgechain.lib.openai.endpoint.Endpoint;
 import com.edgechain.lib.request.*;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+
 import io.reactivex.rxjava3.core.Observable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +97,26 @@ public class RedisRetrievalChain extends RetrievalChain {
                 embeddingOutput -> {
                   List<ChainResponse> chainResponseList = new ArrayList<>();
 
-                  String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
+                  // String promptResponse =
+                  // this.promptService.getIndexQueryPrompt().getResponse(); // <- To Change
+                  // Settings Map
+
+                  Map<String, String> extVarMap = new HashMap<String, String>();
+                  extVarMap.put(
+                      "keepContext",
+                      "true"); // Must be in string, can be later specified in environment
+                  // variables or web constants, or programmatically
+                  extVarMap.put(
+                      "capContext",
+                      "true"); // Must be in string, can be later specified in environment
+                  // variables or web constants, or programmatically
+                  extVarMap.put(
+                      "contextLength",
+                      "4096"); // Must be in string, can be later specified in environment
+                  // variables or web constants, or programmatically
+
+                  String promptResponse =
+                      this.promptService.getCustomQueryPrompt(extVarMap).getResponse();
 
                   StringTokenizer tokenizer =
                       new StringTokenizer(
@@ -128,7 +150,7 @@ public class RedisRetrievalChain extends RetrievalChain {
   }
 
   /*
-  The RetrievalChain code is duplicated; shall be abstracted.
+   * The RetrievalChain code is duplicated; shall be abstracted.
    */
   private EdgeChain<String> embeddingOutput(String input) {
 
@@ -159,14 +181,26 @@ public class RedisRetrievalChain extends RetrievalChain {
       HistoryContextService contextService,
       String queryText) {
 
+    Map<String, String> totalMap = new HashMap<String, String>();
+
+    // Default Settings
+    totalMap.put("query", queryText);
+    totalMap.put("keepContext", "true");
+    totalMap.put("capContext", "true");
+    totalMap.put("contextLength", "3072");
+
     // Get the Prompt & The Context History
-    String promptResponse = this.promptService.getIndexQueryPrompt().getResponse();
+    // String promptResponse =
+    // this.promptService.getIndexQueryPrompt().getResponse();
+    // String promptResponse =
+    // this.promptService.getCustomQueryPrompt(totalMap).getResponse();
+    String promptResponse = "";
     HistoryContext historyContext = contextService.get(contextId).toSingleWithRetry().blockingGet();
 
     String chatHistory = historyContext.getResponse();
 
     String indexResponse =
-        this.redisService.query(new RedisRequest(embeddingOutput, 1)).getResponse();
+        this.redisService.query(new RedisRequest(embeddingOutput, 5)).getResponse();
 
     int totalTokens =
         promptResponse.length()
@@ -182,19 +216,26 @@ public class RedisRetrievalChain extends RetrievalChain {
     // Then, Create Prompt For OpenAI
     String prompt;
 
-    if (chatHistory.length() > 0) {
-      prompt =
-          "Question: "
-              + queryText
-              + "\n "
-              + promptResponse
-              + "\n"
-              + indexResponse
-              + "\nChat history:\n"
-              + chatHistory;
-    } else {
-      prompt = "Question: " + queryText + "\n " + promptResponse + "\n" + indexResponse;
+    // if (chatHistory.length() > 0) {
+    // prompt = "Question: "
+    // + queryText
+    // + "\n "
+    // + promptResponse
+    // + "\n"
+    // + indexResponse
+    // + "\nChat history:\n"
+    // + chatHistory;
+    // } else {
+    // prompt = "Question: " + queryText + "\n " + promptResponse + "\n" +
+    // indexResponse;
+    // }
+
+    if (chatHistory == "") {
+      chatHistory = " ";
     }
+    totalMap.put("context", indexResponse);
+    totalMap.put("history", chatHistory);
+    prompt = this.promptService.getCustomQueryPrompt(totalMap).getResponse();
 
     System.out.println("Prompt: " + prompt);
 
@@ -203,7 +244,7 @@ public class RedisRetrievalChain extends RetrievalChain {
 
     String redisHistory = chatHistory + queryText + openAiResponse.getResponse();
 
-    //      System.out.println("Chat History: "+redisHistory);
+    System.out.println("Chat History: " + redisHistory);
 
     contextService.put(contextId, redisHistory).execute();
 
