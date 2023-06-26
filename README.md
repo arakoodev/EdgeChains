@@ -36,7 +36,11 @@ The EdgeChainsApp is built from the `edgechain-app` directory, which contains al
 
 ```mermaid
 graph TD
-  FlyFlyCLI <--> Entrypoint <--> EdgeChainsApp <--> FlyFlyCLI
+  FlyFlyCLI_1 <--> Entrypoint_1 <--> EdgeChainApp <--> FlyFlyCLI_1
+  FlyFlyCLI_2 <--> Entrypoint_2 <--> EdgeChainServiceApp <--> FlyFlyCLI_2
+
+  EdgeChainApp <--> EdgeChainsFused
+  EdgeChainsFused <--> EdgeChainServiceApp
 ```
 
 <!-- ![image](/.github/assets/code.png) -->
@@ -123,7 +127,7 @@ public class EdgeChainApplication {
     System.setProperty("spring.data.redis.password", "");
     System.setProperty("spring.data.redis.connect-timeout", "120000");
     System.setProperty("spring.redis.ttl", "3600");
-    System.setProperty("jsonnet.target.location", "./foo.jsonnet");
+    System.setProperty("jsonnet.target.location", "./new.jsonnet");
 
     System.setProperty("openai.api.key", "");
 
@@ -227,7 +231,36 @@ public class EdgeChainServiceApplication implements CommandLineRunner {
 }
 ```
 
-Copy these files to the `Script/` Directory:
+Copy these files to the `Script/` Directory.
+
+### Adding Jsonnet
+
+**This is where it gets interesting**: EdgeChains can dynamically run prompt and configurations using Jsonnet. To get started, follow these steps:
+
+1. Create a file called `new.jsonnet`, containing the following code:
+
+```json
+local keepContext = std.extVar("keepContext");
+local promptType = "thought";
+local tokenCap = 4096;
+local maxLength = if std.extVar("capContext") == "true" then std.parseInt(std.extVar("contextLength")) else tokenCap;
+local context = if keepContext == "true" then std.extVar("context") else "";
+local preset = |||
+    Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+|||;
+
+local prompt = preset + "\n```\n" + context + "\n```";
+local promptLength = std.length(prompt);
+
+{
+    promptLength: std.min(promptLength, maxLength),
+    prompt: if promptLength > maxLength then std.substr(prompt, promptLength - maxLength, promptLength) else prompt,
+    type: promptType,
+}
+```
+
+Save this in the `Script/` directory itself.
+
 ### Running EdgeChains
 
 Now, you can run EdgeChains as a service or as an application using:
@@ -308,7 +341,7 @@ curl  -X POST \
 ```
 Here is a demo using the famous research paper [**Attention is all you need**](https://arxiv.org/pdf/1706.03762.pdf):
 
-![](https://gifyu.com/image/SQ6y0)
+[![](https://s12.gifyu.com/images/SQ6y0.gif)](https://s12.gifyu.com/images/SQ6y0.gif)
 
 ## 🎊 Community
 
