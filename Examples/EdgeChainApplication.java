@@ -39,7 +39,7 @@ public class EdgeChainApplication {
     System.setProperty("spring.data.redis.connect-timeout", "120000");
     System.setProperty("spring.redis.ttl", "3600");
 
-    System.setProperty("doc2vec.filepath", "R:\\doc_vector.bin");
+    System.setProperty("doc2vec.filepath", "./doc_vector.bin");
     readDoc2Vec();
     loadSentenceModel();
     SpringApplication.run(EdgeChainApplication.class, args);
@@ -61,8 +61,8 @@ public class EdgeChainApplication {
               + " path.");
     } else {
       logger.info("Loading...");
-      ServiceConstants.embeddingDoc2VecModel =
-          WordVectorSerializer.readParagraphVectors(new FileInputStream(modelPath));
+      ServiceConstants.embeddingDoc2VecModel = WordVectorSerializer
+          .readParagraphVectors(new FileInputStream(modelPath));
       logger.info("Doc2Vec model is successfully loaded...");
     }
   }

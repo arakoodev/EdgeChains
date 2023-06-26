@@ -21,8 +21,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
-@SpringBootApplication(scanBasePackages = {"com.edgechain.app", "com.edgechain.service"})
-@ImportAutoConfiguration({FeignAutoConfiguration.class})
+@SpringBootApplication(scanBasePackages = { "com.edgechain.app", "com.edgechain.service" })
+@ImportAutoConfiguration({ FeignAutoConfiguration.class })
 @Import(EdgeChainAutoConfiguration.class)
 public class EdgeChainLocalModel {
 
@@ -93,14 +93,14 @@ public class EdgeChainLocalModel {
     System.setProperty("spring.data.redis.connect-timeout", "120000");
     System.setProperty("spring.redis.ttl", "3600");
 
-    System.setProperty("doc2vec.filepath", "R:\\doc_vector.bin");
+    System.setProperty("doc2vec.filepath", "./doc_vector.bin");
     readDoc2Vec();
     loadSentenceModel();
 
     try {
       /*
        * Creating ONNX environment and session
-       * */
+       */
       OrtEnvironment env = OrtEnvironment.getEnvironment();
       String model_path = "raw-files/mpt_7b_onnx/model.onnx";
       // create an onnx-runtime session
@@ -108,7 +108,7 @@ public class EdgeChainLocalModel {
 
       /*
        * input and output layers Info
-       * */
+       */
       System.out.printf(
           "Model Input Names:  %s\nModel Input info:  %s\n"
               + "Model Output Names:  %s\nModel Output info:  %s",
@@ -119,7 +119,7 @@ public class EdgeChainLocalModel {
 
       /*
        * Encode Text and convert to OnnxTensor
-       * */
+       */
 
       // Encode Text
       try {
@@ -133,16 +133,14 @@ public class EdgeChainLocalModel {
       /*
        * Calculate Inputs
        * then convert them to OnnxTensor
-       * */
+       */
 
       // get Input Ids and Attention Mask
       inputIds = tokenizer.getIds(); // get Input Ids
       inputAttentionMask = tokenizer.getAttentionMask(); // get Attention mask
-      boolean[] booleanAttentionMask =
-          tokenizer.convertIntArrayToBooleanArray(
-              inputAttentionMask); // change type from integer to boolean
-      booleanAttentionMask =
-          addElementsToArray(booleanAttentionMask, sequence - inputAttentionMask.length);
+      boolean[] booleanAttentionMask = tokenizer.convertIntArrayToBooleanArray(
+          inputAttentionMask); // change type from integer to boolean
+      booleanAttentionMask = addElementsToArray(booleanAttentionMask, sequence - inputAttentionMask.length);
       inputIds = addElementsToArrays(inputIds, sequence - inputIds.length);
 
       // modify Encoded Ids according to the model requirement
@@ -166,25 +164,25 @@ public class EdgeChainLocalModel {
 
       /*
        * Running the inference on the model
-       * */
+       */
       OrtSession.Result result = session.run(model_inputs);
 
       /*
        * Handling the inference output
-       * */
+       */
       // get output results
       float[][][] logits = (float[][][]) result.get(0).getValue();
 
       /*
        * Showing the results
-       * */
+       */
 
       long[] list = new long[sequence];
       for (int i = 0; i < logits[0].length; i++) {
 
         list[i] = argmax(logits[0][i]);
       }
-      //            System.out.println(tokenizer.decode(list));
+      // System.out.println(tokenizer.decode(list));
       System.out.println(tokenizer.decode(list));
 
     } catch (OrtException e) {
@@ -210,8 +208,8 @@ public class EdgeChainLocalModel {
               + " path.");
     } else {
       logger.info("Loading...");
-      ServiceConstants.embeddingDoc2VecModel =
-          WordVectorSerializer.readParagraphVectors(new FileInputStream(modelPath));
+      ServiceConstants.embeddingDoc2VecModel = WordVectorSerializer
+          .readParagraphVectors(new FileInputStream(modelPath));
       logger.info("Doc2Vec model is successfully loaded...");
     }
   }

@@ -84,159 +84,32 @@ cp target/edgechain-app-1.0.0.jar ../Script/
 
 EdgeChains uses JBang, so you have to specify an entrypoint for EdgeChains to work. Right now, an entrypoint should be either called `EdgeChainApplication.java`, or `EdgeChainServiceApplication.java`.
 
-For example, these are the files you will have to run this Example App:
-
-- `EdgeChainApplication.java`
-
-```java
-// EdgeChainApplication.java
-
-package com.edgechain.app;
-
-import com.edgechain.app.constants.WebConstants;
-import com.edgechain.lib.configuration.EdgeChainAutoConfiguration;
-import com.edgechain.service.constants.ServiceConstants;
-import java.io.File;
-import java.io.FileInputStream;
-import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.FeignAutoConfiguration;
-import org.springframework.context.annotation.Import;
-
-@SpringBootApplication(scanBasePackages = { "com.edgechain.app", "com.edgechain.service" })
-@ImportAutoConfiguration({ FeignAutoConfiguration.class })
-@Import(EdgeChainAutoConfiguration.class)
-public class EdgeChainApplication {
-
-  private static final Logger logger = LoggerFactory.getLogger(EdgeChainApplication.class);
-
-  public static void main(String[] args) throws Exception {
-
-    System.setProperty("server.port", "8003");
-    System.setProperty("spring.data.redis.host", "");
-    System.setProperty("spring.data.redis.port", "");
-    System.setProperty("spring.data.redis.username", "");
-    System.setProperty("spring.data.redis.password", "");
-    System.setProperty("spring.data.redis.connect-timeout", "120000");
-    System.setProperty("spring.redis.ttl", "3600");
-    System.setProperty("jsonnet.target.location", "./foo.jsonnet");
-
-    System.setProperty("openai.api.key", "");
-
-    System.setProperty("doc2vec.filepath", "./model.bin");
-    readDoc2Vec();
-    loadSentenceModel();
-    SpringApplication.run(EdgeChainApplication.class, args);
-  }
-
-  private static void loadSentenceModel() {
-    WebConstants.sentenceModel = EdgeChainApplication.class.getResourceAsStream("/en-sent.zip");
-  }
-
-  private static void readDoc2Vec() throws Exception {
-
-    String modelPath = System.getProperty("doc2vec.filepath");
-
-    File file = new File(modelPath);
-
-    if (!file.exists()) {
-      logger.warn(
-          "It seems like, you haven't trained the model or correctly specified Doc2Vec model"
-              + " path.");
-    } else {
-      logger.info("Loading...");
-      ServiceConstants.embeddingDoc2VecModel = WordVectorSerializer
-          .readParagraphVectors(new FileInputStream(modelPath));
-      logger.info("Doc2Vec model is successfully loaded...");
-    }
-  }
-}
-```
-
-- and for `EdgeChainServiceApplication.java`:
-
-```java
-package com.edgechain.service;
-
-import com.edgechain.lib.configuration.EdgeChainAutoConfiguration;
-import com.edgechain.service.constants.ServiceConstants;
-import jakarta.annotation.PostConstruct;
-import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
-
-import java.io.File;
-import java.io.FileInputStream;
-
-@SpringBootApplication(scanBasePackages = { "com.edgechain.service" })
-@Import(EdgeChainAutoConfiguration.class)
-public class EdgeChainServiceApplication implements CommandLineRunner {
-  private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-  @PostConstruct
-  public void init() throws Exception {
-    this.readEmbeddingDoc2VecModel();
-  }
-
-  public static void main(String[] args) {
-
-    System.setProperty("server.port", "8002");
-
-    System.setProperty("spring.data.redis.host", "");
-    System.setProperty("spring.data.redis.port", "");
-    System.setProperty("spring.data.redis.username", "");
-    System.setProperty("spring.data.redis.password", "");
-    System.setProperty("spring.data.redis.connect-timeout", "120000");
-    System.setProperty("spring.redis.ttl", "3600");
-    System.setProperty("jsonnet.target.location",
-        "./new.jsonnet");
-
-    System.setProperty("openai.api.key", "");
-
-    SpringApplication.run(EdgeChainServiceApplication.class, args);
-  }
-
-  private void readEmbeddingDoc2VecModel() throws Exception {
-
-    String modelPath = "./doc_vector.bin";
-    File file = new File(modelPath);
-
-    if (!file.exists()) {
-      logger.warn(
-          "It seems like, you haven't trained the model or correctly specified Doc2Vec model"
-              + " path.");
-    } else {
-      logger.info("Loading...");
-      ServiceConstants.embeddingDoc2VecModel = WordVectorSerializer
-          .readParagraphVectors(new FileInputStream(modelPath));
-      logger.info("Doc2Vec model is successfully loaded...");
-    }
-  }
-
-  @Override
-  public void run(String... args) throws Exception {
-  }
-}
-```
+For our example, you can find the examples in the `Examples/` directory - `EdgeChainApplication.java`, `EdgeChainServiceApplication.java` and `EdgeChainsFused.java`.
 
 Copy these files to the `Script/` Directory:
+
 ### Running EdgeChains
 
-Now, you can run EdgeChains as a service or as an application using:
+#### Running through `EdgeChainsFused`
+
+You can simply compile and run the `EdgeChainsFused.java` file to run the EdgeChains App:
 
 ```bash
+javac EdgeChainsFused.java
+java EdgeChainsFused
+```
+The logs would be stored in the `client_logs.txt` and `service_logs.txt` in the same directory.
+
+#### Running Manually
+You have to run EdgeChains in two terminals - one as a service, and in the another as an application using:
+
+```bash
+# In terminal 1 as a service
 java -jar flyfly.jar jbang EdgeChainServiceApplication.java edgechain-app-1.0.0.jar
 ```
 to start the service and
 ```bash
+# In terminal 2 as an application
 java -jar flyfly.jar jbang EdgeChainApplication.java edgechain-app-1.0.0.jar
 ```
 to start the application.
