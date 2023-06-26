@@ -308,7 +308,7 @@ curl  -X POST \
 ```
 Here is a demo using the famous research paper [**Attention is all you need**](https://arxiv.org/pdf/1706.03762.pdf):
 
-![](https://s12.gifyu.com/images/SQ6y0.gif)
+[![](https://s12.gifyu.com/images/SQ6y0.gif)](https://s12.gifyu.com/images/SQ6y0.gif)
 
 ## 🎊 Community
 
