@@ -2,7 +2,6 @@ package com.edgechain.app.constants;
 
 import java.io.InputStream;
 
-
 public class WebConstants {
   public static InputStream sentenceModel = null;
 
