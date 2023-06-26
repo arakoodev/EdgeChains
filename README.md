@@ -36,7 +36,11 @@ The EdgeChainsApp is built from the `edgechain-app` directory, which contains al
 
 ```mermaid
 graph TD
-  FlyFlyCLI <--> Entrypoint <--> EdgeChainsApp <--> FlyFlyCLI
+  FlyFlyCLI_1 <--> Entrypoint_1 <--> EdgeChainApp <--> FlyFlyCLI_1
+  FlyFlyCLI_2 <--> Entrypoint_2 <--> EdgeChainServiceApp <--> FlyFlyCLI_2
+
+  EdgeChainApp <--> EdgeChainsFused
+  EdgeChainsFused <--> EdgeChainServiceApp
 ```
 
 <!-- ![image](/.github/assets/code.png) -->
