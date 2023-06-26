@@ -14,8 +14,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
-@SpringBootApplication(scanBasePackages = {"com.edgechain.app", "com.edgechain.service"})
-@ImportAutoConfiguration({FeignAutoConfiguration.class})
+@SpringBootApplication(scanBasePackages = { "com.edgechain.app", "com.edgechain.service" })
+@ImportAutoConfiguration({ FeignAutoConfiguration.class })
 @Import(EdgeChainAutoConfiguration.class)
 public class EdgeChainApplication {
 
@@ -66,4 +66,5 @@ public class EdgeChainApplication {
       logger.info("Doc2Vec model is successfully loaded...");
     }
   }
+
 }
