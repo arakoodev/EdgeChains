@@ -15,8 +15,11 @@
 <div align="center">
 <img src="https://user-images.githubusercontent.com/76883/226261289-21a6fd42-ff6f-4d7a-9c59-3c7f149e0f56.png" width="200" height="200">
   </div>
-EdgeChains, a framework for building large-scale distributed machine learning systems. EdgeChains is built on top of JAX, and provides a number of features that make it well-suited for building distributed machine learning systems, including:
+We believe that most modern Generative AI frameworks look at development as a UI or a code library problem. We look at it as a deployment and a configuration management problem. We think that most developers are in for a rude shock when calling the OpenAI api causes your code to blow up in complexity and your prompts to collapse under the weight of experimentation.
+Edgechains is built on top of jsonnet - a library created by Google based on learnings from Borg, which runs 180 million lines of config code at Google. Jsonnet is used for large scale management of complex cloud and kubernetes clusters.
+And building on top of this, Edgechains gives you:
 
+* **Versioning for Prompts**: Prompts are written in jsonnet. Makes them easily versionable and diffable. 
 * **Automatic parallelism**: EdgeChains automatically parallelizes LLM chains & chain-of-thought tasks across CPUs, GPUs, and TPUs using the JVM.
 * **Fault tolerance**: EdgeChains is designed to be fault-tolerant, and can continue to retry & backoff even if some of the requests in the system fail.
 * **Scalability**: EdgeChains is designed to be scalable, and can be used to write your chain-of-thought applications on large number of APIs, prompt lengths and vector datasets.
