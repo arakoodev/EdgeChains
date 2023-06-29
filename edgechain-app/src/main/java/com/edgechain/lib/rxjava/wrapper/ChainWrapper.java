@@ -4,6 +4,7 @@ import com.edgechain.lib.rxjava.provider.ChainProvider;
 import com.edgechain.lib.rxjava.request.ChainRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import io.reactivex.rxjava3.core.Observable;
 
 /**
  * Inspired from the implementation of Tuple<?,?> & Observable.zip(). ChainWrapper is the primary
@@ -48,5 +49,9 @@ public class ChainWrapper {
         .transform(c3 -> chain4.request(new ChainRequest(c3.getResponse())))
         .doOnError(System.err::println)
         .getWithRetry();
+  }
+
+  public static boolean isValidIndex(ChainProvider[] arr, int index) {
+    return index >= 0 && index < arr.length;
   }
 }

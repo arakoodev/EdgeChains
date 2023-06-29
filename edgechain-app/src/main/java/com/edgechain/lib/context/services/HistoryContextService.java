@@ -8,7 +8,7 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 public interface HistoryContextService {
 
-  EdgeChain<HistoryContextResponse> create(HistoryContextRequest contextRequest);
+  EdgeChain<HistoryContextResponse> create();
 
   EdgeChain<HistoryContext> put(String key, String response);
 

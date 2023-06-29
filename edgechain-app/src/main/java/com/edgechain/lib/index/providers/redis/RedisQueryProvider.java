@@ -1,6 +1,6 @@
 package com.edgechain.lib.index.providers.redis;
 
-import com.edgechain.lib.configuration.ApplicationContextHolder;
+import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.domain.WordVec;
 import com.edgechain.lib.index.services.impl.RedisIndexChain;
 import com.edgechain.lib.rxjava.provider.ChainProvider;
