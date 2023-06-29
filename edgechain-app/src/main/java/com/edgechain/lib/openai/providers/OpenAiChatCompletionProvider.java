@@ -4,6 +4,7 @@ import com.edgechain.lib.openai.client.OpenAiClient;
 import com.edgechain.lib.openai.endpoint.Endpoint;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
 import com.edgechain.lib.openai.request.ChatMessage;
+import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.rxjava.provider.ChainProvider;
 import com.edgechain.lib.rxjava.request.ChainRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;

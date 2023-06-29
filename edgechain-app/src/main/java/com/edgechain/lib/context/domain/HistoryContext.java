@@ -8,8 +8,6 @@ public class HistoryContext implements Serializable {
 
   private String response;
 
-  private int maxTokens;
-
   public String getResponse() {
     return response;
   }
@@ -18,20 +16,12 @@ public class HistoryContext implements Serializable {
     this.response = response;
   }
 
-  public int getMaxTokens() {
-    return maxTokens;
-  }
-
-  public void setMaxTokens(int maxTokens) {
-    this.maxTokens = maxTokens;
-  }
-
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("HistoryContext{");
     sb.append("response='").append(response).append('\'');
-    sb.append(", maxTokens=").append(maxTokens);
     sb.append('}');
     return sb.toString();
   }
+
 }
