@@ -5,7 +5,8 @@ on: workflow_dispatch
 jobs:
   build_and_run:
     runs-on: ubuntu-latest
-
+    outputs:
+      VALUE: ${{ steps.short_hash.outputs.VALUE }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -79,7 +80,7 @@ jobs:
       - name: 'Get variables'
         id: vars
         run: |
-          echo "tag_name= ${{needs.build_and_run.steps.short_hash.outputs.VALUE}}" >> $GITHUB_OUTPUT
+          echo "tag_name= ${{needs.build_and_run.outputs.VALUE}}" >> $GITHUB_OUTPUT
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
