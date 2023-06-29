@@ -18,8 +18,6 @@ public abstract class AbstractEdgeChain<T> implements Serializable {
     this.observable = observable;
   }
 
-
-
   public abstract <R> AbstractEdgeChain<R> transform(Function<T, R> mapper);
 
   public abstract <R> AbstractEdgeChain<R> combine(

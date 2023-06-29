@@ -5,7 +5,6 @@ import com.edgechain.lib.context.services.HistoryContextService;
 import com.edgechain.lib.resource.ResourceHandler;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 
-
 public abstract class Retrieval {
 
   public abstract void upsert(String input);

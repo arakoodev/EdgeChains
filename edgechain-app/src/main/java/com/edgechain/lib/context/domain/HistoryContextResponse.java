@@ -20,5 +20,4 @@ public class HistoryContextResponse {
   public void setMessage(String message) {
     this.message = message;
   }
-
 }

@@ -1,6 +1,5 @@
 package com.edgechain.lib.feign.index;
 
-import com.edgechain.lib.feign.index.IndexService;
 import com.edgechain.lib.request.RedisRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import org.springframework.cloud.openfeign.FeignClient;

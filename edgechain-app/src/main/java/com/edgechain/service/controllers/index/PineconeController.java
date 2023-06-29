@@ -11,8 +11,6 @@ import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.wrapper.ChainWrapper;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.web.bind.annotation.*;
-import reactor.adapter.rxjava.RxJava3Adapter;
-import reactor.core.publisher.Mono;
 
 @RestController("Service PineconeController")
 @RequestMapping(value = WebConstants.SERVICE_CONTEXT_PATH + "/index/pinecone")

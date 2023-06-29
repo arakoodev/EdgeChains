@@ -1,7 +1,6 @@
 package com.edgechain.lib.rxjava.transformer.observable;
 
 import com.edgechain.lib.openai.endpoint.Endpoint;
-import com.edgechain.lib.response.ArkEmitter;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import io.reactivex.rxjava3.annotations.NonNull;
@@ -206,10 +205,9 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
     return this.observable;
   }
 
-  public ArkResponse<T> getArkResponse(){
+  public ArkResponse<T> getArkResponse() {
     return new ArkResponse<T>(this.getScheduledObservableWithoutRetry());
   }
-
 
   @Override
   public void awaitWithRetry() {

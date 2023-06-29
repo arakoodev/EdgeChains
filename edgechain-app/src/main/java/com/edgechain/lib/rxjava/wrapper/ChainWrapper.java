@@ -4,7 +4,6 @@ import com.edgechain.lib.rxjava.provider.ChainProvider;
 import com.edgechain.lib.rxjava.request.ChainRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import io.reactivex.rxjava3.core.Observable;
 
 /**
  * Inspired from the implementation of Tuple<?,?> & Observable.zip(). ChainWrapper is the primary

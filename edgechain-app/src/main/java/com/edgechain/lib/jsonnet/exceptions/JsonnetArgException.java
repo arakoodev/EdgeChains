@@ -1,8 +1,8 @@
 package com.edgechain.lib.jsonnet.exceptions;
 
-public class JsonnetArgException extends Exception{
+public class JsonnetArgException extends Exception {
 
-    public JsonnetArgException(String message) {
-        super(message);
-    }
+  public JsonnetArgException(String message) {
+    super(message);
+  }
 }

@@ -1,7 +1,6 @@
 package com.edgechain.lib.openai.request;
 
 import java.util.List;
-import java.util.Objects;
 
 public class ChatCompletionRequest {
 

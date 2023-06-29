@@ -21,8 +21,8 @@ public class EmbeddingController {
 
   /**
    * ChainProvider is a middle-ware which helps to execute multiple tasks simultaneously. E.g.
-   * wrapper.chains(chain1, chain2, chain3) ... You can actually use providers implementation directly
-   * as well...
+   * wrapper.chains(chain1, chain2, chain3) ... You can actually use providers implementation
+   * directly as well...
    */
   @PostMapping("/openai")
   public Single<ChainResponse> openAiEmbeddings(@RequestBody OpenAiEmbeddingsRequest request) {

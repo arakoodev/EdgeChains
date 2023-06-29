@@ -15,57 +15,59 @@ import org.slf4j.LoggerFactory;
 
 public class PineconeRetrieval extends Retrieval {
 
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+  private final Endpoint indexEndpoint;
+  private Endpoint embeddingEndpoint;
 
-    private final Endpoint indexEndpoint;
-    private Endpoint embeddingEndpoint;
+  private final EmbeddingService embeddingService;
 
-    private final EmbeddingService embeddingService;
+  private final PineconeService pineconeService;
 
-    private final PineconeService pineconeService;
+  // OpenAI
+  public PineconeRetrieval(
+      Endpoint indexEndpoint,
+      Endpoint embeddingEndpoint,
+      EmbeddingService embeddingService,
+      PineconeService pineconeService) {
+    this.indexEndpoint = indexEndpoint;
+    this.embeddingEndpoint = embeddingEndpoint;
+    this.embeddingService = embeddingService;
+    this.pineconeService = pineconeService;
+    logger.info("Using OpenAI Embedding Provider.");
+  }
 
-    // OpenAI
-    public PineconeRetrieval(Endpoint indexEndpoint, Endpoint embeddingEndpoint, EmbeddingService embeddingService, PineconeService pineconeService) {
-        this.indexEndpoint = indexEndpoint;
-        this.embeddingEndpoint = embeddingEndpoint;
-        this.embeddingService = embeddingService;
-        this.pineconeService = pineconeService;
-        logger.info("Using OpenAI Embedding Provider.");
+  // Doc2Vec
+  public PineconeRetrieval(
+      Endpoint indexEndpoint, EmbeddingService embeddingService, PineconeService pineconeService) {
+    this.indexEndpoint = indexEndpoint;
+    this.embeddingService = embeddingService;
+    this.pineconeService = pineconeService;
+  }
+
+  @Override
+  public void upsert(String input) {
+
+    EdgeChain<String> edgeChain;
+
+    if (embeddingEndpoint != null) {
+      edgeChain =
+          create(
+              this.embeddingService
+                  .openAi(new OpenAiEmbeddingsRequest(this.embeddingEndpoint, input))
+                  .getResponse());
+
+    } else {
+      edgeChain =
+          create(this.embeddingService.doc2Vec(new Doc2VecEmbeddingsRequest(input)).getResponse());
     }
 
-    // Doc2Vec
-    public PineconeRetrieval(Endpoint indexEndpoint, EmbeddingService embeddingService, PineconeService pineconeService) {
-        this.indexEndpoint = indexEndpoint;
-        this.embeddingService = embeddingService;
-        this.pineconeService = pineconeService;
-    }
-
-    @Override
-    public void upsert(String input) {
-
-        EdgeChain<String> edgeChain;
-
-        if (embeddingEndpoint != null) {
-            edgeChain = create(
-                    this.embeddingService
-                            .openAi(new OpenAiEmbeddingsRequest(this.embeddingEndpoint, input))
-                            .getResponse());
-
-        } else {
-            edgeChain = create(
-                    this.embeddingService
-                            .doc2Vec(new Doc2VecEmbeddingsRequest(input))
-                            .getResponse()
-            );
-        }
-
-        edgeChain.transform(
-                embeddingOutput ->
-                        this.pineconeService
-                                .upsert(new PineconeRequest(this.indexEndpoint, embeddingOutput))
-                                .getResponse())
-                .awaitWithoutRetry();
-
-    }
+    edgeChain
+        .transform(
+            embeddingOutput ->
+                this.pineconeService
+                    .upsert(new PineconeRequest(this.indexEndpoint, embeddingOutput))
+                    .getResponse())
+        .awaitWithoutRetry();
+  }
 }

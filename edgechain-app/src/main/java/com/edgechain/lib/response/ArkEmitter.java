@@ -7,19 +7,17 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public class ArkEmitter<T> extends SseEmitter {
 
-    private final ArkEmitterObserver<T> observer;
+  private final ArkEmitterObserver<T> observer;
 
+  public ArkEmitter(EdgeChain<T> edgeChain) {
+    this(null, edgeChain.getScheduledObservableWithoutRetry());
+  }
 
-    public ArkEmitter(EdgeChain<T> edgeChain){
-        this(null, edgeChain.getScheduledObservableWithoutRetry());
-    }
+  public ArkEmitter(Observable<T> observable) {
+    this(null, observable);
+  }
 
-    public ArkEmitter(Observable<T> observable) {
-        this(null, observable);
-    }
-
-    public ArkEmitter(MediaType mediaType, Observable<T> observable) {
-        this.observer = new ArkEmitterObserver<T>(mediaType, observable, this);
-    }
-
+  public ArkEmitter(MediaType mediaType, Observable<T> observable) {
+    this.observer = new ArkEmitterObserver<T>(mediaType, observable, this);
+  }
 }

@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = WebConstants.SERVICE_CONTEXT_PATH + "/wiki")
 public class WikiController {
 
-    @GetMapping(
-            value = "/page-content",
-            consumes = {MediaType.APPLICATION_JSON_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE})
-    public Single<ChainResponse> wikiContent(@RequestParam("query") String query) {
-        WikiProvider wikiProvider = new WikiProvider();
-        ChainWrapper wrapper = new ChainWrapper();
-        return wrapper.chains(new ChainRequest(query), wikiProvider).toSingleWithRetry();
-    }
+  @GetMapping(
+      value = "/page-content",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  public Single<ChainResponse> wikiContent(@RequestParam("query") String query) {
+    WikiProvider wikiProvider = new WikiProvider();
+    ChainWrapper wrapper = new ChainWrapper();
+    return wrapper.chains(new ChainRequest(query), wikiProvider).toSingleWithRetry();
+  }
 }

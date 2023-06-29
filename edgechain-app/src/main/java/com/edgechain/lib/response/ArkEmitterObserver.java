@@ -10,48 +10,49 @@ import java.io.IOException;
 
 class ArkEmitterObserver<T> extends DisposableObserver<T> implements Runnable {
 
-    private final MediaType mediaType;
+  private final MediaType mediaType;
 
-    private final ResponseBodyEmitter responseBodyEmitter;
+  private final ResponseBodyEmitter responseBodyEmitter;
 
-    private boolean completed;
+  private boolean completed;
 
-    public ArkEmitterObserver(MediaType mediaType, Observable<T> observable, ResponseBodyEmitter responseBodyEmitter) {
+  public ArkEmitterObserver(
+      MediaType mediaType, Observable<T> observable, ResponseBodyEmitter responseBodyEmitter) {
 
-        this.mediaType = mediaType;
-        this.responseBodyEmitter = responseBodyEmitter;
-        this.responseBodyEmitter.onTimeout(this);
-        this.responseBodyEmitter.onCompletion(this);
-        observable.subscribe(this);
+    this.mediaType = mediaType;
+    this.responseBodyEmitter = responseBodyEmitter;
+    this.responseBodyEmitter.onTimeout(this);
+    this.responseBodyEmitter.onCompletion(this);
+    observable.subscribe(this);
+  }
+
+  @Override
+  public void onNext(@NonNull T value) {
+
+    try {
+      if (!completed) {
+        responseBodyEmitter.send(value, mediaType);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e.getMessage(), e);
     }
+  }
 
-    @Override
-    public void onNext(@NonNull T value) {
+  @Override
+  public void onError(@NonNull Throwable e) {
+    responseBodyEmitter.completeWithError(e);
+  }
 
-        try {
-            if(!completed) {
-                responseBodyEmitter.send(value, mediaType);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+  @Override
+  public void onComplete() {
+    if (!completed) {
+      completed = true;
+      responseBodyEmitter.complete();
     }
+  }
 
-    @Override
-    public void onError(@NonNull Throwable e) {
-        responseBodyEmitter.completeWithError(e);
-    }
-
-    @Override
-    public void onComplete() {
-        if(!completed) {
-            completed = true;
-            responseBodyEmitter.complete();
-        }
-    }
-
-    @Override
-    public void run() {
-        this.dispose();
-    }
+  @Override
+  public void run() {
+    this.dispose();
+  }
 }
