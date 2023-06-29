@@ -79,7 +79,7 @@ jobs:
         
 #         if: startsWith(github.ref, 'refs/tags/')
         with:
-            tag_name: ${{needs.build_and_run.short_hash.outputs.VALUE}}
+            tag_name: ${{needs.build_and_run.steps.short_hash.outputs.VALUE}}
             files: |
               ./Output/**/*.*
 
