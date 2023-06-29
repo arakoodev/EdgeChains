@@ -83,9 +83,10 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-#             tag_name: ${{needs.build_and_run.steps.short_hash.outputs.VALUE}}
             tag_name: ${{ env.RELEASE_TAG }}
             body: 🚀 Automated build
             files: |
               ./Output/**/*.*
+              
+              #             tag_name: ${{needs.build_and_run.steps.short_hash.outputs.VALUE}}
 
