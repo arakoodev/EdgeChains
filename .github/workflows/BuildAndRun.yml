@@ -11,7 +11,9 @@ jobs:
         uses: actions/checkout@v2
         
       - name: Set SHORT_HASH
-        run: echo "::set-output name=VALUE::${LONG_HASH:0:8}"
+        run: |
+             echo "::set-output name=VALUE::${LONG_HASH:0:8}"
+             echo ::set-env name=RELEASE_TAG::"${LONG_HASH:0:8}-$(TZ=UTC-8 date +"%Y.%m.%d")"
         id: short_hash
         env:
          LONG_HASH: ${{ github.sha }}
@@ -81,7 +83,8 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-            tag_name: ${{needs.build_and_run.steps.short_hash.outputs.VALUE}}
+#             tag_name: ${{needs.build_and_run.steps.short_hash.outputs.VALUE}}
+            tag_name: ${{ env.RELEASE_TAG }}
             body: 🚀 Automated build
             files: |
               ./Output/**/*.*
