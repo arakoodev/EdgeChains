@@ -15,8 +15,7 @@ import reactor.core.publisher.Flux;
 @Service
 public class OpenAiStreamService {
 
-  @Value("${feign.url}")
-  private String feignUrl;
+
 
   public Observable<ChainResponse> chatCompletion(OpenAiChatRequest request) {
 
@@ -25,7 +24,7 @@ public class OpenAiStreamService {
             WebClient.builder()
                 .build()
                 .post()
-                .uri(feignUrl + "/openai/chat-completion-stream")
+                .uri(System.getProperty("server.url") + "/openai/chat-completion-stream")
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .headers(
                     httpHeaders -> {

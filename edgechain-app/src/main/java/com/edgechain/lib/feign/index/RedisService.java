@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "redisService", url = "${feign.url}/index/redis")
+@FeignClient(name = "redisService", url = "${server.url}/index/redis")
 @Component
 public interface RedisService extends IndexService<RedisRequest> {
 

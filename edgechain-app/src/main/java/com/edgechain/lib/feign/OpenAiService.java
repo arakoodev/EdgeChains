@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "openAiService", url = "${feign.url}/openai")
+@FeignClient(name = "openAiService", url = "${server.url}/openai")
 @Component
 public interface OpenAiService {
 
