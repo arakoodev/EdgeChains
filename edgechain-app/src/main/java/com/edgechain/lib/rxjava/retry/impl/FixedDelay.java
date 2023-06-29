@@ -35,7 +35,9 @@ public class FixedDelay extends RetryPolicy {
                   || throwable
                       .getMessage()
                       .contains(
-                          "JSON decoding error: Cannot deserialize value of type `com.edgechain.lib.openai.response.ChatCompletionResponse` from Array value (token `JsonToken.START_ARRAY`)"))
+                          "JSON decoding error: Cannot deserialize value of type"
+                              + " `com.edgechain.lib.openai.response.ChatCompletionResponse` from"
+                              + " Array value (token `JsonToken.START_ARRAY`)"))
                 return Observable.empty();
 
               if (++retryCount < maxRetries) {

@@ -1,14 +1,8 @@
 package com.edgechain.lib.openai.endpoint;
 
-import com.edgechain.lib.openai.providers.OpenAiChatCompletionProvider;
-import com.edgechain.lib.openai.providers.OpenAiChatCompletionStreamProvider;
-import com.edgechain.lib.openai.providers.OpenAiCompletionProvider;
-import com.edgechain.lib.embeddings.providers.OpenAiEmbeddingProvider;
-import com.edgechain.lib.rxjava.provider.ChainProvider;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class Endpoint {
@@ -46,7 +40,13 @@ public class Endpoint {
     this(url, apiKey, model, null, null, null, retryPolicy);
   }
 
-  public Endpoint(String url, String apiKey, String model, String role, Double temperature, RetryPolicy retryPolicy) {
+  public Endpoint(
+      String url,
+      String apiKey,
+      String model,
+      String role,
+      Double temperature,
+      RetryPolicy retryPolicy) {
     this(url, apiKey, model, role, temperature, false, retryPolicy);
   }
 
@@ -65,7 +65,6 @@ public class Endpoint {
     this.role = role;
     this.temperature = temperature;
     this.stream = stream;
-
   }
 
   public String getApiKey() {

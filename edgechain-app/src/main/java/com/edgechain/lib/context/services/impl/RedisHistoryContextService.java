@@ -1,7 +1,6 @@
 package com.edgechain.lib.context.services.impl;
 
 import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.context.domain.HistoryContextRequest;
 import com.edgechain.lib.context.domain.HistoryContextResponse;
 import com.edgechain.lib.context.services.HistoryContextService;
 import com.edgechain.lib.rxjava.response.ChainResponse;
@@ -91,7 +90,10 @@ public class RedisHistoryContextService implements HistoryContextService {
                           (HistoryContext) this.redisTemplate.opsForValue().get(key)));
                   emitter.onComplete();
                 } else {
-                  throw new RuntimeException("Redis HistoryContext key isn't found ==> Either you have incorrectly defined contextId or create it via /v1/history-context/create & use the historyContextId");
+                  throw new RuntimeException(
+                      "Redis HistoryContext key isn't found ==> Either you have incorrectly defined"
+                          + " contextId or create it via /v1/history-context/create & use the"
+                          + " historyContextId");
                 }
 
               } catch (final Exception e) {

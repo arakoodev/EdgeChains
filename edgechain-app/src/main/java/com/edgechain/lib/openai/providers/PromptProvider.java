@@ -1,6 +1,5 @@
 package com.edgechain.lib.openai.providers;
 
-import com.edgechain.lib.openai.prompt.PromptTemplate;
 import com.edgechain.lib.rxjava.provider.ChainProvider;
 import com.edgechain.lib.rxjava.request.ChainRequest;
 import com.edgechain.lib.rxjava.response.ChainResponse;

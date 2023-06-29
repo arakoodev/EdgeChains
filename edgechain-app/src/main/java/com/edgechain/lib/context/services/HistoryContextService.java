@@ -1,7 +1,6 @@
 package com.edgechain.lib.context.services;
 
 import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.context.domain.HistoryContextRequest;
 import com.edgechain.lib.context.domain.HistoryContextResponse;
 import com.edgechain.lib.rxjava.response.ChainResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
