@@ -43,7 +43,8 @@ public class RedisIndexChain extends IndexChainService {
                 map.put(
                     "values".getBytes(),
                     FloatUtils.toByteArray(FloatUtils.toFloatArray(wordVec.getValues())));
-                long v = jedisPooled.hset((PREFIXES + UUID.randomUUID()).getBytes(), map);
+                map.put("historyContext".getBytes(), "".getBytes());
+                long v = jedisPooled.hset((PREFIXES + wordVec.getId()).getBytes(), map);
 
                 emitter.onNext(new ChainResponse("Created ~ " + v));
                 emitter.onComplete();

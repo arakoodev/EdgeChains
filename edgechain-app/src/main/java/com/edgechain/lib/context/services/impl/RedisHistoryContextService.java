@@ -27,7 +27,7 @@ public class RedisHistoryContextService implements HistoryContextService {
   private long ttl;
 
   @Override
-  public EdgeChain<HistoryContextResponse> create(HistoryContextRequest contextRequest) {
+  public EdgeChain<HistoryContextResponse> create() {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -36,7 +36,6 @@ public class RedisHistoryContextService implements HistoryContextService {
 
                 HistoryContext context = new HistoryContext();
                 context.setResponse("");
-                context.setMaxTokens(contextRequest.getMaxTokens());
 
                 this.redisTemplate.opsForValue().set(key, context);
                 this.redisTemplate.expire(key, ttl, TimeUnit.SECONDS);
@@ -45,7 +44,6 @@ public class RedisHistoryContextService implements HistoryContextService {
                 response.setId(key);
                 response.setMessage(
                     "Session is created. Now you can start conversational question and answer");
-                response.setMaxTokens(contextRequest.getMaxTokens());
 
                 emitter.onNext(response);
                 emitter.onComplete();
@@ -93,7 +91,7 @@ public class RedisHistoryContextService implements HistoryContextService {
                           (HistoryContext) this.redisTemplate.opsForValue().get(key)));
                   emitter.onComplete();
                 } else {
-                  throw new RuntimeException("Redis key isn't found");
+                  throw new RuntimeException("Redis HistoryContext key isn't found ==> Either you have incorrectly defined contextId or create it via /v1/history-context/create & use the historyContextId");
                 }
 
               } catch (final Exception e) {

@@ -1,6 +1,8 @@
 package com.edgechain.lib.rxjava.transformer.observable;
 
 import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.response.ArkEmitter;
+import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.*;
@@ -16,7 +18,7 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
   private static final long serialVersionUID = 297269864039510096L;
 
   private static final int MAX_RETRIES = 3;
-  private static final int FIXED_DELAY = 4;
+  private static final int FIXED_DELAY = 10;
   private static final TimeUnit UNIT = TimeUnit.SECONDS;
 
   private Endpoint endpoint;
@@ -33,6 +35,10 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
   @Override
   public <R> EdgeChain<R> transform(Function<T, R> mapper) {
     return new EdgeChain<>(this.observable.map(mapper), endpoint);
+  }
+
+  public static <T> EdgeChain<T> create(T t) {
+    return new EdgeChain<>(Observable.just(t));
   }
 
   @Override
@@ -198,6 +204,14 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
   @Override
   public Observable<T> getObservable() {
     return this.observable;
+  }
+
+  public ArkResponse<T> getArkResponse(){
+    return new ArkResponse<T>(this.getScheduledObservableWithoutRetry());
+  }
+
+  public ArkEmitter<T> getArkEmitter(){
+    return new ArkEmitter<>(this.getScheduledObservableWithoutRetry());
   }
 
   @Override
