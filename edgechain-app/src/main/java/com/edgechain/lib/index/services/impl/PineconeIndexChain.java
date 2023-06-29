@@ -88,6 +88,7 @@ public class PineconeIndexChain extends IndexChainService {
                 payload.put("top_k", topK);
 
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
                 ResponseEntity<String> response =
                     new RestTemplate()
                         .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);

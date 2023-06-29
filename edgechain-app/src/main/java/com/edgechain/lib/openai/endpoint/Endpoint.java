@@ -1,6 +1,7 @@
 package com.edgechain.lib.openai.endpoint;
 
 import com.edgechain.lib.openai.providers.OpenAiChatCompletionProvider;
+import com.edgechain.lib.openai.providers.OpenAiChatCompletionStreamProvider;
 import com.edgechain.lib.openai.providers.OpenAiCompletionProvider;
 import com.edgechain.lib.embeddings.providers.OpenAiEmbeddingProvider;
 import com.edgechain.lib.rxjava.provider.ChainProvider;
@@ -17,7 +18,7 @@ public class Endpoint {
   private String model;
   private String role;
   private Double temperature;
-  private ChainProvider chainProvider;
+  private Boolean stream;
 
   public Endpoint() {}
 
@@ -26,27 +27,27 @@ public class Endpoint {
   }
 
   public Endpoint(String url) {
-    this(url, null, null, null, new FixedDelay(3, 4, TimeUnit.SECONDS));
+    this(url, null, null, null, null, new FixedDelay(3, 4, TimeUnit.SECONDS));
   }
 
   public Endpoint(String url, String apiKey) {
-    this(url, apiKey, null, null, new FixedDelay(3, 4, TimeUnit.SECONDS));
+    this(url, apiKey, null, null, null, new FixedDelay(3, 4, TimeUnit.SECONDS));
   }
 
   public Endpoint(String url, String apiKey, RetryPolicy retryPolicy) {
-    this(url, apiKey, null, null, retryPolicy);
+    this(url, apiKey, null, null, null, retryPolicy);
   }
 
   public Endpoint(String url, RetryPolicy retryPolicy) {
-    this(url, null, null, null, retryPolicy);
+    this(url, null, null, null, null, retryPolicy);
   }
 
   public Endpoint(String url, String apiKey, String model, RetryPolicy retryPolicy) {
-    this(url, apiKey, model, null, null, retryPolicy);
+    this(url, apiKey, model, null, null, null, retryPolicy);
   }
 
-  public Endpoint(String url, String apiKey, String model, String role, RetryPolicy retryPolicy) {
-    this(url, apiKey, model, role, null, retryPolicy);
+  public Endpoint(String url, String apiKey, String model, String role, Double temperature, RetryPolicy retryPolicy) {
+    this(url, apiKey, model, role, temperature, false, retryPolicy);
   }
 
   public Endpoint(
@@ -55,6 +56,7 @@ public class Endpoint {
       String model,
       String role,
       Double temperature,
+      Boolean stream,
       RetryPolicy retryPolicy) {
     this.url = url;
     this.apiKey = apiKey;
@@ -62,14 +64,8 @@ public class Endpoint {
     this.model = model;
     this.role = role;
     this.temperature = temperature;
+    this.stream = stream;
 
-    if (Objects.isNull(role) && Objects.isNull(temperature)) {
-      this.chainProvider = new OpenAiEmbeddingProvider(this);
-    } else if (Objects.isNull(role)) {
-      this.chainProvider = new OpenAiCompletionProvider(this);
-    } else {
-      this.chainProvider = new OpenAiChatCompletionProvider(this);
-    }
   }
 
   public String getApiKey() {
@@ -96,19 +92,21 @@ public class Endpoint {
     return this.temperature;
   }
 
+  public Boolean getStream() {
+    return stream;
+  }
+
+  @Override
   public String toString() {
-    return "Endpoint{url='"
-        + this.url
-        + "', apiKey='"
-        + this.apiKey
-        + "', retryPolicy="
-        + this.retryPolicy
-        + ", model='"
-        + this.model
-        + "', role='"
-        + this.role
-        + "', temperature="
-        + this.temperature
-        + "}";
+    final StringBuilder sb = new StringBuilder("Endpoint{");
+    sb.append("url='").append(url).append('\'');
+    sb.append(", apiKey='").append(apiKey).append('\'');
+    sb.append(", retryPolicy=").append(retryPolicy);
+    sb.append(", model='").append(model).append('\'');
+    sb.append(", role='").append(role).append('\'');
+    sb.append(", temperature=").append(temperature);
+    sb.append(", stream=").append(stream);
+    sb.append('}');
+    return sb.toString();
   }
 }

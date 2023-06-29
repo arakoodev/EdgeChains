@@ -3,8 +3,6 @@ package com.edgechain.lib.context.domain;
 public class HistoryContextResponse {
 
   private String id;
-  private Integer maxTokens;
-
   private String message;
 
   public String getId() {
@@ -15,10 +13,6 @@ public class HistoryContextResponse {
     this.id = id;
   }
 
-  public void setMaxTokens(Integer maxTokens) {
-    this.maxTokens = maxTokens;
-  }
-
   public String getMessage() {
     return message;
   }
@@ -27,11 +21,4 @@ public class HistoryContextResponse {
     this.message = message;
   }
 
-  public int getMaxTokens() {
-    return maxTokens;
-  }
-
-  public void setMaxTokens(int maxTokens) {
-    this.maxTokens = maxTokens;
-  }
 }

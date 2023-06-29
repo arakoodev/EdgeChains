@@ -1,10 +1,13 @@
 package com.edgechain.lib.openai.response;
 
 import com.edgechain.lib.embeddings.domain.openai.Usage;
+
+import java.io.Serializable;
 import java.util.List;
 
-public class ChatCompletionResponse {
+public class ChatCompletionResponse implements Serializable {
 
+  private static final long serialVersionUID = 463938151412139368L;
   private String id;
 
   private String object;

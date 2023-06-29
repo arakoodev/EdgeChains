@@ -31,6 +31,7 @@ public class PineconeQueryProvider extends ChainProvider {
 
   @Override
   public EdgeChain<ChainResponse> request(ChainRequest request) { // Getting JsonString & Parsing it
+
     return new PineconeIndexChain(endpoint, namespace)
         .query(JsonUtils.convertToObject(request.getInput(), WordVec.class), topK)
         .transform(
