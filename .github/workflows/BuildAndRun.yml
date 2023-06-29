@@ -74,12 +74,15 @@ jobs:
 #           asset_path: Examples/
 #           asset_name: Examples
 #           asset_content_type: application/zip
+      - name: 'Get variables'
+        id: vars
+        run: |
+          echo "tag_name= ${{needs.build_and_run.steps.short_hash.outputs.VALUE}}" >> $GITHUB_OUTPUT
       - name: Release
         uses: softprops/action-gh-release@v1
-        
-#         if: startsWith(github.ref, 'refs/tags/')
         with:
             tag_name: ${{needs.build_and_run.steps.short_hash.outputs.VALUE}}
+            body: 🚀 Automated build
             files: |
               ./Output/**/*.*
 
