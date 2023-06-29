@@ -46,6 +46,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: Output
+          path: Output
       - name: Display structure of downloaded files
         run: ls -R
 
@@ -72,5 +73,5 @@ jobs:
 #         if: startsWith(github.ref, 'refs/tags/')
         with:
             files: |
-              Examples/
+              ./Output/**/*.*
 
