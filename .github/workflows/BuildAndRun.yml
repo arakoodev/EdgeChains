@@ -13,7 +13,7 @@ jobs:
       - name: Set SHORT_HASH
         run: |
              echo "::set-output name=VALUE::${LONG_HASH:0:8}"
-             echo ::set-env name=RELEASE_TAG::"${LONG_HASH:0:8}-$(TZ=UTC-8 date +"%Y.%m.%d")"
+             echo "RELEASE_TAG=${LONG_HASH:0:8}-$(TZ=UTC-8 date +"%Y.%m.%d")" >> $GITHUB_ENV
         id: short_hash
         env:
          LONG_HASH: ${{ github.sha }}
