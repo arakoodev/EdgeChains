@@ -11,7 +11,7 @@ local preset = |||
                     2. <POINT_2> - <DESCRIPTION_2>
                     ...
                     ```
-                    Now, given the data, create a 20-bullet point summary of:
+                    Now, given the data, create a 30-bullet point summary of:
                |||;
 local context = if(std.extVar("keepContext") == true) then std.extVar("context") else "";
 local prompt = std.join("\n", [preset, context]);

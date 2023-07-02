@@ -1,9 +1,9 @@
 package com.edgechain.lib.openai.client;
 
-import com.edgechain.lib.constants.WebConstants;
-import com.edgechain.lib.embeddings.domain.openai.OpenAiEmbeddingRequest;
-import com.edgechain.lib.embeddings.domain.openai.OpenAiEmbeddingResponse;
-import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.constants.EndpointConstants;
+import com.edgechain.lib.embeddings.request.OpenAiEmbeddingRequest;
+import com.edgechain.lib.embeddings.response.OpenAiEmbeddingResponse;
+import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
 import com.edgechain.lib.openai.request.CompletionRequest;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
@@ -45,8 +45,7 @@ public class OpenAiClient {
 
                 // Send the POST request
                 ResponseEntity<ChatCompletionResponse> response =
-                    restTemplate.exchange(
-                        endpoint.getUrl(), HttpMethod.POST, entity, ChatCompletionResponse.class);
+                    restTemplate.exchange(endpoint.getUrl(), HttpMethod.POST, entity, ChatCompletionResponse.class);
 
                 emitter.onNext(Objects.requireNonNull(response.getBody()));
                 emitter.onComplete();
@@ -67,12 +66,12 @@ public class OpenAiClient {
               WebClient.builder()
                   .build()
                   .post()
-                  .uri(WebConstants.OPENAI_CHAT_COMPLETION_API)
+                  .uri(EndpointConstants.OPENAI_CHAT_COMPLETION_API)
                   .accept(MediaType.TEXT_EVENT_STREAM)
                   .headers(
                       httpHeaders -> {
                         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-                        httpHeaders.setBearerAuth(WebConstants.OPENAI_AUTH_KEY);
+                        httpHeaders.setBearerAuth(endpoint.getApiKey());
                       })
                   .bodyValue(new ObjectMapper().writeValueAsString(request))
                   .retrieve()

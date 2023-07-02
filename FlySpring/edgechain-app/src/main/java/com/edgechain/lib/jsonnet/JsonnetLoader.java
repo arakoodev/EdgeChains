@@ -5,6 +5,7 @@ import com.edgechain.lib.jsonnet.exceptions.JsonnetLoaderException;
 import com.edgechain.lib.utils.JsonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sjsonnet.DefaultParseCache;
@@ -18,13 +19,15 @@ public abstract class JsonnetLoader {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private Map<String, JsonnetArgs> args;
+  private Map<String, JsonnetArgs> args = new HashMap<>();
+  private JSONObject jsonObject;
 
   public JsonnetLoader() {}
 
-  public <T> T load(Map<String, JsonnetArgs> args, InputStream inputStream, Class<T> clazz) {
+
+
+  public void load(InputStream inputStream) {
     try {
-      this.args = args;
       preconfigured();
 
       // Create Temp File With Unique Name
@@ -51,7 +54,7 @@ public abstract class JsonnetLoader {
       argsList.add(file.getAbsolutePath());
 
       // Transform Jsonnet Args
-      for (Map.Entry<String, JsonnetArgs> entry : args.entrySet()) {
+      for (Map.Entry<String, JsonnetArgs> entry : this.args.entrySet()) {
 
         if (entry.getValue().getDataType().equals(DataType.STRING)) {
           argsList.add("--ext-str");
@@ -80,28 +83,39 @@ public abstract class JsonnetLoader {
           scala.None$.empty());
 
       // Get the String Output & Transform it into JsonnetSchema
-      T tClass = JsonUtils.convertToObject(outputStream.toString(StandardCharsets.UTF_8), clazz);
-      //            System.out.println(schema);
+      this.jsonObject = new JSONObject(outputStream.toString(StandardCharsets.UTF_8));
 
       // Delete File
       FileUtils.deleteQuietly(file);
-
-      return tClass;
 
     } catch (final Exception e) {
       throw new JsonnetLoaderException(e.getMessage());
     }
   }
 
-  public abstract <T> T loadOrReload(HashMap<String, JsonnetArgs> args, Class<T> clazz);
+  public abstract JsonnetLoader loadOrReload();
 
-  private void setArgs(Map<String, JsonnetArgs> args) {
-    this.args = args;
+  public JsonnetLoader put(String key, JsonnetArgs args) {
+    this.args.put(key, args);
+    return this;
   }
 
   public Map<String, JsonnetArgs> getArgs() {
     return args;
   }
+
+  public String get(String key) {
+    return this.jsonObject.getString(key);
+  }
+
+  public int getInt(String key) {
+    return this.jsonObject.getInt(key);
+  }
+
+  public boolean getBoolean(String key){
+    return this.jsonObject.getBoolean(key);
+  }
+
 
   private void preconfigured() {
     Map<String, JsonnetArgs> args = this.getArgs();

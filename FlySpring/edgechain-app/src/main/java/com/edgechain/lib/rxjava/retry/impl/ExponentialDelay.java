@@ -12,7 +12,7 @@ public class ExponentialDelay extends RetryPolicy {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
   private long firstDelay = 3;
-  private int maxRetries = 4;
+  private int maxRetries = 5;
   private int factor = 2;
   private TimeUnit unit = TimeUnit.SECONDS;
   private int retryCount;

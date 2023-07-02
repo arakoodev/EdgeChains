@@ -6,14 +6,17 @@
     <artifactId>edgechain-app</artifactId>
     <version>1.0.0</version>
     <name>edgechain</name>
-    <description>API Consumer for EdgeChain Microservice</description>
+    <description>EdgeChains SDK.</description>
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>2022.0.3</spring-cloud.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <feign-reactor.version>4.0.0</feign-reactor.version>
     </properties>
     <dependencies>
+
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -29,6 +32,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>redis.clients</groupId>

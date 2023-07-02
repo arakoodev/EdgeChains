@@ -1,6 +1,6 @@
 package com.edgechain.lib.openai.plugin.services;
 
-import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.plugin.chains.PluginResponseChain;
 import com.edgechain.lib.openai.plugin.response.PluginResponse;
 import com.edgechain.lib.openai.plugin.tool.PluginTool;

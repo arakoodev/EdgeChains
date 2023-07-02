@@ -1,6 +1,6 @@
 package com.edgechain.lib.rxjava.transformer.observable;
 
-import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import io.reactivex.rxjava3.annotations.NonNull;
@@ -34,10 +34,6 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
   @Override
   public <R> EdgeChain<R> transform(Function<T, R> mapper) {
     return new EdgeChain<>(this.observable.map(mapper), endpoint);
-  }
-
-  public static <T> EdgeChain<T> create(T t) {
-    return new EdgeChain<>(Observable.just(t));
   }
 
   @Override
@@ -206,7 +202,7 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
   }
 
   public ArkResponse<T> getArkResponse() {
-    return new ArkResponse<T>(this.getScheduledObservableWithoutRetry());
+    return new ArkResponse<>(this.getScheduledObservableWithoutRetry());
   }
 
   @Override
