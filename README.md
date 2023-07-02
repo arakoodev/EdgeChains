@@ -24,249 +24,117 @@ And building on top of this, Edgechains gives you:
 * **Fault tolerance**: EdgeChains is designed to be fault-tolerant, and can continue to retry & backoff even if some of the requests in the system fail.
 * **Scalability**: EdgeChains is designed to be scalable, and can be used to write your chain-of-thought applications on large number of APIs, prompt lengths and vector datasets.
 
-## What does it look like ?
+## Setup
 
-### EdgeChains Basic Architecture
+You can get EdgeChains by either downloading the release jar or compiling it yourself. We recommend the former.
 
-EdgeChains is based on the Spring Framework. It uses the Spring Boot framework to provide a robust, scalable, and fault-tolerant architecture for building large-scale LLM Operation Systems.
+### Downloading the release jar
 
-The EdgeChainsApp is built from the `edgechain-app` directory, which contains all the required endpoints and methods to operate on LLMs. It is divided into three parts:
-1. `app`: Contains the APIs that the user is going to directly communicate with. 
-2. `lib`: Contains methods, classes and wrappers that are used by the `app` and `service` modules.
-3. `service`: The APIs that the `app` uses. This has been made into a separate entity to facilitate the microservice architecture, without compromising on developer experience.
+You can download the release jars from the [releases page](https://github.com/arakoodev/EdgeChains/releases). Download both flyfly.jar and edgechain-app-VERSION_NUMBER.jar.
 
-### TL;DR: Architecture Summary
+### Compiling it yourself
 
-```mermaid
-graph TD
-  FlyFlyCLI_1 <--> Entrypoint_1 <--> EdgeChainApp <--> FlyFlyCLI_1
-  FlyFlyCLI_2 <--> Entrypoint_2 <--> EdgeChainServiceApp <--> FlyFlyCLI_2
+There are 2 jar files to compile - `flyfly.jar` and `edgechain-app-1.0.0.jar`. You can compile EdgeChains yourself by following the instructions below:
 
-  EdgeChainApp <--> EdgeChainsFused
-  EdgeChainsFused <--> EdgeChainServiceApp
-```
 
-<!-- ![image](/.github/assets/code.png) -->
-
-## Getting Started
-
-Getting started with EdgeChains is easy. Just follow along!
-
-### Clone the Repo
-
-1. First, clone the EdgeChains Repo
-```bash
-git clone https://github.com/arakoodev/EdgeChains.git
-cd edgechains
-```
-
-### Build the FlyFly CLI
-2. Now, build the FlySpring CLI with Maven:
+1. Clone the git repository using:
+  ```bash
+  git clone https://github.com/arakoodev/EdgeChains.git
+  ```
+2. Go to the FlySpring repository using:
 
 ```bash
-cd FlySpring/autoroute
+cd FlySpring
+```
+
+#### Compiling flyfly.jar
+
+1. Compile the flyfly.jar file using:
+
+```bash
+cd autoroute
 mvn clean package -P gofly
 cd ../flyfly
 mvn clean package -P gofly
 ```
-3. Now, the FlySpring JAR will be built inside the `Script/` directory
 
-### Build the EdgeChains Example App
-4. Now, build the EdgeChains Example App:
+The `flyfly.jar` file will be generated in the `Script` folder on the root directory.
+
+### Compiling edgechain-app-VERSION_NUMBER.jar
+
+1. Compile the edgechain-app-VERSION_NUMBER.jar file using:
 
 ```bash
-cd ../../edgechain-app
+cd edgechain-app
 mvn clean package
 ```
-Please wait till the EdgeChain App is built. This will take a while.
+The `edgechain-app-VERSION_NUMBER.jar` file will be generated in the `FlySpring/edgechain-app/target` directory.
 
+## What does it look like ?
 
-1. Now, copy the EdgeChains App Jar a directory of your choice. For the sake of simplicity, we will use the the `Script/` directory in our example:
+### Schematic for Quick Overview
 
-```bash
-cp target/edgechain-app-1.0.0.jar ../Script/
+```mermaid
+graph TD
+    subgraph ide1[Your Code]
+        ep([Your App Entrypoint])
+        logic([Your Total App Logic])
+    end
+    subgraph ide2[FlySpring]
+        id2[Combined JAR File]
+        fps[FlySpring CLI]
+    end
+    subgraph lib[EdgeChains Library]
+        connectors[Connector Classes]
+        openai[OpenAI Client]
+        others[Other Classes]
+    end
+    subgraph service[EdgeChains Services]
+        redis[Redis Service]
+        otherServices[Other Services]
+    end
+    subgraph ide3[EdgeChains]
+        lib
+        service
+    end
+    subgraph overall[Our Code]
+        ide2
+        ide3
+    end
+    fps --> id2
+    id2 --> fps
+    logic --> ep
+    ide1 --> |packed as one JAR using JBang| id2
+    lib --> ide1
+    service --> ide1
+    fps --> enp([User-facing endpoints])
 ```
 
-### Specifying an Entry Point
+### Integrating EdgeChains into your code
 
-EdgeChains uses JBang, so you have to specify an entrypoint for EdgeChains to work. Right now, an entrypoint should be either called `EdgeChainApplication.java`, or `EdgeChainServiceApplication.java`.
+You can play around with the base EdgeChains library, or integrate it into your existing codebase as well! Just follow the instructions below:
 
-For example, these are the files you will have to run this Example App:
+1. Create a folder called `dependencies` in your root project folder, ie., the one having the `pom.xml`.
 
-- `EdgeChainApplication.java`
+2. Place the `edgechain-app-VERSION_NUMBER.jar` app file in the `dependencies` folder.
 
-```java
-// EdgeChainApplication.java
+3. Add the following to your `pom.xml` file:
 
-package com.edgechain.app;
-
-import com.edgechain.app.constants.WebConstants;
-import com.edgechain.lib.configuration.EdgeChainAutoConfiguration;
-import com.edgechain.service.constants.ServiceConstants;
-import java.io.File;
-import java.io.FileInputStream;
-import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.FeignAutoConfiguration;
-import org.springframework.context.annotation.Import;
-
-@SpringBootApplication(scanBasePackages = { "com.edgechain.app", "com.edgechain.service" })
-@ImportAutoConfiguration({ FeignAutoConfiguration.class })
-@Import(EdgeChainAutoConfiguration.class)
-public class EdgeChainApplication {
-
-  private static final Logger logger = LoggerFactory.getLogger(EdgeChainApplication.class);
-
-  public static void main(String[] args) throws Exception {
-
-    System.setProperty("server.port", "8003");
-    System.setProperty("spring.data.redis.host", "");
-    System.setProperty("spring.data.redis.port", "");
-    System.setProperty("spring.data.redis.username", "");
-    System.setProperty("spring.data.redis.password", "");
-    System.setProperty("spring.data.redis.connect-timeout", "120000");
-    System.setProperty("spring.redis.ttl", "3600");
-    System.setProperty("jsonnet.target.location", "./new.jsonnet");
-
-    System.setProperty("openai.api.key", "");
-
-    System.setProperty("doc2vec.filepath", "./model.bin");
-    readDoc2Vec();
-    loadSentenceModel();
-    SpringApplication.run(EdgeChainApplication.class, args);
-  }
-
-  private static void loadSentenceModel() {
-    WebConstants.sentenceModel = EdgeChainApplication.class.getResourceAsStream("/en-sent.zip");
-  }
-
-  private static void readDoc2Vec() throws Exception {
-
-    String modelPath = System.getProperty("doc2vec.filepath");
-
-    File file = new File(modelPath);
-
-    if (!file.exists()) {
-      logger.warn(
-          "It seems like, you haven't trained the model or correctly specified Doc2Vec model"
-              + " path.");
-    } else {
-      logger.info("Loading...");
-      ServiceConstants.embeddingDoc2VecModel = WordVectorSerializer
-          .readParagraphVectors(new FileInputStream(modelPath));
-      logger.info("Doc2Vec model is successfully loaded...");
-    }
-  }
-}
+```xml
+<dependency>
+    <groupId>com.edgechain</groupId>
+    <artifactId>edgechain-app</artifactId>
+    <version>VERSION_NUMBER</version>
+    <scope>system</scope>
+    <systemPath>${basedir}/dependencies/edgechain-app-VERSION_NUMBER.jar</systemPath>
+</dependency>
 ```
 
-- and for `EdgeChainServiceApplication.java`:
-
-```java
-package com.edgechain.service;
-
-import com.edgechain.lib.configuration.EdgeChainAutoConfiguration;
-import com.edgechain.service.constants.ServiceConstants;
-import jakarta.annotation.PostConstruct;
-import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
-
-import java.io.File;
-import java.io.FileInputStream;
-
-@SpringBootApplication(scanBasePackages = { "com.edgechain.service" })
-@Import(EdgeChainAutoConfiguration.class)
-public class EdgeChainServiceApplication implements CommandLineRunner {
-  private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-  @PostConstruct
-  public void init() throws Exception {
-    this.readEmbeddingDoc2VecModel();
-  }
-
-  public static void main(String[] args) {
-
-    System.setProperty("server.port", "8002");
-
-    System.setProperty("spring.data.redis.host", "");
-    System.setProperty("spring.data.redis.port", "");
-    System.setProperty("spring.data.redis.username", "");
-    System.setProperty("spring.data.redis.password", "");
-    System.setProperty("spring.data.redis.connect-timeout", "120000");
-    System.setProperty("spring.redis.ttl", "3600");
-    System.setProperty("jsonnet.target.location",
-        "./new.jsonnet");
-
-    System.setProperty("openai.api.key", "");
-
-    SpringApplication.run(EdgeChainServiceApplication.class, args);
-  }
-
-  private void readEmbeddingDoc2VecModel() throws Exception {
-
-    String modelPath = "./doc_vector.bin";
-    File file = new File(modelPath);
-
-    if (!file.exists()) {
-      logger.warn(
-          "It seems like, you haven't trained the model or correctly specified Doc2Vec model"
-              + " path.");
-    } else {
-      logger.info("Loading...");
-      ServiceConstants.embeddingDoc2VecModel = WordVectorSerializer
-          .readParagraphVectors(new FileInputStream(modelPath));
-      logger.info("Doc2Vec model is successfully loaded...");
-    }
-  }
-
-  @Override
-  public void run(String... args) throws Exception {
-  }
-}
-```
-
-Copy these files to the `Script/` Directory.
-
-### Adding Jsonnet
-
-**This is where it gets interesting**: EdgeChains can dynamically run prompt and configurations using Jsonnet. To get started, follow these steps:
-
-1. Create a file called `new.jsonnet`, containing the following code:
-
-```json
-local keepContext = std.extVar("keepContext");
-local promptType = "thought";
-local tokenCap = 4096;
-local maxLength = if std.extVar("capContext") == "true" then std.parseInt(std.extVar("contextLength")) else tokenCap;
-local context = if keepContext == "true" then std.extVar("context") else "";
-local preset = |||
-    Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-|||;
-
-local prompt = preset + "\n```\n" + context + "\n```";
-local promptLength = std.length(prompt);
-
-{
-    promptLength: std.min(promptLength, maxLength),
-    prompt: if promptLength > maxLength then std.substr(prompt, promptLength - maxLength, promptLength) else prompt,
-    type: promptType,
-}
-```
-
-Save this in the `Script/` directory itself.
+4. Now you can run `mvn clean install`. This will install the EdgeChains library into your local maven repository.
 
 ### Running EdgeChains
 
-Now, you can run EdgeChains as a service or as an application using:
+Now, you can run EdgeChains as a service or as an application using jbang, like:
 
 ```bash
 java -jar flyfly.jar jbang EdgeChainServiceApplication.java edgechain-app-1.0.0.jar
@@ -285,22 +153,17 @@ Here are a few fun tutorials that can help you get started!
 
 EdgeChains can be used to chat with a document. For example, you can chat with a document about the topic of "Bitcoin" or "Machine Learning". To do this, you can use the `EdgeChainService` class. 
 
-1. First, fill up the `EdgeChainApplication.java` and `EdgeChainServiceApplication.java` files with the appropriate OpenAI and Redis credentials.
-2. Then run the commands on two separate terminals:
+1. First, fill up the `EdgeChainApplication.java` file with the appropriate OpenAI and Redis credentials.
+2. Then run the command on the terminal:
   
   ```bash
   java -jar flyfly.jar jbang EdgeChainServiceApplication.java edgechain-app-1.0.0.jar
   ```
 
-  and 
-
-  ```bash
-  java -jar flyfly.jar jbang EdgeChainApplication.java edgechain-app-1.0.0.jar
-  ```
-3. Now, you have to create a context for the chat. Think of it like a Chat Session in ChatGPT. You can do it by:
+1. Now, you have to create a context for the chat. Think of it like a Chat Session in ChatGPT. You can do it by:
   ```bash
   curl  -X POST \
-  'localhost:8003/v1/history-context/create' \
+  'localhost:8080/v1/history-context/create' \
   --header 'Accept: */*' \
   --header 'User-Agent: Thunder Client (https://www.thunderclient.com)' \
   --header 'Content-Type: application/json' \
@@ -323,7 +186,7 @@ Save the `id` somewhere. You'll need it later.
 
 ```bash
 curl  -X POST \
-  'localhost:8003/v1/redis/openai/upsert' \
+  'localhost:8080/v1/redis/openai/upsert' \
   --header 'Accept: */*' \
   --header 'User-Agent: Thunder Client (https://www.thunderclient.com)' \
   --form 'file=@./8946-Article Text-12474-1-2-20201228.pdf'
@@ -333,7 +196,7 @@ curl  -X POST \
 
 ```bash
 curl  -X POST \
-  'localhost:8003/v1/redis/openai/query/context/<HISTORY_CONTEXT_VALUE>' \
+  'localhost:8080/v1/redis/openai/query/context/<HISTORY_CONTEXT_VALUE>' \
   --header 'Accept: */*' \
   --header 'User-Agent: Thunder Client (https://www.thunderclient.com)' \
   --header 'Content-Type: application/json' \
