@@ -1,10 +1,9 @@
-package com.edgechain.lib.servlet;
+package com.edgechain.lib.request;
 
 
-import com.edgechain.lib.servlet.exception.InvalidArkRequest;
+import com.edgechain.lib.request.exception.InvalidArkRequest;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
-import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 

@@ -1,4 +1,4 @@
-package com.edgechain.lib.servlet.exception;
+package com.edgechain.lib.request.exception;
 
 public class InvalidArkRequest extends RuntimeException{
 

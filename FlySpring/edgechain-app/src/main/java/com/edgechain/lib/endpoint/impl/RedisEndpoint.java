@@ -74,18 +74,7 @@ public class RedisEndpoint extends Endpoint {
     }
 
     public HistoryContext createHistoryContext(String key) {
-
-        if( Objects.nonNull(key) && !key.isEmpty()) {
-            Boolean c = contextService.check(key);
-            if(c)  {
-                return contextService.get(key);
-            }
-            else {
-                return contextService.create();
-            }
-        }
-        else
-            return contextService.create();
+        return contextService.create();
     }
 
     public HistoryContext updateHistoryContext(String key, String response) {
@@ -94,6 +83,17 @@ public class RedisEndpoint extends Endpoint {
         mapper.put("key", key);
         mapper.put("response", response);
 
-       return contextService.update(mapper);
+       return this.contextService.update(mapper);
+    }
+
+    public HistoryContext getHistoryContext(String key) {
+        return this.contextService.get(key);
+    }
+
+    public boolean checkHistoryContext(String key) {
+        if( Objects.nonNull(key) && !key.isEmpty()) {
+            return this.contextService.check(key);
+        }
+        return false;
     }
 }
