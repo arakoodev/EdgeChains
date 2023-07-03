@@ -321,7 +321,7 @@ public class EdgeChainApplication {
                          * Step 6: */
                         .doOnNext(chatCompletionResponse ->  {
 
-                          // If ChatCompletion (stream = false);
+                          // If ChatCompletion (stream = true);
                           if(chatCompletionResponse.getObject().equals("chat.completion.chunk")) {
 
                             // Append the ChatCompletion Response until, we have FinishReason; otherwise, we update the history
@@ -334,7 +334,7 @@ public class EdgeChainApplication {
                               //Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
                             }
                           }
-                          // If ChatCompletion (stream = true);
+                          // If ChatCompletion (stream = false);
                           else if(chatCompletionResponse.getObject().equals("chat.completion")) {
                             redisEndpoint.updateHistoryContext(historyContext.getId(),
                                     query + chatCompletionResponse.getChoices().get(0).getMessage().getContent() + mapper.get("chatHistory") ); // Getting ChatHistory from Mapper
@@ -561,7 +561,7 @@ public class EdgeChainApplication {
                          * Step 6: */
                         .doOnNext(chatCompletionResponse ->  {
 
-                          // If ChatCompletion (stream = false);
+                          // If ChatCompletion (stream = true);
                           if(chatCompletionResponse.getObject().equals("chat.completion.chunk")) {
 
                             // Append the ChatCompletion Response until, we have FinishReason; otherwise, we update the history
@@ -574,7 +574,7 @@ public class EdgeChainApplication {
                               //Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
                             }
                           }
-                          // If ChatCompletion (stream = true);
+                          // If ChatCompletion (stream = false);
                           else if(chatCompletionResponse.getObject().equals("chat.completion")) {
                             redisContextEndpoint.updateHistoryContext(historyContext.getId(),
                                     query + chatCompletionResponse.getChoices().get(0).getMessage().getContent() + mapper.get("chatHistory") ); // Getting ChatHistory from Mapper
