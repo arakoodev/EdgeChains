@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public class RedisRetrieval extends Retrieval {
 
-  private Logger logger = LoggerFactory.getLogger(getClass());
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final RedisEndpoint redisEndpoint;
   private OpenAiEndpoint openAiEndpoint;

@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class PineconeRetrieval extends Retrieval {
 
-  private Logger logger = LoggerFactory.getLogger(getClass());
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final PineconeEndpoint pineconeEndpoint;
   private final String namespace;

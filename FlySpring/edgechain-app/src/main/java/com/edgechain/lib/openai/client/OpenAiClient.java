@@ -11,6 +11,8 @@ import com.edgechain.lib.openai.response.CompletionResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -22,6 +24,7 @@ import java.util.Objects;
 @Service
 public class OpenAiClient {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate = new RestTemplate();
 
   public EdgeChain<ChatCompletionResponse> createChatCompletion(
@@ -32,7 +35,7 @@ public class OpenAiClient {
             emitter -> {
               try {
 
-                System.out.println("Logging....");
+                logger.info("Logging ChatCompletion....");
 
                 // Create headers
                 HttpHeaders headers = new HttpHeaders();
@@ -41,7 +44,7 @@ public class OpenAiClient {
 
                 HttpEntity<ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
 
-                System.out.println(entity.getBody());
+                logger.info(String.valueOf(entity.getBody()));
 
                 // Send the POST request
                 ResponseEntity<ChatCompletionResponse> response =

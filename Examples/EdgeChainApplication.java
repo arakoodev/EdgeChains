@@ -15,11 +15,11 @@ import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.reader.impl.PdfReader;
+import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import com.edgechain.lib.servlet.ArkRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -48,7 +48,7 @@ public class EdgeChainApplication {
 
   public static void main(String[] args)  {
     System.setProperty("server.port", "8080");
-    SpringApplication.run(com.edgechain.EdgeChainApplication.class, args);
+    SpringApplication.run(EdgeChainApplication.class, args);
   }
 
 
@@ -321,7 +321,7 @@ public class EdgeChainApplication {
                          * Step 6: */
                         .doOnNext(chatCompletionResponse ->  {
 
-                          // If ChatCompletion (stream = true);
+                          // If ChatCompletion (stream = false);
                           if(chatCompletionResponse.getObject().equals("chat.completion.chunk")) {
 
                             // Append the ChatCompletion Response until, we have FinishReason; otherwise, we update the history
@@ -334,7 +334,7 @@ public class EdgeChainApplication {
                               //Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
                             }
                           }
-                          // If ChatCompletion (stream = false);
+                          // If ChatCompletion (stream = true);
                           else if(chatCompletionResponse.getObject().equals("chat.completion")) {
                             redisEndpoint.updateHistoryContext(historyContext.getId(),
                                     query + chatCompletionResponse.getChoices().get(0).getMessage().getContent() + mapper.get("chatHistory") ); // Getting ChatHistory from Mapper
@@ -561,7 +561,7 @@ public class EdgeChainApplication {
                          * Step 6: */
                         .doOnNext(chatCompletionResponse ->  {
 
-                          // If ChatCompletion (stream = true);
+                          // If ChatCompletion (stream = false);
                           if(chatCompletionResponse.getObject().equals("chat.completion.chunk")) {
 
                             // Append the ChatCompletion Response until, we have FinishReason; otherwise, we update the history
@@ -574,7 +574,7 @@ public class EdgeChainApplication {
                               //Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
                             }
                           }
-                          // If ChatCompletion (stream = false);
+                          // If ChatCompletion (stream = true);
                           else if(chatCompletionResponse.getObject().equals("chat.completion")) {
                             redisContextEndpoint.updateHistoryContext(historyContext.getId(),
                                     query + chatCompletionResponse.getChoices().get(0).getMessage().getContent() + mapper.get("chatHistory") ); // Getting ChatHistory from Mapper
@@ -595,6 +595,7 @@ public class EdgeChainApplication {
       RedisEndpoint redisEndpoint = new RedisEndpoint();
       redisEndpoint.delete(patternName);
     }
+
 
   }
 
