@@ -28,13 +28,6 @@ public interface PineconeService  {
   List<WordEmbeddings> query(@RequestBody PineconeRequest request);
 
   @DeleteMapping(
-      value = "/delete",
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-  StringResponse deleteByKeys(PineconeRequest request);
-
-
-  @DeleteMapping(
       value = "/deleteAll",
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE})

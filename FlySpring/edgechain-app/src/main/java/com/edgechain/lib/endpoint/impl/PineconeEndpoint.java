@@ -13,42 +13,41 @@ import java.util.Objects;
 
 public class PineconeEndpoint extends Endpoint {
 
-    private final String namespace;
+    private String namespace;
     private final PineconeService pineconeService = ApplicationContextHolder.getContext().getBean(PineconeService.class);
 
+    public PineconeEndpoint() {
+    }
+
     public PineconeEndpoint(String namespace) {
-        if(Objects.isNull(namespace) || namespace.isEmpty()) this.namespace = "";
-        else  this.namespace = namespace;
+        this.namespace = namespace;
     }
 
     public PineconeEndpoint(String url, String apiKey, String namespace) {
         super(url, apiKey);
-        if(Objects.isNull(namespace) || namespace.isEmpty()) this.namespace = "";
-        else  this.namespace = namespace;
+        this.namespace = namespace;
     }
 
     public PineconeEndpoint(String url, String apiKey, String namespace, RetryPolicy retryPolicy) {
         super(url, apiKey, retryPolicy);
-        if(Objects.isNull(namespace) || namespace.isEmpty()) this.namespace = "";
-        else  this.namespace = namespace;
+        this.namespace = namespace;
     }
 
-    /* For OpenAI */
-    public StringResponse upsert(WordEmbeddings wordEmbeddings, String namespace) {
+    public StringResponse upsert(WordEmbeddings wordEmbeddings) {
 
         PineconeRequest request = new PineconeRequest();
         request.setEndpoint(this);
         request.setWordEmbeddings(wordEmbeddings);
-        request.setNamespace(namespace);
+        request.setNamespace(this.namespace);
 
         return this.pineconeService.upsert(request);
     }
 
-    public List<WordEmbeddings> query(WordEmbeddings embeddings,String namespace, int topK) {
+    public List<WordEmbeddings> query(WordEmbeddings embeddings,int topK) {
         PineconeRequest request = new PineconeRequest();
         request.setEndpoint(this);
         request.setWordEmbeddings(embeddings);
-        request.setNamespace(namespace);
+        request.setNamespace(this.namespace);
         request.setTopK(topK);
 
         return this.pineconeService.query(request);

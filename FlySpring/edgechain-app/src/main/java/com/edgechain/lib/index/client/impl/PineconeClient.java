@@ -1,9 +1,8 @@
-package com.edgechain.lib.index.services.impl;
+package com.edgechain.lib.index.client.impl;
 
+import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
 import com.edgechain.lib.index.request.pinecone.PineconeUpsert;
-import com.edgechain.lib.openai.chains.IndexChain;
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,19 +14,19 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.util.*;
 
-public class PineconeIndexChain  {
+public class PineconeClient {
 
-  private final Endpoint endpoint;
+  private final PineconeEndpoint endpoint;
   private final String namespace;
 
-  public PineconeIndexChain(Endpoint endpoint, String namespace) {
+
+  public PineconeClient(PineconeEndpoint endpoint, String namespace) {
     this.endpoint = endpoint;
-    this.namespace = namespace;
+    this.namespace = (Objects.isNull(namespace) || namespace.isEmpty()) ? "" : namespace;
   }
 
-
-  public IndexChain upsert(WordEmbeddings wordEmbeddings) {
-    return new IndexChain(
+  public EdgeChain<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
+    return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
@@ -89,40 +88,8 @@ public class PineconeIndexChain  {
         endpoint);
   }
 
-  public IndexChain deleteByIds(List<String> vectorIds, String namespace) {
-    return new IndexChain(
-        Observable.create(
-            emitter -> {
-              try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.set("Api-Key", endpoint.getApiKey());
-
-                Map<String, Object> body = new HashMap<>();
-                body.put("ids", vectorIds);
-                body.put("deleteAll", false);
-
-                if (!namespace.isEmpty()) body.put("namespace", namespace);
-
-                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-
-                new RestTemplate()
-                    .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
-
-                emitter.onNext(
-                    new StringResponse(
-                        "Word embeddings of the provided ids are successfully deleted"));
-                emitter.onComplete();
-
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }));
-  }
-
-  public IndexChain deleteAll() {
-    return new IndexChain(
+  public EdgeChain<StringResponse> deleteAll() {
+    return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {

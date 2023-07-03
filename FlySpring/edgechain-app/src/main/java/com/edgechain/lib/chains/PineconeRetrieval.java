@@ -1,12 +1,8 @@
 package com.edgechain.lib.chains;
 
-import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
-import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,27 +11,30 @@ public class PineconeRetrieval extends Retrieval {
   private Logger logger = LoggerFactory.getLogger(getClass());
 
   private final PineconeEndpoint pineconeEndpoint;
+  private final String namespace;
   private OpenAiEndpoint openAiEndpoint;
 
-  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint, OpenAiEndpoint openAiEndpoint) {
+  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint, String namespace, OpenAiEndpoint openAiEndpoint) {
     this.pineconeEndpoint = pineconeEndpoint;
+    this.namespace = namespace;
     this.openAiEndpoint = openAiEndpoint;
     logger.info("Using OpenAI Embedding Service");
   }
 
-  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint) {
+  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint, String namespace) {
     this.pineconeEndpoint = pineconeEndpoint;
+    this.namespace = namespace;
     logger.info("Using Doc2Vec Embedding Service");
   }
 
   @Override
-  public void upsert(String input, String namespace) {
+  public void upsert(String input) {
 
     if (openAiEndpoint != null) {
       new EdgeChain<>(
               this.openAiEndpoint
                   .getEmbeddings(input)
-                  .map(embeddings -> this.pineconeEndpoint.upsert(embeddings, namespace)))
+                  .map(this.pineconeEndpoint::upsert))
           .awaitWithoutRetry();
     }
     // For Doc2Vec ===>

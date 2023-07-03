@@ -12,10 +12,8 @@
         <spring-cloud.version>2022.0.3</spring-cloud.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <feign-reactor.version>4.0.0</feign-reactor.version>
     </properties>
     <dependencies>
-
 
 
         <dependency>

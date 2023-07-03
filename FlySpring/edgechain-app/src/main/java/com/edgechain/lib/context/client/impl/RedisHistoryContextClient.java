@@ -1,5 +1,6 @@
 package com.edgechain.lib.context.client.impl;
 
+import com.edgechain.lib.configuration.RedisEnv;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.context.client.HistoryContextClient;
 import com.edgechain.lib.response.StringResponse;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -22,12 +24,13 @@ public class RedisHistoryContextClient implements HistoryContextClient {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private static final String PREFIX = "historycontext-";
+  private static final String PREFIX = "historycontext:";
 
   @Autowired private RedisTemplate redisTemplate;
 
-  @Value("${spring.redis.ttl}")
-  private long ttl;
+  @Autowired
+  @Lazy
+  private RedisEnv redisEnv;
 
   @Override
   public EdgeChain<HistoryContext> create() {
@@ -42,7 +45,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
                 context.setResponse("");
 
                 this.redisTemplate.opsForValue().set(key, context);
-                this.redisTemplate.expire(key, ttl, TimeUnit.SECONDS);
+                this.redisTemplate.expire(key, redisEnv.getTtl(), TimeUnit.SECONDS);
 
                 emitter.onNext(context);
                 emitter.onComplete();
@@ -64,7 +67,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
                 historyContext.setResponse(response);
 
                 this.redisTemplate.opsForValue().set(key, historyContext);
-                this.redisTemplate.expire(key, ttl, TimeUnit.SECONDS);
+                this.redisTemplate.expire(key, redisEnv.getTtl(), TimeUnit.SECONDS);
 
                 logger.info(String.format("%s is updated", key));
 

@@ -28,8 +28,6 @@ public class ArkRequest {
             throw new InvalidArkRequest("ArkRequest can only accept Content-Type:application/json || Content-Type:multipart/form-data");
         }
 
-
-
     }
 
     public String getContentType() {

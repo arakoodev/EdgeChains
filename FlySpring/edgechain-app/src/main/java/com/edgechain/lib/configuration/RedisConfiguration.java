@@ -1,8 +1,10 @@
 package com.edgechain.lib.configuration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
@@ -16,30 +18,22 @@ import redis.clients.jedis.JedisPooled;
 @EnableRedisRepositories
 public class RedisConfiguration {
 
-  @Value("${spring.data.redis.host}")
-  private String url;
-
-  @Value("${spring.data.redis.port}")
-  private int port;
-
-  @Value("${spring.data.redis.username}")
-  private String username;
-
-  @Value("${spring.data.redis.password}")
-  private String password;
+  @Autowired
+  @Lazy
+  private RedisEnv redisEnv;
 
   @Bean
   public JedisPooled jedisPooled() {
-    return new JedisPooled(url, port, username, password);
+    return new JedisPooled(redisEnv.getUrl(), redisEnv.getPort(), redisEnv.getUsername(), redisEnv.getPassword());
   }
 
   @Bean
   public JedisConnectionFactory jedisConnectionFactory() {
     RedisStandaloneConfiguration redisConfiguration = new RedisStandaloneConfiguration();
-    redisConfiguration.setUsername(username);
-    redisConfiguration.setPassword(RedisPassword.of(password));
-    redisConfiguration.setPort(port);
-    redisConfiguration.setHostName(url);
+    redisConfiguration.setUsername(redisEnv.getUsername());
+    redisConfiguration.setPassword(RedisPassword.of(redisEnv.getPassword()));
+    redisConfiguration.setPort(redisEnv.getPort());
+    redisConfiguration.setHostName(redisEnv.getUrl());
     return new JedisConnectionFactory(redisConfiguration);
   }
 

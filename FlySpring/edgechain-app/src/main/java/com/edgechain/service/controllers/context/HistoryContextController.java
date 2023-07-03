@@ -32,7 +32,7 @@ public class HistoryContextController {
         return contextClient.get(key).toSingleWithRetry();
     }
 
-    @GetMapping(value = "check/{key}")
+    @GetMapping(value = "/check/{key}")
     public Single<Boolean> check(@PathVariable("key") String key) {
         return contextClient.check(key).toSingleWithRetry();
     }
