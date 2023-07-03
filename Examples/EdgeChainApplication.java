@@ -191,9 +191,14 @@ public class EdgeChainApplication implements CommandLineRunner {
   @RequestMapping("/v1/pinecone")
   public class PineconeController {
 
-    @Autowired private PineconeService pineconeService;
+    private final PineconeService pineconeService;
+
+     public PineconeController(PineconeService pineconeService) {
+        this.pineconeService = pineconeService;
+    }
 
     @DeleteMapping("/deleteAll")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ChainResponse delete() {
 
       Endpoint pineconeEndpoint =
