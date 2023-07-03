@@ -2,9 +2,9 @@ package com.edgechain.lib.jsonnet;
 
 import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.exceptions.JsonnetLoaderException;
-import com.edgechain.lib.utils.JsonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +106,10 @@ public abstract class JsonnetLoader {
 
   public String get(String key) {
     return this.jsonObject.getString(key);
+  }
+
+  public JSONArray getArray(String key){
+    return this.jsonObject.getJSONArray(key);
   }
 
   public int getInt(String key) {

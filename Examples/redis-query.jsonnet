@@ -10,6 +10,5 @@ local prompt = std.join("\n", [preset, context]);
     "maxTokens": maxTokens,
     "preset" : preset,
     "context": context,
-    "prompt": if(std.length(prompt) > maxTokens) then std.substr(prompt, 0, maxTokens) else prompt,
-    "services": ["redisService", "openAiService", "embeddingService"]
+    "prompt": if(std.length(prompt) > maxTokens) then std.substr(prompt, 0, maxTokens) else prompt
 }
