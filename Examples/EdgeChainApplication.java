@@ -8,6 +8,7 @@ import com.edgechain.lib.chunk.enums.LangType;
 import com.edgechain.lib.configuration.RedisEnv;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.embeddings.WordEmbeddings;
+import com.edgechain.lib.embeddings.request.Doc2VecRequest;
 import com.edgechain.lib.endpoint.impl.*;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.jsonnet.*;
@@ -22,6 +23,8 @@ import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
+import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
+import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -29,6 +32,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -65,7 +70,6 @@ public class EdgeChainApplication {
     return redisEnv;
   }
 
-
   /************ EXAMPLE APIs **********************/
 
   @RestController
@@ -93,7 +97,9 @@ public class EdgeChainApplication {
                       .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
                       .loadOrReload();
 
-      /* Step 2: Create WikiEndpoint to extract content from Wikipedia; If RetryPolicy is not passed; then Default FixedDelay strategy is used */
+      /* Step 2: Create WikiEndpoint to extract content from Wikipedia;
+      If RetryPolicy is not passed; then there won't be any backoff mechanism.... */
+      // To allow, backoff strategy you can pass either of two strategies new FixedDelay() new ExponentialDelay()`
       WikiEndpoint wikiEndpoint = new WikiEndpoint();
 
       /* Step 3: Create OpenAiEndpoint to communicate with OpenAiServices; */
@@ -701,9 +707,84 @@ public class EdgeChainApplication {
       RedisEndpoint redisEndpoint = new RedisEndpoint();
       redisEndpoint.delete(patternName);
     }
+
+    /********************** Doc2Vec Model Building *************************/
+    @PostMapping("/doc2vec")
+    public void buildDoc2Vec() {
+
+      // Configuring parameters for our doc2vec model
+      Doc2VecRequest doc2Vec = new Doc2VecRequest();
+      doc2Vec.setFolderDirectory("R:\\train_files");
+      doc2Vec.setModelName("doc_vector"); // Will be stored as doc_vector.bin
+      doc2Vec.setDestination("R:\\");
+      doc2Vec.setEpochs(5);
+      doc2Vec.setMinWordFrequency(5);
+      doc2Vec.setLearningRate(0.025);
+      doc2Vec.setLayerSize(1536);
+      doc2Vec.setBatchSize(15);
+      doc2Vec.setWindowSize(3);
+
+
+      Doc2VecEndpoint endpoint = new Doc2VecEndpoint();
+      EdgeChain.fromObservable(endpoint.build(doc2Vec)).execute(); // Executing/Subscribing to Observable....
+      // (Model has now started building; do check the console)
+
+    }
+
+    /** Pinecone & Doc2Vec Upsert **/
+    @PostMapping("/redis/doc2vec/upsert") // /v1/examples/pinecone/doc2vec/upsert?namespace=doc2vec
+    public void upsertRedisDoc2Vec(ArkRequest arkRequest) throws IOException {
+
+      String namespace = arkRequest.getQueryParam("namespace");
+      InputStream file = arkRequest.getMultiPart("file").getInputStream();
+
+      RedisEndpoint redisEndpoint = new RedisEndpoint("doc2vec_index", namespace, new ExponentialDelay(3,3, 2,TimeUnit.SECONDS));
+
+
+      // Remember model is loaded once (this is just for example)
+      ParagraphVectors paragraphVectors = WordVectorSerializer.readParagraphVectors(new FileInputStream("R:\\doc_vector.bin"));
+
+      Doc2VecEndpoint embeddingEndpoint = new Doc2VecEndpoint(paragraphVectors);
+
+      String[] arr = pdfReader.readByChunkSize(file, 512);
+
+      Retrieval retrieval = new RedisRetrieval(redisEndpoint, embeddingEndpoint,1536, RedisDistanceMetric.COSINE);
+      IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
+    }
+
+    // Similarity Search
+    @GetMapping(
+            value = "/redis/doc2vec/similarity-search",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ArkResponse redisDoc2VecSimilaritySearch(ArkRequest arkRequest) throws IOException {
+
+      String namespace = arkRequest.getQueryParam("namespace");
+      String query = arkRequest.getQueryParam("query");
+      int topK = arkRequest.getIntQueryParam("topK");
+
+      RedisEndpoint redisEndpoint = new RedisEndpoint("doc2vec_index", namespace, new ExponentialDelay(3,3, 2,TimeUnit.SECONDS));
+
+      // Remember model is loaded once (this is just for example)
+      ParagraphVectors paragraphVectors = WordVectorSerializer.readParagraphVectors(new FileInputStream("R:\\doc_vector.bin"));
+
+      Doc2VecEndpoint embeddingEndpoint = new Doc2VecEndpoint(paragraphVectors);
+
+      return new EdgeChain<>(
+              embeddingEndpoint.getEmbeddings(
+                      query)) // Step 1: Generate embedding using OpenAI for provided input
+              .transform(
+                      embeddings ->
+                              EdgeChain.fromObservable(redisEndpoint.query(embeddings, topK)).get()) // Step 2: Get the result from Redis
+              .getArkResponse();
+    }
+
   }
 
+
+
   /************ EXAMPLE APIs **********************/
+
+
 }
 
 

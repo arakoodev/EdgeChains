@@ -1,6 +1,10 @@
 package com.edgechain.lib.response;
 
-public class StringResponse {
+import java.io.Serializable;
+
+public class StringResponse implements Serializable {
+
+    private static final long serialVersionUID = 9123288168138857565L;
     private String response;
 
     public StringResponse() {
