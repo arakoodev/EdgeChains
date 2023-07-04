@@ -1,20 +1,23 @@
 package com.edgechain.lib.endpoint.impl;
 
-import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.Endpoint;
-import com.edgechain.lib.feign.PineconeService;
+import com.edgechain.lib.retrofit.PineconeService;
 import com.edgechain.lib.index.request.feign.PineconeRequest;
 import com.edgechain.lib.response.StringResponse;
+import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
+import io.reactivex.rxjava3.core.Observable;
+import retrofit2.Retrofit;
 
 import java.util.List;
-import java.util.Objects;
 
 public class PineconeEndpoint extends Endpoint {
 
+    private final Retrofit retrofit = RetrofitClientInstance.getInstance();
+    private final PineconeService pineconeService = retrofit.create(PineconeService.class);
+
     private String namespace;
-    private final PineconeService pineconeService = ApplicationContextHolder.getContext().getBean(PineconeService.class);
 
     public PineconeEndpoint() {
     }
@@ -33,33 +36,33 @@ public class PineconeEndpoint extends Endpoint {
         this.namespace = namespace;
     }
 
-    public StringResponse upsert(WordEmbeddings wordEmbeddings) {
+    public Observable<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
 
         PineconeRequest request = new PineconeRequest();
         request.setEndpoint(this);
         request.setWordEmbeddings(wordEmbeddings);
         request.setNamespace(this.namespace);
 
-        return this.pineconeService.upsert(request);
+        return Observable.fromSingle(this.pineconeService.upsert(request));
     }
 
-    public List<WordEmbeddings> query(WordEmbeddings embeddings,int topK) {
+    public Observable<List<WordEmbeddings>> query(WordEmbeddings embeddings, int topK) {
         PineconeRequest request = new PineconeRequest();
         request.setEndpoint(this);
         request.setWordEmbeddings(embeddings);
         request.setNamespace(this.namespace);
         request.setTopK(topK);
 
-        return this.pineconeService.query(request);
+        return Observable.fromSingle(this.pineconeService.query(request));
     }
 
 
-    public StringResponse deleteAll() {
+    public Observable<StringResponse> deleteAll() {
 
         PineconeRequest request = new PineconeRequest();
         request.setEndpoint(this);
         request.setNamespace(this.namespace);
 
-        return pineconeService.deleteAll(request);
+        return Observable.fromSingle(pineconeService.deleteAll(request));
     }
 }

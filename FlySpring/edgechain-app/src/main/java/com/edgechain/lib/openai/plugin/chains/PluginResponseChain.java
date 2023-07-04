@@ -10,8 +10,4 @@ public class PluginResponseChain extends EdgeChain<PluginResponse> {
   public PluginResponseChain(Observable<PluginResponse> observable) {
     super(observable);
   }
-
-  public PluginResponseChain(Observable<PluginResponse> observable, Endpoint endpoint) {
-    super(observable, endpoint);
-  }
 }

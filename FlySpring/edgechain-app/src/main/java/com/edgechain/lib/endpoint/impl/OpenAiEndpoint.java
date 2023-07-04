@@ -2,23 +2,27 @@ package com.edgechain.lib.endpoint.impl;
 
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.feign.OpenAiService;
-import com.edgechain.lib.feign.OpenAiStreamService;
+import com.edgechain.lib.retrofit.client.OpenAiStreamService;
+import com.edgechain.lib.retrofit.OpenAiService;
 import com.edgechain.lib.openai.request.feign.OpenAiChatRequest;
 import com.edgechain.lib.openai.request.feign.OpenAiEmbeddingsRequest;
 import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
+import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
+import retrofit2.Retrofit;
 
 import java.util.Objects;
 
 public class OpenAiEndpoint extends Endpoint {
 
-  private final OpenAiService openAiService =
-          ApplicationContextHolder.getContext().getBean(OpenAiService.class);
-  private final OpenAiStreamService openAiStreamService =
-          ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
+  private final Retrofit retrofit = RetrofitClientInstance.getInstance();
+  private final OpenAiService openAiService = retrofit.create(OpenAiService.class);
+
+
+  private final OpenAiStreamService openAiStreamService = ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
+
 
   public OpenAiEndpoint() {
   }
@@ -55,23 +59,23 @@ public class OpenAiEndpoint extends Endpoint {
 
   public Observable<ChatCompletionResponse> getChatCompletion(String input) {
     if (Objects.nonNull(this.getStream()) && this.getStream())
-      return this.openAiStreamService
-              .chatCompletion(new OpenAiChatRequest(this, input))
+      return this.openAiStreamService.chatCompletion(new OpenAiChatRequest(this, input))
               .map(chatResponse -> {
                 if(!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
-                   chatResponse.getChoices().get(0).getMessage().setContent("");
-                   return chatResponse;
+                  chatResponse.getChoices().get(0).getMessage().setContent("");
+                  return chatResponse;
                 } else return chatResponse;
               });
 
-    else return Observable.just(this.openAiService.chatCompletion(new OpenAiChatRequest(this, input)));
+    else
+      return Observable.fromSingle(this.openAiService.chatCompletion(new OpenAiChatRequest(this, input)));
   }
 
   public Observable<WordEmbeddings> getEmbeddings(String input) {
 
-    return Observable.just(this.openAiService.embeddings(new OpenAiEmbeddingsRequest(this, input)))
-            .map( embeddingResponse -> new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding()));
-
+    return Observable.fromSingle(
+            this.openAiService.embeddings(new OpenAiEmbeddingsRequest(this, input))
+                    .map( embeddingResponse -> new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
 
   }
 

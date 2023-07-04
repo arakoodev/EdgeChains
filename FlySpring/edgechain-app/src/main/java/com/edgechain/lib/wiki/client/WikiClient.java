@@ -54,7 +54,9 @@ public class WikiClient {
                 String regex = "[^\\p{L}\\p{N}\\p{P}\\p{Z}]";
                 for (JsonNode pageNode : pagesNode) {
                   if (pageNode.has("extract")) {
-                    output = Unidecode.decode(pageNode.get("extract").asText()).replaceAll("[\t\n\r]+", " ");
+                    output =
+                        Unidecode.decode(pageNode.get("extract").asText())
+                            .replaceAll("[\t\n\r]+", " ");
                     output = output.replaceAll(regex, "");
                   }
                 }
@@ -67,6 +69,6 @@ public class WikiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }), wikiRequest.getEndpoint());
+            }));
   }
 }

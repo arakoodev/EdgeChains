@@ -24,7 +24,7 @@ import java.util.Objects;
 @Service
 public class OpenAiClient {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate = new RestTemplate();
 
   public EdgeChain<ChatCompletionResponse> createChatCompletion(
@@ -48,7 +48,8 @@ public class OpenAiClient {
 
                 // Send the POST request
                 ResponseEntity<ChatCompletionResponse> response =
-                    restTemplate.exchange(endpoint.getUrl(), HttpMethod.POST, entity, ChatCompletionResponse.class);
+                    restTemplate.exchange(
+                        endpoint.getUrl(), HttpMethod.POST, entity, ChatCompletionResponse.class);
 
                 emitter.onNext(Objects.requireNonNull(response.getBody()));
                 emitter.onComplete();
@@ -56,8 +57,7 @@ public class OpenAiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),
-        endpoint);
+            }));
   }
 
   public EdgeChain<ChatCompletionResponse> createChatCompletionStream(
@@ -78,8 +78,7 @@ public class OpenAiClient {
                       })
                   .bodyValue(new ObjectMapper().writeValueAsString(request))
                   .retrieve()
-                  .bodyToFlux(ChatCompletionResponse.class)),
-          endpoint);
+                  .bodyToFlux(ChatCompletionResponse.class)));
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -106,8 +105,7 @@ public class OpenAiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),
-        endpoint);
+            }));
   }
 
   public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(
@@ -131,7 +129,6 @@ public class OpenAiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),
-        endpoint);
+            }));
   }
 }

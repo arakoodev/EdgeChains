@@ -16,7 +16,6 @@ public class Endpoint {
   private Boolean stream;
 
   public Endpoint() {
-    this.retryPolicy = new FixedDelay(3,5, TimeUnit.SECONDS);
   }
 
 
@@ -25,7 +24,7 @@ public class Endpoint {
   }
 
   public Endpoint(String url) {
-    this(url, null, null, null,null, null,  new FixedDelay(3,5, TimeUnit.SECONDS));
+    this(url, null, null, null,null, null,  null);
   }
 
   public Endpoint(String url, RetryPolicy retryPolicy) {
@@ -33,7 +32,7 @@ public class Endpoint {
   }
 
   public Endpoint(String url, String apiKey) {
-    this(url, apiKey, null, null,null, null,  new FixedDelay(3,5, TimeUnit.SECONDS));
+    this(url, apiKey, null, null,null, null, null);
   }
 
   public Endpoint(String url, String apiKey, RetryPolicy retryPolicy) {

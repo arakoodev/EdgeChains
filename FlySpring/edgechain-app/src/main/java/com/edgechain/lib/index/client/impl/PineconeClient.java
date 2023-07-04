@@ -51,8 +51,7 @@ public class PineconeClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),
-        endpoint);
+            }));
   }
 
   public EdgeChain<List<WordEmbeddings>> query(WordEmbeddings wordEmbeddings, int topK) {
@@ -84,11 +83,11 @@ public class PineconeClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),
-        endpoint);
+            }));
   }
 
   public EdgeChain<StringResponse> deleteAll() {
+
     return new EdgeChain<>(
         Observable.create(
             emitter -> {

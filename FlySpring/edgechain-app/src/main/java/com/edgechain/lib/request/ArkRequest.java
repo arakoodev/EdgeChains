@@ -2,8 +2,11 @@ package com.edgechain.lib.request;
 
 
 import com.edgechain.lib.request.exception.InvalidArkRequest;
+import com.edgechain.lib.utils.JsonUtils;
+import com.google.gson.JsonObject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
+import org.json.JSONObject;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -12,6 +15,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 public class ArkRequest {
@@ -77,6 +81,13 @@ public class ArkRequest {
         return Integer.parseInt(this.request.getParameter(key));
     }
 
+    public JSONObject getBody() {
+        try {
+            return new JSONObject(this.request.getReader().lines().collect(Collectors.joining()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public Cookie[] getCookies() {
         return this.request.getCookies();

@@ -1,5 +1,7 @@
 package com.edgechain.service.controllers.wiki;
 
+import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import com.edgechain.lib.utils.RetryUtils;
 import com.edgechain.lib.wiki.client.WikiClient;
 import com.edgechain.lib.wiki.request.WikiRequest;
 import com.edgechain.lib.wiki.response.WikiResponse;
@@ -16,6 +18,11 @@ public class WikiController {
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE})
   public Single<WikiResponse> wikiContent(@RequestBody WikiRequest request) {
-      return new WikiClient().getPageContent(new WikiRequest(request.getEndpoint(), request.getInput())).toSingleWithRetry();
+    EdgeChain<WikiResponse> edgeChain =
+        new WikiClient().getPageContent(new WikiRequest(request.getEndpoint(), request.getInput()));
+
+    if (RetryUtils.available(request.getEndpoint()))
+      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
+    else return edgeChain.toSingle();
   }
 }

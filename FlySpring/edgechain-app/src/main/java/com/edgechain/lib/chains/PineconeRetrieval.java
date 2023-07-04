@@ -11,19 +11,16 @@ public class PineconeRetrieval extends Retrieval {
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final PineconeEndpoint pineconeEndpoint;
-  private final String namespace;
   private OpenAiEndpoint openAiEndpoint;
 
-  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint, String namespace, OpenAiEndpoint openAiEndpoint) {
+  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint, OpenAiEndpoint openAiEndpoint) {
     this.pineconeEndpoint = pineconeEndpoint;
-    this.namespace = namespace;
     this.openAiEndpoint = openAiEndpoint;
     logger.info("Using OpenAI Embedding Service");
   }
 
-  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint, String namespace) {
+  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint) {
     this.pineconeEndpoint = pineconeEndpoint;
-    this.namespace = namespace;
     logger.info("Using Doc2Vec Embedding Service");
   }
 
@@ -34,8 +31,11 @@ public class PineconeRetrieval extends Retrieval {
       new EdgeChain<>(
               this.openAiEndpoint
                   .getEmbeddings(input)
-                  .map(this.pineconeEndpoint::upsert))
-          .awaitWithoutRetry();
+                  .map(this.pineconeEndpoint::upsert)
+                  .firstOrError()
+                  .blockingGet())
+          .await()
+          .blockingAwait();
     }
     // For Doc2Vec ===>
   }

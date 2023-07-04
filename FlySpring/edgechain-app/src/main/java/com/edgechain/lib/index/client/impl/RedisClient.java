@@ -69,8 +69,7 @@ public class RedisClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),
-        endpoint);
+            }));
   }
 
   public EdgeChain<List<WordEmbeddings>> query(WordEmbeddings words2Vec, int topK) {
@@ -113,11 +112,10 @@ public class RedisClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),
-        endpoint);
+            }));
   }
 
-  public EdgeChain<?> deleteByPattern(String pattern) {
+  public EdgeChain<String> deleteByPattern(String pattern) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -125,7 +123,7 @@ public class RedisClient {
               try {
                 jedisPooled.eval(String.format(REDIS_DELETE_SCRIPT_IN_LUA, pattern));
 
-                emitter.onNext("Redis deletion evaluated using Lua script");
+                emitter.onNext("Redis deletion performed");
                 emitter.onComplete();
 
               } catch (Exception ex) {
@@ -133,8 +131,7 @@ public class RedisClient {
               } finally {
                 jedisPooled.getPool().returnResource(jedisPooled.getPool().getResource());
               }
-            }),
-        endpoint);
+            }));
   }
 
   private void createSearchIndex(int dimension, String metric) {

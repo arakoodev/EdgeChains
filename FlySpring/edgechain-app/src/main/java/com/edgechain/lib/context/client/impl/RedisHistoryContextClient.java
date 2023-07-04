@@ -28,17 +28,23 @@ public class RedisHistoryContextClient implements HistoryContextClient {
 
   @Autowired private RedisTemplate redisTemplate;
 
-  @Autowired
-  @Lazy
-  private RedisEnv redisEnv;
+  @Autowired @Lazy private RedisEnv redisEnv;
 
   @Override
-  public EdgeChain<HistoryContext> create() {
+  public EdgeChain<HistoryContext> create(String id) {
+
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
-                String key = PREFIX + UUID.randomUUID();
+
+                if (Objects.isNull(id) || id.isEmpty())
+                  throw new RuntimeException("Redis key cannot be empty or null");
+
+                String key = PREFIX + id;
+
+                if (this.redisTemplate.hasKey(key))
+                  throw new RuntimeException("Duplicate historycontext is not allowed.");
 
                 HistoryContext context = new HistoryContext();
                 context.setId(key);
@@ -63,7 +69,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
             emitter -> {
               try {
 
-                HistoryContext historyContext = this.get(key).toSingleWithRetry().blockingGet();
+                HistoryContext historyContext = this.get(key).get();
                 historyContext.setResponse(response);
 
                 this.redisTemplate.opsForValue().set(key, historyContext);
@@ -93,10 +99,9 @@ public class RedisHistoryContextClient implements HistoryContextClient {
                           (HistoryContext) this.redisTemplate.opsForValue().get(key)));
                   emitter.onComplete();
                 } else {
-                    emitter.onError(new RuntimeException(
-                        "Redis HistoryContextController key isn't found ==> Either you have incorrectly defined"
-                            + " contextId or create it via /v1/history-context/create & use the"
-                            + " historyContextId"));
+                  emitter.onError(
+                      new RuntimeException(
+                          "Redis HistoryContextController key isn't found. You may have incorrectly defined"));
                 }
 
               } catch (final Exception e) {
@@ -105,33 +110,36 @@ public class RedisHistoryContextClient implements HistoryContextClient {
             }));
   }
 
-    @Override
-    public EdgeChain<Boolean> check(String key) {
+  @Override
+  public EdgeChain<Boolean> check(String key) {
     return new EdgeChain<>(
-            Observable.create(emitter -> {
-                try{
-                    Boolean b = this.redisTemplate.hasKey(key);
-                    emitter.onNext(Objects.requireNonNull(b));
-                    emitter.onComplete();
-                }catch (final Exception e){
-                    emitter.onError(e);
-                }
-            })
-    );
-    }
+        Observable.create(
+            emitter -> {
+              try {
+                Boolean b = this.redisTemplate.hasKey(key);
+                emitter.onNext(Objects.requireNonNull(b));
+                emitter.onComplete();
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }));
+  }
 
-    @Override
-  public Completable delete(String key) {
+  @Override
+  public EdgeChain<String> delete(String key) {
 
-    return Completable.create(emitter -> {
-        try {
-            this.get(key).toSingleWithRetry().blockingGet();
-            this.redisTemplate.delete(key);
-            emitter.onComplete();
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
+                this.get(key).get();
+                this.redisTemplate.delete(key);
+                emitter.onNext("");
+                emitter.onComplete();
 
-        } catch (final Exception e) {
-            emitter.onError(e);
-        }
-    });
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }));
   }
 }

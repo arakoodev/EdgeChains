@@ -4,6 +4,8 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.index.request.feign.PineconeRequest;
 import com.edgechain.lib.index.client.impl.PineconeClient;
 import com.edgechain.lib.response.StringResponse;
+import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import com.edgechain.lib.utils.RetryUtils;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,20 +17,42 @@ public class PineconeController {
 
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody PineconeRequest request) {
-   return new PineconeClient(request.getEndpoint(),request.getNamespace())
-            .upsert(request.getWordEmbeddings())
-           .toSingleWithRetry();
+
+    EdgeChain<StringResponse> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace())
+            .upsert(request.getWordEmbeddings());
+
+    if(RetryUtils.available(request.getEndpoint()))
+      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
+
+    else
+     return edgeChain.toSingle();
+
   }
 
   @PostMapping("/query")
   public Single<List<WordEmbeddings>> query(@RequestBody PineconeRequest request) {
-    return new PineconeClient(request.getEndpoint(), request.getNamespace())
-            .query(request.getWordEmbeddings(), request.getTopK())
-            .toSingleWithRetry();
+
+    EdgeChain<List<WordEmbeddings>> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace())
+            .query(request.getWordEmbeddings(), request.getTopK());
+
+    if(RetryUtils.available(request.getEndpoint()))
+       return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
+
+    else
+      return edgeChain.toSingle();
+
   }
 
   @DeleteMapping("/deleteAll")
   public Single<StringResponse> deleteAll(@RequestBody PineconeRequest request) {
-    return new PineconeClient(request.getEndpoint(), request.getNamespace()).deleteAll().toSingleWithRetry();
+
+    EdgeChain<StringResponse> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace()).deleteAll();
+
+    if(RetryUtils.available(request.getEndpoint()))
+      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
+
+    else
+      return edgeChain.toSingle();
+
   }
 }

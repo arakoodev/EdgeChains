@@ -30,13 +30,13 @@ public class PluginResponseService {
                 emitter -> {
                   try {
                     Observable<PluginTool> obs1 =
-                        this.requestPluginAPI(pluginEndpoint).getScheduledObservableWithRetry();
+                        this.requestPluginAPI(pluginEndpoint).getScheduledObservable();
                     Observable<String> obs2 =
-                        this.requestSpecAPI(pluginSpecEndpoint).getScheduledObservableWithRetry();
+                        this.requestSpecAPI(pluginSpecEndpoint).getScheduledObservable();
 
                     PluginResponse response =
                         new EdgeChain<>(Observable.zip(obs1, obs2, PluginResponse::new))
-                            .getWithOutRetry();
+                            .get();
 
                     emitter.onNext(response);
                     emitter.onComplete();
@@ -45,7 +45,7 @@ public class PluginResponseService {
                     emitter.onError(e);
                   }
                 }))
-        .getWithOutRetry();
+        .get();
   }
 
   private EdgeChain<PluginTool> requestPluginAPI(Endpoint pluginEndpoint) {
