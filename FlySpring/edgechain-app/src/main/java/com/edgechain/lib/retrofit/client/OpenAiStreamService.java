@@ -18,9 +18,6 @@ public class OpenAiStreamService  {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  @Value("${feign.host}")
-  private String host;
-
   public Observable<ChatCompletionResponse> chatCompletion(OpenAiChatRequest request) {
 
     logger.info("Logging Chat Completion Stream....");
@@ -30,7 +27,7 @@ public class OpenAiStreamService  {
             WebClient.builder()
                 .build()
                 .post()
-                .uri("http://"+host + ":" + System.getProperty("server.port") + "/v2" + "/openai/chat-completion-stream")
+                .uri("http://0.0.0.0"+":" + System.getProperty("server.port") + "/v2" + "/openai/chat-completion-stream")
                 .headers(
                     httpHeaders -> {
                       httpHeaders.setContentType(MediaType.APPLICATION_JSON);
