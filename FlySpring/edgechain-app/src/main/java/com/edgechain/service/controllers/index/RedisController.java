@@ -8,11 +8,9 @@ import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.utils.RetryUtils;
 import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 
 @RestController("Service RedisController")
@@ -44,15 +42,12 @@ public class RedisController {
   }
 
   @DeleteMapping("/delete")
-  public Completable deleteByPattern(@RequestParam("pattern") String pattern, @RequestBody Endpoint endpoint) {
+  public Completable deleteByPattern(
+      @RequestParam("pattern") String pattern, @RequestBody Endpoint endpoint) {
 
     EdgeChain<String> edgeChain = new RedisClient().deleteByPattern(pattern);
 
-    if (RetryUtils.available(endpoint))
-      return edgeChain.await(endpoint.getRetryPolicy());
-
-
-    else
-      return edgeChain.await();
+    if (RetryUtils.available(endpoint)) return edgeChain.await(endpoint.getRetryPolicy());
+    else return edgeChain.await();
   }
 }

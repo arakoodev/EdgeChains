@@ -1,12 +1,9 @@
 package com.edgechain.lib.jsonnet.impl;
 
-import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.exceptions.JsonnetLoaderException;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Objects;
 
 public class FileJsonnetLoader extends JsonnetLoader {
 

@@ -34,7 +34,11 @@ public class RedisRetrieval extends Retrieval {
     logger.info("Using OpenAI Embedding Service");
   }
 
-  public RedisRetrieval(RedisEndpoint redisEndpoint, Doc2VecEndpoint doc2VecEndpoint, int dimension, RedisDistanceMetric metric) {
+  public RedisRetrieval(
+      RedisEndpoint redisEndpoint,
+      Doc2VecEndpoint doc2VecEndpoint,
+      int dimension,
+      RedisDistanceMetric metric) {
     this.redisEndpoint = redisEndpoint;
     this.doc2VecEndpoint = doc2VecEndpoint;
     this.dimension = dimension;
@@ -57,17 +61,15 @@ public class RedisRetrieval extends Retrieval {
     }
     // For Doc2Vec ===>
 
-    if(Objects.nonNull(doc2VecEndpoint)){
+    if (Objects.nonNull(doc2VecEndpoint)) {
       new EdgeChain<>(
               this.doc2VecEndpoint
-                      .getEmbeddings(input)
-                      .map(embeddings -> this.redisEndpoint.upsert(embeddings, dimension, metric))
-                      .firstOrError()
-                      .blockingGet())
-              .await()
-              .blockingAwait();
+                  .getEmbeddings(input)
+                  .map(embeddings -> this.redisEndpoint.upsert(embeddings, dimension, metric))
+                  .firstOrError()
+                  .blockingGet())
+          .await()
+          .blockingAwait();
     }
-
-
   }
 }

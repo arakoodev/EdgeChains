@@ -4,38 +4,39 @@ import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.openai.request.feign.OpenAiChatRequest;
 import com.edgechain.lib.utils.JsonUtils;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.adapter.rxjava.RxJava3Adapter;
 
 @Service
-public class OpenAiStreamService  {
+public class OpenAiStreamService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   public Observable<ChatCompletionResponse> chatCompletion(OpenAiChatRequest request) {
 
     logger.info("Logging Chat Completion Stream....");
-    logger.info("Prompt: "+request.getInput());
+    logger.info("Prompt: " + request.getInput());
 
     return RxJava3Adapter.fluxToObservable(
-            WebClient.builder()
-                .build()
-                .post()
-                .uri("http://0.0.0.0"+":" + System.getProperty("server.port") + "/v2" + "/openai/chat-completion-stream")
-                .headers(
-                    httpHeaders -> {
-                      httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-                    })
-                .bodyValue(JsonUtils.convertToString(request))
-                .retrieve()
-                .bodyToFlux(ChatCompletionResponse.class));
+        WebClient.builder()
+            .build()
+            .post()
+            .uri(
+                "http://0.0.0.0"
+                    + ":"
+                    + System.getProperty("server.port")
+                    + "/v2"
+                    + "/openai/chat-completion-stream")
+            .headers(
+                httpHeaders -> {
+                  httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                })
+            .bodyValue(JsonUtils.convertToString(request))
+            .retrieve()
+            .bodyToFlux(ChatCompletionResponse.class));
   }
-
-
 }

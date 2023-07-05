@@ -1,9 +1,7 @@
 package com.edgechain.lib.endpoint;
 
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 
-import java.util.concurrent.TimeUnit;
 
 public class Endpoint {
 
@@ -15,36 +13,34 @@ public class Endpoint {
   private Double temperature;
   private Boolean stream;
 
-  public Endpoint() {
-  }
+  public Endpoint() {}
 
-
-  public Endpoint(RetryPolicy retryPolicy){
-    this(null,null,null,null,null,null, retryPolicy);
+  public Endpoint(RetryPolicy retryPolicy) {
+    this(null, null, null, null, null, null, retryPolicy);
   }
 
   public Endpoint(String url) {
-    this(url, null, null, null,null, null,  null);
+    this(url, null, null, null, null, null, null);
   }
 
   public Endpoint(String url, RetryPolicy retryPolicy) {
-    this(url, null, null, null,null, null,  retryPolicy);
+    this(url, null, null, null, null, null, retryPolicy);
   }
 
   public Endpoint(String url, String apiKey) {
-    this(url, apiKey, null, null,null, null, null);
+    this(url, apiKey, null, null, null, null, null);
   }
 
   public Endpoint(String url, String apiKey, RetryPolicy retryPolicy) {
-    this(url, apiKey, null, null,null, null, retryPolicy);
+    this(url, apiKey, null, null, null, null, retryPolicy);
   }
 
   public Endpoint(String url, String apiKey, String model, RetryPolicy retryPolicy) {
     this(url, apiKey, model, null, null, null, retryPolicy);
   }
 
-  public Endpoint(String url, String apiKey, String model, String role, RetryPolicy retryPolicy){
-    this(url,apiKey,model,role, null, null, retryPolicy);
+  public Endpoint(String url, String apiKey, String model, String role, RetryPolicy retryPolicy) {
+    this(url, apiKey, model, role, null, null, retryPolicy);
   }
 
   public Endpoint(
@@ -63,7 +59,6 @@ public class Endpoint {
     this.temperature = temperature;
     this.stream = stream;
   }
-
 
   public String getApiKey() {
     return this.apiKey;
@@ -92,8 +87,6 @@ public class Endpoint {
   public Boolean getStream() {
     return stream;
   }
-
-
 
   @Override
   public String toString() {

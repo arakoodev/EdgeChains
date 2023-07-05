@@ -8,8 +8,6 @@ import retrofit2.http.POST;
 
 public interface Doc2VecService {
 
-    @POST(value = "doc2vec")
-    Single<StringResponse> build(@Body Doc2VecRequest doc2VecRequest);
-
-
+  @POST(value = "doc2vec")
+  Single<StringResponse> build(@Body Doc2VecRequest doc2VecRequest);
 }

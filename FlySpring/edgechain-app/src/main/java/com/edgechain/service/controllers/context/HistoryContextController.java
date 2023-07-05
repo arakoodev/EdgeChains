@@ -4,17 +4,12 @@ import com.edgechain.lib.context.client.impl.RedisHistoryContextClient;
 import com.edgechain.lib.context.domain.ContextPutRequest;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.endpoint.Endpoint;
-import com.edgechain.lib.endpoint.impl.RedisEndpoint;
-import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
 import com.edgechain.lib.utils.RetryUtils;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 
 @RestController
 @RequestMapping(value = "/v2/context")
@@ -35,7 +30,9 @@ public class HistoryContextController {
   public Single<HistoryContext> put(@RequestBody ContextPutRequest request) {
 
     if (RetryUtils.available(request.getEndpoint()))
-      return contextClient.put(request.getId(), request.getResponse()).toSingle(request.getEndpoint().getRetryPolicy());
+      return contextClient
+          .put(request.getId(), request.getResponse())
+          .toSingle(request.getEndpoint().getRetryPolicy());
     else return contextClient.put(request.getId(), request.getResponse()).toSingle();
   }
 
@@ -60,9 +57,6 @@ public class HistoryContextController {
 
     if (RetryUtils.available(endpoint))
       return contextClient.delete(id).await(endpoint.getRetryPolicy());
-
-    else
-      return contextClient.delete(id).await();
-
+    else return contextClient.delete(id).await();
   }
 }

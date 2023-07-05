@@ -51,7 +51,6 @@ public class CompletionRequest {
     this.temperature = temperature;
   }
 
-
   public Double getTop_p() {
     return top_p;
   }

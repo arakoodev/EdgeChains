@@ -24,8 +24,6 @@ public abstract class JsonnetLoader {
 
   public JsonnetLoader() {}
 
-
-
   public void load(InputStream inputStream) {
     try {
       preconfigured();
@@ -108,7 +106,7 @@ public abstract class JsonnetLoader {
     return this.jsonObject.getString(key);
   }
 
-  public JSONArray getArray(String key){
+  public JSONArray getArray(String key) {
     return this.jsonObject.getJSONArray(key);
   }
 
@@ -116,10 +114,9 @@ public abstract class JsonnetLoader {
     return this.jsonObject.getInt(key);
   }
 
-  public boolean getBoolean(String key){
+  public boolean getBoolean(String key) {
     return this.jsonObject.getBoolean(key);
   }
-
 
   private void preconfigured() {
     Map<String, JsonnetArgs> args = this.getArgs();

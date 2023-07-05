@@ -32,8 +32,8 @@ public class Doc2VecController {
         .subscribeOn(Schedulers.io())
         .subscribe();
 
-    return Single.just(new StringResponse("The model building has been started. For logging purpose, look into your console."));
+    return Single.just(
+        new StringResponse(
+            "The model building has been started. For logging purpose, look into your console."));
   }
-
-
 }

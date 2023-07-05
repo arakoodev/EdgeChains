@@ -20,64 +20,64 @@ public class OpenAiEndpoint extends Endpoint {
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
   private final OpenAiService openAiService = retrofit.create(OpenAiService.class);
 
+  private final OpenAiStreamService openAiStreamService =
+      ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
 
-  private final OpenAiStreamService openAiStreamService = ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
-
-
-  public OpenAiEndpoint() {
-  }
+  public OpenAiEndpoint() {}
 
   public OpenAiEndpoint(String url, String apiKey, String model, RetryPolicy retryPolicy) {
     super(url, apiKey, model, retryPolicy);
   }
 
   public OpenAiEndpoint(
-          String url, String apiKey, String model, String role, RetryPolicy retryPolicy) {
+      String url, String apiKey, String model, String role, RetryPolicy retryPolicy) {
     super(url, apiKey, model, role, retryPolicy);
   }
 
   public OpenAiEndpoint(
-          String url,
-          String apiKey,
-          String model,
-          String role,
-          Double temperature,
-          RetryPolicy retryPolicy) {
+      String url,
+      String apiKey,
+      String model,
+      String role,
+      Double temperature,
+      RetryPolicy retryPolicy) {
     super(url, apiKey, model, role, temperature, null, retryPolicy);
   }
 
   public OpenAiEndpoint(
-          String url,
-          String apiKey,
-          String model,
-          String role,
-          Double temperature,
-          Boolean stream,
-          RetryPolicy retryPolicy) {
+      String url,
+      String apiKey,
+      String model,
+      String role,
+      Double temperature,
+      Boolean stream,
+      RetryPolicy retryPolicy) {
     super(url, apiKey, model, role, temperature, stream, retryPolicy);
   }
 
   public Observable<ChatCompletionResponse> getChatCompletion(String input) {
     if (Objects.nonNull(this.getStream()) && this.getStream())
-      return this.openAiStreamService.chatCompletion(new OpenAiChatRequest(this, input))
-              .map(chatResponse -> {
-                if(!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
+      return this.openAiStreamService
+          .chatCompletion(new OpenAiChatRequest(this, input))
+          .map(
+              chatResponse -> {
+                if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
                   chatResponse.getChoices().get(0).getMessage().setContent("");
                   return chatResponse;
                 } else return chatResponse;
               });
-
     else
-      return Observable.fromSingle(this.openAiService.chatCompletion(new OpenAiChatRequest(this, input)));
+      return Observable.fromSingle(
+          this.openAiService.chatCompletion(new OpenAiChatRequest(this, input)));
   }
 
   public Observable<WordEmbeddings> getEmbeddings(String input) {
 
     return Observable.fromSingle(
-            this.openAiService.embeddings(new OpenAiEmbeddingsRequest(this, input))
-                    .map( embeddingResponse -> new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
-
+        this.openAiService
+            .embeddings(new OpenAiEmbeddingsRequest(this, input))
+            .map(
+                embeddingResponse ->
+                    new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
   }
-
-
 }

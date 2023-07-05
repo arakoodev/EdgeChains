@@ -32,14 +32,13 @@ public class ExponentialDelay extends RetryPolicy {
     return observable.flatMap(
         (Function<Throwable, Observable<?>>)
             throwable -> {
-
               if (throwable.getMessage().contains("The mapper function returned a null value")
-                      || throwable
+                  || throwable
                       .getMessage()
                       .contains(
-                              "JSON decoding error: Cannot deserialize value of type"
-                                      + " `com.edgechain.lib.openai.response.ChatCompletionResponse` from"
-                                      + " Array value (token `JsonToken.START_ARRAY`)"))
+                          "JSON decoding error: Cannot deserialize value of type"
+                              + " `com.edgechain.lib.openai.response.ChatCompletionResponse` from"
+                              + " Array value (token `JsonToken.START_ARRAY`)"))
                 return Observable.empty();
 
               long compute = compute(firstDelay, retryCount, factor, unit);

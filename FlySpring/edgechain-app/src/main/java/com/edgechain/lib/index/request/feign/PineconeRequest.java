@@ -1,11 +1,8 @@
 package com.edgechain.lib.index.request.feign;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
 
 public class PineconeRequest {
 
@@ -40,7 +37,6 @@ public class PineconeRequest {
   public void setWordEmbeddings(WordEmbeddings wordEmbeddings) {
     this.wordEmbeddings = wordEmbeddings;
   }
-
 
   public int getTopK() {
     return topK;

@@ -43,7 +43,7 @@ public class PdfReader extends Reader {
       pdfparser.parse(fileInputStream, contentHandler, data, context);
 
       Chunker chunker =
-              new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
+          new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
       return chunker.bySentence(langType);
 
     } catch (final Exception e) {

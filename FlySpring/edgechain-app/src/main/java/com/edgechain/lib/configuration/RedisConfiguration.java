@@ -1,7 +1,6 @@
 package com.edgechain.lib.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -18,13 +17,12 @@ import redis.clients.jedis.JedisPooled;
 @EnableRedisRepositories
 public class RedisConfiguration {
 
-  @Autowired
-  @Lazy
-  private RedisEnv redisEnv;
+  @Autowired @Lazy private RedisEnv redisEnv;
 
   @Bean
   public JedisPooled jedisPooled() {
-    return new JedisPooled(redisEnv.getUrl(), redisEnv.getPort(), redisEnv.getUsername(), redisEnv.getPassword());
+    return new JedisPooled(
+        redisEnv.getUrl(), redisEnv.getPort(), redisEnv.getUsername(), redisEnv.getPassword());
   }
 
   @Bean

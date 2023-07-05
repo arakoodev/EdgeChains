@@ -3,20 +3,16 @@ package com.edgechain.lib.context.client.impl;
 import com.edgechain.lib.configuration.RedisEnv;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.context.client.HistoryContextClient;
-import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Repository
@@ -101,7 +97,8 @@ public class RedisHistoryContextClient implements HistoryContextClient {
                 } else {
                   emitter.onError(
                       new RuntimeException(
-                          "Redis HistoryContextController key isn't found. You may have incorrectly defined"));
+                          "Redis HistoryContextController key isn't found. You may have incorrectly"
+                              + " defined"));
                 }
 
               } catch (final Exception e) {
