@@ -8,6 +8,4 @@ import org.springframework.core.annotation.Order;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Configuration("WebConfiguration")
 @Import(EdgeChainAutoConfiguration.class)
-public class WebConfiguration {
-
-}
+public class WebConfiguration {}

@@ -1,9 +1,6 @@
 package com.edgechain.lib.request;
 
-
 import com.edgechain.lib.request.exception.InvalidArkRequest;
-import com.edgechain.lib.utils.JsonUtils;
-import com.google.gson.JsonObject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import org.json.JSONObject;
@@ -17,107 +14,110 @@ import java.util.Enumeration;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-
 public class ArkRequest {
 
-    private final HttpServletRequest request;
+  private final HttpServletRequest request;
 
-    public ArkRequest() {
-        this.request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+  public ArkRequest() {
+    this.request =
+        ((ServletRequestAttributes)
+                Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
+            .getRequest();
 
-        String contentType = request.getContentType();
+    String contentType = request.getContentType();
 
-        if(!contentType.contains("application/json") && !contentType.contains("multipart/form-data")) {
-            throw new InvalidArkRequest("ArkRequest can only accept Content-Type:application/json || Content-Type:multipart/form-data");
-        }
-
+    if (!contentType.contains("application/json") && !contentType.contains("multipart/form-data")) {
+      throw new InvalidArkRequest(
+          "ArkRequest can only accept Content-Type:application/json ||"
+              + " Content-Type:multipart/form-data");
     }
+  }
 
-    public String getContentType() {
-        return this.request.getContentType();
-    }
+  public String getContentType() {
+    return this.request.getContentType();
+  }
 
-    public String getHeader(String key) {
-        return this.request.getHeader(key);
-    }
+  public String getHeader(String key) {
+    return this.request.getHeader(key);
+  }
 
-    public Enumeration<String> getHeaders(String key) {
-        return this.request.getHeaders(key);
-    }
+  public Enumeration<String> getHeaders(String key) {
+    return this.request.getHeaders(key);
+  }
 
-    public Enumeration<String> getHeaderNames() {
-        return this.request.getHeaderNames();
-    }
+  public Enumeration<String> getHeaderNames() {
+    return this.request.getHeaderNames();
+  }
 
-    public long getDateHeader(String key) {
-        return this.request.getDateHeader(key);
-    }
+  public long getDateHeader(String key) {
+    return this.request.getDateHeader(key);
+  }
 
-    public int getIntHeader(String key) {
-        return this.request.getIntHeader(key);
-    }
+  public int getIntHeader(String key) {
+    return this.request.getIntHeader(key);
+  }
 
-    public boolean getBooleanHeader(String key) {
-        return Boolean.parseBoolean(this.getHeader(key));
-    }
+  public boolean getBooleanHeader(String key) {
+    return Boolean.parseBoolean(this.getHeader(key));
+  }
 
-    public String getContextPath() {
-        return this.request.getContextPath();
-    }
+  public String getContextPath() {
+    return this.request.getContextPath();
+  }
 
-    public String getRequestURI() {
-        return this.request.getRequestURI();
-    }
+  public String getRequestURI() {
+    return this.request.getRequestURI();
+  }
 
-    public String getQueryString() {
-        return this.request.getQueryString();
-    }
+  public String getQueryString() {
+    return this.request.getQueryString();
+  }
 
-    public String getQueryParam(String key) {
-        return this.request.getParameter(key);
-    }
+  public String getQueryParam(String key) {
+    return this.request.getParameter(key);
+  }
 
-    public int getIntQueryParam(String key){
-        return Integer.parseInt(this.request.getParameter(key));
-    }
+  public int getIntQueryParam(String key) {
+    return Integer.parseInt(this.request.getParameter(key));
+  }
 
-    public JSONObject getBody() {
-        try {
-            return new JSONObject(this.request.getReader().lines().collect(Collectors.joining()));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+  public JSONObject getBody() {
+    try {
+      return new JSONObject(this.request.getReader().lines().collect(Collectors.joining()));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public Cookie[] getCookies() {
-        return this.request.getCookies();
-    }
+  public Cookie[] getCookies() {
+    return this.request.getCookies();
+  }
 
-    public Part getMultiPart(String name) {
-        try {
-            return this.request.getPart(name);
-        } catch (IOException | ServletException e) {
-            throw new RuntimeException(e);
-        }
+  public Part getMultiPart(String name) {
+    try {
+      return this.request.getPart(name);
+    } catch (IOException | ServletException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public Collection<Part> getMultiParts() {
-        try {
-            return this.request.getParts();
-        } catch (IOException | ServletException e) {
-            throw new RuntimeException(e);
-        }
+  public Collection<Part> getMultiParts() {
+    try {
+      return this.request.getParts();
+    } catch (IOException | ServletException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public Principal getPrincipal() {
-        return this.request.getUserPrincipal();
-    }
+  public Principal getPrincipal() {
+    return this.request.getUserPrincipal();
+  }
 
-    public String getMethodName() {
-        return this.request.getMethod();
-    }
+  public String getMethodName() {
+    return this.request.getMethod();
+  }
 
-    public HttpServletRequest getRequest() {
-        return request;
-    }
+  public HttpServletRequest getRequest() {
+    return request;
+  }
 }

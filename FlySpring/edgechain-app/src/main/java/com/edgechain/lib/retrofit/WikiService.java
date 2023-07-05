@@ -6,9 +6,8 @@ import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 
-public interface WikiService  {
+public interface WikiService {
 
   @POST(value = "wiki/page-content")
   Single<WikiResponse> getPageContent(@Body WikiRequest request);
-
 }

@@ -1,6 +1,5 @@
 package com.edgechain.lib.openai.plugin.chains;
 
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.plugin.response.PluginResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;

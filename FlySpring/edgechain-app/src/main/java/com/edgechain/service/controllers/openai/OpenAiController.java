@@ -22,7 +22,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -67,35 +66,33 @@ public class OpenAiController {
 
     executorService.execute(
         () -> {
+          try {
+            EdgeChain<ChatCompletionResponse> edgeChain =
+                new OpenAiClient()
+                    .createChatCompletionStream(request.getEndpoint(), chatCompletionRequest);
 
-            try{
-                EdgeChain<ChatCompletionResponse> edgeChain =
-                        new OpenAiClient()
-                                .createChatCompletionStream(request.getEndpoint(), chatCompletionRequest);
+            Observable<ChatCompletionResponse> obs;
 
-                Observable<ChatCompletionResponse> obs;
-
-                if (RetryUtils.available(request.getEndpoint())) {
-                    obs = edgeChain.getScheduledObservable(request.getEndpoint().getRetryPolicy());
-                } else {
-                    obs = edgeChain.getScheduledObservable();
-                }
-
-                obs.subscribe(
-                        res -> {
-                           try{
-                               emitter.send(res);
-                               if (Objects.nonNull(res.getChoices().get(0).getFinishReason())) {
-                                   emitter.complete();
-                               }
-                           }catch (final Exception e){
-                               emitter.completeWithError(e);
-                           }
-                        });
-            }catch (final  Exception e) {
-                emitter.completeWithError(e);
+            if (RetryUtils.available(request.getEndpoint())) {
+              obs = edgeChain.getScheduledObservable(request.getEndpoint().getRetryPolicy());
+            } else {
+              obs = edgeChain.getScheduledObservable();
             }
 
+            obs.subscribe(
+                res -> {
+                  try {
+                    emitter.send(res);
+                    if (Objects.nonNull(res.getChoices().get(0).getFinishReason())) {
+                      emitter.complete();
+                    }
+                  } catch (final Exception e) {
+                    emitter.completeWithError(e);
+                  }
+                });
+          } catch (final Exception e) {
+            emitter.completeWithError(e);
+          }
         });
     executorService.shutdown();
     return emitter;

@@ -18,7 +18,6 @@ public class RedisRequest {
 
   private int topK;
 
-
   public RedisRequest() {}
 
   public int getTopK() {

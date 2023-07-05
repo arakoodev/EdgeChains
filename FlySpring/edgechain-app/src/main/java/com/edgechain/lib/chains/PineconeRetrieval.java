@@ -31,7 +31,6 @@ public class PineconeRetrieval extends Retrieval {
     logger.info("Using Doc2Vec Embedding Service");
   }
 
-
   @Override
   public void upsert(String input) {
 
@@ -47,7 +46,7 @@ public class PineconeRetrieval extends Retrieval {
     }
     // For Doc2Vec ===>
 
-    if(Objects.nonNull(doc2VecEndpoint)) {
+    if (Objects.nonNull(doc2VecEndpoint)) {
       new EdgeChain<>(
               this.doc2VecEndpoint
                   .getEmbeddings(input)
@@ -57,6 +56,5 @@ public class PineconeRetrieval extends Retrieval {
           .await()
           .blockingAwait();
     }
-
   }
 }

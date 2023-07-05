@@ -14,5 +14,7 @@ public abstract class Reader implements Serializable {
   public abstract String[] readByChunkSize(InputStream inputStream, int chunkSize);
 
   public abstract String[] readBySentence(LangType langType, InputStream fileInputStream);
-  public abstract String[] readBySentence(InputStream modelInputStream, InputStream fileInputStream);
+
+  public abstract String[] readBySentence(
+      InputStream modelInputStream, InputStream fileInputStream);
 }

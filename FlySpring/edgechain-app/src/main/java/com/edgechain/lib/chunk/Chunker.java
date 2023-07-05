@@ -36,20 +36,26 @@ public class Chunker {
     SentenceModel model = null;
     try {
 
-      if(langType.equals(LangType.EN))
-        model = new SentenceModel(Objects.requireNonNull(getClass().getResourceAsStream("/en-sent.zip")));
-
-      else if(langType.equals(LangType.FR))
-        model = new SentenceModel(Objects.requireNonNull(getClass().getResourceAsStream("/fr-sent.zip")));
-
-      else if(langType.equals(LangType.DE))
-        model = new SentenceModel(Objects.requireNonNull(getClass().getResourceAsStream("/de-sent.zip")));
-
-      else if(langType.equals(LangType.IT))
-        model = new SentenceModel(Objects.requireNonNull(getClass().getResourceAsStream("/it-sent.zip")));
-
+      if (langType.equals(LangType.EN))
+        model =
+            new SentenceModel(
+                Objects.requireNonNull(getClass().getResourceAsStream("/en-sent.zip")));
+      else if (langType.equals(LangType.FR))
+        model =
+            new SentenceModel(
+                Objects.requireNonNull(getClass().getResourceAsStream("/fr-sent.zip")));
+      else if (langType.equals(LangType.DE))
+        model =
+            new SentenceModel(
+                Objects.requireNonNull(getClass().getResourceAsStream("/de-sent.zip")));
+      else if (langType.equals(LangType.IT))
+        model =
+            new SentenceModel(
+                Objects.requireNonNull(getClass().getResourceAsStream("/it-sent.zip")));
       else
-        model = new SentenceModel(Objects.requireNonNull(getClass().getResourceAsStream("/nl-sent.zip")));
+        model =
+            new SentenceModel(
+                Objects.requireNonNull(getClass().getResourceAsStream("/nl-sent.zip")));
 
     } catch (IOException e) {
       throw new RuntimeException(e);

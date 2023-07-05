@@ -12,13 +12,12 @@ import retrofit2.http.POST;
 
 public interface OpenAiService {
 
-    @POST(value = "openai/chat-completion")
-    Single<ChatCompletionResponse> chatCompletion(@Body OpenAiChatRequest request);
+  @POST(value = "openai/chat-completion")
+  Single<ChatCompletionResponse> chatCompletion(@Body OpenAiChatRequest request);
 
-    @POST(value = "openai/completion")
-    Single<Completable> completion(@Body OpenAiCompletionRequest request);
+  @POST(value = "openai/completion")
+  Single<Completable> completion(@Body OpenAiCompletionRequest request);
 
-    @POST(value = "openai/embeddings")
-    Single<OpenAiEmbeddingResponse> embeddings(@Body OpenAiEmbeddingsRequest request);
-
+  @POST(value = "openai/embeddings")
+  Single<OpenAiEmbeddingResponse> embeddings(@Body OpenAiEmbeddingsRequest request);
 }

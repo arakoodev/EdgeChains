@@ -17,7 +17,6 @@ public class RedisEndpoint extends Endpoint {
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
   private final RedisService redisService = retrofit.create(RedisService.class);
 
-
   private String indexName;
   private String namespace;
 
@@ -32,7 +31,7 @@ public class RedisEndpoint extends Endpoint {
     this.namespace = namespace;
   }
 
-  public RedisEndpoint(String indexName, String namespace,RetryPolicy retryPolicy) {
+  public RedisEndpoint(String indexName, String namespace, RetryPolicy retryPolicy) {
     super(retryPolicy);
     this.indexName = indexName;
     this.namespace = namespace;

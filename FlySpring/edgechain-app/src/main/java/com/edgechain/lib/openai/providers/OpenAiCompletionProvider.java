@@ -6,7 +6,7 @@ import com.edgechain.lib.openai.request.CompletionRequest;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
-public class OpenAiCompletionProvider  {
+public class OpenAiCompletionProvider {
   private final Endpoint endpoint;
 
   public OpenAiCompletionProvider(Endpoint endpoint) {

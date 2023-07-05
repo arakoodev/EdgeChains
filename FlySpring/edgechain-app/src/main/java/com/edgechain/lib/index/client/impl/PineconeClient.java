@@ -19,7 +19,6 @@ public class PineconeClient {
   private final PineconeEndpoint endpoint;
   private final String namespace;
 
-
   public PineconeClient(PineconeEndpoint endpoint, String namespace) {
     this.endpoint = endpoint;
     this.namespace = (Objects.isNull(namespace) || namespace.isEmpty()) ? "" : namespace;
@@ -69,14 +68,15 @@ public class PineconeClient {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("includeValues", true);
                 payload.put("includeMetadata", false);
-                payload.put("vector",wordEmbeddings.getValues());
+                payload.put("vector", wordEmbeddings.getValues());
                 payload.put("top_k", topK);
                 payload.put("namespace", this.namespace);
 
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
 
                 ResponseEntity<String> response =
-                    new RestTemplate().exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+                    new RestTemplate()
+                        .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
 
                 emitter.onNext(this.parsePredict(response.getBody()));
 
@@ -123,7 +123,8 @@ public class PineconeClient {
     List<WordEmbeddings> words2VecList = new ArrayList<>();
 
     for (int i = 0; i < matches; i++) {
-      words2VecList.add(objectMapper.treeToValue(jsonNode.get("matches").get(i), WordEmbeddings.class));
+      words2VecList.add(
+          objectMapper.treeToValue(jsonNode.get("matches").get(i), WordEmbeddings.class));
     }
 
     return words2VecList;

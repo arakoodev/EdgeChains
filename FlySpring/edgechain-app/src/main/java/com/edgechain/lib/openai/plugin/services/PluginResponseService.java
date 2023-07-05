@@ -35,8 +35,7 @@ public class PluginResponseService {
                         this.requestSpecAPI(pluginSpecEndpoint).getScheduledObservable();
 
                     PluginResponse response =
-                        new EdgeChain<>(Observable.zip(obs1, obs2, PluginResponse::new))
-                            .get();
+                        new EdgeChain<>(Observable.zip(obs1, obs2, PluginResponse::new)).get();
 
                     emitter.onNext(response);
                     emitter.onComplete();

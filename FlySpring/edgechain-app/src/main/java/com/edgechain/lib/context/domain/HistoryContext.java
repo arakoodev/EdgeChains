@@ -9,8 +9,7 @@ public class HistoryContext implements Serializable {
   private String id;
   private String response;
 
-  public HistoryContext() {
-  }
+  public HistoryContext() {}
 
   public HistoryContext(String id, String response) {
     this.id = id;

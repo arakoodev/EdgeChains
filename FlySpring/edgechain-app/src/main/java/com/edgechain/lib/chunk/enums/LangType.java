@@ -1,10 +1,9 @@
 package com.edgechain.lib.chunk.enums;
 
 public enum LangType {
-    EN,
-    FR,
-    DE,
-    IT,
-    NL
-
+  EN,
+  FR,
+  DE,
+  IT,
+  NL
 }
