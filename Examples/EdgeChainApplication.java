@@ -94,8 +94,7 @@ public class EdgeChainApplication {
       JsonnetLoader loader =
               new FileJsonnetLoader("R:\\wiki.jsonnet")
                       .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-                      .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
-                      .loadOrReload();
+                      .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
       /* Step 2: Create WikiEndpoint to extract content from Wikipedia;
       If RetryPolicy is not passed; then there won't be any backoff mechanism.... */
@@ -370,7 +369,7 @@ public class EdgeChainApplication {
                                  */
                                 .doOnNext(
                                         chatCompletionResponse -> {
-                                          // If ChatCompletion (stream = false);
+                                          // If ChatCompletion (stream = true);
                                           if (chatCompletionResponse.getObject().equals("chat.completion.chunk")) {
                                             // Append the ChatCompletion Response until, we have FinishReason;
                                             // otherwise, we update the history
@@ -390,7 +389,7 @@ public class EdgeChainApplication {
                                               // Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
                                             }
                                           }
-                                          // If ChatCompletion (stream = true);
+                                          // If ChatCompletion (stream = false);
                                           else if (chatCompletionResponse.getObject().equals("chat.completion")) {
 
                                             EdgeChain.fromObservable(
@@ -528,8 +527,7 @@ public class EdgeChainApplication {
       JsonnetLoader loader =
               new FileJsonnetLoader("R:\\redis-query.jsonnet")
                       .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-                      .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
-                      .loadOrReload();
+                      .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
       return new EdgeChain<>(
               embeddingEndpoint.getEmbeddings(
@@ -658,7 +656,7 @@ public class EdgeChainApplication {
                                  */
                                 .doOnNext(
                                         chatCompletionResponse -> {
-                                          // If ChatCompletion (stream = false);
+                                          // If ChatCompletion (stream = true);
                                           if (chatCompletionResponse.getObject().equals("chat.completion.chunk")) {
                                             // Append the ChatCompletion Response until, we have FinishReason;
                                             // otherwise, we update the history
@@ -678,7 +676,7 @@ public class EdgeChainApplication {
                                               // Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
                                             }
                                           }
-                                          // If ChatCompletion (stream = true);
+                                          // If ChatCompletion (stream = false);
                                           else if (chatCompletionResponse.getObject().equals("chat.completion")) {
 
                                             EdgeChain.fromObservable(
