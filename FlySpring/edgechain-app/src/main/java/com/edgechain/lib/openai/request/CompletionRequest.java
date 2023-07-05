@@ -5,7 +5,6 @@ public class CompletionRequest {
   private String prompt;
   private String model;
   private Double temperature;
-  private Integer max_tokens;
   private Double top_p;
   private Double frequency_penalty;
   private Double presence_penalty;
@@ -23,7 +22,6 @@ public class CompletionRequest {
     this.prompt = prompt;
     this.model = model;
     this.temperature = temperature;
-    this.max_tokens = max_tokens;
     this.top_p = top_p == null ? 1.0 : top_p;
     this.frequency_penalty = frequency_penalty == null ? 0.0 : frequency_penalty;
     this.presence_penalty = presence_penalty == null ? 0.0 : presence_penalty;
@@ -53,13 +51,6 @@ public class CompletionRequest {
     this.temperature = temperature;
   }
 
-  public Integer getMax_tokens() {
-    return max_tokens;
-  }
-
-  public void setMax_tokens(Integer max_tokens) {
-    this.max_tokens = max_tokens;
-  }
 
   public Double getTop_p() {
     return top_p;
@@ -91,7 +82,6 @@ public class CompletionRequest {
     sb.append("prompt='").append(prompt).append('\'');
     sb.append(", model='").append(model).append('\'');
     sb.append(", temperature=").append(temperature);
-    sb.append(", max_tokens=").append(max_tokens);
     sb.append(", top_p=").append(top_p);
     sb.append(", frequency_penalty=").append(frequency_penalty);
     sb.append(", presence_penalty=").append(presence_penalty);

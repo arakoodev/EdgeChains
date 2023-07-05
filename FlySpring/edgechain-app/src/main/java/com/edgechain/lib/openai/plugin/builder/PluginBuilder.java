@@ -1,6 +1,6 @@
 package com.edgechain.lib.openai.plugin.builder;
 
-import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.plugin.parser.PluginJSONParser;
 import com.edgechain.lib.openai.plugin.prompt.CompletionPrompt;
 import com.edgechain.lib.openai.plugin.response.PluginResponse;

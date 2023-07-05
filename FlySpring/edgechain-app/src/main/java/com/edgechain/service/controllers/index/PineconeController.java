@@ -1,47 +1,58 @@
 package com.edgechain.service.controllers.index;
 
-import com.edgechain.lib.constants.WebConstants;
-import com.edgechain.lib.index.providers.pinecone.PineconeQueryProvider;
-import com.edgechain.lib.index.providers.pinecone.PineconeUpsertProvider;
-import com.edgechain.lib.index.services.impl.PineconeIndexChain;
-import com.edgechain.lib.request.PineconeRequest;
-import com.edgechain.lib.rxjava.provider.ChainProvider;
-import com.edgechain.lib.rxjava.request.ChainRequest;
-import com.edgechain.lib.rxjava.response.ChainResponse;
-import com.edgechain.lib.rxjava.wrapper.ChainWrapper;
+import com.edgechain.lib.embeddings.WordEmbeddings;
+import com.edgechain.lib.index.request.feign.PineconeRequest;
+import com.edgechain.lib.index.client.impl.PineconeClient;
+import com.edgechain.lib.response.StringResponse;
+import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import com.edgechain.lib.utils.RetryUtils;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController("Service PineconeController")
-@RequestMapping(value = WebConstants.SERVICE_CONTEXT_PATH + "/index/pinecone")
+@RequestMapping(value = "/v2/index/pinecone")
 public class PineconeController {
 
   @PostMapping("/upsert")
-  public Single<ChainResponse> upsert(@RequestBody PineconeRequest request) {
-    ChainProvider pineconeUpsert = new PineconeUpsertProvider(request.getEndpoint());
+  public Single<StringResponse> upsert(@RequestBody PineconeRequest request) {
 
-    ChainWrapper wrapper = new ChainWrapper();
-    return wrapper.chains(new ChainRequest(request.getInput()), pineconeUpsert).toSingleWithRetry();
+    EdgeChain<StringResponse> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace())
+            .upsert(request.getWordEmbeddings());
+
+    if(RetryUtils.available(request.getEndpoint()))
+      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
+
+    else
+     return edgeChain.toSingle();
+
   }
 
   @PostMapping("/query")
-  public Single<ChainResponse> query(@RequestBody PineconeRequest request) {
-    ChainProvider pineconeQuery =
-        new PineconeQueryProvider(request.getEndpoint(), request.getTopK());
+  public Single<List<WordEmbeddings>> query(@RequestBody PineconeRequest request) {
 
-    ChainWrapper wrapper = new ChainWrapper();
-    return wrapper.chains(new ChainRequest(request.getInput()), pineconeQuery).toSingleWithRetry();
-  }
+    EdgeChain<List<WordEmbeddings>> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace())
+            .query(request.getWordEmbeddings(), request.getTopK());
 
-  @DeleteMapping("/delete")
-  public Single<ChainResponse> deleteByKey(@RequestBody PineconeRequest request) {
-    return new PineconeIndexChain(request.getEndpoint())
-        .deleteByIds(request.getVectorIds())
-        .toSingleWithRetry();
+    if(RetryUtils.available(request.getEndpoint()))
+       return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
+
+    else
+      return edgeChain.toSingle();
+
   }
 
   @DeleteMapping("/deleteAll")
-  public Single<ChainResponse> deleteAll(@RequestBody PineconeRequest request) {
-    return new PineconeIndexChain(request.getEndpoint()).deleteAll().toSingleWithRetry();
+  public Single<StringResponse> deleteAll(@RequestBody PineconeRequest request) {
+
+    EdgeChain<StringResponse> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace()).deleteAll();
+
+    if(RetryUtils.available(request.getEndpoint()))
+      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
+
+    else
+      return edgeChain.toSingle();
+
   }
 }

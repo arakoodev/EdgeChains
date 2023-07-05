@@ -1,0 +1,44 @@
+package com.edgechain.lib.endpoint.impl;
+
+import com.edgechain.lib.embeddings.WordEmbeddings;
+import com.edgechain.lib.embeddings.request.Doc2VecRequest;
+import com.edgechain.lib.embeddings.services.Doc2VecInference;
+import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.response.StringResponse;
+import com.edgechain.lib.retrofit.Doc2VecService;
+import com.edgechain.lib.retrofit.OpenAiService;
+import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
+import io.reactivex.rxjava3.core.Observable;
+import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
+import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import retrofit2.Retrofit;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+public class Doc2VecEndpoint extends Endpoint {
+
+    private final Retrofit retrofit = RetrofitClientInstance.getInstance();
+    private final Doc2VecService doc2VecService = retrofit.create(Doc2VecService.class);
+
+    private ParagraphVectors paragraphVectors;
+
+    public Doc2VecEndpoint() {}
+
+    public Doc2VecEndpoint(ParagraphVectors paragraphVectors) {
+        this.paragraphVectors = paragraphVectors;
+    }
+
+    public Observable<StringResponse> build(Doc2VecRequest doc2VecRequest) {
+        return Observable.fromSingle(this.doc2VecService.build(doc2VecRequest));
+    }
+
+    public Observable<WordEmbeddings> getEmbeddings(String input) {
+
+        return Observable.just(new Doc2VecInference(paragraphVectors, input).inferVectors())
+                .map(floatList -> new WordEmbeddings(input, floatList));
+
+
+    }
+}

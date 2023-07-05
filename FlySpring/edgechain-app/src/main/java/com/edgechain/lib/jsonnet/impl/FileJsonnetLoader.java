@@ -6,6 +6,7 @@ import com.edgechain.lib.jsonnet.exceptions.JsonnetLoaderException;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class FileJsonnetLoader extends JsonnetLoader {
 
@@ -20,10 +21,10 @@ public class FileJsonnetLoader extends JsonnetLoader {
   }
 
   @Override
-  public <T> T loadOrReload(HashMap<String, JsonnetArgs> args, Class<T> clazz) {
+  public JsonnetLoader loadOrReload() {
     try (InputStream in = new FileInputStream(filePath)) {
-      JsonnetLoader loader = new FileJsonnetLoader();
-      return loader.load(args, in, clazz);
+      this.load(in);
+      return this;
     } catch (final Exception e) {
       throw new JsonnetLoaderException(e.getMessage());
     }

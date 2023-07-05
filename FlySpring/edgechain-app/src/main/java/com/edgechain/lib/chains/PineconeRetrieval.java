@@ -1,73 +1,62 @@
 package com.edgechain.lib.chains;
 
-import com.edgechain.lib.chains.retrieval.Retrieval;
-import com.edgechain.lib.feign.EmbeddingService;
-import com.edgechain.lib.feign.index.PineconeService;
-import com.edgechain.lib.openai.endpoint.Endpoint;
-import com.edgechain.lib.request.Doc2VecEmbeddingsRequest;
-import com.edgechain.lib.request.OpenAiEmbeddingsRequest;
-import static com.edgechain.lib.rxjava.transformer.observable.EdgeChain.create;
-
-import com.edgechain.lib.request.PineconeRequest;
+import com.edgechain.lib.embeddings.WordEmbeddings;
+import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
+import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
+import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 public class PineconeRetrieval extends Retrieval {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  private final Endpoint indexEndpoint;
-  private Endpoint embeddingEndpoint;
+  private final PineconeEndpoint pineconeEndpoint;
+  private OpenAiEndpoint openAiEndpoint;
 
-  private final EmbeddingService embeddingService;
+  private Doc2VecEndpoint doc2VecEndpoint;
 
-  private final PineconeService pineconeService;
-
-  // OpenAI
-  public PineconeRetrieval(
-      Endpoint indexEndpoint,
-      Endpoint embeddingEndpoint,
-      EmbeddingService embeddingService,
-      PineconeService pineconeService) {
-    this.indexEndpoint = indexEndpoint;
-    this.embeddingEndpoint = embeddingEndpoint;
-    this.embeddingService = embeddingService;
-    this.pineconeService = pineconeService;
-    logger.info("Using OpenAI Embedding Provider.");
+  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint, OpenAiEndpoint openAiEndpoint) {
+    this.pineconeEndpoint = pineconeEndpoint;
+    this.openAiEndpoint = openAiEndpoint;
+    logger.info("Using OpenAI Embedding Service");
   }
 
-  // Doc2Vec
-  public PineconeRetrieval(
-      Endpoint indexEndpoint, EmbeddingService embeddingService, PineconeService pineconeService) {
-    this.indexEndpoint = indexEndpoint;
-    this.embeddingService = embeddingService;
-    this.pineconeService = pineconeService;
+  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint, Doc2VecEndpoint doc2VecEndpoint) {
+    this.pineconeEndpoint = pineconeEndpoint;
+    this.doc2VecEndpoint = doc2VecEndpoint;
+    logger.info("Using Doc2Vec Embedding Service");
   }
+
 
   @Override
   public void upsert(String input) {
 
-    EdgeChain<String> edgeChain;
+    if (Objects.nonNull(openAiEndpoint)) {
+      new EdgeChain<>(
+              this.openAiEndpoint
+                  .getEmbeddings(input)
+                  .map(this.pineconeEndpoint::upsert)
+                  .firstOrError()
+                  .blockingGet())
+          .await()
+          .blockingAwait();
+    }
+    // For Doc2Vec ===>
 
-    if (embeddingEndpoint != null) {
-      edgeChain =
-          create(
-              this.embeddingService
-                  .openAi(new OpenAiEmbeddingsRequest(this.embeddingEndpoint, input))
-                  .getResponse());
-
-    } else {
-      edgeChain =
-          create(this.embeddingService.doc2Vec(new Doc2VecEmbeddingsRequest(input)).getResponse());
+    if(Objects.nonNull(doc2VecEndpoint)) {
+      new EdgeChain<>(
+              this.doc2VecEndpoint
+                  .getEmbeddings(input)
+                  .map(floatList -> this.pineconeEndpoint.upsert(new WordEmbeddings()))
+                  .firstOrError()
+                  .blockingGet())
+          .await()
+          .blockingAwait();
     }
 
-    edgeChain
-        .transform(
-            embeddingOutput ->
-                this.pineconeService
-                    .upsert(new PineconeRequest(this.indexEndpoint, embeddingOutput))
-                    .getResponse())
-        .awaitWithoutRetry();
   }
 }

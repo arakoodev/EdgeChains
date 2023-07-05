@@ -1,9 +1,7 @@
 package com.edgechain.lib.rxjava.transformer.observable;
 
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.ObservableSource;
-import io.reactivex.rxjava3.core.Scheduler;
-import io.reactivex.rxjava3.core.Single;
+import com.edgechain.lib.rxjava.retry.RetryPolicy;
+import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.functions.*;
 
 import java.io.Serializable;
@@ -48,31 +46,39 @@ public abstract class AbstractEdgeChain<T> implements Serializable {
 
   public abstract void execute();
 
+  public abstract void execute(RetryPolicy retryPolicy);
+
   public abstract void execute(Consumer<? super T> onNext, Consumer<? super Throwable> onError);
+
+  public abstract void execute(
+      Consumer<? super T> onNext, Consumer<? super Throwable> onError, RetryPolicy retryPolicy);
+
+  public abstract void execute(
+      Consumer<? super T> onNext,
+      Consumer<? super Throwable> onError,
+      Action onComplete,
+      RetryPolicy retryPolicy);
 
   public abstract void execute(
       Consumer<? super T> onNext, Consumer<? super Throwable> onError, Action onComplete);
 
   public abstract Observable<T> getObservable();
 
-  public abstract Observable<T> getScheduledObservableWithRetry();
+  public abstract Observable<T> getScheduledObservable();
 
-  public abstract Observable<T> getScheduledObservableWithoutRetry();
+  public abstract Observable<T> getScheduledObservable(RetryPolicy retryPolicy);
 
-  public abstract Single<T> toSingleWithRetry();
+  public abstract Single<T> toSingle();
 
-  public abstract Single<T> toSingleWithOutRetry();
+  public abstract Single<T> toSingle(RetryPolicy retryPolicy);
 
-  public abstract T getWithRetry(Scheduler scheduler);
+  public abstract T get();
 
-  public abstract T getWithRetry();
+  public abstract T get(RetryPolicy retryPolicy);
 
-  public abstract T getWithOutRetry();
+  public abstract Completable await(RetryPolicy retryPolicy);
 
-  /* For completable implementation */
-  public abstract void awaitWithRetry();
-
-  public abstract void awaitWithoutRetry();
+  public abstract Completable await();
 
   public abstract void completed();
 

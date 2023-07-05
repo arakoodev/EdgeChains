@@ -1,6 +1,6 @@
 package com.edgechain.lib.embeddings.services;
 
-import com.edgechain.lib.embeddings.domain.doc2vec.Doc2VecRequest;
+import com.edgechain.lib.embeddings.request.Doc2VecRequest;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;

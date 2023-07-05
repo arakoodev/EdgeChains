@@ -10,7 +10,7 @@ public class ArkEmitter<T> extends SseEmitter {
   private final ArkEmitterObserver<T> observer;
 
   public ArkEmitter(EdgeChain<T> edgeChain) {
-    this(null, edgeChain.getScheduledObservableWithoutRetry());
+    this(null, edgeChain.getScheduledObservable());
   }
 
   public ArkEmitter(Observable<T> observable) {

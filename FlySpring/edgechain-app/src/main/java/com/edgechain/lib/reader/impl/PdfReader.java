@@ -1,6 +1,7 @@
 package com.edgechain.lib.reader.impl;
 
 import com.edgechain.lib.chunk.Chunker;
+import com.edgechain.lib.chunk.enums.LangType;
 import com.edgechain.lib.reader.Reader;
 import me.xuender.unidecode.Unidecode;
 import org.apache.tika.metadata.Metadata;
@@ -32,10 +33,24 @@ public class PdfReader extends Reader {
     }
   }
 
-  /**
-   * If you are using Reader & Chunker in a different project; make sure you import OpenNLP & also
-   * use en-sent.zip file as an InputStream
-   */
+  @Override
+  public String[] readBySentence(LangType langType, InputStream fileInputStream) {
+    try {
+      BodyContentHandler contentHandler = new BodyContentHandler(-1);
+      Metadata data = new Metadata();
+      ParseContext context = new ParseContext();
+      PDFParser pdfparser = new PDFParser();
+      pdfparser.parse(fileInputStream, contentHandler, data, context);
+
+      Chunker chunker =
+              new Chunker(Unidecode.decode(contentHandler.toString()).replaceAll("[\t\n\r]+", " "));
+      return chunker.bySentence(langType);
+
+    } catch (final Exception e) {
+      throw new RuntimeException(e.getMessage());
+    }
+  }
+
   @Override
   public String[] readBySentence(InputStream modelInputStream, InputStream fileInputStream) {
     try {

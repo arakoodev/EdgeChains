@@ -7,6 +7,8 @@ public class ArkResponse<T> extends DeferredResult<T> {
 
   private final ArkObserver<T> observer;
 
+
+
   public ArkResponse(Observable<T> observable) {
     observer = new ArkObserver<>(observable, this);
   }

@@ -1,12 +1,14 @@
 package com.edgechain.lib.rxjava.transformer.observable;
 
-import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.response.ArkResponse;
+import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.functions.*;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import reactor.util.retry.Retry;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -16,78 +18,67 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
 
   private static final long serialVersionUID = 297269864039510096L;
 
-  private static final int MAX_RETRIES = 3;
-  private static final int FIXED_DELAY = 10;
-  private static final TimeUnit UNIT = TimeUnit.SECONDS;
-
-  private Endpoint endpoint;
-
   public EdgeChain(Observable<T> observable) {
     super(observable);
   }
 
-  public EdgeChain(Observable<T> observable, Endpoint endpoint) {
-    super(observable);
-    this.endpoint = endpoint;
+  public static <T> EdgeChain<T> fromObservable(Observable<T> observable) {
+    return new EdgeChain<>(observable);
   }
 
   @Override
   public <R> EdgeChain<R> transform(Function<T, R> mapper) {
-    return new EdgeChain<>(this.observable.map(mapper), endpoint);
-  }
-
-  public static <T> EdgeChain<T> create(T t) {
-    return new EdgeChain<>(Observable.just(t));
+    return new EdgeChain<>(this.observable.map(mapper));
   }
 
   @Override
   public <R> EdgeChain<R> combine(ObservableSource<T> other, BiFunction<T, T, R> zipper) {
-    return new EdgeChain<>(this.observable.zipWith(other, zipper), endpoint);
+    return new EdgeChain<>(this.observable.zipWith(other, zipper));
   }
 
   @Override
   public <R> AbstractEdgeChain<R> combine(EdgeChain<T> other, BiFunction<T, T, R> zipper) {
-    return new EdgeChain<>(this.observable.zipWith(other.getObservable(), zipper), endpoint);
+    return new EdgeChain<>(this.observable.zipWith(other.getObservable(), zipper));
   }
 
   @Override
   public EdgeChain<T> filter(Predicate<T> predicate) {
-    return new EdgeChain<>(this.observable.filter(predicate), endpoint);
+    return new EdgeChain<>(this.observable.filter(predicate));
   }
 
   @Override
   public EdgeChain<T> mergeWith(ObservableSource<T> other) {
-    return new EdgeChain<>(this.observable.mergeWith(other), endpoint);
+    return new EdgeChain<>(this.observable.mergeWith(other));
   }
 
   @Override
   public EdgeChain<T> concatWith(ObservableSource<T> other) {
-    return new EdgeChain<>(this.observable.concatWith(other), endpoint);
+    return new EdgeChain<>(this.observable.concatWith(other));
   }
 
   @Override
   public AbstractEdgeChain<T> doOnComplete(Action onComplete) {
-    return new EdgeChain<>(this.observable.doOnComplete(onComplete), endpoint);
+    return new EdgeChain<>(this.observable.doOnComplete(onComplete));
   }
 
   @Override
   public EdgeChain<T> doOnNext(@NonNull Consumer<? super T> onNext) {
-    return new EdgeChain<>(this.observable.doOnNext(onNext), endpoint);
+    return new EdgeChain<>(this.observable.doOnNext(onNext));
   }
 
   @Override
   public EdgeChain<T> doOnError(@NonNull Consumer<? super Throwable> onError) {
-    return new EdgeChain<>(this.observable.doOnError(onError), endpoint);
+    return new EdgeChain<>(this.observable.doOnError(onError));
   }
 
   @Override
   public EdgeChain<T> schedule() {
-    return new EdgeChain<>(this.observable.subscribeOn(Schedulers.io()), endpoint);
+    return new EdgeChain<>(this.observable.subscribeOn(Schedulers.io()));
   }
 
   @Override
   public EdgeChain<T> schedule(Scheduler scheduler) {
-    return new EdgeChain<>(this.observable.subscribeOn(scheduler), endpoint);
+    return new EdgeChain<>(this.observable.subscribeOn(scheduler));
   }
 
   @Override
@@ -104,100 +95,76 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
    */
   @Override
   public EdgeChain<T> doWhileLoop(BooleanSupplier booleanSupplier) {
-    return new EdgeChain<>(this.observable.repeatUntil(booleanSupplier), endpoint);
+    return new EdgeChain<>(this.observable.repeatUntil(booleanSupplier));
   }
 
   @Override
   public void execute() {
-    this.observable
-        .subscribeOn(Schedulers.io())
-        .retryWhen(
-            Objects.isNull(endpoint)
-                ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT)
-                : endpoint.getRetryPolicy())
-        .subscribe();
+    this.observable.subscribeOn(Schedulers.io()).subscribe();
+  }
+
+  @Override
+  public void execute(RetryPolicy retryPolicy) {
+    this.observable.subscribeOn(Schedulers.io()).retryWhen(retryPolicy).subscribe();
   }
 
   @Override
   public void execute(Consumer<? super T> onNext, Consumer<? super Throwable> onError) {
-    this.observable
-        .subscribeOn(Schedulers.io())
-        .retryWhen(
-            Objects.isNull(endpoint)
-                ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT)
-                : endpoint.getRetryPolicy())
-        .subscribe(onNext, onError);
+    this.observable.subscribeOn(Schedulers.io()).subscribe(onNext, onError);
+  }
+
+  @Override
+  public void execute(
+      Consumer<? super T> onNext, Consumer<? super Throwable> onError, RetryPolicy retryPolicy) {
+    this.observable.subscribeOn(Schedulers.io()).retryWhen(retryPolicy).subscribe(onNext, onError);
   }
 
   @Override
   public void execute(
       Consumer<? super T> onNext, Consumer<? super Throwable> onError, Action onComplete) {
+    this.observable.subscribeOn(Schedulers.io()).subscribe(onNext, onError, onComplete);
+  }
+
+  @Override
+  public void execute(
+      Consumer<? super T> onNext,
+      Consumer<? super Throwable> onError,
+      Action onComplete,
+      RetryPolicy retryPolicy) {
     this.observable
         .subscribeOn(Schedulers.io())
-        .retryWhen(
-            Objects.isNull(endpoint)
-                ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT)
-                : endpoint.getRetryPolicy())
+        .retryWhen(retryPolicy)
         .subscribe(onNext, onError, onComplete);
   }
 
   @Override
-  public Observable<T> getScheduledObservableWithRetry() {
-    return this.observable
-        .retryWhen(
-            Objects.isNull(endpoint)
-                ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT)
-                : endpoint.getRetryPolicy())
-        .subscribeOn(Schedulers.io());
-  }
-
-  @Override
-  public Single<T> toSingleWithRetry() {
-    return this.observable
-        .retryWhen(
-            Objects.isNull(endpoint)
-                ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT)
-                : endpoint.getRetryPolicy())
-        .subscribeOn(Schedulers.io())
-        .firstOrError();
-  }
-
-  @Override
-  public Single<T> toSingleWithOutRetry() {
-    return this.observable.subscribeOn(Schedulers.io()).firstOrError();
-  }
-
-  @Override
-  public Observable<T> getScheduledObservableWithoutRetry() {
+  public Observable<T> getScheduledObservable() {
     return this.observable.subscribeOn(Schedulers.io());
   }
 
   @Override
-  public T getWithRetry(Scheduler scheduler) {
-    return this.observable
-        .subscribeOn(scheduler)
-        .retryWhen(
-            Objects.isNull(endpoint)
-                ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT)
-                : endpoint.getRetryPolicy())
-        .firstOrError()
-        .blockingGet();
+  public Observable<T> getScheduledObservable(RetryPolicy retryPolicy) {
+    return this.observable.retryWhen(retryPolicy).subscribeOn(Schedulers.io());
   }
 
   @Override
-  public T getWithRetry() {
-    return this.observable
-        .retryWhen(
-            Objects.isNull(endpoint)
-                ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT)
-                : endpoint.getRetryPolicy())
-        .firstOrError()
-        .blockingGet();
+  public Single<T> toSingle() {
+    return this.observable.subscribeOn(Schedulers.io()).firstOrError();
   }
 
   @Override
-  public T getWithOutRetry() {
+  public Single<T> toSingle(RetryPolicy retryPolicy) {
+    return this.observable.retryWhen(retryPolicy).subscribeOn(Schedulers.io()).firstOrError();
+  }
+
+  @Override
+  public T get() {
     return this.observable.firstOrError().blockingGet();
+  }
+
+  @Override
+  public T get(RetryPolicy retryPolicy) {
+    return this.observable.retryWhen(retryPolicy).firstOrError().blockingGet();
   }
 
   @Override
@@ -205,23 +172,18 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
     return this.observable;
   }
 
-  public ArkResponse<T> getArkResponse() {
-    return new ArkResponse<T>(this.getScheduledObservableWithoutRetry());
+  @Override
+  public Completable await(RetryPolicy retryPolicy) {
+    return this.observable
+        .subscribeOn(Schedulers.io())
+        .retryWhen(retryPolicy)
+        .firstOrError()
+        .ignoreElement();
   }
 
   @Override
-  public void awaitWithRetry() {
-    Completable.fromObservable(
-            this.observable.retryWhen(
-                Objects.isNull(endpoint)
-                    ? new FixedDelay(MAX_RETRIES, FIXED_DELAY, UNIT)
-                    : endpoint.getRetryPolicy()))
-        .blockingAwait();
-  }
-
-  @Override
-  public void awaitWithoutRetry() {
-    Completable.fromObservable(this.observable).blockingAwait();
+  public Completable await() {
+    return this.observable.subscribeOn(Schedulers.io()).firstOrError().ignoreElement();
   }
 
   @Override
@@ -239,5 +201,9 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
     Completable.fromObservable(this.observable)
         .subscribeOn(Schedulers.io())
         .subscribe(onComplete, onError);
+  }
+
+  public ArkResponse<T> getArkResponse() {
+    return new ArkResponse<>(this.observable.subscribeOn(Schedulers.io()));
   }
 }

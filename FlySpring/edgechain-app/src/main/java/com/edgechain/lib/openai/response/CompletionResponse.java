@@ -1,6 +1,6 @@
 package com.edgechain.lib.openai.response;
 
-import com.edgechain.lib.embeddings.domain.openai.Usage;
+import com.edgechain.lib.embeddings.response.Usage;
 
 import java.util.List;
 
