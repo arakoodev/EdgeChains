@@ -1,6 +1,6 @@
 package com.edgechain.lib.openai.plugin.services;
 
-import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.plugin.chains.PluginResponseChain;
 import com.edgechain.lib.openai.plugin.response.PluginResponse;
 import com.edgechain.lib.openai.plugin.tool.PluginTool;
@@ -30,13 +30,13 @@ public class PluginResponseService {
                 emitter -> {
                   try {
                     Observable<PluginTool> obs1 =
-                        this.requestPluginAPI(pluginEndpoint).getScheduledObservableWithRetry();
+                        this.requestPluginAPI(pluginEndpoint).getScheduledObservable();
                     Observable<String> obs2 =
-                        this.requestSpecAPI(pluginSpecEndpoint).getScheduledObservableWithRetry();
+                        this.requestSpecAPI(pluginSpecEndpoint).getScheduledObservable();
 
                     PluginResponse response =
                         new EdgeChain<>(Observable.zip(obs1, obs2, PluginResponse::new))
-                            .getWithOutRetry();
+                            .get();
 
                     emitter.onNext(response);
                     emitter.onComplete();
@@ -45,7 +45,7 @@ public class PluginResponseService {
                     emitter.onError(e);
                   }
                 }))
-        .getWithOutRetry();
+        .get();
   }
 
   private EdgeChain<PluginTool> requestPluginAPI(Endpoint pluginEndpoint) {

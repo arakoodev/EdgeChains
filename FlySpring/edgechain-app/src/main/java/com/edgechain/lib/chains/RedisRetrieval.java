@@ -1,62 +1,73 @@
 package com.edgechain.lib.chains;
 
-import com.edgechain.lib.chains.retrieval.Retrieval;
-import com.edgechain.lib.feign.EmbeddingService;
-import com.edgechain.lib.feign.index.RedisService;
-import com.edgechain.lib.openai.endpoint.Endpoint;
-import com.edgechain.lib.request.Doc2VecEmbeddingsRequest;
-import com.edgechain.lib.request.OpenAiEmbeddingsRequest;
-import com.edgechain.lib.request.RedisRequest;
+import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
+import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
+import com.edgechain.lib.endpoint.impl.RedisEndpoint;
+import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.edgechain.lib.rxjava.transformer.observable.EdgeChain.create;
+import java.util.Objects;
 
 public class RedisRetrieval extends Retrieval {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  private Endpoint embeddingEndpoint;
-  private Endpoint chatEndpoint;
-  private final EmbeddingService embeddingService;
-  private final RedisService redisService;
+  private final RedisEndpoint redisEndpoint;
+  private OpenAiEndpoint openAiEndpoint;
 
-  // For OpenAI
+  private Doc2VecEndpoint doc2VecEndpoint;
+
+  private final int dimension;
+  private final RedisDistanceMetric metric;
+
   public RedisRetrieval(
-      Endpoint embeddingEndpoint, EmbeddingService embeddingService, RedisService redisService) {
-    this.embeddingEndpoint = embeddingEndpoint;
-    this.embeddingService = embeddingService;
-    this.redisService = redisService;
-    logger.info("Using OpenAI Embedding Provider");
+      RedisEndpoint redisEndpoint,
+      OpenAiEndpoint openAiEndpoint,
+      int dimension,
+      RedisDistanceMetric metric) {
+    this.redisEndpoint = redisEndpoint;
+    this.openAiEndpoint = openAiEndpoint;
+    this.dimension = dimension;
+    this.metric = metric;
+    logger.info("Using OpenAI Embedding Service");
   }
 
-  public RedisRetrieval(EmbeddingService embeddingService, RedisService redisService) {
-    this.embeddingService = embeddingService;
-    this.redisService = redisService;
-    logger.info("Using Doc2Vec Embedding Provider");
+  public RedisRetrieval(RedisEndpoint redisEndpoint, Doc2VecEndpoint doc2VecEndpoint, int dimension, RedisDistanceMetric metric) {
+    this.redisEndpoint = redisEndpoint;
+    this.doc2VecEndpoint = doc2VecEndpoint;
+    this.dimension = dimension;
+    this.metric = metric;
+    logger.info("Using Doc2Vec Embedding Service");
   }
 
   @Override
   public void upsert(String input) {
-    EdgeChain<String> edgeChain;
 
-    if (embeddingEndpoint != null) {
-      edgeChain =
-          create(
-              this.embeddingService
-                  .openAi(new OpenAiEmbeddingsRequest(this.embeddingEndpoint, input))
-                  .getResponse());
+    if (Objects.nonNull(openAiEndpoint)) {
+      new EdgeChain<>(
+              this.openAiEndpoint
+                  .getEmbeddings(input)
+                  .map(embeddings -> this.redisEndpoint.upsert(embeddings, dimension, metric))
+                  .firstOrError()
+                  .blockingGet())
+          .await()
+          .blockingAwait();
+    }
+    // For Doc2Vec ===>
 
-    } else {
-      edgeChain =
-          create(this.embeddingService.doc2Vec(new Doc2VecEmbeddingsRequest(input)).getResponse());
+    if(Objects.nonNull(doc2VecEndpoint)){
+      new EdgeChain<>(
+              this.doc2VecEndpoint
+                      .getEmbeddings(input)
+                      .map(embeddings -> this.redisEndpoint.upsert(embeddings, dimension, metric))
+                      .firstOrError()
+                      .blockingGet())
+              .await()
+              .blockingAwait();
     }
 
-    edgeChain
-        .transform(
-            embeddingOutput ->
-                this.redisService.upsert(new RedisRequest(embeddingOutput)).getResponse())
-        .awaitWithoutRetry();
+
   }
 }

@@ -7,8 +7,6 @@ public class ChatCompletionRequest {
   private String model;
   private Double temperature;
   private List<ChatMessage> messages;
-
-  private Integer max_tokens;
   private Boolean stream;
 
   public ChatCompletionRequest() {}

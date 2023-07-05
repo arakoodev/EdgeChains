@@ -3,8 +3,7 @@ package com.edgechain.lib.openai.plugin.services;
 import com.edgechain.lib.openai.plugin.parser.PluginParser;
 import com.edgechain.lib.openai.plugin.response.PluginResponse;
 import com.edgechain.lib.openai.providers.OpenAiCompletionProvider;
-import com.edgechain.lib.rxjava.request.ChainRequest;
-import com.edgechain.lib.rxjava.response.ChainResponse;
+import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.core.JacksonException;
@@ -85,7 +84,7 @@ public class PluginService {
     try {
       // Step 2: Create PluginRequest (which act as JSON body for RestTemplate) & Send POST request
       // to OPENAPI Completion
-      provider.request(new ChainRequest(prompt.toString())).getWithRetry();
+      provider.request(prompt.toString()).get(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
       // Step 3: Parse The Initial Response Using PluginParser
       return PluginParser.parse(
@@ -101,8 +100,8 @@ public class PluginService {
       System.out.println("Logging");
 
       // Step 5: Create PluginRequest & Send To CreateCompletion OpenAPI
-      ChainResponse completionResponse =
-          provider.request(new ChainRequest(prompt.toString())).getWithRetry();
+      StringResponse completionResponse =
+          provider.request(prompt.toString()).get(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
       // Step 6: Parse the Response & Fetch Http GET request from ActionInput
       List<String> urlList = PluginParser.extractUrls(completionResponse.getResponse());
@@ -133,8 +132,8 @@ public class PluginService {
       OpenAiCompletionProvider provider, StringBuilder prompt) {
     try {
 
-      ChainResponse completionResponse =
-          provider.request(new ChainRequest(prompt.toString())).getWithRetry();
+      StringResponse completionResponse =
+          provider.request(prompt.toString()).get(new FixedDelay(2, 3, TimeUnit.SECONDS));
       return PluginParser.getFinalAnswer(completionResponse.getResponse());
     } catch (final Exception e) {
       throw new RuntimeException(e.getMessage());

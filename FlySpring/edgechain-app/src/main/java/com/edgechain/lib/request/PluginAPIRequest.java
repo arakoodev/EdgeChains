@@ -1,6 +1,6 @@
 package com.edgechain.lib.request;
 
-import com.edgechain.lib.openai.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.Endpoint;
 
 public class PluginAPIRequest {
 

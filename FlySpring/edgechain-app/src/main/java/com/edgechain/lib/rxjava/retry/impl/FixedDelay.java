@@ -12,15 +12,15 @@ public class FixedDelay extends RetryPolicy {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private int maxRetries = 5;
-  private int retryDelay = 5;
+  private int maxRetries;
+  private int retryDelay;
   private TimeUnit unit = TimeUnit.SECONDS;
   private int retryCount;
 
   public FixedDelay() {}
 
   public FixedDelay(int maxRetries, int retryDelay, TimeUnit unit) {
-    this.maxRetries = maxRetries;
+    this.maxRetries = maxRetries + 1;
     this.retryDelay = retryDelay;
     this.unit = unit;
     this.retryCount = 0;
@@ -31,13 +31,14 @@ public class FixedDelay extends RetryPolicy {
     return attempts.flatMap(
         (Function<Throwable, Observable<?>>)
             throwable -> {
+
               if (throwable.getMessage().contains("The mapper function returned a null value")
-                  || throwable
+                      || throwable
                       .getMessage()
                       .contains(
-                          "JSON decoding error: Cannot deserialize value of type"
-                              + " `com.edgechain.lib.openai.response.ChatCompletionResponse` from"
-                              + " Array value (token `JsonToken.START_ARRAY`)"))
+                              "JSON decoding error: Cannot deserialize value of type"
+                                      + " `com.edgechain.lib.openai.response.ChatCompletionResponse` from"
+                                      + " Array value (token `JsonToken.START_ARRAY`)"))
                 return Observable.empty();
 
               if (++retryCount < maxRetries) {

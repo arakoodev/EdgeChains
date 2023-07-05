@@ -16,6 +16,5 @@ local prompt = std.join("\n", [query, preset, context, history]);
     "preset" : preset,
     "context": context,
     "history": history,
-    "prompt":  if(std.length(prompt) > maxTokens) then std.substr(prompt, 0, maxTokens) else prompt,
-    "services": ["redisService", "openAiService", "embeddingService", "openAiStreamService", "historyContextService"]
+    "prompt":  if(std.length(prompt) > maxTokens) then std.substr(prompt, 0, maxTokens) else prompt
 }

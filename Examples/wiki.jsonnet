@@ -11,7 +11,7 @@ local preset = |||
                     2. <POINT_2> - <DESCRIPTION_2>
                     ...
                     ```
-                    Now, given the data, create a 20-bullet point summary of:
+                    Now, given the data, create a 30-bullet point summary of:
                |||;
 local context = if(std.extVar("keepContext") == true) then std.extVar("context") else "";
 local prompt = std.join("\n", [preset, context]);
@@ -19,6 +19,5 @@ local prompt = std.join("\n", [preset, context]);
     "maxTokens": maxTokens,
     "preset" : preset,
     "context": context,
-    "prompt": if(std.length(prompt) > maxTokens) then std.substr(prompt, 0, maxTokens) else prompt,
-    "services": ["wikiService", "openAiService", "openAiStreamService"]
+    "prompt": if(std.length(prompt) > maxTokens) then std.substr(prompt, 0, maxTokens) else prompt
 }
