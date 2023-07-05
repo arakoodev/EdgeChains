@@ -65,6 +65,6 @@ public class RedisEndpoint extends Endpoint {
   }
 
   public void delete(String patternName) {
-    this.redisService.deleteByPattern(patternName, this);
+    this.redisService.deleteByPattern(patternName, this).blockingAwait();
   }
 }

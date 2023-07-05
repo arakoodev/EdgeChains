@@ -5,6 +5,7 @@ import com.edgechain.lib.context.domain.HistoryContext;
 import java.util.HashMap;
 
 import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.http.MediaType;
 import retrofit2.http.*;
@@ -24,7 +25,7 @@ public interface RedisContextService {
     Single<Boolean> check(@Path("id") String id, @Body RedisHistoryContextEndpoint endpoint);
 
     @HTTP(method = "DELETE", path = "context/{id}", hasBody = true)
-    void delete(@Path("id") String id, @Body RedisHistoryContextEndpoint endpoint);
+    Completable delete(@Path("id") String id, @Body RedisHistoryContextEndpoint endpoint);
 
 
 }

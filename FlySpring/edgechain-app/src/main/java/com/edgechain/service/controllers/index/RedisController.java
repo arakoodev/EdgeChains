@@ -49,10 +49,10 @@ public class RedisController {
     EdgeChain<String> edgeChain = new RedisClient().deleteByPattern(pattern);
 
     if (RetryUtils.available(endpoint))
-      return edgeChain
-          .getScheduledObservable(endpoint.getRetryPolicy())
-          .firstOrError()
-          .ignoreElement();
-    else return edgeChain.getScheduledObservable().firstOrError().ignoreElement();
+      return edgeChain.await(endpoint.getRetryPolicy());
+
+
+    else
+      return edgeChain.await();
   }
 }

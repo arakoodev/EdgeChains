@@ -44,4 +44,12 @@ public class RedisHistoryContextEndpoint extends Endpoint {
     }
     return Observable.just(false);
   }
+
+  public void delete(String id){
+    if (Objects.nonNull(id) && !id.isEmpty()) {
+      this.contextService.delete(id,this).blockingAwait();
+    }
+    else
+      throw new RuntimeException("Redis key cannot be null or empty");
+  }
 }

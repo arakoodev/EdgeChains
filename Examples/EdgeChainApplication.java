@@ -132,18 +132,31 @@ public class EdgeChainApplication {
 
     /*** Creating HistoryContext (Using Redis) Controller ****/
 
-    @PostMapping("/historycontext/create")
+    @PostMapping("/historycontext")
     public ArkResponse create(ArkRequest arkRequest) {
-      String id = arkRequest.getQueryParam("id");
       RedisHistoryContextEndpoint endpoint = new RedisHistoryContextEndpoint(new FixedDelay(2,3, TimeUnit.SECONDS));
-      return new ArkResponse(endpoint.create(id));
+      return new ArkResponse(endpoint.create(UUID.randomUUID().toString())); // Here randomId is generated, you can provide your own ids....
     }
 
-    @PostMapping("/historycontext/put")
+    @PutMapping("/historycontext")
     public ArkResponse put(ArkRequest arkRequest) throws IOException {
       JSONObject json = arkRequest.getBody();
       RedisHistoryContextEndpoint endpoint = new RedisHistoryContextEndpoint(new FixedDelay(2,3, TimeUnit.SECONDS));
       return new ArkResponse(endpoint.put(json.getString("id"), json.getString("response")));
+    }
+
+    @GetMapping("/historycontext")
+    public ArkResponse get(ArkRequest arkRequest) {
+      String id = arkRequest.getQueryParam("id");
+      RedisHistoryContextEndpoint endpoint = new RedisHistoryContextEndpoint(new FixedDelay(2,3, TimeUnit.SECONDS));
+      return new ArkResponse(endpoint.get(id));
+    }
+
+    @DeleteMapping("/historycontext")
+    public void delete(ArkRequest arkRequest) {
+      String id = arkRequest.getQueryParam("id");
+      RedisHistoryContextEndpoint endpoint = new RedisHistoryContextEndpoint(new FixedDelay(2,3, TimeUnit.SECONDS));
+      endpoint.delete(id);
     }
 
 
@@ -699,7 +712,7 @@ public class EdgeChainApplication {
 
 
     /** Delete Redis By Pattern Name * */
-    @DeleteMapping("/redis/delete") // /v1/examples/redis/delete?pattern=machine-learning
+    @DeleteMapping("/redis/delete") // /v1/examples/redis/delete?pattern=machine-learning* (Will delete all the keys start with machine-learning namespace
     public void deleteRedis(ArkRequest arkRequest) {
       String patternName = arkRequest.getQueryParam("pattern");
       RedisEndpoint redisEndpoint = new RedisEndpoint();
