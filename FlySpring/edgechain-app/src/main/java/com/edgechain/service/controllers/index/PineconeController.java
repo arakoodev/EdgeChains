@@ -5,7 +5,6 @@ import com.edgechain.lib.index.request.feign.PineconeRequest;
 import com.edgechain.lib.index.client.impl.PineconeClient;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import com.edgechain.lib.utils.RetryUtils;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,19 +16,24 @@ public class PineconeController {
 
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody PineconeRequest request) {
-    EdgeChain<StringResponse> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace()).upsert(request.getWordEmbeddings());
+    EdgeChain<StringResponse> edgeChain =
+        new PineconeClient(request.getEndpoint(), request.getNamespace())
+            .upsert(request.getWordEmbeddings());
     return edgeChain.toSingle();
   }
 
   @PostMapping("/query")
   public Single<List<WordEmbeddings>> query(@RequestBody PineconeRequest request) {
-    EdgeChain<List<WordEmbeddings>> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace()).query(request.getWordEmbeddings(), request.getTopK());
+    EdgeChain<List<WordEmbeddings>> edgeChain =
+        new PineconeClient(request.getEndpoint(), request.getNamespace())
+            .query(request.getWordEmbeddings(), request.getTopK());
     return edgeChain.toSingle();
   }
 
   @DeleteMapping("/deleteAll")
   public Single<StringResponse> deleteAll(@RequestBody PineconeRequest request) {
-    EdgeChain<StringResponse> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace()).deleteAll();
+    EdgeChain<StringResponse> edgeChain =
+        new PineconeClient(request.getEndpoint(), request.getNamespace()).deleteAll();
     return edgeChain.toSingle();
   }
 }

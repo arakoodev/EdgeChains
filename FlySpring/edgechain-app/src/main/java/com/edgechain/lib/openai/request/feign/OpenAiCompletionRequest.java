@@ -1,6 +1,5 @@
 package com.edgechain.lib.openai.request.feign;
 
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 
 public class OpenAiCompletionRequest {

@@ -3,7 +3,6 @@ package com.edgechain.lib.openai.client;
 import com.edgechain.lib.constants.EndpointConstants;
 import com.edgechain.lib.embeddings.request.OpenAiEmbeddingRequest;
 import com.edgechain.lib.embeddings.response.OpenAiEmbeddingResponse;
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
 import com.edgechain.lib.openai.request.CompletionRequest;
@@ -15,7 +14,6 @@ import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.adapter.rxjava.RxJava3Adapter;
@@ -29,11 +27,11 @@ public class OpenAiClient {
 
   private final OpenAiEndpoint endpoint;
 
-    public OpenAiClient(OpenAiEndpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+  public OpenAiClient(OpenAiEndpoint endpoint) {
+    this.endpoint = endpoint;
+  }
 
-    public EdgeChain<ChatCompletionResponse> createChatCompletion(ChatCompletionRequest request) {
+  public EdgeChain<ChatCompletionResponse> createChatCompletion(ChatCompletionRequest request) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -62,10 +60,12 @@ public class OpenAiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 
-  public EdgeChain<ChatCompletionResponse> createChatCompletionStream(ChatCompletionRequest request) {
+  public EdgeChain<ChatCompletionResponse> createChatCompletionStream(
+      ChatCompletionRequest request) {
 
     try {
       return new EdgeChain<>(
@@ -82,7 +82,8 @@ public class OpenAiClient {
                       })
                   .bodyValue(new ObjectMapper().writeValueAsString(request))
                   .retrieve()
-                  .bodyToFlux(ChatCompletionResponse.class)),endpoint);
+                  .bodyToFlux(ChatCompletionResponse.class)),
+          endpoint);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -108,7 +109,8 @@ public class OpenAiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 
   public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(OpenAiEmbeddingRequest request) {
@@ -131,6 +133,7 @@ public class OpenAiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 }

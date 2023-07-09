@@ -48,7 +48,9 @@ public class RedisHistoryContextEndpoint extends Endpoint {
     Retrofit retrofit = RetrofitClientInstance.getInstance();
     RedisContextService contextService = retrofit.create(RedisContextService.class);
 
-    if (Objects.nonNull(id) && !id.isEmpty()) {return Observable.fromSingle(contextService.check(id, this));}
+    if (Objects.nonNull(id) && !id.isEmpty()) {
+      return Observable.fromSingle(contextService.check(id, this));
+    }
     return Observable.just(false);
   }
 
@@ -57,7 +59,8 @@ public class RedisHistoryContextEndpoint extends Endpoint {
     Retrofit retrofit = RetrofitClientInstance.getInstance();
     RedisContextService contextService = retrofit.create(RedisContextService.class);
 
-    if (Objects.nonNull(id) && !id.isEmpty()) {contextService.delete(id, this).blockingAwait();}
-    else throw new RuntimeException("Redis key cannot be null or empty");
+    if (Objects.nonNull(id) && !id.isEmpty()) {
+      contextService.delete(id, this).blockingAwait();
+    } else throw new RuntimeException("Redis key cannot be null or empty");
   }
 }

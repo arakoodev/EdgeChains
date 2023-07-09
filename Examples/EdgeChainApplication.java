@@ -261,7 +261,7 @@ public class EdgeChainApplication {
               embeddings ->
                   new EdgeChain<>(pineconeEndpoint.query(embeddings, topK))
                       .get()) // Step 2: Block The Observable & Get the result from Pinecone(id,//
-                              // scores)
+          // scores)
           .transform(
               embeddingsQuery -> {
                 List<ChatCompletionResponse> resp = new ArrayList<>();
@@ -279,14 +279,14 @@ public class EdgeChainApplication {
                           new JsonnetArgs(
                               DataType.STRING,
                               pinecone)) // Step 3: Concatenate the Prompt: ${Base Prompt} - //
-                                         // ${Pinecone Output}
+                      // ${Pinecone Output}
                       .loadOrReload();
                   // Step 4: Now, pass the prompt to OpenAI ChatCompletion & Add it to the list
                   // which will be returned
                   resp.add(
                       EdgeChain.fromObservable(chatEndpoint.getChatCompletion(loader.get("prompt")))
                           .get()); // You can use both new EdgeChain<>() or
-                                   // EdgeChain.fromObservable()
+                  // EdgeChain.fromObservable()
                   // Wrap the Observable & get the data in a blocking way... Pass the concatenated
                   // prompt to ChatCompletion..
                 }
@@ -389,7 +389,7 @@ public class EdgeChainApplication {
 
                 return mapper;
               }) // Step 4: Get the ChatHistory, and then we pass ChatHistory & PineconeOutput to
-                 // our JsonnetLoader
+          // our JsonnetLoader
           .transform(
               mapper -> {
                 loader
@@ -707,7 +707,7 @@ public class EdgeChainApplication {
 
                 return mapper;
               }) // Step 4: Get the ChatHistory, and then we pass ChatHistory & RedisOutput to our
-                 // JsonnetLoader
+          // JsonnetLoader
           .transform(
               mapper -> {
                 loader
@@ -789,7 +789,7 @@ public class EdgeChainApplication {
     /** Delete Redis By Pattern Name * */
     @DeleteMapping(
         "/redis/delete") // /v1/examples/redis/delete?pattern=machine-learning* (Will delete all the
-                         // keys start with machine-learning namespace
+    // keys start with machine-learning namespace
     public void deleteRedis(ArkRequest arkRequest) {
       String patternName = arkRequest.getQueryParam("pattern");
       RedisEndpoint redisEndpoint = new RedisEndpoint();

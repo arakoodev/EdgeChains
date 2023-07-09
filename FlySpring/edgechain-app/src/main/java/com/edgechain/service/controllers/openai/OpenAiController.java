@@ -13,7 +13,6 @@ import com.edgechain.lib.openai.request.feign.OpenAiCompletionRequest;
 import com.edgechain.lib.openai.request.feign.OpenAiEmbeddingsRequest;
 
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import com.edgechain.lib.utils.RetryUtils;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.http.MediaType;
@@ -40,7 +39,8 @@ public class OpenAiController {
             .stream(request.getEndpoint().getStream())
             .build();
 
-    EdgeChain<ChatCompletionResponse> edgeChain = new OpenAiClient(request.getEndpoint()).createChatCompletion(chatCompletionRequest);
+    EdgeChain<ChatCompletionResponse> edgeChain =
+        new OpenAiClient(request.getEndpoint()).createChatCompletion(chatCompletionRequest);
 
     return edgeChain.toSingle();
   }
@@ -65,7 +65,8 @@ public class OpenAiController {
         () -> {
           try {
             EdgeChain<ChatCompletionResponse> edgeChain =
-                    new OpenAiClient(request.getEndpoint()).createChatCompletionStream(chatCompletionRequest);
+                new OpenAiClient(request.getEndpoint())
+                    .createChatCompletionStream(chatCompletionRequest);
 
             Observable<ChatCompletionResponse> obs = edgeChain.getScheduledObservable();
 
@@ -107,8 +108,10 @@ public class OpenAiController {
   @PostMapping("/embeddings")
   public Single<OpenAiEmbeddingResponse> embeddings(@RequestBody OpenAiEmbeddingsRequest request) {
 
-    EdgeChain<OpenAiEmbeddingResponse> edgeChain = new OpenAiClient(request.getEndpoint())
-            .createEmbeddings(new OpenAiEmbeddingRequest(request.getEndpoint().getModel(), request.getInput()));
+    EdgeChain<OpenAiEmbeddingResponse> edgeChain =
+        new OpenAiClient(request.getEndpoint())
+            .createEmbeddings(
+                new OpenAiEmbeddingRequest(request.getEndpoint().getModel(), request.getInput()));
 
     return edgeChain.toSingle();
   }

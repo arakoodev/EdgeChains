@@ -10,7 +10,6 @@ import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
@@ -18,8 +17,8 @@ import java.util.Objects;
 
 public class OpenAiEndpoint extends Endpoint {
 
-  private final OpenAiStreamService openAiStreamService = ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
-
+  private final OpenAiStreamService openAiStreamService =
+      ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
 
   private String model;
   private String role;
@@ -27,16 +26,14 @@ public class OpenAiEndpoint extends Endpoint {
 
   private Boolean stream;
 
-
   public OpenAiEndpoint() {}
-
 
   public OpenAiEndpoint(String url, String apiKey, String model) {
     super(url, apiKey, null);
     this.model = model;
   }
 
-  public OpenAiEndpoint(String url, String apiKey, String model,RetryPolicy retryPolicy) {
+  public OpenAiEndpoint(String url, String apiKey, String model, RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.model = model;
   }
@@ -48,15 +45,21 @@ public class OpenAiEndpoint extends Endpoint {
     this.role = role;
   }
 
-  public OpenAiEndpoint(String url, String apiKey,  String model, String role, Double temperature, RetryPolicy retryPolicy) {
+  public OpenAiEndpoint(
+      String url,
+      String apiKey,
+      String model,
+      String role,
+      Double temperature,
+      RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.model = model;
     this.role = role;
     this.temperature = temperature;
   }
 
-
-  public OpenAiEndpoint(String url, String apiKey,  String model, String role, Double temperature, Boolean stream) {
+  public OpenAiEndpoint(
+      String url, String apiKey, String model, String role, Double temperature, Boolean stream) {
     super(url, apiKey, null);
     this.model = model;
     this.role = role;
@@ -64,14 +67,20 @@ public class OpenAiEndpoint extends Endpoint {
     this.stream = stream;
   }
 
-  public OpenAiEndpoint(String url, String apiKey,  String model, String role, Double temperature, Boolean stream, RetryPolicy retryPolicy) {
+  public OpenAiEndpoint(
+      String url,
+      String apiKey,
+      String model,
+      String role,
+      Double temperature,
+      Boolean stream,
+      RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.model = model;
     this.role = role;
     this.temperature = temperature;
     this.stream = stream;
   }
-
 
   public String getModel() {
     return model;

@@ -10,8 +10,6 @@ public abstract class AbstractEdgeChain<T> implements Serializable {
 
   private static final long serialVersionUID = -7323653750095226732L;
 
-
-
   protected Observable<T> observable;
 
   public AbstractEdgeChain(Observable<T> observable) {
@@ -68,9 +66,7 @@ public abstract class AbstractEdgeChain<T> implements Serializable {
 
   public abstract Observable<T> getScheduledObservable();
 
-
   public abstract Single<T> toSingle();
-
 
   public abstract T get();
 

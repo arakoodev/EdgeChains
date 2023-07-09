@@ -100,8 +100,7 @@ public class PluginService {
       System.out.println("Logging");
 
       // Step 5: Create PluginRequest & Send To CreateCompletion OpenAPI
-      StringResponse completionResponse =
-          provider.request(prompt.toString()).get();
+      StringResponse completionResponse = provider.request(prompt.toString()).get();
 
       // Step 6: Parse the Response & Fetch Http GET request from ActionInput
       List<String> urlList = PluginParser.extractUrls(completionResponse.getResponse());
@@ -132,8 +131,7 @@ public class PluginService {
       OpenAiCompletionProvider provider, StringBuilder prompt) {
     try {
 
-      StringResponse completionResponse =
-          provider.request(prompt.toString()).get();
+      StringResponse completionResponse = provider.request(prompt.toString()).get();
       return PluginParser.getFinalAnswer(completionResponse.getResponse());
     } catch (final Exception e) {
       throw new RuntimeException(e.getMessage());
