@@ -73,7 +73,8 @@ public class RedisClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 
   public EdgeChain<List<WordEmbeddings>> query(WordEmbeddings words2Vec, int topK) {
@@ -116,7 +117,8 @@ public class RedisClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 
   public EdgeChain<String> deleteByPattern(String pattern) {
@@ -135,7 +137,8 @@ public class RedisClient {
               } finally {
                 jedisPooled.getPool().returnResource(jedisPooled.getPool().getResource());
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 
   private void createSearchIndex(int dimension, String metric) {

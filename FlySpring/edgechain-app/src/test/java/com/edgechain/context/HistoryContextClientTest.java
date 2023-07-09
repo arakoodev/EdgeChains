@@ -6,7 +6,4 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
-public class HistoryContextClientTest {
-
-
-}
+public class HistoryContextClientTest {}

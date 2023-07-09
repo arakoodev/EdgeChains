@@ -1,6 +1,5 @@
 package com.edgechain.lib.wiki.response;
 
-
 public class WikiResponse {
 
   private String text;

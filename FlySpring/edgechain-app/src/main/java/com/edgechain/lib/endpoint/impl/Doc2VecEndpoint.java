@@ -11,7 +11,6 @@ import io.reactivex.rxjava3.core.Observable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import retrofit2.Retrofit;
 
-
 public class Doc2VecEndpoint extends Endpoint {
 
   private ParagraphVectors paragraphVectors;

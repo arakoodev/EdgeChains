@@ -3,7 +3,6 @@ package com.edgechain.lib.index.request.feign;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
 
-
 public class PineconeRequest {
 
   private PineconeEndpoint endpoint;

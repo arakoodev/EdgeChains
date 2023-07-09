@@ -56,7 +56,8 @@ public class RedisHistoryContextClient implements HistoryContextClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 
   @Override
@@ -66,7 +67,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
             emitter -> {
               try {
 
-                HistoryContext historyContext = this.get(key,null).get();
+                HistoryContext historyContext = this.get(key, null).get();
                 historyContext.setResponse(response);
 
                 this.redisTemplate.opsForValue().set(key, historyContext);
@@ -80,7 +81,8 @@ public class RedisHistoryContextClient implements HistoryContextClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 
   @Override
@@ -105,7 +107,8 @@ public class RedisHistoryContextClient implements HistoryContextClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 
   @Override
@@ -120,7 +123,8 @@ public class RedisHistoryContextClient implements HistoryContextClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 
   @Override
@@ -130,7 +134,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
         Observable.create(
             emitter -> {
               try {
-                this.get(key,null).get();
+                this.get(key, null).get();
                 this.redisTemplate.delete(key);
                 emitter.onNext("");
                 emitter.onComplete();
@@ -138,6 +142,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }),endpoint);
+            }),
+        endpoint);
   }
 }

@@ -2,7 +2,6 @@ package com.edgechain.lib.wiki.client;
 
 import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import com.edgechain.lib.wiki.request.WikiRequest;
 import com.edgechain.lib.wiki.response.WikiResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -76,6 +75,7 @@ public class WikiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }), endpoint);
+            }),
+        endpoint);
   }
 }

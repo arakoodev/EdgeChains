@@ -66,8 +66,7 @@ public class RedisEndpoint extends Endpoint {
     return Observable.fromSingle(redisService.query(request));
   }
 
-  public void delete(String patternName)
-  {
+  public void delete(String patternName) {
     Retrofit retrofit = RetrofitClientInstance.getInstance();
     RedisService redisService = retrofit.create(RedisService.class);
 

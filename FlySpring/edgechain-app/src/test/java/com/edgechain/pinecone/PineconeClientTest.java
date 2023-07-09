@@ -9,7 +9,6 @@ import com.edgechain.lib.index.client.impl.PineconeClient;
 import com.edgechain.lib.openai.client.OpenAiClient;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
-import com.edgechain.lib.utils.FloatUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,76 +28,74 @@ import java.util.concurrent.TimeUnit;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
-/** Upsert, Query, delete **/
-
+/** Upsert, Query, delete * */
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
 public class PineconeClientTest {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Mock
-    RestTemplate restTemplate;
-    private MockRestServiceServer mockServer;
-    private ObjectMapper objectMapper = new ObjectMapper();
+  @Mock RestTemplate restTemplate;
+  private MockRestServiceServer mockServer;
+  private ObjectMapper objectMapper = new ObjectMapper();
 
-    @BeforeEach
-    public void setup() {
-        mockServer = MockRestServiceServer.createServer(restTemplate);
-    }
+  @BeforeEach
+  public void setup() {
+    mockServer = MockRestServiceServer.createServer(restTemplate);
+  }
 
-    /** Get Embeddings from OpenAI and then upsert it to Pinecone */
-    @Test
-    @DisplayName("Test PineconeUpsert")
-    public void upsert() throws InterruptedException {
+  /** Get Embeddings from OpenAI and then upsert it to Pinecone */
+  @Test
+  @DisplayName("Test PineconeUpsert")
+  public void upsert() throws InterruptedException {
 
-        // Step 1: Create OpenAiEndpoint
-        OpenAiEndpoint openAiEndpoint = new OpenAiEndpoint(
-                OPENAI_EMBEDDINGS_API,
-                "", // apiKey
-                "text-embedding-ada-002",
-                new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS)
-        );
-        String input = "Hey, we are building LLM using Spring and Java";
-        TestObserver<OpenAiEmbeddingResponse> testEmbeddings = new OpenAiClient(openAiEndpoint).createEmbeddings(new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), input))
-                .getScheduledObservable().test();
+    // Step 1: Create OpenAiEndpoint
+    OpenAiEndpoint openAiEndpoint =
+        new OpenAiEndpoint(
+            OPENAI_EMBEDDINGS_API,
+            "", // apiKey
+            "text-embedding-ada-002",
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+    String input = "Hey, we are building LLM using Spring and Java";
+    TestObserver<OpenAiEmbeddingResponse> testEmbeddings =
+        new OpenAiClient(openAiEndpoint)
+            .createEmbeddings(new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), input))
+            .getScheduledObservable()
+            .test();
 
-        // Await
-        testEmbeddings.await();
+    // Await
+    testEmbeddings.await();
 
-        List<Float> embeddings = testEmbeddings.values().get(0).getData().get(0).getEmbedding();
+    List<Float> embeddings = testEmbeddings.values().get(0).getData().get(0).getEmbedding();
 
-        PineconeEndpoint pineconeEndpoint =
-                new PineconeEndpoint(
-                        "", // upsert url 
-                        "", // apiKey
-                        "", //namespace
-                        new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    PineconeEndpoint pineconeEndpoint =
+        new PineconeEndpoint(
+            "", // upsert url
+            "", // apiKey
+            "", // namespace
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-        WordEmbeddings wordEmbeddings = new WordEmbeddings();
-        wordEmbeddings.setId(input);
-        wordEmbeddings.setValues(embeddings);
+    WordEmbeddings wordEmbeddings = new WordEmbeddings();
+    wordEmbeddings.setId(input);
+    wordEmbeddings.setValues(embeddings);
 
-        TestObserver<StringResponse> pineconeTest = new PineconeClient(pineconeEndpoint, "").upsert(wordEmbeddings)
-                .getScheduledObservable().test();
+    TestObserver<StringResponse> pineconeTest =
+        new PineconeClient(pineconeEndpoint, "")
+            .upsert(wordEmbeddings)
+            .getScheduledObservable()
+            .test();
 
-        pineconeTest.await();
+    pineconeTest.await();
 
-        logger.info(pineconeTest.values().get(0).getResponse());
+    logger.info(pineconeTest.values().get(0).getResponse());
 
-        // Assert
-        pineconeTest.assertNoErrors();
+    // Assert
+    pineconeTest.assertNoErrors();
+  }
 
-    }
+  @Test
+  public void query() {}
 
-    @Test
-    public void query() {
-
-    }
-
-    @Test
-    public void delete(){
-
-    }
-
+  @Test
+  public void delete() {}
 }

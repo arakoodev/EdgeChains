@@ -2,7 +2,6 @@ package com.edgechain.lib.openai.providers;
 
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.openai.client.OpenAiClient;
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.request.CompletionRequest;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
