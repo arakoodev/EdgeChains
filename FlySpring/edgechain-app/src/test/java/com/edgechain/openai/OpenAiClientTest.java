@@ -85,25 +85,4 @@ public class OpenAiClientTest {
 
     }
 
-//    @Test
-//    @DisplayName("Test OpenAI Embeddings")
-//    void testOpenAiClient_CreateEmbeddings() throws InterruptedException {
-//
-//        Endpoint endpoint = new Endpoint(OPENAI_EMBEDDINGS_API, "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");
-//
-//
-//        TestObserver<OpenAiEmbeddingResponse> test = new OpenAiClient(endpoint).createEmbeddings(
-//                        new OpenAiEmbeddingRequest("text-embedding-ada-002","Hey, we are developing LLM using Java & Spring"))
-//                .getObservable().test();
-//
-//        test.await();
-//
-//        logger.info(test.values().toString());
-//
-//        // Assert
-//        test.assertNoErrors();
-//
-//    }
-
-
 }
