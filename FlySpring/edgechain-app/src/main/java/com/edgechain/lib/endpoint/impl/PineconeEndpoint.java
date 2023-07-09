@@ -14,9 +14,6 @@ import java.util.List;
 
 public class PineconeEndpoint extends Endpoint {
 
-  private final Retrofit retrofit = RetrofitClientInstance.getInstance();
-  private final PineconeService pineconeService = retrofit.create(PineconeService.class);
-
   private String namespace;
 
   public PineconeEndpoint() {}
@@ -37,25 +34,35 @@ public class PineconeEndpoint extends Endpoint {
 
   public Observable<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
 
-    PineconeRequest request = new PineconeRequest();
-    request.setEndpoint(this);
-    request.setWordEmbeddings(wordEmbeddings);
-    request.setNamespace(this.namespace);
+   Retrofit retrofit = RetrofitClientInstance.getInstance();
+   PineconeService pineconeService = retrofit.create(PineconeService.class);
 
-    return Observable.fromSingle(this.pineconeService.upsert(request));
+   PineconeRequest request = new PineconeRequest();
+   request.setEndpoint(this);
+   request.setWordEmbeddings(wordEmbeddings);
+   request.setNamespace(this.namespace);
+
+   return Observable.fromSingle(pineconeService.upsert(request));
   }
 
   public Observable<List<WordEmbeddings>> query(WordEmbeddings embeddings, int topK) {
+
+    Retrofit retrofit = RetrofitClientInstance.getInstance();
+    PineconeService pineconeService = retrofit.create(PineconeService.class);
+
     PineconeRequest request = new PineconeRequest();
     request.setEndpoint(this);
     request.setWordEmbeddings(embeddings);
     request.setNamespace(this.namespace);
     request.setTopK(topK);
 
-    return Observable.fromSingle(this.pineconeService.query(request));
+    return Observable.fromSingle(pineconeService.query(request));
   }
 
   public Observable<StringResponse> deleteAll() {
+
+    Retrofit retrofit = RetrofitClientInstance.getInstance();
+    PineconeService pineconeService = retrofit.create(PineconeService.class);
 
     PineconeRequest request = new PineconeRequest();
     request.setEndpoint(this);

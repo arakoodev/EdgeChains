@@ -3,6 +3,7 @@ package com.edgechain.lib.context.client.impl;
 import com.edgechain.lib.configuration.RedisEnv;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.context.client.HistoryContextClient;
+import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
   @Autowired @Lazy private RedisEnv redisEnv;
 
   @Override
-  public EdgeChain<HistoryContext> create(String id) {
+  public EdgeChain<HistoryContext> create(String id, Endpoint endpoint) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -55,17 +56,17 @@ public class RedisHistoryContextClient implements HistoryContextClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }),endpoint);
   }
 
   @Override
-  public EdgeChain<HistoryContext> put(String key, String response) {
+  public EdgeChain<HistoryContext> put(String key, String response, Endpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
 
-                HistoryContext historyContext = this.get(key).get();
+                HistoryContext historyContext = this.get(key,null).get();
                 historyContext.setResponse(response);
 
                 this.redisTemplate.opsForValue().set(key, historyContext);
@@ -79,11 +80,11 @@ public class RedisHistoryContextClient implements HistoryContextClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }),endpoint);
   }
 
   @Override
-  public EdgeChain<HistoryContext> get(String key) {
+  public EdgeChain<HistoryContext> get(String key, Endpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -104,11 +105,11 @@ public class RedisHistoryContextClient implements HistoryContextClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }),endpoint);
   }
 
   @Override
-  public EdgeChain<Boolean> check(String key) {
+  public EdgeChain<Boolean> check(String key, Endpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -119,17 +120,17 @@ public class RedisHistoryContextClient implements HistoryContextClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }),endpoint);
   }
 
   @Override
-  public EdgeChain<String> delete(String key) {
+  public EdgeChain<String> delete(String key, Endpoint endpoint) {
 
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
-                this.get(key).get();
+                this.get(key,null).get();
                 this.redisTemplate.delete(key);
                 emitter.onNext("");
                 emitter.onComplete();
@@ -137,6 +138,6 @@ public class RedisHistoryContextClient implements HistoryContextClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }),endpoint);
   }
 }

@@ -37,4 +37,14 @@ public class ChatCompletionChoice {
   public void setFinishReason(String finishReason) {
     this.finishReason = finishReason;
   }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("ChatCompletionChoice{");
+    sb.append("index=").append(index);
+    sb.append(", message=").append(message);
+    sb.append(", finishReason='").append(finishReason).append('\'');
+    sb.append('}');
+    return sb.toString();
+  }
 }

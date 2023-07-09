@@ -11,9 +11,6 @@ import retrofit2.Retrofit;
 
 public class WikiEndpoint extends Endpoint {
 
-  private final Retrofit retrofit = RetrofitClientInstance.getInstance();
-  private final WikiService wikiService = retrofit.create(WikiService.class);
-
   public WikiEndpoint() {}
 
   public WikiEndpoint(RetryPolicy retryPolicy) {
@@ -21,6 +18,10 @@ public class WikiEndpoint extends Endpoint {
   }
 
   public Observable<WikiResponse> getPageContent(String query) {
+
+    Retrofit retrofit = RetrofitClientInstance.getInstance();
+    WikiService wikiService = retrofit.create(WikiService.class);
+
     return Observable.fromSingle(wikiService.getPageContent(new WikiRequest(this, query)));
   }
 }
