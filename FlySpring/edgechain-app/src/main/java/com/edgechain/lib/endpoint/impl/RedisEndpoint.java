@@ -14,9 +14,6 @@ import java.util.List;
 
 public class RedisEndpoint extends Endpoint {
 
-  private final Retrofit retrofit = RetrofitClientInstance.getInstance();
-  private final RedisService redisService = retrofit.create(RedisService.class);
-
   private String indexName;
   private String namespace;
 
@@ -40,6 +37,9 @@ public class RedisEndpoint extends Endpoint {
   public Observable<StringResponse> upsert(
       WordEmbeddings wordEmbeddings, int dimension, RedisDistanceMetric metric) {
 
+    Retrofit retrofit = RetrofitClientInstance.getInstance();
+    RedisService redisService = retrofit.create(RedisService.class);
+
     RedisRequest request = new RedisRequest();
     request.setEndpoint(this);
     request.setWordEmbeddings(wordEmbeddings);
@@ -48,10 +48,13 @@ public class RedisEndpoint extends Endpoint {
     request.setDimensions(dimension);
     request.setMetric(metric);
 
-    return Observable.fromSingle(this.redisService.upsert(request));
+    return Observable.fromSingle(redisService.upsert(request));
   }
 
   public Observable<List<WordEmbeddings>> query(WordEmbeddings embeddings, int topK) {
+
+    Retrofit retrofit = RetrofitClientInstance.getInstance();
+    RedisService redisService = retrofit.create(RedisService.class);
 
     RedisRequest request = new RedisRequest();
     request.setTopK(topK);
@@ -60,10 +63,17 @@ public class RedisEndpoint extends Endpoint {
     request.setNamespace(this.namespace);
     request.setEndpoint(this);
 
-    return Observable.fromSingle(this.redisService.query(request));
+    return Observable.fromSingle(redisService.query(request));
   }
 
-  public void delete(String patternName) {
-    this.redisService.deleteByPattern(patternName, this).blockingAwait();
+  public void delete(String patternName)
+  {
+    Retrofit retrofit = RetrofitClientInstance.getInstance();
+    RedisService redisService = retrofit.create(RedisService.class);
+
+    RedisRequest redisRequest = new RedisRequest();
+    redisRequest.setEndpoint(this);
+
+    redisService.deleteByPattern(patternName, redisRequest).blockingAwait();
   }
 }

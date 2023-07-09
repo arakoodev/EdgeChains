@@ -50,7 +50,7 @@ public class PineconeClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }),endpoint);
   }
 
   public EdgeChain<List<WordEmbeddings>> query(WordEmbeddings wordEmbeddings, int topK) {
@@ -83,7 +83,7 @@ public class PineconeClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }), endpoint);
   }
 
   public EdgeChain<StringResponse> deleteAll() {
@@ -112,7 +112,7 @@ public class PineconeClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }),endpoint);
   }
 
   private List<WordEmbeddings> parsePredict(String body) throws IOException {

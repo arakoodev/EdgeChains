@@ -17,36 +17,19 @@ public class PineconeController {
 
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody PineconeRequest request) {
-
-    EdgeChain<StringResponse> edgeChain =
-        new PineconeClient(request.getEndpoint(), request.getNamespace())
-            .upsert(request.getWordEmbeddings());
-
-    if (RetryUtils.available(request.getEndpoint()))
-      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
-    else return edgeChain.toSingle();
+    EdgeChain<StringResponse> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace()).upsert(request.getWordEmbeddings());
+    return edgeChain.toSingle();
   }
 
   @PostMapping("/query")
   public Single<List<WordEmbeddings>> query(@RequestBody PineconeRequest request) {
-
-    EdgeChain<List<WordEmbeddings>> edgeChain =
-        new PineconeClient(request.getEndpoint(), request.getNamespace())
-            .query(request.getWordEmbeddings(), request.getTopK());
-
-    if (RetryUtils.available(request.getEndpoint()))
-      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
-    else return edgeChain.toSingle();
+    EdgeChain<List<WordEmbeddings>> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace()).query(request.getWordEmbeddings(), request.getTopK());
+    return edgeChain.toSingle();
   }
 
   @DeleteMapping("/deleteAll")
   public Single<StringResponse> deleteAll(@RequestBody PineconeRequest request) {
-
-    EdgeChain<StringResponse> edgeChain =
-        new PineconeClient(request.getEndpoint(), request.getNamespace()).deleteAll();
-
-    if (RetryUtils.available(request.getEndpoint()))
-      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
-    else return edgeChain.toSingle();
+    EdgeChain<StringResponse> edgeChain = new PineconeClient(request.getEndpoint(), request.getNamespace()).deleteAll();
+    return edgeChain.toSingle();
   }
 }

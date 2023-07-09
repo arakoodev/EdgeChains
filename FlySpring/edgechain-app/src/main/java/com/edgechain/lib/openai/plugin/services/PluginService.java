@@ -84,7 +84,7 @@ public class PluginService {
     try {
       // Step 2: Create PluginRequest (which act as JSON body for RestTemplate) & Send POST request
       // to OPENAPI Completion
-      provider.request(prompt.toString()).get(new FixedDelay(2, 3, TimeUnit.SECONDS));
+      provider.request(prompt.toString()).get();
 
       // Step 3: Parse The Initial Response Using PluginParser
       return PluginParser.parse(
@@ -101,7 +101,7 @@ public class PluginService {
 
       // Step 5: Create PluginRequest & Send To CreateCompletion OpenAPI
       StringResponse completionResponse =
-          provider.request(prompt.toString()).get(new FixedDelay(2, 3, TimeUnit.SECONDS));
+          provider.request(prompt.toString()).get();
 
       // Step 6: Parse the Response & Fetch Http GET request from ActionInput
       List<String> urlList = PluginParser.extractUrls(completionResponse.getResponse());
@@ -133,7 +133,7 @@ public class PluginService {
     try {
 
       StringResponse completionResponse =
-          provider.request(prompt.toString()).get(new FixedDelay(2, 3, TimeUnit.SECONDS));
+          provider.request(prompt.toString()).get();
       return PluginParser.getFinalAnswer(completionResponse.getResponse());
     } catch (final Exception e) {
       throw new RuntimeException(e.getMessage());
