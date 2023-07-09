@@ -32,6 +32,7 @@ public class PineconeEndpoint extends Endpoint {
     this.namespace = namespace;
   }
 
+
   public Observable<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
 
    Retrofit retrofit = RetrofitClientInstance.getInstance();
@@ -70,4 +71,6 @@ public class PineconeEndpoint extends Endpoint {
 
     return Observable.fromSingle(pineconeService.deleteAll(request));
   }
+
+
 }
