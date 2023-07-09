@@ -1,5 +1,5 @@
 # EdgeChains : LLM chains on-the-edge
-**chain-of-thought engineering for LLM and OpenAI GPT. Built for Java. Built for Enterprise. Built for Scale**
+**We model LLM and Generative AI applications as a config management problem.  Edgechains fixes the broken dev-to-production lifecycle**
 <div align="center">
 
   <img src="https://img.shields.io/github/repo-size/arakoodev/EdgeChains?style=for-the-badge" />
