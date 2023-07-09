@@ -70,9 +70,9 @@ public class PineconeClientTest {
 
         PineconeEndpoint pineconeEndpoint =
                 new PineconeEndpoint(
-                        "https://pinecone-index-a464f61.svc.us-east-1-aws.pinecone.io/vectors/upsert",
-                        "5964811a-7020-4fa7-bdbe-6db2084e4d77",
-                        "",
+                        "", // upsert url 
+                        "", // apiKey
+                        "", //namespace
                         new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
         WordEmbeddings wordEmbeddings = new WordEmbeddings();
