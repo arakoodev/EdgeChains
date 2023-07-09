@@ -4,6 +4,7 @@ import com.edgechain.lib.constants.EndpointConstants;
 import com.edgechain.lib.embeddings.request.OpenAiEmbeddingRequest;
 import com.edgechain.lib.embeddings.response.OpenAiEmbeddingResponse;
 import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
 import com.edgechain.lib.openai.request.CompletionRequest;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
@@ -21,14 +22,18 @@ import reactor.adapter.rxjava.RxJava3Adapter;
 
 import java.util.Objects;
 
-@Service
 public class OpenAiClient {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate = new RestTemplate();
 
-  public EdgeChain<ChatCompletionResponse> createChatCompletion(
-      Endpoint endpoint, ChatCompletionRequest request) {
+  private final OpenAiEndpoint endpoint;
+
+    public OpenAiClient(OpenAiEndpoint endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public EdgeChain<ChatCompletionResponse> createChatCompletion(ChatCompletionRequest request) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -57,11 +62,10 @@ public class OpenAiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }),endpoint);
   }
 
-  public EdgeChain<ChatCompletionResponse> createChatCompletionStream(
-      Endpoint endpoint, ChatCompletionRequest request) {
+  public EdgeChain<ChatCompletionResponse> createChatCompletionStream(ChatCompletionRequest request) {
 
     try {
       return new EdgeChain<>(
@@ -78,14 +82,13 @@ public class OpenAiClient {
                       })
                   .bodyValue(new ObjectMapper().writeValueAsString(request))
                   .retrieve()
-                  .bodyToFlux(ChatCompletionResponse.class)));
+                  .bodyToFlux(ChatCompletionResponse.class)),endpoint);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public EdgeChain<CompletionResponse> createCompletion(
-      Endpoint endpoint, CompletionRequest request) {
+  public EdgeChain<CompletionResponse> createCompletion(CompletionRequest request) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -105,11 +108,10 @@ public class OpenAiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }),endpoint);
   }
 
-  public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(
-      Endpoint endpoint, OpenAiEmbeddingRequest request) {
+  public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(OpenAiEmbeddingRequest request) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -129,6 +131,6 @@ public class OpenAiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }),endpoint);
   }
 }

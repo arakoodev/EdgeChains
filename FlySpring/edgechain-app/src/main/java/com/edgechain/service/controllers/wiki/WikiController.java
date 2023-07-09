@@ -18,11 +18,7 @@ public class WikiController {
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE})
   public Single<WikiResponse> wikiContent(@RequestBody WikiRequest request) {
-    EdgeChain<WikiResponse> edgeChain =
-        new WikiClient().getPageContent(new WikiRequest(request.getEndpoint(), request.getInput()));
-
-    if (RetryUtils.available(request.getEndpoint()))
-      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
-    else return edgeChain.toSingle();
+    EdgeChain<WikiResponse> edgeChain = new WikiClient(request.getEndpoint()).getPageContent(request.getInput());
+    return edgeChain.toSingle();
   }
 }

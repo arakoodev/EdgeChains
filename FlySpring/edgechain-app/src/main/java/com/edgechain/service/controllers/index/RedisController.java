@@ -21,33 +21,24 @@ public class RedisController {
   public Single<StringResponse> upsert(@RequestBody RedisRequest request) {
 
     EdgeChain<StringResponse> edgeChain =
-        new RedisClient(request.getEndpoint(), request.getIndexName(), request.getNamespace())
+        new RedisClient(request.getEndpoint(),request.getIndexName(), request.getNamespace())
             .upsert(request.getWordEmbeddings(), request.getDimensions(), request.getMetric());
 
-    if (RetryUtils.available(request.getEndpoint()))
-      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
-    else return edgeChain.toSingle();
+    return edgeChain.toSingle();
   }
 
   @PostMapping("/query")
   public Single<List<WordEmbeddings>> query(@RequestBody RedisRequest request) {
 
     EdgeChain<List<WordEmbeddings>> edgeChain =
-        new RedisClient(request.getEndpoint(), request.getIndexName(), request.getNamespace())
-            .query(request.getWordEmbeddings(), request.getTopK());
+            new RedisClient(request.getEndpoint(),request.getIndexName(), request.getNamespace()).query(request.getWordEmbeddings(), request.getTopK());
 
-    if (RetryUtils.available(request.getEndpoint()))
-      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
-    else return edgeChain.toSingle();
+    return edgeChain.toSingle();
   }
 
   @DeleteMapping("/delete")
-  public Completable deleteByPattern(
-      @RequestParam("pattern") String pattern, @RequestBody Endpoint endpoint) {
-
-    EdgeChain<String> edgeChain = new RedisClient().deleteByPattern(pattern);
-
-    if (RetryUtils.available(endpoint)) return edgeChain.await(endpoint.getRetryPolicy());
-    else return edgeChain.await();
+  public Completable deleteByPattern(@RequestParam("pattern") String pattern, @RequestBody RedisRequest request) {
+    EdgeChain<String> edgeChain = new RedisClient(request.getEndpoint()).deleteByPattern(pattern);
+    return edgeChain.await();
   }
 }

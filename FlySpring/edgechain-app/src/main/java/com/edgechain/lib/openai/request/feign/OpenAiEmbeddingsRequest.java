@@ -1,15 +1,16 @@
 package com.edgechain.lib.openai.request.feign;
 
 import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 
 public class OpenAiEmbeddingsRequest {
 
-  private Endpoint endpoint;
+  private OpenAiEndpoint endpoint;
   private String input;
 
   public OpenAiEmbeddingsRequest() {}
 
-  public OpenAiEmbeddingsRequest(Endpoint endpoint, String input) {
+  public OpenAiEmbeddingsRequest(OpenAiEndpoint endpoint, String input) {
     this.endpoint = endpoint;
     this.input = input;
   }
@@ -22,11 +23,11 @@ public class OpenAiEmbeddingsRequest {
     this.input = input;
   }
 
-  public Endpoint getEndpoint() {
+  public OpenAiEndpoint getEndpoint() {
     return endpoint;
   }
 
-  public void setEndpoint(Endpoint endpoint) {
+  public void setEndpoint(OpenAiEndpoint endpoint) {
     this.endpoint = endpoint;
   }
 

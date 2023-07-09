@@ -40,12 +40,9 @@ public class OpenAiController {
             .stream(request.getEndpoint().getStream())
             .build();
 
-    EdgeChain<ChatCompletionResponse> edgeChain =
-        new OpenAiClient().createChatCompletion(request.getEndpoint(), chatCompletionRequest);
+    EdgeChain<ChatCompletionResponse> edgeChain = new OpenAiClient(request.getEndpoint()).createChatCompletion(chatCompletionRequest);
 
-    if (RetryUtils.available(request.getEndpoint()))
-      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
-    else return edgeChain.toSingle();
+    return edgeChain.toSingle();
   }
 
   @PostMapping(
@@ -68,16 +65,9 @@ public class OpenAiController {
         () -> {
           try {
             EdgeChain<ChatCompletionResponse> edgeChain =
-                new OpenAiClient()
-                    .createChatCompletionStream(request.getEndpoint(), chatCompletionRequest);
+                    new OpenAiClient(request.getEndpoint()).createChatCompletionStream(chatCompletionRequest);
 
-            Observable<ChatCompletionResponse> obs;
-
-            if (RetryUtils.available(request.getEndpoint())) {
-              obs = edgeChain.getScheduledObservable(request.getEndpoint().getRetryPolicy());
-            } else {
-              obs = edgeChain.getScheduledObservable();
-            }
+            Observable<ChatCompletionResponse> obs = edgeChain.getScheduledObservable();
 
             obs.subscribe(
                 res -> {
@@ -109,24 +99,16 @@ public class OpenAiController {
             .build();
 
     EdgeChain<CompletionResponse> edgeChain =
-        new OpenAiClient().createCompletion(request.getEndpoint(), completionRequest);
-
-    if (RetryUtils.available(request.getEndpoint()))
-      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
+        new OpenAiClient(request.getEndpoint()).createCompletion(completionRequest);
 
     return edgeChain.toSingle();
   }
 
   @PostMapping("/embeddings")
   public Single<OpenAiEmbeddingResponse> embeddings(@RequestBody OpenAiEmbeddingsRequest request) {
-    EdgeChain<OpenAiEmbeddingResponse> edgeChain =
-        new OpenAiClient()
-            .createEmbeddings(
-                request.getEndpoint(),
-                new OpenAiEmbeddingRequest(request.getEndpoint().getModel(), request.getInput()));
 
-    if (RetryUtils.available(request.getEndpoint()))
-      return edgeChain.toSingle(request.getEndpoint().getRetryPolicy());
+    EdgeChain<OpenAiEmbeddingResponse> edgeChain = new OpenAiClient(request.getEndpoint())
+            .createEmbeddings(new OpenAiEmbeddingRequest(request.getEndpoint().getModel(), request.getInput()));
 
     return edgeChain.toSingle();
   }

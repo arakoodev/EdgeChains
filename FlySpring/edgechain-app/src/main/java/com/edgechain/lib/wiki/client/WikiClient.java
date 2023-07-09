@@ -1,5 +1,6 @@
 package com.edgechain.lib.wiki.client;
 
+import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.wiki.request.WikiRequest;
 import com.edgechain.lib.wiki.response.WikiResponse;
@@ -19,7 +20,13 @@ public class WikiClient {
 
   private static final String WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php";
 
-  public EdgeChain<WikiResponse> getPageContent(WikiRequest wikiRequest) {
+  private final Endpoint endpoint;
+
+  public WikiClient(Endpoint endpoint) {
+    this.endpoint = endpoint;
+  }
+
+  public EdgeChain<WikiResponse> getPageContent(String input) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -33,7 +40,7 @@ public class WikiClient {
                 formParams.add("action", "query");
                 formParams.add("prop", "extracts");
                 formParams.add("format", "json");
-                formParams.add("titles", wikiRequest.getInput());
+                formParams.add("titles", input);
                 formParams.add("explaintext", ""); // Add this line to request plain text content
 
                 HttpEntity<MultiValueMap<String, String>> requestEntity =
@@ -69,6 +76,6 @@ public class WikiClient {
               } catch (final Exception e) {
                 emitter.onError(e);
               }
-            }));
+            }), endpoint);
   }
 }

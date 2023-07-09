@@ -1,7 +1,9 @@
 package com.edgechain.lib.rxjava.transformer.observable;
 
+import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
+import com.edgechain.lib.utils.RetryUtils;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.functions.*;
@@ -13,8 +15,15 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
 
   private static final long serialVersionUID = 297269864039510096L;
 
+  private Endpoint endpoint;
+
   public EdgeChain(Observable<T> observable) {
     super(observable);
+  }
+
+  public EdgeChain(Observable<T> observable, Endpoint endpoint) {
+    super(observable);
+    this.endpoint = endpoint;
   }
 
   public static <T> EdgeChain<T> fromObservable(Observable<T> observable) {
@@ -134,33 +143,26 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
 
   @Override
   public Observable<T> getScheduledObservable() {
-    return this.observable.subscribeOn(Schedulers.io());
-  }
 
-  @Override
-  public Observable<T> getScheduledObservable(RetryPolicy retryPolicy) {
-    return this.observable.retryWhen(retryPolicy).subscribeOn(Schedulers.io());
+    if(RetryUtils.available(endpoint))
+      return this.observable.retryWhen(endpoint.getRetryPolicy()).subscribeOn(Schedulers.io());
+
+    else return this.observable.subscribeOn(Schedulers.io());
   }
 
   @Override
   public Single<T> toSingle() {
-    return this.observable.subscribeOn(Schedulers.io()).firstOrError();
+    if(RetryUtils.available(endpoint)) return this.observable.retryWhen(endpoint.getRetryPolicy()).subscribeOn(Schedulers.io()).firstOrError();
+    else return this.observable.subscribeOn(Schedulers.io()).firstOrError();
   }
 
-  @Override
-  public Single<T> toSingle(RetryPolicy retryPolicy) {
-    return this.observable.retryWhen(retryPolicy).subscribeOn(Schedulers.io()).firstOrError();
-  }
 
   @Override
   public T get() {
-    return this.observable.firstOrError().blockingGet();
+    if(RetryUtils.available(endpoint)) return this.observable.retryWhen(endpoint.getRetryPolicy()).firstOrError().blockingGet();
+    else return this.observable.firstOrError().blockingGet();
   }
 
-  @Override
-  public T get(RetryPolicy retryPolicy) {
-    return this.observable.retryWhen(retryPolicy).firstOrError().blockingGet();
-  }
 
   @Override
   public Observable<T> getObservable() {
@@ -168,17 +170,16 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
   }
 
   @Override
-  public Completable await(RetryPolicy retryPolicy) {
-    return this.observable
-        .subscribeOn(Schedulers.io())
-        .retryWhen(retryPolicy)
-        .firstOrError()
-        .ignoreElement();
-  }
-
-  @Override
   public Completable await() {
-    return this.observable.subscribeOn(Schedulers.io()).firstOrError().ignoreElement();
+
+    if(RetryUtils.available(endpoint))
+      return this.observable
+              .subscribeOn(Schedulers.io())
+              .retryWhen(endpoint.getRetryPolicy())
+              .firstOrError()
+              .ignoreElement();
+
+    else return this.observable.subscribeOn(Schedulers.io()).firstOrError().ignoreElement();
   }
 
   @Override

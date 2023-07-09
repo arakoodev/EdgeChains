@@ -1,13 +1,14 @@
 package com.edgechain.lib.openai.request.feign;
 
 import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 
 public class OpenAiCompletionRequest {
 
-  private Endpoint endpoint;
+  private OpenAiEndpoint endpoint;
   private String input;
 
-  public OpenAiCompletionRequest(Endpoint endpoint, String input) {
+  public OpenAiCompletionRequest(OpenAiEndpoint endpoint, String input) {
     this.endpoint = endpoint;
     this.input = input;
   }
@@ -22,11 +23,7 @@ public class OpenAiCompletionRequest {
     this.input = input;
   }
 
-  public Endpoint getEndpoint() {
+  public OpenAiEndpoint getEndpoint() {
     return endpoint;
-  }
-
-  public void setEndpoint(Endpoint endpoint) {
-    this.endpoint = endpoint;
   }
 }
