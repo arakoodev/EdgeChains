@@ -55,7 +55,7 @@ public class PineconeClientTest {
         // Step 1: Create OpenAiEndpoint
         OpenAiEndpoint openAiEndpoint = new OpenAiEndpoint(
                 OPENAI_EMBEDDINGS_API,
-                "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",
+                "", // apiKey
                 "text-embedding-ada-002",
                 new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS)
         );
