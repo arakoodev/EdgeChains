@@ -56,7 +56,7 @@ public class OpenAiClientTest {
     OpenAiEndpoint endpoint =
         new OpenAiEndpoint(
             OPENAI_CHAT_COMPLETION_API,
-            "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",
+            "",
             "gpt-3.5-turbo",
             "user",
             0.7,
@@ -130,7 +130,7 @@ public class OpenAiClientTest {
     //Step 1: Create OpenAi endpoint
     OpenAiEndpoint endpoint = new OpenAiEndpoint(
             OPENAI_COMPLETION_API,
-            "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",
+            "",
             "text-davinci-003"
     );
 
