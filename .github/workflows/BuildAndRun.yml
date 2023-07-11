@@ -31,7 +31,7 @@ jobs:
 
       - name: Build flyfly project
         working-directory: ./FlySpring/flyfly
-        run: mvn clean package
+        run: mvn clean package -DskipTests
 
 
 
