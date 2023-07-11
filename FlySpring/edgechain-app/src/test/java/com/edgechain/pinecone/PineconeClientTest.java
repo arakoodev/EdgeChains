@@ -70,7 +70,7 @@ public class PineconeClientTest {
 
     PineconeEndpoint pineconeEndpoint =
         new PineconeEndpoint(
-            "", // upsert url
+            OPENAI_EMBEDDINGS_API, // upsert url
             "", // apiKey
             "", // namespace
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
@@ -94,7 +94,9 @@ public class PineconeClientTest {
   }
 
   @Test
-  public void query() {}
+  public void query() {
+
+  }
 
   @Test
   public void delete() {}

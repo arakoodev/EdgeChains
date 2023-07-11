@@ -1,5 +1,7 @@
 package com.edgechain.lib.openai.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CompletionChoice {
 
   String text;
@@ -39,5 +41,15 @@ public class CompletionChoice {
 
   public void setFinish_reason(String finish_reason) {
     this.finish_reason = finish_reason;
+  }
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("ChatCompletionChoice{");
+    setLogprobs(new LogProbResult());
+    sb.append("index=").append(index);
+    sb.append(", message=").append(text);
+    sb.append(", finishReason='").append(finish_reason).append('\'');
+    sb.append('}');
+    return sb.toString();
   }
 }
