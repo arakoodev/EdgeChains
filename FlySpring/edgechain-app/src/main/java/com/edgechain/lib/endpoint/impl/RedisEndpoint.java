@@ -34,6 +34,22 @@ public class RedisEndpoint extends Endpoint {
     this.namespace = namespace;
   }
 
+  public String getIndexName() {
+    return indexName;
+  }
+
+  public void setIndexName(String indexName) {
+    this.indexName = indexName;
+  }
+
+  public String getNamespace() {
+    return namespace;
+  }
+
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+
   public Observable<StringResponse> upsert(
       WordEmbeddings wordEmbeddings, int dimension, RedisDistanceMetric metric) {
 

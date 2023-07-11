@@ -45,6 +45,9 @@ public class OpenAiClient {
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 headers.setBearerAuth(endpoint.getApiKey());
 
+                if (Objects.nonNull(endpoint.getOrgId()) && !endpoint.getOrgId().isEmpty()) {
+                  headers.set("OpenAI-Organization", endpoint.getOrgId());
+                }
                 HttpEntity<ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
 
                 logger.info(String.valueOf(entity.getBody()));
@@ -79,7 +82,12 @@ public class OpenAiClient {
                       httpHeaders -> {
                         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
                         httpHeaders.setBearerAuth(endpoint.getApiKey());
+                        if (Objects.nonNull(endpoint.getOrgId())
+                            && !endpoint.getOrgId().isEmpty()) {
+                          httpHeaders.set("OpenAI-Organization", endpoint.getOrgId());
+                        }
                       })
+
                   .bodyValue(new ObjectMapper().writeValueAsString(request))
                   .retrieve()
                   .bodyToFlux(ChatCompletionResponse.class)),
@@ -97,7 +105,9 @@ public class OpenAiClient {
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 headers.setBearerAuth(endpoint.getApiKey());
-
+                if (Objects.nonNull(endpoint.getOrgId()) && !endpoint.getOrgId().isEmpty()) {
+                  headers.set("OpenAI-Organization", endpoint.getOrgId());
+                }
                 HttpEntity<CompletionRequest> entity = new HttpEntity<>(request, headers);
 
                 ResponseEntity<CompletionResponse> response =
@@ -121,6 +131,9 @@ public class OpenAiClient {
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 headers.setBearerAuth(endpoint.getApiKey());
+                  if(Objects.nonNull(endpoint.getOrgId()) && !endpoint.getOrgId().isEmpty()){
+                      headers.set("OpenAI-Organization", endpoint.getOrgId());
+                  }
                 HttpEntity<OpenAiEmbeddingRequest> entity = new HttpEntity<>(request, headers);
 
                 ResponseEntity<OpenAiEmbeddingResponse> response =

@@ -32,6 +32,14 @@ public class PineconeEndpoint extends Endpoint {
     this.namespace = namespace;
   }
 
+  public String getNamespace() {
+    return namespace;
+  }
+
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+
   public Observable<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
 
     Retrofit retrofit = RetrofitClientInstance.getInstance();

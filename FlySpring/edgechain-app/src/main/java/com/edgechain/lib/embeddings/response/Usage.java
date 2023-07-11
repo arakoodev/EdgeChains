@@ -20,4 +20,13 @@ public class Usage {
   public void setTotal_tokens(long total_tokens) {
     this.total_tokens = total_tokens;
   }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("Usage{");
+    sb.append("prompt_tokens=").append(prompt_tokens);
+    sb.append(", total_tokens=").append(total_tokens);
+    sb.append('}');
+    return sb.toString();
+  }
 }

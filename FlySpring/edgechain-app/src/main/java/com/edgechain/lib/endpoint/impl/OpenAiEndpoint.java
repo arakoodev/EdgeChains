@@ -17,9 +17,9 @@ import java.util.Objects;
 
 public class OpenAiEndpoint extends Endpoint {
 
-  private final OpenAiStreamService openAiStreamService =
-      ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
+  private final OpenAiStreamService openAiStreamService = ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
 
+  private String orgId;
   private String model;
   private String role;
   private Double temperature;
@@ -98,6 +98,30 @@ public class OpenAiEndpoint extends Endpoint {
     return stream;
   }
 
+  public void setOrgId(String orgId) {
+    this.orgId = orgId;
+  }
+
+  public String getOrgId() {
+    return orgId;
+  }
+
+  public void setModel(String model) {
+    this.model = model;
+  }
+
+  public void setRole(String role) {
+    this.role = role;
+  }
+
+  public void setTemperature(Double temperature) {
+    this.temperature = temperature;
+  }
+
+  public void setStream(Boolean stream) {
+    this.stream = stream;
+  }
+
   public Observable<ChatCompletionResponse> getChatCompletion(String input) {
 
     Retrofit retrofit = RetrofitClientInstance.getInstance();
@@ -130,4 +154,6 @@ public class OpenAiEndpoint extends Endpoint {
                 embeddingResponse ->
                     new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
   }
+
+
 }
