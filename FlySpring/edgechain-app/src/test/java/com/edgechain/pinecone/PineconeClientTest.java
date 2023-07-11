@@ -53,7 +53,7 @@ public class PineconeClientTest {
     OpenAiEndpoint openAiEndpoint =
         new OpenAiEndpoint(
             OPENAI_EMBEDDINGS_API,
-            "", // apiKey
+            "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", // apiKey
             "text-embedding-ada-002",
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
     String input = "Hey, we are building LLM using Spring and Java";
@@ -70,8 +70,8 @@ public class PineconeClientTest {
 
     PineconeEndpoint pineconeEndpoint =
         new PineconeEndpoint(
-            "", // upsert url
-            "", // apiKey
+            OPENAI_EMBEDDINGS_API, // upsert url
+            "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", // apiKey
             "", // namespace
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
@@ -94,7 +94,9 @@ public class PineconeClientTest {
   }
 
   @Test
-  public void query() {}
+  public void query() {
+
+  }
 
   @Test
   public void delete() {}

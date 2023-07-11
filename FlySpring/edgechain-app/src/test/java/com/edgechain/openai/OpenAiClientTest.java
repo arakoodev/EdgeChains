@@ -8,7 +8,9 @@ import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.openai.client.OpenAiClient;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
 import com.edgechain.lib.openai.request.ChatMessage;
+import com.edgechain.lib.openai.request.CompletionRequest;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
+import com.edgechain.lib.openai.response.CompletionResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +56,7 @@ public class OpenAiClientTest {
     OpenAiEndpoint endpoint =
         new OpenAiEndpoint(
             OPENAI_CHAT_COMPLETION_API,
-            "",
+            "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",
             "gpt-3.5-turbo",
             "user",
             0.7,
@@ -122,5 +124,36 @@ public class OpenAiClientTest {
   }
 
   @Test
-  public void testOpenAiClient_Completion() {}
+  @DisplayName("OpenAiClient Create_Completion Test")
+  public void testOpenAiClient_Completion() throws InterruptedException {
+
+    //Step 1: Create OpenAi endpoint
+    OpenAiEndpoint endpoint = new OpenAiEndpoint(
+            OPENAI_COMPLETION_API,
+            "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",
+            "text-davinci-003"
+    );
+
+    String prompt = "Write an unique jokes";
+
+    //Step 2: Create a CompletionRequest for createCompletion method
+    CompletionRequest completionRequest= CompletionRequest.builder()
+            .model(endpoint.getModel())
+            .prompt(prompt)
+            .build();
+
+    // Step 3: OpenAiClient
+    TestObserver<CompletionResponse> test = new OpenAiClient(endpoint).createCompletion(completionRequest)
+            .getScheduledObservable().test();
+
+    // Step 4: To act & assert
+    test.await();
+
+    logger.info(test.values().toString());
+
+    // Assert
+    test.assertNoErrors();
+
+  }
+
 }
