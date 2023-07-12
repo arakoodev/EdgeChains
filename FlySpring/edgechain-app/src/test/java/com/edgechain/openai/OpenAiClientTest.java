@@ -49,8 +49,8 @@ public class OpenAiClientTest {
 
   // Test 1: OpenAI ChatCompletion
   @Test
-  @DisplayName("Test OpenAi ChatCompletion")
-  public void testOpenAiClient_ChatCompletion() throws InterruptedException {
+  @DisplayName("OpenAi ChatCompletion Test1")
+  public void test_OpenAiClient_ChatCompletion() throws InterruptedException {
 
     // Step 1 : Create OpenAi Endpoint
     OpenAiEndpoint endpoint =
@@ -90,8 +90,8 @@ public class OpenAiClientTest {
   }
 
   @Test
-  @DisplayName("Test OpenAi Embeddings")
-  public void testOpenAiClient_Embeddings() throws InterruptedException {
+  @DisplayName("OpenAi Embeddings Test1")
+  public void tes_tOpenAiClient_Embeddings() throws InterruptedException {
 
     // Step 1: Create OpenAiEndpoint
     OpenAiEndpoint endpoint =
@@ -124,8 +124,8 @@ public class OpenAiClientTest {
   }
 
   @Test
-  @DisplayName("OpenAiClient Create_Completion Test")
-  public void testOpenAiClient_Completion() throws InterruptedException {
+  @DisplayName("OpenAiClient Create_Completion Test1")
+  public void test_OpenAiClient_Completion() throws InterruptedException {
 
     //Step 1: Create OpenAi endpoint
     OpenAiEndpoint endpoint = new OpenAiEndpoint(
@@ -135,6 +135,81 @@ public class OpenAiClientTest {
     );
 
     String prompt = "Write an unique jokes";
+
+    //Step 2: Create a CompletionRequest for createCompletion method
+    CompletionRequest completionRequest= CompletionRequest.builder()
+            .model(endpoint.getModel())
+            .prompt(prompt)
+            .build();
+
+    // Step 3: OpenAiClient
+    TestObserver<CompletionResponse> test = new OpenAiClient(endpoint).createCompletion(completionRequest)
+            .getScheduledObservable().test();
+
+    // Step 4: To act & assert
+    test.await();
+
+    logger.info(test.values().toString());
+
+    // Assert
+    test.assertNoErrors();
+
+  }
+
+  @Test
+  @DisplayName("OpenAi ChatCompletion Test2")
+  public void test2_OpenAiClient_ChatCompletion() throws InterruptedException {
+
+    // Step 1 : Create OpenAi Endpoint
+    OpenAiEndpoint endpoint =
+            new OpenAiEndpoint(
+                    OPENAI_CHAT_COMPLETION_API,
+                    "",
+                    "gpt-3.5-turbo",
+                    "user",
+                    0.7,
+                    new ExponentialDelay(3, 4, 2, TimeUnit.SECONDS));
+    // E.g Prompt: Write 10 unique sentences on Java Language
+
+    // Step 2: ChatCompletionRequest
+    String prompt = "Write 10 unique sentences about the Spring Native";
+    ChatCompletionRequest chatCompletionRequest =
+            ChatCompletionRequest.builder()
+                    .model(endpoint.getModel())
+                    .temperature(endpoint.getTemperature())
+                    .messages(List.of(new ChatMessage(endpoint.getRole(), prompt)))
+                    .stream(false)
+                    .build();
+
+    // Step 3: OpenAiClient
+    TestObserver<ChatCompletionResponse> test =
+            new OpenAiClient(endpoint)
+                    .createChatCompletion(chatCompletionRequest)
+                    .getScheduledObservable()
+                    .test();
+
+    // Step 4: To act & assert
+    test.await();
+
+    logger.info(test.values().toString());
+
+    // Assert
+    test.assertNoErrors();
+  }
+
+  @Test
+  @DisplayName("OpenAiClient Create_Completion Test2")
+  public void test2_OpenAiClient_Completion() throws InterruptedException {
+
+    //Step 1: Create OpenAi endpoint
+    OpenAiEndpoint endpoint = new OpenAiEndpoint(
+            OPENAI_COMPLETION_API,
+            "",
+            "text-davinci-003",
+            new FixedDelay(3,3,TimeUnit.SECONDS)
+    );
+
+    String prompt = "The function g is defined by g(x)=(x-3)^2. If g(a)=a^2, what is the value of a?";
 
     //Step 2: Create a CompletionRequest for createCompletion method
     CompletionRequest completionRequest= CompletionRequest.builder()
