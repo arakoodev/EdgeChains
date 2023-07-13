@@ -142,7 +142,7 @@ public class OpenAiClientTest {
     //Step 1: Create OpenAi endpoint
     OpenAiEndpoint endpoint = new OpenAiEndpoint(
             OPENAI_COMPLETION_API,
-            "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",
+            "",
             "text-davinci-003"
     );
 
@@ -175,7 +175,7 @@ public class OpenAiClientTest {
     //Step 1: Create OpenAi endpoint
     OpenAiEndpoint endpoint = new OpenAiEndpoint(
             OPENAI_COMPLETION_API,
-            "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",
+            "",
             "text-davinci-003",
             new FixedDelay(3,3,TimeUnit.SECONDS)
     );
@@ -210,7 +210,7 @@ public class OpenAiClientTest {
     OpenAiEndpoint endpoint =
             new OpenAiEndpoint(
                     OPENAI_CHAT_COMPLETION_API,
-                    "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",
+                    "",
                     "gpt-3.5-turbo",
                     "user",
                     0.7,
