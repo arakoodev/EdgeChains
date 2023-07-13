@@ -212,11 +212,13 @@
         </dependency>
 
         <!-- Jsonnet -->
+        <!-- https://mvnrepository.com/artifact/com.databricks/sjsonnet -->
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>sjsonnet_2.13</artifactId>
-            <version>0.4.2</version>
+            <version>0.4.5-RC5</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
