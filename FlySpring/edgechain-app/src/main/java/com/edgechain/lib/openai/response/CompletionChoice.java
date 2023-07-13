@@ -1,6 +1,5 @@
 package com.edgechain.lib.openai.response;
 
-
 public class CompletionChoice {
 
   String text;
