@@ -14,9 +14,7 @@ import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,8 +26,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
-/** Upsert, Query, delete * */
-@ExtendWith(MockitoExtension.class)
 @SpringBootTest
 public class PineconeClientTest {
 

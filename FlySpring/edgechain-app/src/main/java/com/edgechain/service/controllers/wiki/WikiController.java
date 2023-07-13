@@ -1,8 +1,8 @@
 package com.edgechain.service.controllers.wiki;
 
+import com.edgechain.lib.endpoint.impl.WikiEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.wiki.client.WikiClient;
-import com.edgechain.lib.wiki.request.WikiRequest;
 import com.edgechain.lib.wiki.response.WikiResponse;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.http.MediaType;
@@ -16,9 +16,9 @@ public class WikiController {
       value = "/page-content",
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE})
-  public Single<WikiResponse> wikiContent(@RequestBody WikiRequest request) {
+  public Single<WikiResponse> wikiContent(@RequestBody WikiEndpoint wikiEndpoint) {
     EdgeChain<WikiResponse> edgeChain =
-        new WikiClient(request.getEndpoint()).getPageContent(request.getInput());
+        new WikiClient(wikiEndpoint).getPageContent(wikiEndpoint.getInput());
     return edgeChain.toSingle();
   }
 }

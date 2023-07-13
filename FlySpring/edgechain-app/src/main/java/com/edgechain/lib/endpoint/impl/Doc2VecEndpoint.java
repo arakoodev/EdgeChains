@@ -13,6 +13,9 @@ import retrofit2.Retrofit;
 
 public class Doc2VecEndpoint extends Endpoint {
 
+  private final Retrofit retrofit = RetrofitClientInstance.getInstance();
+  private final Doc2VecService doc2VecService = retrofit.create(Doc2VecService.class);
+
   private ParagraphVectors paragraphVectors;
 
   public Doc2VecEndpoint() {}
@@ -23,10 +26,7 @@ public class Doc2VecEndpoint extends Endpoint {
 
   public Observable<StringResponse> build(Doc2VecRequest doc2VecRequest) {
 
-    Retrofit retrofit = RetrofitClientInstance.getInstance();
-    Doc2VecService doc2VecService = retrofit.create(Doc2VecService.class);
-
-    return Observable.fromSingle(doc2VecService.build(doc2VecRequest));
+    return Observable.fromSingle(this.doc2VecService.build(doc2VecRequest));
   }
 
   public Observable<WordEmbeddings> getEmbeddings(String input) {

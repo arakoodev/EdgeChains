@@ -4,24 +4,34 @@ import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.retrofit.WikiService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-import com.edgechain.lib.wiki.request.WikiRequest;
 import com.edgechain.lib.wiki.response.WikiResponse;
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
 public class WikiEndpoint extends Endpoint {
 
+  private final Retrofit retrofit = RetrofitClientInstance.getInstance();
+  private final WikiService wikiService = retrofit.create(WikiService.class);
+
+  private String input;
+
   public WikiEndpoint() {}
 
   public WikiEndpoint(RetryPolicy retryPolicy) {
     super(retryPolicy);
+    this.input = input;
   }
 
-  public Observable<WikiResponse> getPageContent(String query) {
+  public String getInput() {
+    return input;
+  }
 
-    Retrofit retrofit = RetrofitClientInstance.getInstance();
-    WikiService wikiService = retrofit.create(WikiService.class);
+  public void setInput(String input) {
+    this.input = input;
+  }
 
-    return Observable.fromSingle(wikiService.getPageContent(new WikiRequest(this, query)));
+  public Observable<WikiResponse> getPageContent(String input) {
+    this.input = input;
+    return Observable.fromSingle(this.wikiService.getPageContent(this));
   }
 }

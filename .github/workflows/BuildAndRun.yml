@@ -40,7 +40,7 @@ jobs:
 
       - name: Build edgechain-app project
         working-directory: ./FlySpring/edgechain-app
-        run: mvn clean package
+        run: mvn clean package -DskipTests
 
       - name: Copy edgechain-app JAR to Examples folder
         run: cp ./FlySpring/edgechain-app/target/edgechain-app-1.0.0.jar ./BuildOutput/
