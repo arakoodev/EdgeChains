@@ -25,7 +25,7 @@ public class CredentialController {
 
   @PostMapping(
       "/signup") // Confirmation email is sent to the specified address.. Click on "Confirm your
-                 // mail"
+  // mail"
   public SupabaseUser signup(@RequestBody Credential credential) {
     return this.userService.signup(credential);
   }

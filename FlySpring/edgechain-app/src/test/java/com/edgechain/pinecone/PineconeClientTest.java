@@ -90,9 +90,7 @@ public class PineconeClientTest {
   }
 
   @Test
-  public void query() {
-
-  }
+  public void query() {}
 
   @Test
   public void delete() {}
