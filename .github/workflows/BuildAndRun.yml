@@ -24,6 +24,11 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
+      
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.9.3
 
       - name: Create output folder
         run: mkdir BuildOutput
