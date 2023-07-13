@@ -1,6 +1,5 @@
 package com.edgechain.lib.chains;
 
-import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
@@ -50,7 +49,7 @@ public class PineconeRetrieval extends Retrieval {
       new EdgeChain<>(
               this.doc2VecEndpoint
                   .getEmbeddings(input)
-                  .map(floatList -> this.pineconeEndpoint.upsert(new WordEmbeddings()))
+                  .map(this.pineconeEndpoint::upsert)
                   .firstOrError()
                   .blockingGet())
           .await()

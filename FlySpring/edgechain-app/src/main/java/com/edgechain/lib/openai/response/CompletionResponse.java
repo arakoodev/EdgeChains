@@ -65,6 +65,7 @@ public class CompletionResponse {
   public void setUsage(Usage usage) {
     this.usage = usage;
   }
+  
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("CompletionResponse{");

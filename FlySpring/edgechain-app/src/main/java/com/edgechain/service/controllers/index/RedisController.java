@@ -1,7 +1,7 @@
 package com.edgechain.service.controllers.index;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.index.request.feign.RedisRequest;
+import com.edgechain.lib.endpoint.impl.RedisEndpoint;
 import com.edgechain.lib.index.client.impl.RedisClient;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
@@ -16,29 +16,32 @@ import java.util.List;
 public class RedisController {
 
   @PostMapping("/upsert")
-  public Single<StringResponse> upsert(@RequestBody RedisRequest request) {
+  public Single<StringResponse> upsert(@RequestBody RedisEndpoint redisEndpoint) {
 
     EdgeChain<StringResponse> edgeChain =
-        new RedisClient(request.getEndpoint(), request.getIndexName(), request.getNamespace())
-            .upsert(request.getWordEmbeddings(), request.getDimensions(), request.getMetric());
+        new RedisClient(redisEndpoint, redisEndpoint.getIndexName(), redisEndpoint.getNamespace())
+            .upsert(
+                redisEndpoint.getWordEmbeddings(),
+                redisEndpoint.getDimensions(),
+                redisEndpoint.getMetric());
 
     return edgeChain.toSingle();
   }
 
   @PostMapping("/query")
-  public Single<List<WordEmbeddings>> query(@RequestBody RedisRequest request) {
+  public Single<List<WordEmbeddings>> query(@RequestBody RedisEndpoint redisEndpoint) {
 
     EdgeChain<List<WordEmbeddings>> edgeChain =
-        new RedisClient(request.getEndpoint(), request.getIndexName(), request.getNamespace())
-            .query(request.getWordEmbeddings(), request.getTopK());
+        new RedisClient(redisEndpoint, redisEndpoint.getIndexName(), redisEndpoint.getNamespace())
+            .query(redisEndpoint.getWordEmbeddings(), redisEndpoint.getTopK());
 
     return edgeChain.toSingle();
   }
 
   @DeleteMapping("/delete")
   public Completable deleteByPattern(
-      @RequestParam("pattern") String pattern, @RequestBody RedisRequest request) {
-    EdgeChain<String> edgeChain = new RedisClient(request.getEndpoint()).deleteByPattern(pattern);
+      @RequestParam("pattern") String pattern, @RequestBody RedisEndpoint redisEndpoint) {
+    EdgeChain<String> edgeChain = new RedisClient(redisEndpoint).deleteByPattern(pattern);
     return edgeChain.await();
   }
 }

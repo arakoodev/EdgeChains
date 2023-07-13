@@ -1,6 +1,6 @@
 package com.edgechain.lib.wiki.client;
 
-import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.impl.WikiEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.wiki.response.WikiResponse;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,10 +19,10 @@ public class WikiClient {
 
   private static final String WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php";
 
-  private final Endpoint endpoint;
+  private final WikiEndpoint wikiEndpoint;
 
-  public WikiClient(Endpoint endpoint) {
-    this.endpoint = endpoint;
+  public WikiClient(WikiEndpoint wikiEndpoint) {
+    this.wikiEndpoint = wikiEndpoint;
   }
 
   public EdgeChain<WikiResponse> getPageContent(String input) {
@@ -76,6 +76,6 @@ public class WikiClient {
                 emitter.onError(e);
               }
             }),
-        endpoint);
+        wikiEndpoint);
   }
 }

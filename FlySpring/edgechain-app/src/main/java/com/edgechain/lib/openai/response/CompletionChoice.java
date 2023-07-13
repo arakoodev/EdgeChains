@@ -42,13 +42,14 @@ public class CompletionChoice {
   public void setFinish_reason(String finish_reason) {
     this.finish_reason = finish_reason;
   }
+
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("ChatCompletionChoice{");
-    setLogprobs(new LogProbResult());
-    sb.append("index=").append(index);
-    sb.append(", message=").append(text);
-    sb.append(", finishReason='").append(finish_reason).append('\'');
+    final StringBuilder sb = new StringBuilder("CompletionChoice{");
+    sb.append("text='").append(text).append('\'');
+    sb.append(", index=").append(index);
+    sb.append(", logprobs=").append(logprobs);
+    sb.append(", finish_reason='").append(finish_reason).append('\'');
     sb.append('}');
     return sb.toString();
   }

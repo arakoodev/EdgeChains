@@ -1,9 +1,6 @@
 package com.edgechain.openai;
 
-/* OpenAi ChatCompletion, OpenAi Embeddings, OpenAi Completion **/
-
-import com.edgechain.lib.embeddings.request.OpenAiEmbeddingRequest;
-import com.edgechain.lib.embeddings.response.OpenAiEmbeddingResponse;
+import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.openai.client.OpenAiClient;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
@@ -12,73 +9,51 @@ import com.edgechain.lib.openai.request.CompletionRequest;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.openai.response.CompletionResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
-import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.edgechain.lib.constants.EndpointConstants.*;
 
-@ExtendWith(MockitoExtension.class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class OpenAiClientTest {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  @Mock RestTemplate restTemplate;
-  private MockRestServiceServer mockServer;
-  private ObjectMapper objectMapper = new ObjectMapper();
-
   @BeforeEach
   public void setup() {
-    mockServer = MockRestServiceServer.createServer(restTemplate);
+    System.setProperty("server.port", "8080");
   }
 
-  // Test 1: OpenAI ChatCompletion
-  @Test
-  @DisplayName("OpenAi ChatCompletion Test1")
-  public void test_OpenAiClient_ChatCompletion() throws InterruptedException {
+  @ParameterizedTest
+  @CsvSource({
+    "Write 10 unique sentences on Java Language",
+    "Can you explain Ant Bee Colony Optimization Algorithm?"
+  })
+  @DisplayName("Test OpenAI ChatCompletion")
+  public void testOpenAiEndpoint_ChatCompletionShouldAssertNoErrors(String prompt)
+      throws InterruptedException {
 
     // Step 1 : Create OpenAi Endpoint
     OpenAiEndpoint endpoint =
         new OpenAiEndpoint(
             OPENAI_CHAT_COMPLETION_API,
-            "",
+            "", // apiKey
+            "", // orgId
             "gpt-3.5-turbo",
             "user",
             0.7,
-            new FixedDelay(3, 3, TimeUnit.SECONDS));
-    // E.g Prompt: Write 10 unique sentences on Java Language
+            false,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    // Step 2: ChatCompletionRequest
-    String prompt = "Write 10 unique sentences on Java Language";
-    ChatCompletionRequest chatCompletionRequest =
-        ChatCompletionRequest.builder()
-            .model(endpoint.getModel())
-            .temperature(endpoint.getTemperature())
-            .messages(List.of(new ChatMessage(endpoint.getRole(), prompt)))
-            .stream(false)
-            .build();
-
-    // Step 3: OpenAiClient
-    TestObserver<ChatCompletionResponse> test =
-        new OpenAiClient(endpoint)
-            .createChatCompletion(chatCompletionRequest)
-            .getScheduledObservable()
-            .test();
+    TestObserver<ChatCompletionResponse> test = endpoint.getChatCompletion(prompt).test();
 
     // Step 4: To act & assert
     test.await();
@@ -89,30 +64,28 @@ public class OpenAiClientTest {
     test.assertNoErrors();
   }
 
-  @Test
-  @DisplayName("OpenAi Embeddings Test1")
-  public void tes_tOpenAiClient_Embeddings() throws InterruptedException {
+  @ParameterizedTest
+  @CsvSource({
+    "Write 10 unique sentences on Java Language",
+    "Can you explain Ant Bee Colony Optimization Algorithm?"
+  })
+  @DisplayName("Test OpenAI ChatCompletion Stream")
+  public void testOpenAiEndpoint_ChatCompletionStreamResponseShouldAssertNoErrors(String prompt)
+      throws InterruptedException {
 
-    // Step 1: Create OpenAiEndpoint
+    // Step 1 : Create OpenAi Endpoint
     OpenAiEndpoint endpoint =
         new OpenAiEndpoint(
-            OPENAI_EMBEDDINGS_API,
-            "",
-            "text-embedding-ada-002",
-            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+            OPENAI_CHAT_COMPLETION_API,
+            "", // apiKey
+            "", // orgId
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            true,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    /**
-     * Request OpenAi Embeddings; it's giving me an error 1st ==> 3 second 2nd ===> 3 x 2 = 6
-     * seconds 3rd ===> 6 x 2 = 12 Seconds
-     */
-    String input = "Hey, we are building LLM using Spring and Java";
-    OpenAiEmbeddingRequest embeddingRequest =
-        new OpenAiEmbeddingRequest(endpoint.getModel(), input);
-    TestObserver<OpenAiEmbeddingResponse> test =
-        new OpenAiClient(endpoint)
-            .createEmbeddings(embeddingRequest)
-            .getScheduledObservable()
-            .test();
+    TestObserver<ChatCompletionResponse> test = endpoint.getChatCompletion(prompt).test();
 
     // Step 4: To act & assert
     test.await();
@@ -187,6 +160,25 @@ public class OpenAiClientTest {
                     .createChatCompletion(chatCompletionRequest)
                     .getScheduledObservable()
                     .test();
+
+  @DisplayName("Test OpenAI Embeddings")
+  public void testOpenAiEndpoint_EmbeddingsShouldAssertNoErrors() throws InterruptedException {
+
+    String input = "Hey, we are building LLMs using Spring and Java";
+
+    // Step 1 : Create OpenAi Endpoint
+    OpenAiEndpoint endpoint =
+        new OpenAiEndpoint(
+            OPENAI_EMBEDDINGS_API,
+            "", // apiKey
+            "", // orgId
+            "text-embedding-ada-002", // model
+            null,
+            null,
+            null,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
+    TestObserver<WordEmbeddings> test = endpoint.getEmbeddings(input).test();
 
     // Step 4: To act & assert
     test.await();

@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
-@ExtendWith(MockitoExtension.class)
 @SpringBootTest
 public class RedisClientTest {
 
