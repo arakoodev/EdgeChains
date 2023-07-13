@@ -9,6 +9,4 @@ public class EndpointConstants {
 
   public static final String OPENAI_EMBEDDINGS_API = "https://api.openai.com/v1/embeddings";
 
-  public static final String OPENAI_COMPLETION_API = "https://api.openai.com/v1/completions";
-
 }
