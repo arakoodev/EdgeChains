@@ -55,7 +55,7 @@ public class OpenAiClientTest {
     OpenAiEndpoint endpoint =
             new OpenAiEndpoint(
                     OPENAI_CHAT_COMPLETION_API,
-                    "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", // apiKey
+                    "", // apiKey
                     "", // orgId
                     "gpt-3.5-turbo",
                     "user",
@@ -87,7 +87,7 @@ public class OpenAiClientTest {
     OpenAiEndpoint endpoint =
             new OpenAiEndpoint(
                     OPENAI_CHAT_COMPLETION_API,
-                    "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", // apiKey
+                    "", // apiKey
                     "", // orgId
                     "gpt-3.5-turbo",
                     "user",
@@ -116,7 +116,7 @@ public class OpenAiClientTest {
     OpenAiEndpoint endpoint =
             new OpenAiEndpoint(
                     OPENAI_EMBEDDINGS_API,
-                    "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", // apiKey
+                    "", // apiKey
                     "", // orgId
                     "text-embedding-ada-002", // model
                     null,
