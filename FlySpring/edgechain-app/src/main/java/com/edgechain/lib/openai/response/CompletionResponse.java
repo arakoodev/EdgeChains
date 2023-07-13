@@ -65,4 +65,17 @@ public class CompletionResponse {
   public void setUsage(Usage usage) {
     this.usage = usage;
   }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("CompletionResponse{");
+    sb.append("id='").append(id).append('\'');
+    sb.append(", object='").append(object).append('\'');
+    sb.append(", created=").append(created);
+    sb.append(", model='").append(model).append('\'');
+    sb.append(", choices=").append(choices);
+    sb.append(", usage=").append(usage);
+    sb.append('}');
+    return sb.toString();
+  }
 }

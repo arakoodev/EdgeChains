@@ -12,6 +12,11 @@ public class WordEmbeddings implements Serializable {
 
   public WordEmbeddings() {}
 
+  // Postgres
+  public WordEmbeddings(String id) {
+    this.id = id;
+  }
+
   public WordEmbeddings(String id, List<Float> values) {
     this.id = id;
     this.values = values;
