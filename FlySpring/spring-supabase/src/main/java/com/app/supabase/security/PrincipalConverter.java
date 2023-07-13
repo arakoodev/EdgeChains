@@ -10,15 +10,15 @@ import java.security.Principal;
 
 @Configuration
 public class PrincipalConverter implements WebMvcConfigurer {
-    @Override
-    public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(new PSC());
-    }
+  @Override
+  public void addFormatters(FormatterRegistry registry) {
+    registry.addConverter(new PSC());
+  }
 
-    public class PSC implements Converter<Principal, User> {
-        @Override
-        public User convert(Principal from) {
-            return (User) from;
-        }
+  public class PSC implements Converter<Principal, User> {
+    @Override
+    public User convert(Principal from) {
+      return (User) from;
     }
+  }
 }

@@ -165,6 +165,7 @@ public class EdgeChainApplication {
     }
 
     @Autowired private PdfReader pdfReader;
+
     /**
      * Namespace: VectorDb allows you to partition the vectors in an index into namespaces. Queries
      * and other operations are then limited to one namespace, so different requests can search

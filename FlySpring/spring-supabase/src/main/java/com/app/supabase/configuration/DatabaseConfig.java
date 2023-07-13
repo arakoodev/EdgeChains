@@ -10,17 +10,15 @@ import javax.sql.DataSource;
 @Configuration
 public class DatabaseConfig {
 
-    @Autowired
-    private SupabaseEnv supabaseEnv;
+  @Autowired private SupabaseEnv supabaseEnv;
 
-    @Bean
-    public DataSource getDataSource() {
+  @Bean
+  public DataSource getDataSource() {
 
-        DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
-        dataSourceBuilder.url(this.supabaseEnv.getDbHost());
-        dataSourceBuilder.username(this.supabaseEnv.getDbUsername());
-        dataSourceBuilder.password(this.supabaseEnv.getDbPassword());
-        return dataSourceBuilder.build();
-    }
-
+    DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
+    dataSourceBuilder.url(this.supabaseEnv.getDbHost());
+    dataSourceBuilder.username(this.supabaseEnv.getDbUsername());
+    dataSourceBuilder.password(this.supabaseEnv.getDbPassword());
+    return dataSourceBuilder.build();
+  }
 }
