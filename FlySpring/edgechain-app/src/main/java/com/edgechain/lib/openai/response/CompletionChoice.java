@@ -1,5 +1,7 @@
 package com.edgechain.lib.openai.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CompletionChoice {
 
   String text;
