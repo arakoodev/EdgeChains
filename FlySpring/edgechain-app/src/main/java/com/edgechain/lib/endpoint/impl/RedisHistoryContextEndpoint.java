@@ -13,6 +13,9 @@ import java.util.Objects;
 
 public class RedisHistoryContextEndpoint extends Endpoint {
 
+  Retrofit retrofit = RetrofitClientInstance.getInstance();
+  RedisContextService contextService = retrofit.create(RedisContextService.class);
+
   public RedisHistoryContextEndpoint() {}
 
   public RedisHistoryContextEndpoint(RetryPolicy retryPolicy) {
@@ -20,47 +23,30 @@ public class RedisHistoryContextEndpoint extends Endpoint {
   }
 
   public Observable<HistoryContext> create(String id) {
-
-    Retrofit retrofit = RetrofitClientInstance.getInstance();
-    RedisContextService contextService = retrofit.create(RedisContextService.class);
-
-    return Observable.fromSingle(contextService.create(id, this));
+    return Observable.fromSingle(this.contextService.create(id, this));
   }
 
   public Observable<HistoryContext> put(String id, String response) {
-
-    Retrofit retrofit = RetrofitClientInstance.getInstance();
-    RedisContextService contextService = retrofit.create(RedisContextService.class);
-
-    return Observable.fromSingle(contextService.put(new ContextPutRequest(id, response, this)));
+    return Observable.fromSingle(
+        this.contextService.put(new ContextPutRequest(id, response, this)));
   }
 
   public Observable<HistoryContext> get(String id) {
-
-    Retrofit retrofit = RetrofitClientInstance.getInstance();
-    RedisContextService contextService = retrofit.create(RedisContextService.class);
-
-    return Observable.fromSingle(contextService.get(id, this));
+    return Observable.fromSingle(this.contextService.get(id, this));
   }
 
   public Observable<Boolean> check(String id) {
 
-    Retrofit retrofit = RetrofitClientInstance.getInstance();
-    RedisContextService contextService = retrofit.create(RedisContextService.class);
-
     if (Objects.nonNull(id) && !id.isEmpty()) {
-      return Observable.fromSingle(contextService.check(id, this));
+      return Observable.fromSingle(this.contextService.check(id, this));
     }
     return Observable.just(false);
   }
 
   public void delete(String id) {
 
-    Retrofit retrofit = RetrofitClientInstance.getInstance();
-    RedisContextService contextService = retrofit.create(RedisContextService.class);
-
     if (Objects.nonNull(id) && !id.isEmpty()) {
-      contextService.delete(id, this).blockingAwait();
+      this.contextService.delete(id, this).blockingAwait();
     } else throw new RuntimeException("Redis key cannot be null or empty");
   }
 }

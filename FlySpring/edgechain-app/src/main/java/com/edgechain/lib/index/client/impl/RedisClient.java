@@ -68,10 +68,13 @@ public class RedisClient {
                 long v =
                     jedisPooled.hset((this.namespace + ":" + words2Vec.getId()).getBytes(), map);
 
+                jedisPooled.getPool().returnResource(jedisPooled.getPool().getResource());
+
                 emitter.onNext(new StringResponse("Created ~ " + v));
                 emitter.onComplete();
-              } catch (final Exception e) {
-                emitter.onError(e);
+              } catch (Exception ex) {
+                jedisPooled.getPool().returnBrokenResource(jedisPooled.getPool().getResource());
+                emitter.onError(ex);
               }
             }),
         endpoint);
@@ -114,8 +117,8 @@ public class RedisClient {
                 emitter.onNext(words2VecList);
                 emitter.onComplete();
 
-              } catch (final Exception e) {
-                emitter.onError(e);
+              } catch (Exception ex) {
+                emitter.onError(ex);
               }
             }),
         endpoint);
@@ -129,13 +132,14 @@ public class RedisClient {
               try {
                 jedisPooled.eval(String.format(REDIS_DELETE_SCRIPT_IN_LUA, pattern));
 
+                jedisPooled.getPool().returnResource(jedisPooled.getPool().getResource());
+
                 emitter.onNext("Redis deletion performed");
                 emitter.onComplete();
 
               } catch (Exception ex) {
                 jedisPooled.getPool().returnBrokenResource(jedisPooled.getPool().getResource());
-              } finally {
-                jedisPooled.getPool().returnResource(jedisPooled.getPool().getResource());
+                emitter.onError(ex);
               }
             }),
         endpoint);

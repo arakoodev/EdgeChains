@@ -1,7 +1,7 @@
 package com.edgechain.service.controllers.index;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.index.request.feign.PineconeRequest;
+import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
 import com.edgechain.lib.index.client.impl.PineconeClient;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
@@ -15,25 +15,25 @@ import java.util.List;
 public class PineconeController {
 
   @PostMapping("/upsert")
-  public Single<StringResponse> upsert(@RequestBody PineconeRequest request) {
+  public Single<StringResponse> upsert(@RequestBody PineconeEndpoint pineconeEndpoint) {
     EdgeChain<StringResponse> edgeChain =
-        new PineconeClient(request.getEndpoint(), request.getNamespace())
-            .upsert(request.getWordEmbeddings());
+        new PineconeClient(pineconeEndpoint, pineconeEndpoint.getNamespace())
+            .upsert(pineconeEndpoint.getWordEmbeddings());
     return edgeChain.toSingle();
   }
 
   @PostMapping("/query")
-  public Single<List<WordEmbeddings>> query(@RequestBody PineconeRequest request) {
+  public Single<List<WordEmbeddings>> query(@RequestBody PineconeEndpoint pineconeEndpoint) {
     EdgeChain<List<WordEmbeddings>> edgeChain =
-        new PineconeClient(request.getEndpoint(), request.getNamespace())
-            .query(request.getWordEmbeddings(), request.getTopK());
+        new PineconeClient(pineconeEndpoint, pineconeEndpoint.getNamespace())
+            .query(pineconeEndpoint.getWordEmbeddings(), pineconeEndpoint.getTopK());
     return edgeChain.toSingle();
   }
 
   @DeleteMapping("/deleteAll")
-  public Single<StringResponse> deleteAll(@RequestBody PineconeRequest request) {
+  public Single<StringResponse> deleteAll(@RequestBody PineconeEndpoint pineconeEndpoint) {
     EdgeChain<StringResponse> edgeChain =
-        new PineconeClient(request.getEndpoint(), request.getNamespace()).deleteAll();
+        new PineconeClient(pineconeEndpoint, pineconeEndpoint.getNamespace()).deleteAll();
     return edgeChain.toSingle();
   }
 }

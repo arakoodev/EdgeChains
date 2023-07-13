@@ -50,7 +50,7 @@ public class PineconeRetrieval extends Retrieval {
       new EdgeChain<>(
               this.doc2VecEndpoint
                   .getEmbeddings(input)
-                  .map(floatList -> this.pineconeEndpoint.upsert(new WordEmbeddings()))
+                  .map(this.pineconeEndpoint::upsert)
                   .firstOrError()
                   .blockingGet())
           .await()
