@@ -40,7 +40,8 @@ public class PostgresClient {
                 jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector;");
                 jdbcTemplate.execute(
                     String.format(
-                        "CREATE TABLE IF NOT EXISTS %s (id TEXT PRIMARY KEY, embedding vector(%s));",
+                        "CREATE TABLE IF NOT EXISTS %s (id TEXT PRIMARY KEY, embedding"
+                            + " vector(%s));",
                         postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
 
                 String input = wordEmbeddings.getId().replaceAll("'", "");

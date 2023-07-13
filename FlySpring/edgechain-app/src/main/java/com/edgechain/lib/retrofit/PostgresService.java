@@ -13,6 +13,7 @@ public interface PostgresService {
 
   @POST(value = "index/postgres/upsert")
   Single<StringResponse> upsert(@Body PostgresEndpoint postgresEndpoint);
+
   //
   @POST(value = "index/postgres/query")
   Single<List<WordEmbeddings>> query(@Body PostgresEndpoint postgresEndpoint);

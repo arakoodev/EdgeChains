@@ -12,116 +12,116 @@ import java.util.*;
 @Table(name = "users", schema = "auth")
 public class User implements UserDetails, Serializable {
 
-    @Transient
-    private static final long serialVersionUID = -2363484450980070975L;
+  @Transient private static final long serialVersionUID = -2363484450980070975L;
 
-    @Id
-    @Column(nullable = false, unique = true)
-    @GeneratedValue
-    private UUID id;
-    private String aud;
-    private String role;
+  @Id
+  @Column(nullable = false, unique = true)
+  @GeneratedValue
+  private UUID id;
 
-    @Column(unique = true, nullable = false)
-    private String email;
-    private String phone;
-    @Transient
-    private String accessToken;
+  private String aud;
+  private String role;
 
-    public UUID getId() {
-        return id;
-    }
+  @Column(unique = true, nullable = false)
+  private String email;
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+  private String phone;
+  @Transient private String accessToken;
 
-    public String getAud() {
-        return aud;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public void setAud(String aud) {
-        this.aud = aud;
-    }
+  public void setId(UUID id) {
+    this.id = id;
+  }
 
-    public String getRole() {
-        return role;
-    }
+  public String getAud() {
+    return aud;
+  }
 
-    public void setRole(String role) {
-        this.role = role;
-    }
+  public void setAud(String aud) {
+    this.aud = aud;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public String getRole() {
+    return role;
+  }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+  public void setRole(String role) {
+    this.role = role;
+  }
 
-    public String getPhone() {
-        return phone;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
+  public String getPhone() {
+    return phone;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+  public void setPhone(String phone) {
+    this.phone = phone;
+  }
 
-        User user = (User) o;
+  public void setAccessToken(String accessToken) {
+    this.accessToken = accessToken;
+  }
 
-        return id.equals(user.id);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+    User user = (User) o;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        Set<GrantedAuthority> authorities = new HashSet<>();
-        List<String> roles = Arrays.asList(this.role.split(","));
-        roles.forEach(r -> authorities.add(new SimpleGrantedAuthority(r)));
-        return authorities;
-    }
+    return id.equals(user.id);
+  }
 
-    @Override
-    public String getPassword() {
-        return accessToken;
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(id);
+  }
 
-    @Override
-    public String getUsername() {
-        return email;
-    }
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    Set<GrantedAuthority> authorities = new HashSet<>();
+    List<String> roles = Arrays.asList(this.role.split(","));
+    roles.forEach(r -> authorities.add(new SimpleGrantedAuthority(r)));
+    return authorities;
+  }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+  @Override
+  public String getPassword() {
+    return accessToken;
+  }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+  @Override
+  public String getUsername() {
+    return email;
+  }
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
+
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
 }

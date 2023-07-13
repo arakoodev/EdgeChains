@@ -15,7 +15,8 @@ import java.util.Objects;
 
 public class OpenAiEndpoint extends Endpoint {
 
-  private final OpenAiStreamService openAiStreamService = ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
+  private final OpenAiStreamService openAiStreamService =
+      ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
 
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
   private final OpenAiService openAiService = retrofit.create(OpenAiService.class);
@@ -27,7 +28,7 @@ public class OpenAiEndpoint extends Endpoint {
 
   private Boolean stream;
 
-  /** Getter Fields ***/
+  /** Getter Fields ** */
   private String input;
 
   public OpenAiEndpoint() {}
@@ -41,7 +42,6 @@ public class OpenAiEndpoint extends Endpoint {
     super(url, apiKey, retryPolicy);
     this.model = model;
   }
-
 
   public OpenAiEndpoint(
       String url, String apiKey, String model, String role, RetryPolicy retryPolicy) {
@@ -62,7 +62,6 @@ public class OpenAiEndpoint extends Endpoint {
     this.role = role;
     this.temperature = temperature;
   }
-
 
   public OpenAiEndpoint(
       String url, String apiKey, String model, String role, Double temperature, Boolean stream) {
@@ -89,14 +88,14 @@ public class OpenAiEndpoint extends Endpoint {
   }
 
   public OpenAiEndpoint(
-          String url,
-          String apiKey,
-          String orgId,
-          String model,
-          String role,
-          Double temperature,
-          Boolean stream,
-          RetryPolicy retryPolicy) {
+      String url,
+      String apiKey,
+      String orgId,
+      String model,
+      String role,
+      Double temperature,
+      Boolean stream,
+      RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.orgId = orgId;
     this.model = model;
@@ -104,8 +103,6 @@ public class OpenAiEndpoint extends Endpoint {
     this.temperature = temperature;
     this.stream = stream;
   }
-
-
 
   public String getModel() {
     return model;
@@ -165,8 +162,7 @@ public class OpenAiEndpoint extends Endpoint {
                   return chatResponse;
                 } else return chatResponse;
               });
-    else
-      return Observable.fromSingle(this.openAiService.chatCompletion(this));
+    else return Observable.fromSingle(this.openAiService.chatCompletion(this));
   }
 
   public Observable<WordEmbeddings> getEmbeddings(String input) {
@@ -179,6 +175,4 @@ public class OpenAiEndpoint extends Endpoint {
                 embeddingResponse ->
                     new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
   }
-
-
 }

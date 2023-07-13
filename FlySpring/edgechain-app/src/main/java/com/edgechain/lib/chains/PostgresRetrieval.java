@@ -1,6 +1,5 @@
 package com.edgechain.lib.chains;
 
-import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
