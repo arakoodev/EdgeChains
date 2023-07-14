@@ -88,6 +88,23 @@ public class OpenAiEndpoint extends Endpoint {
   }
 
   public OpenAiEndpoint(
+          String url,
+          String apiKey,
+          String orgId,
+          String model,
+          String role,
+          Double temperature,
+          Boolean stream) {
+    super(url, apiKey, null);
+    this.orgId = orgId;
+    this.model = model;
+    this.role = role;
+    this.temperature = temperature;
+    this.stream = stream;
+  }
+
+
+  public OpenAiEndpoint(
       String url,
       String apiKey,
       String orgId,

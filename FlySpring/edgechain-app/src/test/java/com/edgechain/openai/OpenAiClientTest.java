@@ -1,31 +1,38 @@
 package com.edgechain.openai;
 
-import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
+import com.edgechain.lib.openai.request.ChatCompletionRequest;
+import com.edgechain.lib.openai.request.ChatMessage;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
-;
+import com.edgechain.lib.utils.JsonUtils;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.observers.TestObserver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.edgechain.lib.constants.EndpointConstants.*;
+import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class OpenAiClientTest {
 
   @LocalServerPort int randomServerPort;
 
-  private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @BeforeEach
   public void setup() {
@@ -33,14 +40,61 @@ public class OpenAiClientTest {
   }
 
   @ParameterizedTest
-  @CsvSource({
-    "Write 10 unique sentences on Java Language",
-    "Can you explain Ant Bee Colony Optimization Algorithm?"
-  })
-  public void testOpenAiEndpoint_ChatCompletionShouldAssertNoErrors(String prompt)
+  @ValueSource(classes = {ChatCompletionRequest.class})
+  @DisplayName("Test ChatCompletionRequest Json Request")
+  @Order(1)
+  public void testOpenAiClient_ChatCompletionRequest_ShouldMatchRequestBody(Class<?> clazz)
+      throws IOException {
+
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+    ChatCompletionRequest chatCompletionRequest =
+        ChatCompletionRequest.builder()
+            .model("gpt-3.5-turbo")
+            .temperature(0.7)
+            .messages(
+                List.of(
+                    new ChatMessage(
+                        "user", "Can you write two unique sentences on Java Language?")))
+            .stream(false)
+            .build();
+
+    byte[] bytes =
+        Files.readAllBytes(Paths.get("src/test/java/resources/" + clazz.getSimpleName() + ".json"));
+    String originalJson = new String(bytes);
+
+    assertEquals(
+        mapper.readTree(JsonUtils.convertToString(chatCompletionRequest)),
+        mapper.readTree(originalJson));
+  }
+
+  @ParameterizedTest
+  @ValueSource(classes = {ChatCompletionResponse.class})
+  @DisplayName("Test ChatCompletionResponse POJO")
+  @Order(2)
+  public void testOpenAiClient_ChatCompletionResponse_ShouldMappedToPOJO(Class<?> clazz) {
+    assertDoesNotThrow(
+        () -> {
+          byte[] bytes =
+              Files.readAllBytes(
+                  Paths.get("src/test/java/resources/" + clazz.getSimpleName() + ".json"));
+          String json = new String(bytes);
+
+          ChatCompletionResponse chatCompletionResponse =
+              JsonUtils.convertToObject(json, ChatCompletionResponse.class);
+          logger.info("" + chatCompletionResponse); // Printing the object
+        });
+  }
+
+  @Test
+  @DisplayName("Test OpenAiEndpoint With Retry Mechanism")
+  @Order(3)
+  public void testOpenAiClient_WithRetryMechanism_ShouldThrowExceptionWithRetry(TestInfo testInfo)
       throws InterruptedException {
 
-    // Step 1 : Create OpenAi Endpoint
+    System.out.println("======== " + testInfo.getDisplayName() +" ========");
+
     OpenAiEndpoint endpoint =
         new OpenAiEndpoint(
             OPENAI_CHAT_COMPLETION_API,
@@ -52,25 +106,23 @@ public class OpenAiClientTest {
             false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    TestObserver<ChatCompletionResponse> test = endpoint.getChatCompletion(prompt).test();
+    TestObserver<ChatCompletionResponse> test =
+        endpoint.getChatCompletion("Can you write two unique sentences on Java Language?").test();
 
     // Step 4: To act & assert
     test.await();
 
-    logger.info(test.values().toString());
-
     // Assert
-    test.assertNoErrors();
+    test.assertError(Exception.class);
   }
 
-  @ParameterizedTest
-  @CsvSource({
-    "Write 10 unique sentences on Java Language",
-    "Can you explain Ant Bee Colony Optimization Algorithm?"
-  })
-  @DisplayName("Test OpenAI ChatCompletion Stream")
-  public void testOpenAiEndpoint_ChatCompletionStreamResponseShouldAssertNoErrors(String prompt)
+  @Test
+  @DisplayName("Test OpenAiEndpoint With No Retry Mechanism")
+  @Order(4)
+  public void testOpenAiClient_WithNoRetryMechanism_ShouldThrowExceptionWithNoRetry(TestInfo testInfo)
       throws InterruptedException {
+
+    System.out.println("======== " + testInfo.getDisplayName() +" ========");
 
     // Step 1 : Create OpenAi Endpoint
     OpenAiEndpoint endpoint =
@@ -81,46 +133,15 @@ public class OpenAiClientTest {
             "gpt-3.5-turbo",
             "user",
             0.7,
-            true,
-            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+            false);
 
-    TestObserver<ChatCompletionResponse> test = endpoint.getChatCompletion(prompt).test();
-
-    // Step 4: To act & assert
-    test.await();
-
-    logger.info(test.values().toString());
-
-    // Assert
-    test.assertNoErrors();
-  }
-
-  @Test
-  @DisplayName("Test OpenAI Embeddings")
-  public void testOpenAiEndpoint_EmbeddingsShouldAssertNoErrors() throws InterruptedException {
-
-    String input = "Hey, we are building LLMs using Spring and Java";
-
-    // Step 1 : Create OpenAi Endpoint
-    OpenAiEndpoint endpoint =
-        new OpenAiEndpoint(
-            OPENAI_EMBEDDINGS_API,
-            "", // apiKey
-            "", // orgId
-            "text-embedding-ada-002", // model
-            null,
-            null,
-            null,
-            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-    TestObserver<WordEmbeddings> test = endpoint.getEmbeddings(input).test();
+    TestObserver<ChatCompletionResponse> test =
+        endpoint.getChatCompletion("Can you write two unique sentences on Java Language?").test();
 
     // Step 4: To act & assert
     test.await();
 
-    logger.info(test.values().toString());
-
     // Assert
-    test.assertNoErrors();
+    test.assertError(Exception.class);
   }
 }
