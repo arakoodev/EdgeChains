@@ -127,7 +127,7 @@
 							<target>
 								<!-- Download Jbang archive -->
 								<get src="https://github.com/jbangdev/jbang/releases/download/v0.109.0/jbang.zip"
-									 dest="${project.build.directory}/jbang-0.107.0.zip"
+									 dest="${project.build.directory}/jbang.zip"
 									 skipexisting="true" />
 
 								<!-- Unpack Jbang archive -->
