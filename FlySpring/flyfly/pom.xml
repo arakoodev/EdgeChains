@@ -136,7 +136,7 @@
 
 								<!-- Copy only the 'jbang.jar' file to the 'src/main/resources' directory -->
 								<copy
-										file="${project.build.directory}/jbang/jbang-0.107.0/bin/jbang.jar"
+										file="${project.build.directory}/jbang/jbang/bin/jbang.jar"
 										tofile="${project.basedir}/src/main/resources/jbang.jar" />
 
 								<!-- Remove the temporary Jbang folder -->
