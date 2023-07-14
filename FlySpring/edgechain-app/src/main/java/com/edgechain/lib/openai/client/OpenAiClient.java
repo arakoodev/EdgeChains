@@ -9,7 +9,6 @@ import com.edgechain.lib.openai.request.CompletionRequest;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.openai.response.CompletionResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import com.edgechain.lib.utils.JsonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;

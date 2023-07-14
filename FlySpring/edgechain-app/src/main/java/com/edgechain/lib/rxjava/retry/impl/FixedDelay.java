@@ -41,12 +41,18 @@ public class FixedDelay extends RetryPolicy {
                 return Observable.empty();
 
               if (++retryCount < maxRetries) {
-                logger.info(String.format("Retrying: Attempt: %s, Max Retries: %s ~ %s", retryCount, maxRetries, throwable.getMessage()));
+                logger.info(
+                    String.format(
+                        "Retrying: Attempt: %s, Max Retries: %s ~ %s",
+                        retryCount, maxRetries, throwable.getMessage()));
                 return Observable.timer(unit.toMillis(retryDelay), TimeUnit.MILLISECONDS);
               }
 
               // Once, max-retries hit, emit an error.
-              logger.error(String.format("Error Occurred: Attempt: %s, Max Retries: %s ~ %s", retryCount, maxRetries, throwable.getMessage()));
+              logger.error(
+                  String.format(
+                      "Error Occurred: Attempt: %s, Max Retries: %s ~ %s",
+                      retryCount, maxRetries, throwable.getMessage()));
               return Observable.error(throwable);
             });
   }
