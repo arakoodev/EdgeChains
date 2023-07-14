@@ -93,7 +93,7 @@ public class OpenAiClientTest {
   public void testOpenAiClient_WithRetryMechanism_ShouldThrowExceptionWithRetry(TestInfo testInfo)
       throws InterruptedException {
 
-    System.out.println("======== " + testInfo.getDisplayName() +" ========");
+    System.out.println("======== " + testInfo.getDisplayName() + " ========");
 
     OpenAiEndpoint endpoint =
         new OpenAiEndpoint(
@@ -119,10 +119,10 @@ public class OpenAiClientTest {
   @Test
   @DisplayName("Test OpenAiEndpoint With No Retry Mechanism")
   @Order(4)
-  public void testOpenAiClient_WithNoRetryMechanism_ShouldThrowExceptionWithNoRetry(TestInfo testInfo)
-      throws InterruptedException {
+  public void testOpenAiClient_WithNoRetryMechanism_ShouldThrowExceptionWithNoRetry(
+      TestInfo testInfo) throws InterruptedException {
 
-    System.out.println("======== " + testInfo.getDisplayName() +" ========");
+    System.out.println("======== " + testInfo.getDisplayName() + " ========");
 
     // Step 1 : Create OpenAi Endpoint
     OpenAiEndpoint endpoint =
