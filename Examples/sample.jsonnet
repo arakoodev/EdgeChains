@@ -1,4 +1,2 @@
-local test = std.test();
-{
-    "test": test
-}
+local searchResponse = std.search();
+{}
