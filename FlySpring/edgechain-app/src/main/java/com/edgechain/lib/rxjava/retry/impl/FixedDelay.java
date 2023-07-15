@@ -20,7 +20,7 @@ public class FixedDelay extends RetryPolicy {
   public FixedDelay() {}
 
   public FixedDelay(int maxRetries, int retryDelay, TimeUnit unit) {
-    this.maxRetries = maxRetries + 1;
+    this.maxRetries = maxRetries;
     this.retryDelay = retryDelay;
     this.unit = unit;
     this.retryCount = 0;
@@ -41,13 +41,18 @@ public class FixedDelay extends RetryPolicy {
                 return Observable.empty();
 
               if (++retryCount < maxRetries) {
-                // Unsubscribe the original observable & resubscribed it.
-                logger.info("Retrying it.... " + throwable.getMessage());
+                logger.info(
+                    String.format(
+                        "Retrying: Attempt: %s, Max Retries: %s ~ %s",
+                        retryCount, maxRetries, throwable.getMessage()));
                 return Observable.timer(unit.toMillis(retryDelay), TimeUnit.MILLISECONDS);
               }
 
               // Once, max-retries hit, emit an error.
-              logger.error(throwable.getMessage());
+              logger.error(
+                  String.format(
+                      "Error Occurred: Attempt: %s, Max Retries: %s ~ %s",
+                      retryCount, maxRetries, throwable.getMessage()));
               return Observable.error(throwable);
             });
   }
@@ -60,6 +65,10 @@ public class FixedDelay extends RetryPolicy {
     sb.append(", unit=").append(unit);
     sb.append('}');
     return sb.toString();
+  }
+
+  public int getRetryCount() {
+    return retryCount;
   }
 
   public int getMaxRetries() {

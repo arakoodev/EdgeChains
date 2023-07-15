@@ -7,6 +7,7 @@
     <version>1.0.0</version>
     <name>edgechain</name>
     <description>EdgeChains SDK.</description>
+    <packaging>jar</packaging>
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>2022.0.3</spring-cloud.version>
@@ -255,6 +256,7 @@
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -313,24 +315,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-
-        <profile>
-            <id>app</id>
-            <properties>
-                <spring.boot.mainclass>com.edgechain.EdgeChainAppRunner</spring.boot.mainclass>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>service</id>
-            <properties>
-                <spring.boot.mainclass>com.edgechain.service.EdgeChainServiceRunner</spring.boot.mainclass>
-            </properties>
-        </profile>
-
-
-    </profiles>
 
 </project>

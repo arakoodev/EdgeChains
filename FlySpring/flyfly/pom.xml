@@ -126,17 +126,17 @@
 						<configuration>
 							<target>
 								<!-- Download Jbang archive -->
-								<get src="https://github.com/jbangdev/jbang/releases/download/v0.107.0/jbang-0.107.0.zip"
-									 dest="${project.build.directory}/jbang-0.107.0.zip"
+								<get src="https://github.com/jbangdev/jbang/releases/download/v0.109.0/jbang.zip"
+									 dest="${project.build.directory}/jbang.zip"
 									 skipexisting="true" />
 
 								<!-- Unpack Jbang archive -->
-								<unzip src="${project.build.directory}/jbang-0.107.0.zip"
+								<unzip src="${project.build.directory}/jbang.zip"
 									   dest="${project.build.directory}/jbang" />
 
 								<!-- Copy only the 'jbang.jar' file to the 'src/main/resources' directory -->
 								<copy
-										file="${project.build.directory}/jbang/jbang-0.107.0/bin/jbang.jar"
+										file="${project.build.directory}/jbang/jbang/bin/jbang.jar"
 										tofile="${project.basedir}/src/main/resources/jbang.jar" />
 
 								<!-- Remove the temporary Jbang folder -->

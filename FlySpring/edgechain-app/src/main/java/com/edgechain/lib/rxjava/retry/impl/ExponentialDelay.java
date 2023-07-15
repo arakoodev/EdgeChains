@@ -21,7 +21,7 @@ public class ExponentialDelay extends RetryPolicy {
 
   public ExponentialDelay(long firstDelay, int maxRetries, int factor, TimeUnit unit) {
     this.firstDelay = firstDelay;
-    this.maxRetries = maxRetries + 1;
+    this.maxRetries = maxRetries;
     this.factor = factor;
     this.unit = unit;
     this.retryCount = 0;
@@ -44,11 +44,17 @@ public class ExponentialDelay extends RetryPolicy {
               long compute = compute(firstDelay, retryCount, factor, unit);
 
               if (++retryCount < maxRetries) {
-                logger.info("Retrying it.... " + throwable.getMessage());
+                logger.info(
+                    String.format(
+                        "Retrying: Attempt: %s, Max Retries: %s ~ %s",
+                        retryCount, maxRetries, throwable.getMessage()));
                 return Observable.timer(compute, TimeUnit.MILLISECONDS);
               }
 
-              logger.error(throwable.getMessage());
+              logger.error(
+                  String.format(
+                      "Error Occurred: Attempt: %s, Max Retries: %s ~ %s",
+                      retryCount, maxRetries, throwable.getMessage()));
               return Observable.error(throwable);
             });
   }
