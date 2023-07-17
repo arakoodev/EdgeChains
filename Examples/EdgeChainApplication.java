@@ -41,15 +41,19 @@ import org.springframework.web.bind.annotation.*;
 @SpringBootApplication
 public class EdgeChainApplication {
 
-  private final String OPENAI_AUTH_KEY = "";
-  private final String PINECONE_AUTH_KEY = "";
-  private final String PINECONE_QUERY_API = "";
-  private final String PINECONE_UPSERT_API = "";
-  private final String PINECONE_DELETE = "";
+  private final String OPENAI_AUTH_KEY = "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";
+  private final String PINECONE_AUTH_KEY = "5964811a-7020-4fa7-bdbe-6db2084e4d77";
+  private final String PINECONE_QUERY_API =
+          "https://pinecone-index-a464f61.svc.us-east-1-aws.pinecone.io/query";
+  private final String PINECONE_UPSERT_API =
+          "https://pinecone-index-a464f61.svc.us-east-1-aws.pinecone.io/vectors/upsert";
+  private final String PINECONE_DELETE =
+          "https://pinecone-index-a464f61.svc.us-east-1-aws.pinecone.io/vectors/delete";
 
-  private final String POSTGRES_JDBC_URL = "";
-  private final String POSTGRES_USERNAME = "";
-  private final String POSTGRES_PASSWORD = "";
+  private final String POSTGRES_JDBC_URL =
+          "jdbc:postgresql://db.itlgddqhlxhdbncdqowa.supabase.co:5432/postgres";
+  private final String POSTGRES_USERNAME = "postgres";
+  private final String POSTGRES_PASSWORD = "fsfVFQM4u2rYZehP";
 
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
@@ -59,10 +63,10 @@ public class EdgeChainApplication {
   @Bean
   public RedisEnv redisEnv() {
     RedisEnv redisEnv = new RedisEnv();
-    redisEnv.setUrl("");
+    redisEnv.setUrl("redis-12285.c8.us-east-1-2.ec2.cloud.redislabs.com");
     redisEnv.setPort(12285);
     redisEnv.setUsername("default");
-    redisEnv.setPassword("");
+    redisEnv.setPassword("EgZcqW5gj7ZRnoA582vjQsmztr0uim1d");
     redisEnv.setTtl(3600); // Configuring ttl for HistoryContext;
     return redisEnv;
   }
