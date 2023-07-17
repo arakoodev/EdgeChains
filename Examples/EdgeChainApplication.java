@@ -32,6 +32,7 @@ import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -39,7 +40,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication
-public class EdgeChainApplication {
+public class EdgeChainApplication implements CommandLineRunner {
 
   private final String OPENAI_AUTH_KEY = "";
   private final String PINECONE_AUTH_KEY = "";
@@ -47,25 +48,33 @@ public class EdgeChainApplication {
   private final String PINECONE_UPSERT_API = "";
   private final String PINECONE_DELETE = "";
 
-  private final String POSTGRES_JDBC_URL = "";
-  private final String POSTGRES_USERNAME = "";
-  private final String POSTGRES_PASSWORD = "";
+  private static final String POSTGRES_JDBC_URL = "";
+  private static final String POSTGRES_USERNAME = "postgres";
+  private static final String POSTGRES_PASSWORD = "";
 
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
+    /** Optional If you are using PostgreSQL for HistoryContext or VectorDB * */
+    System.setProperty("postgres.jdbc.url", "" + POSTGRES_JDBC_URL);
+    System.setProperty("postgres.jdbc.username", "" + POSTGRES_USERNAME);
+    System.setProperty("postgres.jdbc.password", "" + POSTGRES_PASSWORD);
+    /** Optional If you are using PostgreSQL for HistoryContext or VectorDB * */
     SpringApplication.run(EdgeChainApplication.class, args);
   }
 
   @Bean
   public RedisEnv redisEnv() {
     RedisEnv redisEnv = new RedisEnv();
-    redisEnv.setUrl("");
+    redisEnv.setUrl("redis-12285.c8.us-east-1-2.ec2.cloud.redislabs.com");
     redisEnv.setPort(12285);
     redisEnv.setUsername("default");
-    redisEnv.setPassword("");
+    redisEnv.setPassword("EgZcqW5gj7ZRnoA582vjQsmztr0uim1d");
     redisEnv.setTtl(3600); // Configuring ttl for HistoryContext;
     return redisEnv;
   }
+
+  @Override
+  public void run(String... args) throws Exception {}
 
   /************ EXAMPLE APIs **********************/
 
@@ -129,38 +138,87 @@ public class EdgeChainApplication {
     }
 
     /*** Creating HistoryContext (Using Redis) Controller ****/
+    @PostMapping("/redis/historycontext")
+    public ArkResponse createRedisHistoryContext(ArkRequest arkRequest) {
 
-    @PostMapping("/historycontext")
-    public ArkResponse create(ArkRequest arkRequest) {
       RedisHistoryContextEndpoint endpoint =
           new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+
       return new ArkResponse(
           endpoint.create(
               UUID.randomUUID()
                   .toString())); // Here randomId is generated, you can provide your own ids....
     }
 
-    @PutMapping("/historycontext")
-    public ArkResponse put(ArkRequest arkRequest) throws IOException {
+    @PutMapping("/redis/historycontext")
+    public ArkResponse putRedisHistoryContext(ArkRequest arkRequest) throws IOException {
       JSONObject json = arkRequest.getBody();
+
       RedisHistoryContextEndpoint endpoint =
           new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+
       return new ArkResponse(endpoint.put(json.getString("id"), json.getString("response")));
     }
 
-    @GetMapping("/historycontext")
-    public ArkResponse get(ArkRequest arkRequest) {
+    @GetMapping("/redis/historycontext")
+    public ArkResponse getRedisHistoryContext(ArkRequest arkRequest) {
       String id = arkRequest.getQueryParam("id");
+
       RedisHistoryContextEndpoint endpoint =
           new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+
       return new ArkResponse(endpoint.get(id));
     }
 
-    @DeleteMapping("/historycontext")
-    public void delete(ArkRequest arkRequest) {
+    @DeleteMapping("/redis/historycontext")
+    public void deleteRedisHistoryContext(ArkRequest arkRequest) {
       String id = arkRequest.getQueryParam("id");
+
       RedisHistoryContextEndpoint endpoint =
           new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+
+      endpoint.delete(id);
+    }
+    /*** Creating HistoryContext (Using PostgreSQL) Controller ****/
+    @PostMapping("/postgresql/historycontext")
+    public ArkResponse createPostgreSQLHistoryContext(ArkRequest arkRequest) {
+
+      PostgreSQLHistoryContextEndpoint endpoint =
+          new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+
+      return new ArkResponse(
+          endpoint.create(
+              UUID.randomUUID()
+                  .toString())); // Here randomId is generated, you can provide your own ids....
+    }
+
+    @PutMapping("/postgresql/historycontext")
+    public ArkResponse putPostgreSQLHistoryContext(ArkRequest arkRequest) throws IOException {
+      JSONObject json = arkRequest.getBody();
+
+      PostgreSQLHistoryContextEndpoint endpoint =
+          new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+
+      return new ArkResponse(endpoint.put(json.getString("id"), json.getString("response")));
+    }
+
+    @GetMapping("/postgresql/historycontext")
+    public ArkResponse getPostgreSQLHistoryContext(ArkRequest arkRequest) {
+      String id = arkRequest.getQueryParam("id");
+
+      PostgreSQLHistoryContextEndpoint endpoint =
+          new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+
+      return new ArkResponse(endpoint.get(id));
+    }
+
+    @DeleteMapping("/postgresql/historycontext")
+    public void deletePostgreSQLHistoryContext(ArkRequest arkRequest) {
+      String id = arkRequest.getQueryParam("id");
+
+      PostgreSQLHistoryContextEndpoint endpoint =
+          new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+
       endpoint.delete(id);
     }
 
@@ -877,20 +935,20 @@ public class EdgeChainApplication {
     }
 
     // ========== PGVectors ==============
+    /**
+     * If namespace is empty string or null, then the default namespace is 'knowledge'==> The
+     * concept of namespace is defined above *
+     */
     @PostMapping(
         "/postgres/openai/upsert") // /v1/examples/postgres/openai/upsert?tableName=machine-learning
     public void upsertPostgres(ArkRequest arkRequest) throws IOException {
 
       String table = arkRequest.getQueryParam("table");
+      String namespace = arkRequest.getQueryParam("namespace");
       InputStream file = arkRequest.getMultiPart("file").getInputStream();
 
       PostgresEndpoint postgresEndpoint =
-          new PostgresEndpoint(
-              POSTGRES_JDBC_URL,
-              POSTGRES_USERNAME,
-              POSTGRES_PASSWORD,
-              table,
-              new FixedDelay(5, 10, TimeUnit.SECONDS));
+          new PostgresEndpoint(table, namespace, new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
 
       OpenAiEndpoint embeddingEndpoint =
           new OpenAiEndpoint(
@@ -901,28 +959,24 @@ public class EdgeChainApplication {
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
-      // Define the dimensions for embeddings.. The concept of tables is similar to namespace in
-      // Redis/Pinecone
       Retrieval retrieval = new PostgresRetrieval(postgresEndpoint, 1536, embeddingEndpoint);
       IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
     }
 
+    //    If namespace is empty string or null, then the default namespace is 'knowledge'; therefore
+    // it will query where namespace='knowledge'
     @GetMapping(
         value = "/postgres/openai/query",
         produces = {MediaType.APPLICATION_JSON_VALUE})
     public ArkResponse queryPostgres(ArkRequest arkRequest) {
 
       String table = arkRequest.getQueryParam("table");
+      String namespace = arkRequest.getQueryParam("namespace");
       String query = arkRequest.getQueryParam("query");
       int topK = arkRequest.getIntQueryParam("topK");
 
       PostgresEndpoint postgresEndpoint =
-          new PostgresEndpoint(
-              POSTGRES_JDBC_URL,
-              POSTGRES_USERNAME,
-              POSTGRES_PASSWORD,
-              table,
-              new FixedDelay(5, 10, TimeUnit.SECONDS));
+          new PostgresEndpoint(table, namespace, new FixedDelay(5, 10, TimeUnit.SECONDS));
 
       OpenAiEndpoint embeddingEndpoint =
           new OpenAiEndpoint(
@@ -994,6 +1048,7 @@ public class EdgeChainApplication {
 
       String contextId = arkRequest.getQueryParam("id");
       String query = arkRequest.getQueryParam("query");
+      String namespace = arkRequest.getQueryParam("namespace");
       String table = arkRequest.getQueryParam("table");
       boolean stream = arkRequest.getBooleanHeader("stream");
 
@@ -1002,10 +1057,11 @@ public class EdgeChainApplication {
       System.out.println(table);
       System.out.println(stream);
 
-      RedisHistoryContextEndpoint contextEndpoint =
-          new RedisHistoryContextEndpoint(new FixedDelay(3, 3, TimeUnit.SECONDS));
+      PostgreSQLHistoryContextEndpoint postgreSQLContextEndpoint =
+          new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+
       HistoryContext historyContext =
-          EdgeChain.fromObservable(contextEndpoint.get(contextId)).get();
+          EdgeChain.fromObservable(postgreSQLContextEndpoint.get(contextId)).get();
 
       // Step 1: Create JsonnetLoader || Pass Args || Load The File;
       JsonnetLoader loader = new FileJsonnetLoader("R:\\Github\\postgres-chat.jsonnet");
@@ -1019,12 +1075,7 @@ public class EdgeChainApplication {
       // Step 2: Create PostgresEndpoint for Query, OpenAIEndpoint for Using Embedding & Chat
       // Service
       PostgresEndpoint postgresEndpoint =
-          new PostgresEndpoint(
-              POSTGRES_JDBC_URL,
-              POSTGRES_USERNAME,
-              POSTGRES_PASSWORD,
-              table,
-              new FixedDelay(5, 10, TimeUnit.SECONDS));
+          new PostgresEndpoint(table, namespace, new FixedDelay(5, 10, TimeUnit.SECONDS));
 
       OpenAiEndpoint embeddingEndpoint =
           new OpenAiEndpoint(
@@ -1115,7 +1166,7 @@ public class EdgeChainApplication {
                                       .getContent());
                             } else {
                               EdgeChain.fromObservable(
-                                      contextEndpoint.put(
+                                      postgreSQLContextEndpoint.put(
                                           historyContext.getId(),
                                           query
                                               + openAiResponseBuilder
@@ -1132,7 +1183,7 @@ public class EdgeChainApplication {
                           else if (chatCompletionResponse.getObject().equals("chat.completion")) {
 
                             EdgeChain.fromObservable(
-                                    contextEndpoint.put(
+                                    postgreSQLContextEndpoint.put(
                                         historyContext.getId(),
                                         query
                                             + chatCompletionResponse
@@ -1155,14 +1206,10 @@ public class EdgeChainApplication {
     @DeleteMapping("/postgres/deleteAll")
     public ArkResponse deletePostgres(ArkRequest arkRequest) {
       String table = arkRequest.getQueryParam("table");
+      String namespace = arkRequest.getQueryParam("namespace");
 
       PostgresEndpoint postgresEndpoint =
-          new PostgresEndpoint(
-              POSTGRES_JDBC_URL,
-              POSTGRES_USERNAME,
-              POSTGRES_PASSWORD,
-              table,
-              new FixedDelay(5, 10, TimeUnit.SECONDS));
+          new PostgresEndpoint(table, namespace, new FixedDelay(5, 10, TimeUnit.SECONDS));
 
       return new EdgeChain<>(postgresEndpoint.deleteAll()).getArkResponse();
     }

@@ -3,22 +3,22 @@ package com.edgechain.lib.endpoint.impl;
 import com.edgechain.lib.context.domain.ContextPutRequest;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.endpoint.Endpoint;
-import com.edgechain.lib.retrofit.RedisContextService;
+import com.edgechain.lib.retrofit.PostgreSQLContextService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
+import java.util.Objects;
 import retrofit2.Retrofit;
 
-import java.util.Objects;
-
-public class RedisHistoryContextEndpoint extends Endpoint {
+public class PostgreSQLHistoryContextEndpoint extends Endpoint {
 
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
-  private final RedisContextService contextService = retrofit.create(RedisContextService.class);
+  private final PostgreSQLContextService contextService =
+      retrofit.create(PostgreSQLContextService.class);
 
-  public RedisHistoryContextEndpoint() {}
+  public PostgreSQLHistoryContextEndpoint() {}
 
-  public RedisHistoryContextEndpoint(RetryPolicy retryPolicy) {
+  public PostgreSQLHistoryContextEndpoint(RetryPolicy retryPolicy) {
     super(retryPolicy);
   }
 
@@ -36,7 +36,6 @@ public class RedisHistoryContextEndpoint extends Endpoint {
   }
 
   public void delete(String id) {
-
     if (Objects.nonNull(id) && !id.isEmpty()) {
       this.contextService.delete(id, this).blockingAwait();
     } else throw new RuntimeException("Redis key cannot be null or empty");
