@@ -40,7 +40,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication
-public class EdgeChainApplication implements CommandLineRunner {
+public class EdgeChainApplication  {
 
   private final String OPENAI_AUTH_KEY = "";
   private final String PINECONE_AUTH_KEY = "";
@@ -73,8 +73,6 @@ public class EdgeChainApplication implements CommandLineRunner {
     return redisEnv;
   }
 
-  @Override
-  public void run(String... args) throws Exception {}
 
   /************ EXAMPLE APIs **********************/
 
