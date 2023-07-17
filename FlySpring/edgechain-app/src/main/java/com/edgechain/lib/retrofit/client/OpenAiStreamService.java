@@ -34,6 +34,7 @@ public class OpenAiStreamService {
             .headers(
                 httpHeaders -> {
                   httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                  httpHeaders.set("stream","true");
                 })
             .bodyValue(JsonUtils.convertToString(openAiEndpoint))
             .retrieve()
