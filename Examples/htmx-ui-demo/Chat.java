@@ -1,4 +1,4 @@
-package com.example.htmxuidemo;
+package com.edgechain;
 //SOURCES ./MessageItem.java
 
 import java.util.List;

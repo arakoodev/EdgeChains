@@ -1,4 +1,4 @@
-package com.example.htmxuidemo;
+package com.edgechain;
 
 public class MessageItem {
   private String message;

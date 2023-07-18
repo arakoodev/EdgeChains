@@ -1,25 +1,16 @@
-package com.example.htmxuidemo;//usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS org.springframework.boot:spring-boot-starter-web:3.1.0
-//DEPS org.springframework.boot:spring-boot-starter-test:3.1.0
-//DEPS org.springframework.boot:spring-boot-starter-thymeleaf:3.1.0
-//DEPS org.springframework:spring-webflux:6.0.9
-//DEPS io.projectreactor:reactor-core:3.5.3
-//DEPS org.slf4j:slf4j-api:2.0.7
-
+package com.edgechain;
+//SOURCES ./ChatMessage.java
 //SOURCES ./MessageItem.java
 //SOURCES ./Chat.java
-//SOURCES ./ChatCompletionChoice.java
-//SOURCES ./ChatCompletionResponse.java
-//SOURCES ./Usage.java
-//SOURCES ./ChatMessage.java
 
-//FILES resources/templates/index.html=../../../../resources/templates/index.html
-//FILES resources/templates/fragments.html=../../../../resources/templates/fragments.html
-
+//FILES resources/templates/index.html=./index.html
+//FILES resources/templates/fragments.html=./fragments.html
+import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import com.edgechain.lib.configuration.RedisEnv;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -40,7 +31,6 @@ import java.util.List;
 @RequestMapping("/")
 public class DashboardApp{
 
-    @Bean
     public WebClient webClient(){
         return WebClient.builder().build();
     }
@@ -48,6 +38,19 @@ public class DashboardApp{
     public static void main(String[] args) {
         System.setProperty("server.port", "8081");
         SpringApplication.run(DashboardApp.class, args);
+    }
+
+
+
+    @Bean
+    public RedisEnv redisEnv() {
+        RedisEnv redisEnv = new RedisEnv();
+        redisEnv.setUrl("");
+        redisEnv.setPort(12285);
+        redisEnv.setUsername("");
+        redisEnv.setPassword("");
+        redisEnv.setTtl(3600); // Configuring ttl for HistoryContext;
+        return redisEnv;
     }
 
     private StringBuilder currentContent;
@@ -58,6 +61,7 @@ public class DashboardApp{
 
     @GetMapping
     public String index(Model model){
+        addChat();
         addAttributeForIndex(model);
         return "index";
     }
@@ -116,7 +120,7 @@ public class DashboardApp{
                 })
                 .retrieve()
                 .bodyToFlux(ChatCompletionResponse.class)
-                .map(it -> currentContent.append(it.getChoices().get(0).getMessage().content));
+                .map(it -> currentContent.append(it.getChoices().get(0).getMessage().getContent()));
     }
 
 
