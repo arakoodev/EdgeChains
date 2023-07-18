@@ -214,7 +214,7 @@ Here is a demo using the famous research paper [**Attention is all you need**](h
 💫💫💫 **we would be very grateful if you could take 5 seconds to star our repository on Github. It helps get the word out to more LLM developers & open source committers about edgechains.** 💫💫💫
 
 - Follow our [Twitter](https://twitter.com/arakoodev)
-- Join  [Discord](https://discord.gg/MtEPK9cnSF) to write code, get help, or to chat with us!!!
+- Join  [Discord](https://discord.gg/wgmvkVEKEn) to write code, get help, or to chat with us!!!
 - Open a [discussion](https://github.com/arakoodev/edgechains/discussions/new) with your question, or
 - Open [a bug](https://github.com/arakoodev/edgechains/issues/new)
 - Check open [Github Issues](https://github.com/arakoodev/edgechains/issues)
