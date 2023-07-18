@@ -14,7 +14,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
-
 public abstract class JsonnetLoader {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -78,8 +77,7 @@ public abstract class JsonnetLoader {
           System.err,
           new os.Path(Path.of(System.getProperty("java.io.tmpdir"))),
           scala.None$.empty(),
-          scala.None$.empty(),
-              new NewStd().search());
+          scala.None$.empty());
 
       // Get the String Output & Transform it into JsonnetSchema
       this.jsonObject = new JSONObject(outputStream.toString(StandardCharsets.UTF_8));
