@@ -1,9 +1,9 @@
 package com.edgechain.lib.context.client.impl;
 
-import com.edgechain.lib.configuration.RedisEnv;
+import com.edgechain.lib.configuration.domain.RedisEnv;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.context.client.HistoryContextClient;
-import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
@@ -13,11 +13,13 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Repository
-public class RedisHistoryContextClient implements HistoryContextClient {
+public class RedisHistoryContextClient
+    implements HistoryContextClient<RedisHistoryContextEndpoint> {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -28,7 +30,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
   @Autowired @Lazy private RedisEnv redisEnv;
 
   @Override
-  public EdgeChain<HistoryContext> create(String id, Endpoint endpoint) {
+  public EdgeChain<HistoryContext> create(String id, RedisHistoryContextEndpoint endpoint) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -46,6 +48,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
                 HistoryContext context = new HistoryContext();
                 context.setId(key);
                 context.setResponse("");
+                context.setCreatedAt(LocalDateTime.now());
 
                 this.redisTemplate.opsForValue().set(key, context);
                 this.redisTemplate.expire(key, redisEnv.getTtl(), TimeUnit.SECONDS);
@@ -61,7 +64,8 @@ public class RedisHistoryContextClient implements HistoryContextClient {
   }
 
   @Override
-  public EdgeChain<HistoryContext> put(String key, String response, Endpoint endpoint) {
+  public EdgeChain<HistoryContext> put(
+      String key, String response, RedisHistoryContextEndpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -86,7 +90,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
   }
 
   @Override
-  public EdgeChain<HistoryContext> get(String key, Endpoint endpoint) {
+  public EdgeChain<HistoryContext> get(String key, RedisHistoryContextEndpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -98,10 +102,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
                           (HistoryContext) this.redisTemplate.opsForValue().get(key)));
                   emitter.onComplete();
                 } else {
-                  emitter.onError(
-                      new RuntimeException(
-                          "Redis HistoryContextController key isn't found. You may have incorrectly"
-                              + " defined"));
+                  emitter.onError(new RuntimeException("Redis history_context id isn't found."));
                 }
 
               } catch (final Exception e) {
@@ -112,23 +113,7 @@ public class RedisHistoryContextClient implements HistoryContextClient {
   }
 
   @Override
-  public EdgeChain<Boolean> check(String key, Endpoint endpoint) {
-    return new EdgeChain<>(
-        Observable.create(
-            emitter -> {
-              try {
-                Boolean b = this.redisTemplate.hasKey(key);
-                emitter.onNext(Objects.requireNonNull(b));
-                emitter.onComplete();
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
-  }
-
-  @Override
-  public EdgeChain<String> delete(String key, Endpoint endpoint) {
+  public EdgeChain<String> delete(String key, RedisHistoryContextEndpoint endpoint) {
 
     return new EdgeChain<>(
         Observable.create(

@@ -1,6 +1,8 @@
 package com.edgechain.lib.configuration;
 
+import com.edgechain.lib.configuration.domain.RedisEnv;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -36,6 +38,7 @@ public class RedisConfiguration {
   }
 
   @Bean
+  @ConditionalOnBean(name = "redisEnv")
   public RedisTemplate<String, Object> redisTemplate() {
     RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(jedisConnectionFactory());
