@@ -598,7 +598,6 @@ public class EdgeChainApplication {
 
     // Namespace is optional (if not provided, it will be using Empty String "")
     @DeleteMapping("/examples/pinecone/deleteAll")
-    @PreAuthorize("hasAnyRole('authenticated')")
     public ArkResponse deletePinecone(ArkRequest arkRequest) {
       String namespace = arkRequest.getQueryParam("namespace");
       PineconeEndpoint pineconeEndpoint =
