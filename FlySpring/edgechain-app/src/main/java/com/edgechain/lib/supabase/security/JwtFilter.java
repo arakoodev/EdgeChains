@@ -8,7 +8,6 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
@@ -16,34 +15,26 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class JwtFilter implements Filter {
+public class JwtFilter extends OncePerRequestFilter {
 
   @Autowired private JwtHelper jwtHelper;
 
   @Autowired private UserSecurityService userSecurityService;
 
-  @Override
-  public void init(FilterConfig filterConfig) {}
-
   @Autowired private SecurityUUID securityUUID;
 
   @Override
-  public void doFilter(
-      ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filter)
-      throws IOException, ServletException {
-
-    HttpServletRequest request = (HttpServletRequest) servletRequest;
-
+  protected void doFilterInternal(
+      HttpServletRequest request, HttpServletResponse response, FilterChain filter)
+      throws ServletException, IOException {
     if (request.getRequestURI().startsWith("/v2")) {
       String authHeader = request.getHeader("Authorization");
-      if (Objects.isNull(authHeader) || !authHeader.equals(securityUUID.getAuthKey()))
-        throw new FilterException("Access Denied");
+      if (!authHeader.equals(securityUUID.getAuthKey())) throw new FilterException("Access Denied");
     }
-
-    HttpServletResponse response = (HttpServletResponse) servletResponse;
 
     String token = AuthUtils.extractToken(request);
     if (token != null && this.jwtHelper.validate(token)) {
@@ -62,7 +53,4 @@ public class JwtFilter implements Filter {
 
     filter.doFilter(request, response);
   }
-
-  @Override
-  public void destroy() {}
 }

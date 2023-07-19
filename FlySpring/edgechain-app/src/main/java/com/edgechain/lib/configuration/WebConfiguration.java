@@ -1,9 +1,6 @@
 package com.edgechain.lib.configuration;
 
-import com.edgechain.lib.configuration.domain.ExcludeMappingFilter;
-import com.edgechain.lib.configuration.domain.RedisEnv;
-import com.edgechain.lib.configuration.domain.SecurityUUID;
-import com.edgechain.lib.configuration.domain.SupabaseEnv;
+import com.edgechain.lib.configuration.domain.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,5 +43,10 @@ public class WebConfiguration {
   @Bean
   public SecurityUUID securityUUID() {
     return new SecurityUUID(UUID.randomUUID().toString());
+  }
+
+  @Bean
+  public CorsEnableOrigins corsEnableOrigins() {
+    return new CorsEnableOrigins();
   }
 }
