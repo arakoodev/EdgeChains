@@ -37,12 +37,11 @@ public class RedisClient {
 
   public RedisClient(RedisEndpoint endpoint) {
     this.endpoint = endpoint;
-  }
-
-  public RedisClient(RedisEndpoint endpoint, String indexName, String namespace) {
-    this.endpoint = endpoint;
-    this.indexName = indexName;
-    this.namespace = (Objects.isNull(namespace) || namespace.isEmpty()) ? "knowledge" : namespace;
+    this.indexName = endpoint.getIndexName();
+    this.namespace =
+        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+            ? "knowledge"
+            : endpoint.getNamespace();
   }
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -124,7 +123,7 @@ public class RedisClient {
         endpoint);
   }
 
-  public EdgeChain<String> deleteByPattern(String pattern) {
+  public EdgeChain<StringResponse> deleteByPattern(String pattern) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -134,7 +133,9 @@ public class RedisClient {
 
                 jedisPooled.getPool().returnResource(jedisPooled.getPool().getResource());
 
-                emitter.onNext("Redis deletion performed");
+                emitter.onNext(
+                    new StringResponse(
+                        "Word embeddings are successfully deleted for pattern:" + pattern));
                 emitter.onComplete();
 
               } catch (Exception ex) {
