@@ -1,4 +1,4 @@
-package com.edgechain.lib.configuration;
+package com.edgechain.lib.configuration.domain;
 
 public class RedisEnv {
 
