@@ -7,6 +7,7 @@ import com.edgechain.lib.chains.PostgresRetrieval;
 import com.edgechain.lib.chains.RedisRetrieval;
 import com.edgechain.lib.chains.Retrieval;
 import com.edgechain.lib.chunk.enums.LangType;
+import com.edgechain.lib.configuration.domain.CorsEnableOrigins;
 import com.edgechain.lib.configuration.domain.ExcludeMappingFilter;
 import com.edgechain.lib.configuration.domain.RedisEnv;
 import com.edgechain.lib.configuration.domain.SupabaseEnv;
@@ -58,6 +59,14 @@ public class EdgeChainApplication {
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
     SpringApplication.run(EdgeChainApplication.class, args);
+  }
+
+  // Adding Cors
+  @Bean
+  public CorsEnableOrigins corsEnableOrigins() {
+    CorsEnableOrigins origins = new CorsEnableOrigins();
+    origins.setOrigins(Collections.singletonList("http://localhost:4200"));
+    return origins;
   }
 
   /* Optional (not required if you are not using Redis), always create bean with @Primary annotation */
