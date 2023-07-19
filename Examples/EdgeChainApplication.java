@@ -61,11 +61,11 @@ public class EdgeChainApplication {
     SpringApplication.run(EdgeChainApplication.class, args);
   }
 
-  // Adding Cors
+  // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
   @Bean
   public CorsEnableOrigins corsEnableOrigins() {
     CorsEnableOrigins origins = new CorsEnableOrigins();
-    origins.setOrigins(Collections.singletonList("http://localhost:4200"));
+    origins.setOrigins(Collections.singletonList("http://localhost:4200", "http://localhost:4201", "http://localhost:4202"));
     return origins;
   }
 
