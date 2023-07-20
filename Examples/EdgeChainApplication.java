@@ -63,6 +63,7 @@ public class EdgeChainApplication {
 
   // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
   @Bean
+  @Primary
   public CorsEnableOrigins corsEnableOrigins() {
     CorsEnableOrigins origins = new CorsEnableOrigins();
     origins.setOrigins(Collections.singletonList("http://localhost:4200", "http://localhost:4201", "http://localhost:4202"));
@@ -105,12 +106,14 @@ public class EdgeChainApplication {
   @Primary
   public ExcludeMappingFilter mappingFilter() {
     ExcludeMappingFilter mappingFilter = new ExcludeMappingFilter();
-    mappingFilter.setRequestPost(List.of("/v1/examples/**", "/v1/signup", "/v1/login"));
+    mappingFilter.setRequestPost(
+            List.of("/v1/examples/**", "/v1/signup", "/v1/login", "/v1/refreshToken"));
     mappingFilter.setRequestGet(List.of("/v1/examples/**"));
     mappingFilter.setRequestDelete(List.of("/v1/examples/**"));
     mappingFilter.setRequestPut(List.of("/v1/examples/**"));
     return mappingFilter;
   }
+
 
   /************ EXAMPLE APIs **********************/
   @RestController
@@ -139,7 +142,6 @@ public class EdgeChainApplication {
     }
 
     @PostMapping(value = "/refreshToken")
-    @PreAuthorize("hasAuthority('authenticated')") // role=authenticated
     public AuthenticatedResponse refreshToken(ArkRequest arkRequest) {
 
       JSONObject json = arkRequest.getBody();
