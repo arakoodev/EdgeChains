@@ -17,10 +17,9 @@ public class PostgresEndpoint extends Endpoint {
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
   private final PostgresService postgresService = retrofit.create(PostgresService.class);
 
-  private String jdbcUrl;
-  private String username;
-  private String password;
   private String tableName;
+
+  private String namespace;
 
   // Getters
   private WordEmbeddings wordEmbeddings;
@@ -30,52 +29,31 @@ public class PostgresEndpoint extends Endpoint {
 
   public PostgresEndpoint() {}
 
-  public PostgresEndpoint(String jdbcUrl, String username, String password, String tableName) {
-    this.jdbcUrl = jdbcUrl;
-    this.username = username;
-    this.password = password;
+  public PostgresEndpoint(String tableName, String namespace) {
     this.tableName = tableName;
+    this.namespace = namespace;
   }
 
-  public PostgresEndpoint(
-      String jdbcUrl, String username, String password, String tableName, RetryPolicy retryPolicy) {
+  public PostgresEndpoint(String tableName, String namespace, RetryPolicy retryPolicy) {
     super(retryPolicy);
-    this.jdbcUrl = jdbcUrl;
-    this.username = username;
-    this.password = password;
     this.tableName = tableName;
-  }
-
-  public void setJdbcUrl(String jdbcUrl) {
-    this.jdbcUrl = jdbcUrl;
-  }
-
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
+    this.namespace = namespace;
   }
 
   public void setTableName(String tableName) {
     this.tableName = tableName;
   }
 
-  public String getJdbcUrl() {
-    return jdbcUrl;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public String getPassword() {
-    return password;
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
   }
 
   public String getTableName() {
     return tableName;
+  }
+
+  public String getNamespace() {
+    return namespace;
   }
 
   // Getters
