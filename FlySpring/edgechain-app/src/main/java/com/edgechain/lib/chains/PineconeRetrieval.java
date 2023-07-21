@@ -37,7 +37,7 @@ public class PineconeRetrieval extends Retrieval {
       new EdgeChain<>(
               this.openAiEndpoint
                   .getEmbeddings(input)
-                  .map(this.pineconeEndpoint::upsert)
+                  .map(w -> this.pineconeEndpoint.upsert(w))
                   .firstOrError()
                   .blockingGet())
           .await()
@@ -49,7 +49,7 @@ public class PineconeRetrieval extends Retrieval {
       new EdgeChain<>(
               this.doc2VecEndpoint
                   .getEmbeddings(input)
-                  .map(this.pineconeEndpoint::upsert)
+                  .map(w -> this.pineconeEndpoint.upsert(w))
                   .firstOrError()
                   .blockingGet())
           .await()

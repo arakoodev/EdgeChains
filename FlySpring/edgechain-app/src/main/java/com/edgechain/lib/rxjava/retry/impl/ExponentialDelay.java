@@ -44,17 +44,11 @@ public class ExponentialDelay extends RetryPolicy {
               long compute = compute(firstDelay, retryCount, factor, unit);
 
               if (++retryCount < maxRetries) {
-                logger.info(
-                    String.format(
-                        "Retrying: Attempt: %s, Max Retries: %s ~ %s",
-                        retryCount, maxRetries, throwable.getMessage()));
+                logger.info(String.format("Retrying: Attempt: %s, Max Retries: %s ~ %s", retryCount, maxRetries, throwable.getMessage()));
                 return Observable.timer(compute, TimeUnit.MILLISECONDS);
               }
 
-              logger.error(
-                  String.format(
-                      "Error Occurred: Attempt: %s, Max Retries: %s ~ %s",
-                      retryCount, maxRetries, throwable.getMessage()));
+              logger.error(String.format("Error Occurred: Attempt: %s, Max Retries: %s ~ %s", retryCount, maxRetries, throwable.getMessage()));
               return Observable.error(throwable);
             });
   }

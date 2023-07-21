@@ -19,9 +19,12 @@ public class PineconeClient {
   private final PineconeEndpoint endpoint;
   private final String namespace;
 
-  public PineconeClient(PineconeEndpoint endpoint, String namespace) {
+  public PineconeClient(PineconeEndpoint endpoint) {
     this.endpoint = endpoint;
-    this.namespace = (Objects.isNull(namespace) || namespace.isEmpty()) ? "" : namespace;
+    this.namespace =
+        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+            ? ""
+            : endpoint.getNamespace();
   }
 
   public EdgeChain<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
@@ -108,7 +111,10 @@ public class PineconeClient {
                 new RestTemplate()
                     .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
 
-                emitter.onNext(new StringResponse("Word embeddings deleted successfully."));
+                emitter.onNext(
+                    new StringResponse(
+                        "Word embeddings are successfully deleted for namespace:"
+                            + this.namespace));
                 emitter.onComplete();
 
               } catch (final Exception e) {
