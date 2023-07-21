@@ -19,7 +19,7 @@ public class RedisController {
   public Single<StringResponse> upsert(@RequestBody RedisEndpoint redisEndpoint) {
 
     EdgeChain<StringResponse> edgeChain =
-        new RedisClient(redisEndpoint, redisEndpoint.getIndexName(), redisEndpoint.getNamespace())
+        new RedisClient(redisEndpoint)
             .upsert(
                 redisEndpoint.getWordEmbeddings(),
                 redisEndpoint.getDimensions(),
@@ -32,7 +32,7 @@ public class RedisController {
   public Single<List<WordEmbeddings>> query(@RequestBody RedisEndpoint redisEndpoint) {
 
     EdgeChain<List<WordEmbeddings>> edgeChain =
-        new RedisClient(redisEndpoint, redisEndpoint.getIndexName(), redisEndpoint.getNamespace())
+        new RedisClient(redisEndpoint)
             .query(redisEndpoint.getWordEmbeddings(), redisEndpoint.getTopK());
 
     return edgeChain.toSingle();
@@ -41,7 +41,7 @@ public class RedisController {
   @DeleteMapping("/delete")
   public Completable deleteByPattern(
       @RequestParam("pattern") String pattern, @RequestBody RedisEndpoint redisEndpoint) {
-    EdgeChain<String> edgeChain = new RedisClient(redisEndpoint).deleteByPattern(pattern);
+    EdgeChain<StringResponse> edgeChain = new RedisClient(redisEndpoint).deleteByPattern(pattern);
     return edgeChain.await();
   }
 }
