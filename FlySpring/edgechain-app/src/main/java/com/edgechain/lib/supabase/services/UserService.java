@@ -6,14 +6,13 @@ import com.edgechain.lib.supabase.response.SupabaseUser;
 
 public interface UserService {
 
-    SupabaseUser getUser(String accessToken);
+  SupabaseUser getUser(String accessToken);
 
-    AuthenticatedResponse login(Credential credential);
+  AuthenticatedResponse login(Credential credential);
 
-    AuthenticatedResponse refreshToken(String refreshToken);
+  AuthenticatedResponse refreshToken(String refreshToken);
 
-    SupabaseUser signup(Credential credential);
+  SupabaseUser signup(Credential credential);
 
-
-    void signOut(String accessToken);
+  void signOut(String accessToken);
 }

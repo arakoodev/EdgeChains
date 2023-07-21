@@ -1,7 +1,6 @@
 package com.edgechain.lib.context.client;
 
 import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 public interface HistoryContextClient<T> {

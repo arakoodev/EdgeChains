@@ -66,7 +66,9 @@ public class EdgeChainApplication {
   @Primary
   public CorsEnableOrigins corsEnableOrigins() {
     CorsEnableOrigins origins = new CorsEnableOrigins();
-    origins.setOrigins(Collections.singletonList("http://localhost:4200", "http://localhost:4201", "http://localhost:4202"));
+    origins.setOrigins(
+        Collections.singletonList(
+            "http://localhost:4200", "http://localhost:4201", "http://localhost:4202"));
     return origins;
   }
 
@@ -107,13 +109,12 @@ public class EdgeChainApplication {
   public ExcludeMappingFilter mappingFilter() {
     ExcludeMappingFilter mappingFilter = new ExcludeMappingFilter();
     mappingFilter.setRequestPost(
-            List.of("/v1/examples/**", "/v1/signup", "/v1/login", "/v1/refreshToken"));
+        List.of("/v1/examples/**", "/v1/signup", "/v1/login", "/v1/refreshToken"));
     mappingFilter.setRequestGet(List.of("/v1/examples/**"));
     mappingFilter.setRequestDelete(List.of("/v1/examples/**"));
     mappingFilter.setRequestPut(List.of("/v1/examples/**"));
     return mappingFilter;
   }
-
 
   /************ EXAMPLE APIs **********************/
   @RestController
@@ -261,6 +262,7 @@ public class EdgeChainApplication {
 
       endpoint.delete(id);
     }
+
     /*** Creating HistoryContext (Using PostgreSQL) Controller ****/
     @PostMapping("/examples/postgresql/historycontext")
     public ArkResponse createPostgreSQLHistoryContext(ArkRequest arkRequest) {

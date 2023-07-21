@@ -7,7 +7,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +18,8 @@ public class PostgreSQLHistoryContextRepository {
   @Transactional
   public void createTable() {
     jdbcTemplate.execute(
-        "CREATE TABLE IF NOT EXISTS history_context (id TEXT PRIMARY KEY, response TEXT, created_at timestamp)");
+        "CREATE TABLE IF NOT EXISTS history_context (id TEXT PRIMARY KEY, response TEXT, created_at"
+            + " timestamp)");
   }
 
   @Transactional
