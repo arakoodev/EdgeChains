@@ -8,111 +8,111 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public class User implements UserDetails, Serializable {
 
-    private static final long serialVersionUID = -2363484450980070975L;
+  private static final long serialVersionUID = -2363484450980070975L;
 
-    private UUID id;
-    private String aud;
-    private String role;
+  private UUID id;
+  private String aud;
+  private String role;
 
-    private String email;
-    private String phone;
+  private String email;
+  private String phone;
 
-    private String accessToken;
+  private String accessToken;
 
-    public UUID getId() {
-        return id;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+  public void setId(UUID id) {
+    this.id = id;
+  }
 
-    public String getAud() {
-        return aud;
-    }
+  public String getAud() {
+    return aud;
+  }
 
-    public void setAud(String aud) {
-        this.aud = aud;
-    }
+  public void setAud(String aud) {
+    this.aud = aud;
+  }
 
-    public String getRole() {
-        return role;
-    }
+  public String getRole() {
+    return role;
+  }
 
-    public void setRole(String role) {
-        this.role = role;
-    }
+  public void setRole(String role) {
+    this.role = role;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-    public String getPhone() {
-        return phone;
-    }
+  public String getPhone() {
+    return phone;
+  }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+  public void setPhone(String phone) {
+    this.phone = phone;
+  }
 
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
+  public void setAccessToken(String accessToken) {
+    this.accessToken = accessToken;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
 
-        User user = (User) o;
+    User user = (User) o;
 
-        return id.equals(user.id);
-    }
+    return id.equals(user.id);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(id);
+  }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        Set<GrantedAuthority> authorities = new HashSet<>();
-        List<String> roles = Arrays.asList(this.role.split(","));
-        roles.forEach(r -> authorities.add(new SimpleGrantedAuthority(r)));
-        return authorities;
-    }
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    Set<GrantedAuthority> authorities = new HashSet<>();
+    List<String> roles = Arrays.asList(this.role.split(","));
+    roles.forEach(r -> authorities.add(new SimpleGrantedAuthority(r)));
+    return authorities;
+  }
 
-    @Override
-    public String getPassword() {
-        return accessToken;
-    }
+  @Override
+  public String getPassword() {
+    return accessToken;
+  }
 
-    @Override
-    public String getUsername() {
-        return email;
-    }
+  @Override
+  public String getUsername() {
+    return email;
+  }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
 }

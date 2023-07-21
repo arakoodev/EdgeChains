@@ -1,6 +1,5 @@
 package com.edgechain.lib.context.domain;
 
-import com.edgechain.lib.endpoint.Endpoint;
 
 public class ContextPutRequest<T> {
 

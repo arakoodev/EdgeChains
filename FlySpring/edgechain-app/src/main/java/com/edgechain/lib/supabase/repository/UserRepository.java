@@ -10,16 +10,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class UserRepository  {
+public class UserRepository {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
-    public Optional<User> findByEmail(String email) {
-        String sql = String.format("select * from auth.users where email='%s'", email);
-        List<User> contextList = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(User.class));
+  public Optional<User> findByEmail(String email) {
+    String sql = String.format("select * from auth.users where email='%s'", email);
+    List<User> contextList = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(User.class));
 
-        if (contextList.size() > 0) return Optional.ofNullable(contextList.get(0));
-        else return Optional.empty();
-    }
+    if (contextList.size() > 0) return Optional.ofNullable(contextList.get(0));
+    else return Optional.empty();
+  }
 }
