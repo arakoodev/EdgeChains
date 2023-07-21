@@ -27,16 +27,9 @@ public class XtraSonnetCustomFunc extends Library {
         WikiEndpoint wikiEndpoint = new WikiEndpoint();
 
         Observable<WikiResponse> result = wikiEndpoint.getPageContent(prompt);
-        List<String> response = new ArrayList<>();
-        result.subscribe(
-                wikiResponse -> {
-                    response.add(wikiResponse.getText().substring(0, 4096));
-                },
-                throwable -> System.out.println(throwable.getMessage()),
-                () -> System.out.println("Completed")
-        );
-        result.blockingFirst();
-         return new Val.Str(dummyPosition(), !response.isEmpty() ? response.get(0) : "");
+            String response = result.blockingFirst().getText();
+            System.out.println("XTRANSONNET CLASS: PROMPT: " + prompt + " RESPONSE: " + response);
+            return new Val.Str(dummyPosition(), response);
         }));
         return res;
     }

@@ -38,14 +38,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import io.github.jam01.xtrasonnet.DataFormatService;
-import io.github.jam01.xtrasonnet.Transformer;
-import io.github.jam01.xtrasonnet.document.Documents;
-import io.github.jam01.xtrasonnet.header.Header;
-import sjsonnet.Importer;
-import sjsonnet.Val;
-import com.edgechain.lib.jsonnet.XtraSonnetCustomFunc;
-
 
 @SpringBootApplication
 public class EdgeChainApplication {
@@ -83,16 +75,58 @@ public class EdgeChainApplication {
   public class ExampleController {
 
     @GetMapping(value = "/sample")
-    public String customJsonnetFuncTest(@RequestBody String prompt) {
-      var res = Transformer.builder("""
-                {
-                    ans: udf.search('Nikola Tesla'),
-                    xtr: xtr.toLowerCase('Hello World!')
-                }""").withLibrary(new XtraSonnetCustomFunc()).build().transform(Documents.Null());
-      System.out.println("\n\n\n res:" + res.getContent() + "\n\n\n");
-
-      return "Hello from customJsonnetFuncTest()";
+    public String sample() {
+      JsonnetLoader loader =
+              new FileJsonnetLoader("sample.jsonnet")
+                      .put("key1", new JsonnetArgs(DataType.STRING, "Hello, key1!"))
+                      .put("key2", new JsonnetArgs(DataType.STRING, "Hello, key2!"))
+                      .put("action", new JsonnetArgs(DataType.STRING, "Arthur's Magazine"));
+      loader.loadOrReload();
+      System.out.println(loader.get("searchResponse"));
+      return "sample";
     }
+    @GetMapping(value = "/react-chain")
+    public String reactChain(@RequestBody String prompt) {
+      String context = "";
+      JsonnetLoader loader =
+              new FileJsonnetLoader("react-chain.jsonnet")
+                      .put("thought", new JsonnetArgs(DataType.STRING, "This is thought!"))
+                      .put("context", new JsonnetArgs(DataType.STRING, "This is context"))
+                      .put("action", new JsonnetArgs(DataType.STRING, ""));
+      loader.loadOrReload();
+      String preset = loader.get("preset");
+      OpenAiEndpoint userChatEndpoint =
+              new OpenAiEndpoint(
+                      OPENAI_CHAT_COMPLETION_API,
+                      OPENAI_AUTH_KEY,
+                      "gpt-3.5-turbo",
+                      "user",
+                      0.7,
+                      new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+      prompt = preset + "\nQUESTION: " + prompt;
+      String response = userChatEndpoint.getChatCompletion(prompt).blockingFirst().getChoices().get(0).getMessage().getContent();
+      context = response;
+      loader.put("context", new JsonnetArgs(DataType.STRING, context));
+      while(!checkIfFinished(response)) {
+        String thought = response.substring(response.indexOf("THOUGHT") + 9, response.indexOf("ACTION"));
+        String action = response.substring(response.indexOf("SEARCH") + 7, response.indexOf("]"));
+
+        loader.put("action", new JsonnetArgs(DataType.STRING, action));
+        loader.put("thought", new JsonnetArgs(DataType.STRING, thought));
+        loader.loadOrReload();
+        prompt = loader.get("prompt");
+
+        response = userChatEndpoint.getChatCompletion(prompt).blockingFirst().getChoices().get(0).getMessage().getContent();
+        context = response;
+        loader.put("context", new JsonnetArgs(DataType.STRING, context));
+      }
+      return response.substring(response.indexOf("CONCLUSION") + 12);
+    }
+
+    private boolean checkIfFinished(String response) {
+      return response.contains("CONCLUSION");
+    }
+
 
     /**
      * Objective: Get the Content From Wikipedia & then pass the prompt: {Create 5-bullet point
@@ -110,7 +144,7 @@ public class EdgeChainApplication {
 
       // Step 1: Create JsonnetLoader to Load JsonnetFile & Pass Args To Jsonnet
       JsonnetLoader loader =
-          new FileJsonnetLoader("R:\\Github\\wiki.jsonnet")
+          new FileJsonnetLoader("wiki.jsonnet")
               .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
               .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
@@ -272,7 +306,7 @@ public class EdgeChainApplication {
               new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
       JsonnetLoader loader =
-          new FileJsonnetLoader("R:\\Github\\pinecone-query.jsonnet")
+          new FileJsonnetLoader("pinecone-query.jsonnet")
               .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
               .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
@@ -348,7 +382,7 @@ public class EdgeChainApplication {
           EdgeChain.fromObservable(contextEndpoint.get(contextId)).get();
 
       // Step 1: Create JsonnetLoader || Pass Args || Load The File;
-      JsonnetLoader loader = new FileJsonnetLoader("R:\\Github\\pinecone-chat.jsonnet");
+      JsonnetLoader loader = new FileJsonnetLoader("pinecone-chat.jsonnet");
       loader
           .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
           .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
@@ -609,7 +643,7 @@ public class EdgeChainApplication {
               new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
       JsonnetLoader loader =
-          new FileJsonnetLoader("R:\\Github\\redis-query.jsonnet")
+          new FileJsonnetLoader("redis-query.jsonnet")
               .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
               .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
@@ -672,7 +706,7 @@ public class EdgeChainApplication {
           EdgeChain.fromObservable(contextEndpoint.get(contextId)).get();
 
       // Step 1: Create JsonnetLoader || Pass Args || Load The File;
-      JsonnetLoader loader = new FileJsonnetLoader("R:\\Github\\pinecone-chat.jsonnet");
+      JsonnetLoader loader = new FileJsonnetLoader("pinecone-chat.jsonnet");
       loader
           .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
           .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
@@ -824,9 +858,9 @@ public class EdgeChainApplication {
 
       // Configuring parameters for our doc2vec model
       Doc2VecRequest doc2Vec = new Doc2VecRequest();
-      doc2Vec.setFolderDirectory("R:\\Github\\train_files");
+      doc2Vec.setFolderDirectory("train_files");
       doc2Vec.setModelName("doc_vector"); // Will be stored as doc_vector.bin
-      doc2Vec.setDestination("R:\\Github\\");
+      doc2Vec.setDestination("");
       doc2Vec.setEpochs(5);
       doc2Vec.setMinWordFrequency(5);
       doc2Vec.setLearningRate(0.025);
@@ -855,7 +889,7 @@ public class EdgeChainApplication {
       // Remember model is loaded once (this is just for example)
       ParagraphVectors paragraphVectors =
           WordVectorSerializer.readParagraphVectors(
-              new FileInputStream("R:\\Github\\doc_vector.bin"));
+              new FileInputStream("doc_vector.bin"));
 
       Doc2VecEndpoint embeddingEndpoint = new Doc2VecEndpoint(paragraphVectors);
 
@@ -883,7 +917,7 @@ public class EdgeChainApplication {
       // Remember model is loaded once (this is just for example)
       ParagraphVectors paragraphVectors =
           WordVectorSerializer.readParagraphVectors(
-              new FileInputStream("R:\\Github\\doc_vector.bin"));
+              new FileInputStream("doc_vector.bin"));
 
       Doc2VecEndpoint embeddingEndpoint = new Doc2VecEndpoint(paragraphVectors);
 
@@ -962,7 +996,7 @@ public class EdgeChainApplication {
               new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
       JsonnetLoader loader =
-          new FileJsonnetLoader("R:\\Github\\postgres-query.jsonnet")
+          new FileJsonnetLoader("postgres-query.jsonnet")
               .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
               .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
@@ -1029,7 +1063,7 @@ public class EdgeChainApplication {
           EdgeChain.fromObservable(contextEndpoint.get(contextId)).get();
 
       // Step 1: Create JsonnetLoader || Pass Args || Load The File;
-      JsonnetLoader loader = new FileJsonnetLoader("R:\\Github\\postgres-chat.jsonnet");
+      JsonnetLoader loader = new FileJsonnetLoader("postgres-chat.jsonnet");
       loader
           .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
           .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
