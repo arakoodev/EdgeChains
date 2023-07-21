@@ -31,105 +31,105 @@ import java.util.List;
 @RequestMapping("/")
 public class DashboardApp{
 
-    public WebClient webClient(){
-        return WebClient.builder().build();
-    }
+  public WebClient webClient(){
+    return WebClient.builder().build();
+  }
 
-    public static void main(String[] args) {
-        System.setProperty("server.port", "8081");
-        SpringApplication.run(DashboardApp.class, args);
-    }
-
-
-
-    @Bean
-    public RedisEnv redisEnv() {
-        RedisEnv redisEnv = new RedisEnv();
-        redisEnv.setUrl("");
-        redisEnv.setPort(12285);
-        redisEnv.setUsername("");
-        redisEnv.setPassword("");
-        redisEnv.setTtl(3600); // Configuring ttl for HistoryContext;
-        return redisEnv;
-    }
-
-    private StringBuilder currentContent;
-
-    public List<MessageItem> messages = new ArrayList<>();
-
-    private String Url = "http://localhost:8080/v1/examples/wiki-summary?query=";
-
-    @GetMapping
-    public String index(Model model){
-        addChat();
-        addAttributeForIndex(model);
-        return "index";
-    }
-
-    @PostMapping
-    public String sendMessage(@ModelAttribute("item") MessageItem messageItem, Model model){
-        System.out.println(messageItem);
-        messages.add(messageItem);
-        System.out.println(messages);
-        return "redirect:/";
-    }
-
-    @PostMapping(headers = "HX-Request")
-    public String htmxSendMessage(MessageItem messageItem,
-                                  Model model,
-                                  HttpServletResponse response){
-        System.out.println(messages + "from htmx");
-        System.out.println(messageItem);
-        messages.add(messageItem);
-        model.addAttribute("item", messageItem);
-
-        response.setHeader("HX-Trigger", "itemAdded");
-
-        return "fragments :: meassageItem";
-    }
+  public static void main(String[] args) {
+    System.setProperty("server.port", "8081");
+    SpringApplication.run(DashboardApp.class, args);
+  }
 
 
-    private void addAttributeForIndex(Model model){
-        System.out.println("Add Attribute For Index");
-        model.addAttribute("item", new MessageItem());
-        model.addAttribute("messages",messages);
-        model.addAttribute("chats",chats);
-        model.addAttribute("chat",new Chat());
-        model.addAttribute("currentId",1);
-    }
 
-    @GetMapping("/responce")
-    public String reply(Model model){
-        System.out.println("reply");
-        currentContent = new StringBuilder();
-        MessageItem messageItem = new MessageItem("", true);
-        model.addAttribute("item", messageItem);
+  @Bean
+  public RedisEnv redisEnv() {
+    RedisEnv redisEnv = new RedisEnv();
+    redisEnv.setUrl("");
+    redisEnv.setPort(12285);
+    redisEnv.setUsername("");
+    redisEnv.setPassword("");
+    redisEnv.setTtl(3600); // Configuring ttl for HistoryContext;
+    return redisEnv;
+  }
+
+  private StringBuilder currentContent;
+
+  public List<MessageItem> messages = new ArrayList<>();
+
+  private String Url = "http://localhost:8080/v1/examples/wiki-summary?query=";
+
+  @GetMapping
+  public String index(Model model){
+    addChat();
+    addAttributeForIndex(model);
+    return "index";
+  }
+
+  @PostMapping
+  public String sendMessage(@ModelAttribute("item") MessageItem messageItem, Model model){
+    System.out.println(messageItem);
+    messages.add(messageItem);
+    System.out.println(messages);
+    return "redirect:/";
+  }
+
+  @PostMapping(headers = "HX-Request")
+  public String htmxSendMessage(MessageItem messageItem,
+                                Model model,
+                                HttpServletResponse response){
+    System.out.println(messages + "from htmx");
+    System.out.println(messageItem);
+    messages.add(messageItem);
+    model.addAttribute("item", messageItem);
+
+    response.setHeader("HX-Trigger", "itemAdded");
+
+    return "fragments :: meassageItem";
+  }
 
 
-        return "fragments :: meassageItem";
-    }
+  private void addAttributeForIndex(Model model){
+    System.out.println("Add Attribute For Index");
+    model.addAttribute("item", new MessageItem());
+    model.addAttribute("messages",messages);
+    model.addAttribute("chats",chats);
+    model.addAttribute("chat",new Chat());
+    model.addAttribute("currentId",1);
+  }
 
-    @GetMapping(value = "/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux sseMethod(){
-
-        return webClient().get()
-                .uri(Url+messages.get(messages.size()-1).getMessage())
-                .headers(httpHeaders -> {
-                    httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-                    httpHeaders.set("stream","true");
-                })
-                .retrieve()
-                .bodyToFlux(ChatCompletionResponse.class)
-                .map(it -> currentContent.append(it.getChoices().get(0).getMessage().getContent()));
-    }
+  @GetMapping("/responce")
+  public String reply(Model model){
+    System.out.println("reply");
+    currentContent = new StringBuilder();
+    MessageItem messageItem = new MessageItem("", true);
+    model.addAttribute("item", messageItem);
 
 
-    public void addChat(){
-        chats.add(new Chat("Chat 1",new ArrayList<MessageItem>()));
-        chats.add(new Chat("Chat 2",new ArrayList<MessageItem>()));
-        chats.add(new Chat("Chat 3",new ArrayList<MessageItem>()));
-        chats.add(new Chat("Chat 4",new ArrayList<MessageItem>()));
-    }
+    return "fragments :: meassageItem";
+  }
 
-    public List<Chat> chats = new ArrayList<>();
+  @GetMapping(value = "/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+  public Flux sseMethod(){
+
+    return webClient().get()
+      .uri(Url+messages.get(messages.size()-1).getMessage())
+      .headers(httpHeaders -> {
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        httpHeaders.set("stream","true");
+      })
+      .retrieve()
+      .bodyToFlux(ChatCompletionResponse.class)
+      .map(it -> currentContent.append(it.getChoices().get(0).getMessage().getContent()));
+  }
+
+
+  public void addChat(){
+    chats.add(new Chat("Chat 1",new ArrayList<MessageItem>()));
+    chats.add(new Chat("Chat 2",new ArrayList<MessageItem>()));
+    chats.add(new Chat("Chat 3",new ArrayList<MessageItem>()));
+    chats.add(new Chat("Chat 4",new ArrayList<MessageItem>()));
+  }
+
+  public List<Chat> chats = new ArrayList<>();
 }
