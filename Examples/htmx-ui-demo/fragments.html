@@ -1,0 +1,18 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+
+<li class="clearfix" th:fragment="meassageItem(item)">
+    <div class="card">
+        <div class="card-body" th:text="${item.message}" sse-swap="message"
+             hx-ext="sse" th:attrappend="sse-connect=${item.isReceived}? '/sse':'#'">
+            Lorem ipsum
+        </div>
+    </div>
+</li>
+
+<a href="/index" class="list-group-item list-group-item-action" th:fragment="chatItem(chat)" th:text="${chat.heading}">
+    Context 1
+</a>
+
+</html>
