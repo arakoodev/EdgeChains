@@ -67,8 +67,8 @@ public class EdgeChainApplication {
   public CorsEnableOrigins corsEnableOrigins() {
     CorsEnableOrigins origins = new CorsEnableOrigins();
     origins.setOrigins(
-        Collections.singletonList(
-            "http://localhost:4200", "http://localhost:4201", "http://localhost:4202"));
+      Collections.singletonList(
+        "http://localhost:4200", "http://localhost:4201", "http://localhost:4202"));
     return origins;
   }
 
@@ -109,7 +109,7 @@ public class EdgeChainApplication {
   public ExcludeMappingFilter mappingFilter() {
     ExcludeMappingFilter mappingFilter = new ExcludeMappingFilter();
     mappingFilter.setRequestPost(
-        List.of("/v1/examples/**", "/v1/signup", "/v1/login", "/v1/refreshToken"));
+      List.of("/v1/examples/**", "/v1/signup", "/v1/login", "/v1/refreshToken"));
     mappingFilter.setRequestGet(List.of("/v1/examples/**"));
     mappingFilter.setRequestDelete(List.of("/v1/examples/**"));
     mappingFilter.setRequestPut(List.of("/v1/examples/**"));
@@ -122,8 +122,8 @@ public class EdgeChainApplication {
   public class ExampleController {
 
     @PostMapping(
-        value =
-            "/signup") // Confirmation email is sent to the specified address.. Click on "Confirm
+      value =
+        "/signup") // Confirmation email is sent to the specified address.. Click on "Confirm
     // your mail"
     public SupabaseUser signUp(ArkRequest arkRequest) {
 
@@ -172,13 +172,8 @@ public class EdgeChainApplication {
      * @return ArkResponse
      */
     @GetMapping(
-<<<<<<< HEAD
-      value = "/wiki-summary",
+      value = "/examples/wiki-summary",
       produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
-=======
-        value = "/examples/wiki-summary",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
     public ArkResponse wikiSummary(ArkRequest arkRequest) {
 
       String query = arkRequest.getQueryParam("query");
@@ -230,12 +225,8 @@ public class EdgeChainApplication {
     public ArkResponse createRedisHistoryContext(ArkRequest arkRequest) {
 
       RedisHistoryContextEndpoint endpoint =
-<<<<<<< HEAD
         new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
-=======
-          new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
       return new ArkResponse(
         endpoint.create(
           UUID.randomUUID()
@@ -247,12 +238,8 @@ public class EdgeChainApplication {
       JSONObject json = arkRequest.getBody();
 
       RedisHistoryContextEndpoint endpoint =
-<<<<<<< HEAD
         new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
-=======
-          new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
       return new ArkResponse(endpoint.put(json.getString("id"), json.getString("response")));
     }
 
@@ -261,12 +248,8 @@ public class EdgeChainApplication {
       String id = arkRequest.getQueryParam("id");
 
       RedisHistoryContextEndpoint endpoint =
-<<<<<<< HEAD
         new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
-=======
-          new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
       return new ArkResponse(endpoint.get(id));
     }
 
@@ -275,10 +258,7 @@ public class EdgeChainApplication {
       String id = arkRequest.getQueryParam("id");
 
       RedisHistoryContextEndpoint endpoint =
-<<<<<<< HEAD
         new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
-=======
-          new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
       endpoint.delete(id);
     }
@@ -288,12 +268,12 @@ public class EdgeChainApplication {
     public ArkResponse createPostgreSQLHistoryContext(ArkRequest arkRequest) {
 
       PostgreSQLHistoryContextEndpoint endpoint =
-          new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+        new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
       return new ArkResponse(
-          endpoint.create(
-              UUID.randomUUID()
-                  .toString())); // Here randomId is generated, you can provide your own ids....
+        endpoint.create(
+          UUID.randomUUID()
+            .toString())); // Here randomId is generated, you can provide your own ids....
     }
 
     @PutMapping("/examples/postgresql/historycontext")
@@ -301,7 +281,7 @@ public class EdgeChainApplication {
       JSONObject json = arkRequest.getBody();
 
       PostgreSQLHistoryContextEndpoint endpoint =
-          new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+        new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
       return new ArkResponse(endpoint.put(json.getString("id"), json.getString("response")));
     }
@@ -311,7 +291,7 @@ public class EdgeChainApplication {
       String id = arkRequest.getQueryParam("id");
 
       PostgreSQLHistoryContextEndpoint endpoint =
-          new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+        new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
       return new ArkResponse(endpoint.get(id));
     }
@@ -321,9 +301,8 @@ public class EdgeChainApplication {
       String id = arkRequest.getQueryParam("id");
 
       PostgreSQLHistoryContextEndpoint endpoint =
-          new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+        new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
       endpoint.delete(id);
     }
 
@@ -343,7 +322,7 @@ public class EdgeChainApplication {
      */
     // Namespace is optional (if not provided, it will be using Empty String "")
     @PostMapping(
-        "/examples/pinecone/openai/upsert") // /v1/examples/openai/upsert?namespace=machine-learning
+      "/examples/pinecone/openai/upsert") // /v1/examples/openai/upsert?namespace=machine-learning
     public void upsertPinecone(ArkRequest arkRequest) throws IOException {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -382,15 +361,9 @@ public class EdgeChainApplication {
       IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
     }
 
-<<<<<<< HEAD
-    @GetMapping(
-      value = "/pinecone/openai/query",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-=======
     @PostMapping(
-        value = "/examples/pinecone/openai/query",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+      value = "/examples/pinecone/openai/query",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
     public ArkResponse queryPinecone(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -473,15 +446,9 @@ public class EdgeChainApplication {
      * @param arkRequest
      * @return
      */
-<<<<<<< HEAD
-    @GetMapping(
-      value = "/pinecone/openai/chat",
-      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
-=======
     @PostMapping(
-        value = "/examples/pinecone/openai/chat",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+      value = "/examples/pinecone/openai/chat",
+      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
     public ArkResponse chatWithPinecone(ArkRequest arkRequest) {
 
       String contextId = arkRequest.getQueryParam("id");
@@ -659,7 +626,7 @@ public class EdgeChainApplication {
 
     // Namespace is optional (if not provided, it will be using namespace will be "knowledge")
     @PostMapping(
-        "/examples/redis/openai/upsert") // /v1/examples/openai/upsert?namespace=machine-learning
+      "/examples/redis/openai/upsert") // /v1/examples/openai/upsert?namespace=machine-learning
     public void upsertRedis(ArkRequest arkRequest) throws IOException {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -671,12 +638,7 @@ public class EdgeChainApplication {
        * are creating different namespace; recommended to use different index_name *
        */
       RedisEndpoint redisEndpoint =
-<<<<<<< HEAD
-        new RedisEndpoint(
-          "vector_index", namespace, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-=======
-          new RedisEndpoint(indexName, namespace, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+        new RedisEndpoint(indexName, namespace, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
       OpenAiEndpoint embeddingEndpoint =
         new OpenAiEndpoint(
@@ -711,15 +673,9 @@ public class EdgeChainApplication {
      * @param arkRequest
      * @return
      */
-<<<<<<< HEAD
-    @GetMapping(
-      value = "/redis/openai/similarity-search",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-=======
     @PostMapping(
-        value = "/examples/redis/openai/similarity-search",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+      value = "/examples/redis/openai/similarity-search",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
     public ArkResponse redisSimilaritySearch(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -751,15 +707,9 @@ public class EdgeChainApplication {
         .getArkResponse();
     }
 
-<<<<<<< HEAD
-    @GetMapping(
-      value = "/redis/openai/query",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-=======
     @PostMapping(
-        value = "/examples/redis/openai/query",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+      value = "/examples/redis/openai/query",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
     public ArkResponse queryRedis(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -830,15 +780,9 @@ public class EdgeChainApplication {
         .getArkResponse();
     }
 
-<<<<<<< HEAD
-    @GetMapping(
-      value = "/redis/openai/chat",
-      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
-=======
     @PostMapping(
-        value = "/examples/redis/openai/chat",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+      value = "/examples/redis/openai/chat",
+      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
     public ArkResponse chatWithRedis(ArkRequest arkRequest) {
 
       String contextId = arkRequest.getQueryParam("id");
@@ -868,11 +812,7 @@ public class EdgeChainApplication {
 
       // Step 2: Create RedisEndpoint for Query, OpenAIEndpoint for Using Embedding & Chat Service
       RedisEndpoint redisEndpoint =
-<<<<<<< HEAD
-        new RedisEndpoint("vector_index", namespace, new FixedDelay(3, 3, TimeUnit.SECONDS));
-=======
-          new RedisEndpoint(indexName, namespace, new FixedDelay(3, 3, TimeUnit.SECONDS));
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+        new RedisEndpoint(indexName, namespace, new FixedDelay(3, 3, TimeUnit.SECONDS));
       OpenAiEndpoint embeddingEndpoint =
         new OpenAiEndpoint(
           OPENAI_EMBEDDINGS_API,
@@ -1000,12 +940,8 @@ public class EdgeChainApplication {
 
     /** Delete Redis By Pattern Name * */
     @DeleteMapping(
-<<<<<<< HEAD
-      "/redis/delete") // /v1/examples/redis/delete?pattern=machine-learning* (Will delete all the
-=======
-        "/examples/redis/delete") // /v1/examples/redis/delete?pattern=machine-learning* (Will
+      "/examples/redis/delete") // /v1/examples/redis/delete?pattern=machine-learning* (Will
     // delete all the
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
     // keys start with machine-learning namespace
     public void deleteRedis(ArkRequest arkRequest) {
       String patternName = arkRequest.getQueryParam("pattern");
@@ -1038,7 +974,7 @@ public class EdgeChainApplication {
 
     /** Pinecone & Doc2Vec Upsert * */
     @PostMapping(
-        "/examples/redis/doc2vec/upsert") // /v1/examples/pinecone/doc2vec/upsert?namespace=doc2vec
+      "/examples/redis/doc2vec/upsert") // /v1/examples/pinecone/doc2vec/upsert?namespace=doc2vec
     public void upsertRedisDoc2Vec(ArkRequest arkRequest) throws IOException {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -1064,13 +1000,8 @@ public class EdgeChainApplication {
 
     // Similarity Search
     @GetMapping(
-<<<<<<< HEAD
-      value = "/redis/doc2vec/similarity-search",
+      value = "/examples/redis/doc2vec/similarity-search",
       produces = {MediaType.APPLICATION_JSON_VALUE})
-=======
-        value = "/examples/redis/doc2vec/similarity-search",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
     public ArkResponse redisDoc2VecSimilaritySearch(ArkRequest arkRequest) throws IOException {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -1104,11 +1035,7 @@ public class EdgeChainApplication {
      * concept of namespace is defined above *
      */
     @PostMapping(
-<<<<<<< HEAD
-      "/postgres/openai/upsert") // /v1/examples/postgres/openai/upsert?tableName=machine-learning
-=======
-        "/examples/postgres/openai/upsert") // /v1/examples/postgres/openai/upsert?tableName=machine-learning
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+      "/examples/postgres/openai/upsert") // /v1/examples/postgres/openai/upsert?tableName=machine-learning
     public void upsertPostgres(ArkRequest arkRequest) throws IOException {
 
       String table = arkRequest.getQueryParam("table");
@@ -1116,16 +1043,7 @@ public class EdgeChainApplication {
       InputStream file = arkRequest.getMultiPart("file").getInputStream();
 
       PostgresEndpoint postgresEndpoint =
-<<<<<<< HEAD
-        new PostgresEndpoint(
-          POSTGRES_JDBC_URL,
-          POSTGRES_USERNAME,
-          POSTGRES_PASSWORD,
-          table,
-          new FixedDelay(5, 10, TimeUnit.SECONDS));
-=======
-          new PostgresEndpoint(table, namespace, new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+        new PostgresEndpoint(table, namespace, new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
 
       OpenAiEndpoint embeddingEndpoint =
         new OpenAiEndpoint(
@@ -1140,17 +1058,11 @@ public class EdgeChainApplication {
       IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
     }
 
-<<<<<<< HEAD
-    @GetMapping(
-      value = "/postgres/openai/query",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-=======
     //    If namespace is empty string or null, then the default namespace is 'knowledge'; therefore
     // it will query where namespace='knowledge'
     @PostMapping(
-        value = "/examples/postgres/openai/query",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+      value = "/examples/postgres/openai/query",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
     public ArkResponse queryPostgres(ArkRequest arkRequest) {
 
       String table = arkRequest.getQueryParam("table");
@@ -1159,16 +1071,7 @@ public class EdgeChainApplication {
       int topK = arkRequest.getIntQueryParam("topK");
 
       PostgresEndpoint postgresEndpoint =
-<<<<<<< HEAD
-        new PostgresEndpoint(
-          POSTGRES_JDBC_URL,
-          POSTGRES_USERNAME,
-          POSTGRES_PASSWORD,
-          table,
-          new FixedDelay(5, 10, TimeUnit.SECONDS));
-=======
-          new PostgresEndpoint(table, namespace, new FixedDelay(5, 10, TimeUnit.SECONDS));
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+        new PostgresEndpoint(table, namespace, new FixedDelay(5, 10, TimeUnit.SECONDS));
 
       OpenAiEndpoint embeddingEndpoint =
         new OpenAiEndpoint(
@@ -1233,15 +1136,9 @@ public class EdgeChainApplication {
         .getArkResponse();
     }
 
-<<<<<<< HEAD
-    @GetMapping(
-      value = "/postgres/openai/chat",
-      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
-=======
     @PostMapping(
-        value = "/examples/postgres/openai/chat",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+      value = "/examples/postgres/openai/chat",
+      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
     public ArkResponse chatWithPostgres(ArkRequest arkRequest) {
 
       String contextId = arkRequest.getQueryParam("id");
@@ -1255,18 +1152,11 @@ public class EdgeChainApplication {
       System.out.println(table);
       System.out.println(stream);
 
-<<<<<<< HEAD
-      RedisHistoryContextEndpoint contextEndpoint =
-        new RedisHistoryContextEndpoint(new FixedDelay(3, 3, TimeUnit.SECONDS));
-      HistoryContext historyContext =
-        EdgeChain.fromObservable(contextEndpoint.get(contextId)).get();
-=======
       PostgreSQLHistoryContextEndpoint postgreSQLContextEndpoint =
-          new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+        new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
 
       HistoryContext historyContext =
-          EdgeChain.fromObservable(postgreSQLContextEndpoint.get(contextId)).get();
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+        EdgeChain.fromObservable(postgreSQLContextEndpoint.get(contextId)).get();
 
       // Step 1: Create JsonnetLoader || Pass Args || Load The File;
       JsonnetLoader loader = new FileJsonnetLoader("R:\\Github\\postgres-chat.jsonnet");
@@ -1280,16 +1170,7 @@ public class EdgeChainApplication {
       // Step 2: Create PostgresEndpoint for Query, OpenAIEndpoint for Using Embedding & Chat
       // Service
       PostgresEndpoint postgresEndpoint =
-<<<<<<< HEAD
-        new PostgresEndpoint(
-          POSTGRES_JDBC_URL,
-          POSTGRES_USERNAME,
-          POSTGRES_PASSWORD,
-          table,
-          new FixedDelay(5, 10, TimeUnit.SECONDS));
-=======
-          new PostgresEndpoint(table, namespace, new FixedDelay(5, 10, TimeUnit.SECONDS));
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+        new PostgresEndpoint(table, namespace, new FixedDelay(5, 10, TimeUnit.SECONDS));
 
       OpenAiEndpoint embeddingEndpoint =
         new OpenAiEndpoint(
@@ -1355,7 +1236,6 @@ public class EdgeChainApplication {
                   DataType.STRING, mapper.get("queries"))) // Getting Queries from Mapper
               .loadOrReload(); // Step 5: Pass the Args & Reload Jsonnet
 
-<<<<<<< HEAD
             StringBuilder openAiResponseBuilder = new StringBuilder();
             return chatEndpoint
               .getChatCompletion(
@@ -1381,7 +1261,7 @@ public class EdgeChainApplication {
                           .getContent());
                     } else {
                       EdgeChain.fromObservable(
-                          contextEndpoint.put(
+                          postgreSQLContextEndpoint.put(
                             historyContext.getId(),
                             query
                               + openAiResponseBuilder
@@ -1389,41 +1269,6 @@ public class EdgeChainApplication {
                               "chatHistory")) // Getting ChatHistory from Mapper
                         )
                         .get();
-=======
-                StringBuilder openAiResponseBuilder = new StringBuilder();
-                return chatEndpoint
-                    .getChatCompletion(
-                        loader.get("prompt")) // Pass the concatenated prompt to JsonnetLoader
-                    /**
-                     * Here is the interesting part; So, with ChatCompletion Stream we will have
-                     * streaming Therefore, we create a StringBuilder to append the response as we
-                     * need to save in redis
-                     */
-                    .doOnNext(
-                        chatCompletionResponse -> {
-                          // If ChatCompletion (stream = true);
-                          if (chatCompletionResponse.getObject().equals("chat.completion.chunk")) {
-                            // Append the ChatCompletion Response until, we have FinishReason;
-                            // otherwise, we update the history
-                            if (Objects.isNull(
-                                chatCompletionResponse.getChoices().get(0).getFinishReason())) {
-                              openAiResponseBuilder.append(
-                                  chatCompletionResponse
-                                      .getChoices()
-                                      .get(0)
-                                      .getMessage()
-                                      .getContent());
-                            } else {
-                              EdgeChain.fromObservable(
-                                      postgreSQLContextEndpoint.put(
-                                          historyContext.getId(),
-                                          query
-                                              + openAiResponseBuilder
-                                              + mapper.get(
-                                                  "chatHistory")) // Getting ChatHistory from Mapper
-                                      )
-                                  .get();
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
 
                       // Query(What is the collect stage for data maturity) + OpenAiResponse
                       // + Prev. ChatHistory
@@ -1432,9 +1277,8 @@ public class EdgeChainApplication {
                   // If ChatCompletion (stream = false);
                   else if (chatCompletionResponse.getObject().equals("chat.completion")) {
 
-<<<<<<< HEAD
                     EdgeChain.fromObservable(
-                        contextEndpoint.put(
+                        postgreSQLContextEndpoint.put(
                           historyContext.getId(),
                           query
                             + chatCompletionResponse
@@ -1452,27 +1296,6 @@ public class EdgeChainApplication {
                 });
           })
         .getArkResponse();
-=======
-                            EdgeChain.fromObservable(
-                                    postgreSQLContextEndpoint.put(
-                                        historyContext.getId(),
-                                        query
-                                            + chatCompletionResponse
-                                                .getChoices()
-                                                .get(0)
-                                                .getMessage()
-                                                .getContent()
-                                            + mapper.get(
-                                                "chatHistory")) // Getting ChatHistory from Mapper
-                                    )
-                                .get();
-                            // Query(What is the collect stage for data maturity) +OpenAiResponse +
-                            // Prev. ChatHistory
-                          }
-                        });
-              })
-          .getArkResponse();
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
     }
 
     @DeleteMapping("/examples/postgres/deleteAll")
@@ -1481,16 +1304,7 @@ public class EdgeChainApplication {
       String namespace = arkRequest.getQueryParam("namespace");
 
       PostgresEndpoint postgresEndpoint =
-<<<<<<< HEAD
-        new PostgresEndpoint(
-          POSTGRES_JDBC_URL,
-          POSTGRES_USERNAME,
-          POSTGRES_PASSWORD,
-          table,
-          new FixedDelay(5, 10, TimeUnit.SECONDS));
-=======
-          new PostgresEndpoint(table, namespace, new FixedDelay(5, 10, TimeUnit.SECONDS));
->>>>>>> dfbae30870bb6c898ec8a91f27ec9d01336a651c
+        new PostgresEndpoint(table, namespace, new FixedDelay(5, 10, TimeUnit.SECONDS));
 
       return new EdgeChain<>(postgresEndpoint.deleteAll()).getArkResponse();
     }
