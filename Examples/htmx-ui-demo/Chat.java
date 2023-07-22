@@ -1,5 +1,6 @@
 package com.edgechain;
-//SOURCES ./MessageItem.java
+
+// SOURCES ./MessageItem.java
 
 import java.util.List;
 
@@ -12,7 +13,5 @@ public class Chat {
     this.chatHistory = chatHistory;
   }
 
-  public Chat(){
-
-  }
+  public Chat() {}
 }

@@ -1,10 +1,11 @@
 package com.edgechain;
-//SOURCES ./ChatMessage.java
-//SOURCES ./MessageItem.java
-//SOURCES ./Chat.java
 
-//FILES resources/templates/index.html=./index.html
-//FILES resources/templates/fragments.html=./fragments.html
+// SOURCES ./ChatMessage.java
+// SOURCES ./MessageItem.java
+// SOURCES ./Chat.java
+
+// FILES resources/templates/index.html=./index.html
+// FILES resources/templates/fragments.html=./fragments.html
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -29,9 +29,9 @@ import java.util.List;
 @SpringBootApplication
 @Controller
 @RequestMapping("/")
-public class DashboardApp{
+public class DashboardApp {
 
-  public WebClient webClient(){
+  public WebClient webClient() {
     return WebClient.builder().build();
   }
 
@@ -39,8 +39,6 @@ public class DashboardApp{
     System.setProperty("server.port", "8081");
     SpringApplication.run(DashboardApp.class, args);
   }
-
-
 
   @Bean
   public RedisEnv redisEnv() {
@@ -60,14 +58,14 @@ public class DashboardApp{
   private String Url = "http://localhost:8080/v1/examples/wiki-summary?query=";
 
   @GetMapping
-  public String index(Model model){
+  public String index(Model model) {
     addChat();
     addAttributeForIndex(model);
     return "index";
   }
 
   @PostMapping
-  public String sendMessage(@ModelAttribute("item") MessageItem messageItem, Model model){
+  public String sendMessage(@ModelAttribute("item") MessageItem messageItem, Model model) {
     System.out.println(messageItem);
     messages.add(messageItem);
     System.out.println(messages);
@@ -75,9 +73,8 @@ public class DashboardApp{
   }
 
   @PostMapping(headers = "HX-Request")
-  public String htmxSendMessage(MessageItem messageItem,
-                                Model model,
-                                HttpServletResponse response){
+  public String htmxSendMessage(
+      MessageItem messageItem, Model model, HttpServletResponse response) {
     System.out.println(messages + "from htmx");
     System.out.println(messageItem);
     messages.add(messageItem);
@@ -88,47 +85,46 @@ public class DashboardApp{
     return "fragments :: meassageItem";
   }
 
-
-  private void addAttributeForIndex(Model model){
+  private void addAttributeForIndex(Model model) {
     System.out.println("Add Attribute For Index");
     model.addAttribute("item", new MessageItem());
-    model.addAttribute("messages",messages);
-    model.addAttribute("chats",chats);
-    model.addAttribute("chat",new Chat());
-    model.addAttribute("currentId",1);
+    model.addAttribute("messages", messages);
+    model.addAttribute("chats", chats);
+    model.addAttribute("chat", new Chat());
+    model.addAttribute("currentId", 1);
   }
 
   @GetMapping("/responce")
-  public String reply(Model model){
+  public String reply(Model model) {
     System.out.println("reply");
     currentContent = new StringBuilder();
     MessageItem messageItem = new MessageItem("", true);
     model.addAttribute("item", messageItem);
 
-
     return "fragments :: meassageItem";
   }
 
   @GetMapping(value = "/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-  public Flux sseMethod(){
+  public Flux sseMethod() {
 
-    return webClient().get()
-      .uri(Url+messages.get(messages.size()-1).getMessage())
-      .headers(httpHeaders -> {
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        httpHeaders.set("stream","true");
-      })
-      .retrieve()
-      .bodyToFlux(ChatCompletionResponse.class)
-      .map(it -> currentContent.append(it.getChoices().get(0).getMessage().getContent()));
+    return webClient()
+        .get()
+        .uri(Url + messages.get(messages.size() - 1).getMessage())
+        .headers(
+            httpHeaders -> {
+              httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+              httpHeaders.set("stream", "true");
+            })
+        .retrieve()
+        .bodyToFlux(ChatCompletionResponse.class)
+        .map(it -> currentContent.append(it.getChoices().get(0).getMessage().getContent()));
   }
 
-
-  public void addChat(){
-    chats.add(new Chat("Chat 1",new ArrayList<MessageItem>()));
-    chats.add(new Chat("Chat 2",new ArrayList<MessageItem>()));
-    chats.add(new Chat("Chat 3",new ArrayList<MessageItem>()));
-    chats.add(new Chat("Chat 4",new ArrayList<MessageItem>()));
+  public void addChat() {
+    chats.add(new Chat("Chat 1", new ArrayList<MessageItem>()));
+    chats.add(new Chat("Chat 2", new ArrayList<MessageItem>()));
+    chats.add(new Chat("Chat 3", new ArrayList<MessageItem>()));
+    chats.add(new Chat("Chat 4", new ArrayList<MessageItem>()));
   }
 
   public List<Chat> chats = new ArrayList<>();
