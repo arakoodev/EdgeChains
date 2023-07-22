@@ -1,6 +1,5 @@
 package com.edgechain.lib.context.domain;
 
-
 public class ContextPutRequest<T> {
 
   private String id;

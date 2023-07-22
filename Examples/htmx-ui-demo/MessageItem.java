@@ -9,8 +9,7 @@ public class MessageItem {
     this.isReceived = isReceived;
   }
 
-  public MessageItem() {
-  }
+  public MessageItem() {}
 
   public String getMessage() {
     return message;
@@ -30,9 +29,6 @@ public class MessageItem {
 
   @Override
   public String toString() {
-    return "MessageItem{" +
-        "message='" + message + '\'' +
-        ", isReceived=" + isReceived +
-        '}';
+    return "MessageItem{" + "message='" + message + '\'' + ", isReceived=" + isReceived + '}';
   }
 }
