@@ -45,7 +45,7 @@ jobs:
 
       - name: Build edgechain-app project
         working-directory: ./FlySpring/edgechain-app
-        run: mvn clean package -DskipTests
+        run: mvn -Djavacpp.platform=linux-x86_64 clean package -DskipTests
       
       - name: Run edgechain testcases
         working-directory: ./FlySpring/edgechain-app
