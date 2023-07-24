@@ -23,82 +23,83 @@ import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JsonnetLoaderTest {
 
-    @LocalServerPort
-    int randomServerPort;
+  @LocalServerPort int randomServerPort;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @BeforeEach
-    public void setup() {
-        System.setProperty("server.port", "" + randomServerPort);
-    }
+  @BeforeEach
+  public void setup() {
+    System.setProperty("server.port", "" + randomServerPort);
+  }
 
-    @Test
-    @DisplayName("Test Load Jsonnet file")
-    public void jsonLoader_LoadJsonnet_ReturnExpectedValue(TestInfo testInfo) throws Exception {
+  @Test
+  @DisplayName("Test Load Jsonnet file")
+  public void jsonLoader_LoadJsonnet_ReturnExpectedValue(TestInfo testInfo) throws Exception {
 
-        logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-        String inputJsonnet = "{ \"key\": \"value\" }";
-        InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
-        JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    String inputJsonnet = "{ \"key\": \"value\" }";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
 
-        jsonnetLoader.load(inputStream);
-        String value = jsonnetLoader.get("key");
+    jsonnetLoader.load(inputStream);
+    String value = jsonnetLoader.get("key");
 
-        assertEquals("value", value);
-    }
+    assertEquals("value", value);
+  }
 
-    @Test
-    @DisplayName("Test Load Jsonnet file with array")
-    public void jsonLoader_LoadJsonnetWithArray_ReturnExpectedValue(TestInfo testInfo) throws Exception {
+  @Test
+  @DisplayName("Test Load Jsonnet file with array")
+  public void jsonLoader_LoadJsonnetWithArray_ReturnExpectedValue(TestInfo testInfo)
+      throws Exception {
 
-        logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-        String inputJsonnet = "{ \"array\": [1, 2, 3] }";
-        InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
-        JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    String inputJsonnet = "{ \"array\": [1, 2, 3] }";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
 
-        jsonnetLoader.load(inputStream);
-        JSONArray array = jsonnetLoader.getArray("array");
+    jsonnetLoader.load(inputStream);
+    JSONArray array = jsonnetLoader.getArray("array");
 
-        assertNotNull(array);
-        assertEquals(3, array.length());
-        assertEquals(1, array.getInt(0));
-        assertEquals(2, array.getInt(1));
-        assertEquals(3, array.getInt(2));
-    }
+    assertNotNull(array);
+    assertEquals(3, array.length());
+    assertEquals(1, array.getInt(0));
+    assertEquals(2, array.getInt(1));
+    assertEquals(3, array.getInt(2));
+  }
 
-    @Test
-    @DisplayName("Test Load Jsonnet file with object")
-    public void jsonLoader_LoadJsonnetWithObject_ReturnExpectedValue(TestInfo testInfo) throws Exception {
+  @Test
+  @DisplayName("Test Load Jsonnet file with object")
+  public void jsonLoader_LoadJsonnetWithObject_ReturnExpectedValue(TestInfo testInfo)
+      throws Exception {
 
-        logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-        String inputJsonnet = "{ \"number\": 42 }";
-        InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
-        JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    String inputJsonnet = "{ \"number\": 42 }";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
 
-        jsonnetLoader.load(inputStream);
-        int number = jsonnetLoader.getInt("number");
+    jsonnetLoader.load(inputStream);
+    int number = jsonnetLoader.getInt("number");
 
-        assertEquals(42, number);
-    }
+    assertEquals(42, number);
+  }
 
-    @Test
-    @DisplayName("Test Load Jsonnet file with boolean")
-    public void jsonLoader_LoadJsonnetWithBoolean_ReturnExpectedValue(TestInfo testInfo) throws Exception {
+  @Test
+  @DisplayName("Test Load Jsonnet file with boolean")
+  public void jsonLoader_LoadJsonnetWithBoolean_ReturnExpectedValue(TestInfo testInfo)
+      throws Exception {
 
-        logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-        String inputJsonnet = "{ \"flag\": true }";
-        InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
-        JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    String inputJsonnet = "{ \"flag\": true }";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
 
-        jsonnetLoader.load(inputStream);
-        boolean flag = jsonnetLoader.getBoolean("flag");
+    jsonnetLoader.load(inputStream);
+    boolean flag = jsonnetLoader.getBoolean("flag");
 
-        assertTrue(flag);
-    }
-
+    assertTrue(flag);
+  }
 }

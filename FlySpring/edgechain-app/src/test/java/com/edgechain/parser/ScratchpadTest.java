@@ -17,69 +17,76 @@ import com.edgechain.lib.openai.parser.Scratchpad;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ScratchpadTest {
 
-    @LocalServerPort
-    int randomServerPort;
+  @LocalServerPort int randomServerPort;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @BeforeEach
-    public void setup() {
-        System.setProperty("server.port", "" + randomServerPort);
-    }
+  @BeforeEach
+  public void setup() {
+    System.setProperty("server.port", "" + randomServerPort);
+  }
 
-    @Test
-    @DisplayName("Test Get Action Content")
-    public void Scratchpad_GetActionContent_ReturnsExpectedValue(TestInfo testInfo) throws Exception {
+  @Test
+  @DisplayName("Test Get Action Content")
+  public void Scratchpad_GetActionContent_ReturnsExpectedValue(TestInfo testInfo) throws Exception {
 
-        logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-        String input = "Thought 1: Lorem ipsum\nAction 1: [Search: Content for action 1]\nObservation 1: Some observation";
-        Scratchpad scratchpad = new Scratchpad(input);
+    String input =
+        "Thought 1: Lorem ipsum\n"
+            + "Action 1: [Search: Content for action 1]\n"
+            + "Observation 1: Some observation";
+    Scratchpad scratchpad = new Scratchpad(input);
 
-        String actionContent = scratchpad.getActionContent();
+    String actionContent = scratchpad.getActionContent();
 
-        assertEquals("Search: Content for action 1", actionContent);
-    }
+    assertEquals("Search: Content for action 1", actionContent);
+  }
 
-    @Test
-    @DisplayName("Test Get Action Content No Action")
-    public void Scratchpad_GetActionContentNoAction_ReturnsNull(TestInfo testInfo) throws Exception {
+  @Test
+  @DisplayName("Test Get Action Content No Action")
+  public void Scratchpad_GetActionContentNoAction_ReturnsNull(TestInfo testInfo) throws Exception {
 
-        logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-        String input = "Thought 1: Lorem ipsum\nAction 1: [Some other action]\nObservation 1: Some observation";
-        Scratchpad scratchpad = new Scratchpad(input);
+    String input =
+        "Thought 1: Lorem ipsum\nAction 1: [Some other action]\nObservation 1: Some observation";
+    Scratchpad scratchpad = new Scratchpad(input);
 
-        String actionContent = scratchpad.getActionContent();
+    String actionContent = scratchpad.getActionContent();
 
-        assertNull(actionContent);
-    }
+    assertNull(actionContent);
+  }
 
-    @Test
-    @DisplayName("Test Observation Replacer Update Existing Observation")
-    public void scratchpad_ObservationReplacer_UpdateExistingObservation(TestInfo testInfo) throws Exception {
+  @Test
+  @DisplayName("Test Observation Replacer Update Existing Observation")
+  public void scratchpad_ObservationReplacer_UpdateExistingObservation(TestInfo testInfo)
+      throws Exception {
 
-        logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-        String input = "Thought 1: Lorem ipsum\nAction 1: [Search: Content for action 1]\nObservation 1: Initial observation";
-        Scratchpad scratchpad = new Scratchpad(input);
+    String input =
+        "Thought 1: Lorem ipsum\n"
+            + "Action 1: [Search: Content for action 1]\n"
+            + "Observation 1: Initial observation";
+    Scratchpad scratchpad = new Scratchpad(input);
 
-        scratchpad.observationReplacer("Updated observation");
+    scratchpad.observationReplacer("Updated observation");
 
-        assertEquals("Observation: Updated observation", scratchpad.getScratchpadList().get(2));
-    }
+    assertEquals("Observation: Updated observation", scratchpad.getScratchpadList().get(2));
+  }
 
-    @Test
-    @DisplayName("Test Observation Replacer Add New Observation")
-    public void scratchpad_ObservationReplacer_AddNewObservation(TestInfo testInfo) throws Exception {
+  @Test
+  @DisplayName("Test Observation Replacer Add New Observation")
+  public void scratchpad_ObservationReplacer_AddNewObservation(TestInfo testInfo) throws Exception {
 
-        logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-        String input = "Thought 1: Lorem ipsum\nAction 1: [Search: Content for action 1]";
-        Scratchpad scratchpad = new Scratchpad(input);
+    String input = "Thought 1: Lorem ipsum\nAction 1: [Search: Content for action 1]";
+    Scratchpad scratchpad = new Scratchpad(input);
 
-        scratchpad.observationReplacer("New observation");
+    scratchpad.observationReplacer("New observation");
 
-        assertEquals("Observation: New observation", scratchpad.getScratchpadList().get(2));
-    }
+    assertEquals("Observation: New observation", scratchpad.getScratchpadList().get(2));
+  }
 }
