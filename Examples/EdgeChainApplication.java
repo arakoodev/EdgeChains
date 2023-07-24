@@ -1,7 +1,5 @@
 package com.edgechain;
 
-import static com.edgechain.lib.constants.EndpointConstants.*;
-
 import com.edgechain.lib.chains.PineconeRetrieval;
 import com.edgechain.lib.chains.PostgresRetrieval;
 import com.edgechain.lib.chains.RedisRetrieval;
@@ -17,7 +15,8 @@ import com.edgechain.lib.embeddings.request.Doc2VecRequest;
 import com.edgechain.lib.endpoint.impl.*;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
-import com.edgechain.lib.jsonnet.*;
+import com.edgechain.lib.jsonnet.JsonnetArgs;
+import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
@@ -31,10 +30,6 @@ import com.edgechain.lib.supabase.response.AuthenticatedResponse;
 import com.edgechain.lib.supabase.response.SupabaseUser;
 import com.edgechain.lib.supabase.utils.AuthUtils;
 import io.reactivex.rxjava3.core.Observable;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.json.JSONObject;
@@ -47,9 +42,19 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+
+import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
+import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
+
 @SpringBootApplication
 public class EdgeChainApplication {
-  //
+
   private final String OPENAI_AUTH_KEY = "";
   private final String PINECONE_AUTH_KEY = "";
   private final String PINECONE_QUERY_API = "";
@@ -66,9 +71,7 @@ public class EdgeChainApplication {
   @Primary
   public CorsEnableOrigins corsEnableOrigins() {
     CorsEnableOrigins origins = new CorsEnableOrigins();
-    origins.setOrigins(
-        Collections.singletonList(
-            "http://localhost:4200", "http://localhost:4201", "http://localhost:4202"));
+    origins.setOrigins(Arrays.asList("http://localhost:4200", "http://localhost:4201"));
     return origins;
   }
 
