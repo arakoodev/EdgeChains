@@ -26,57 +26,55 @@ import io.reactivex.rxjava3.core.Single;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class WikiControllerTest {
 
-    @LocalServerPort
-    int randomServerPort;
+  @LocalServerPort int randomServerPort;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @BeforeEach
-    public void setup() {
-        System.setProperty("server.port", "" + randomServerPort);
-    }
+  @BeforeEach
+  public void setup() {
+    System.setProperty("server.port", "" + randomServerPort);
+  }
 
-    @Autowired
-    private WikiController wikiController;
+  @Autowired private WikiController wikiController;
 
-    @Test
-    @DisplayName("Test WikiContent Method Returns WikiResponse")
-    @Order(1)
-    public void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo) {
+  @Test
+  @DisplayName("Test WikiContent Method Returns WikiResponse")
+  @Order(1)
+  public void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo) {
 
-        logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-        // Prepare test data
-        WikiEndpoint wikiEndpoint = new WikiEndpoint();
-        wikiEndpoint.setInput("what is the Redis?");
+    // Prepare test data
+    WikiEndpoint wikiEndpoint = new WikiEndpoint();
+    wikiEndpoint.setInput("what is the Redis?");
 
-        // Call the wikiContent method
-        Single<WikiResponse> result = wikiController.wikiContent(wikiEndpoint);
+    // Call the wikiContent method
+    Single<WikiResponse> result = wikiController.wikiContent(wikiEndpoint);
 
-        // Verify the response
-        assertNotNull(result);
-        assertEquals(WikiResponse.class, result.blockingGet().getClass());
-    }
+    // Verify the response
+    assertNotNull(result);
+    assertEquals(WikiResponse.class, result.blockingGet().getClass());
+  }
 
-    @Test
-    @DisplayName("Test WikiContent Method Populates Response Text")
-    @Order(2)
-    public void wikiControllerTest_TestWikiContentMethodPopulates_ReturnResponseText(TestInfo testInfo) {
+  @Test
+  @DisplayName("Test WikiContent Method Populates Response Text")
+  @Order(2)
+  public void wikiControllerTest_TestWikiContentMethodPopulates_ReturnResponseText(
+      TestInfo testInfo) {
 
-        logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-        // Prepare test data
-        WikiEndpoint wikiEndpoint = new WikiEndpoint();
-        wikiEndpoint.setInput("what is the Redis?");
+    // Prepare test data
+    WikiEndpoint wikiEndpoint = new WikiEndpoint();
+    wikiEndpoint.setInput("what is the Redis?");
 
-        // Call the wikiContent method
-        Single<WikiResponse> result = wikiController.wikiContent(wikiEndpoint);
+    // Call the wikiContent method
+    Single<WikiResponse> result = wikiController.wikiContent(wikiEndpoint);
 
-        // Verify that the response text is populated
-        assertNotNull(result);
-        WikiResponse response = result.blockingGet();
-        assertNotNull(response);
-        assertNotNull(response.getText());
-    }
-
+    // Verify that the response text is populated
+    assertNotNull(result);
+    WikiResponse response = result.blockingGet();
+    assertNotNull(response);
+    assertNotNull(response.getText());
+  }
 }
