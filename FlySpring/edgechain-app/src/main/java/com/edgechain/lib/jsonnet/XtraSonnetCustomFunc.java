@@ -22,7 +22,7 @@ public class XtraSonnetCustomFunc extends Library {
     @Override
     public Map<String, Val.Func> functions(DataFormatService dataFormats, Header header, Importer importer) {
         var res = new HashMap<String, Val.Func>();
-        res.put("search", builtin(new String[]{"param"}, (vals, pos, ev) -> {
+        res.put("fn", builtin(new String[]{"param"}, (vals, pos, ev) -> {
             String prompt = vals[0].asString();
         WikiEndpoint wikiEndpoint = new WikiEndpoint();
 

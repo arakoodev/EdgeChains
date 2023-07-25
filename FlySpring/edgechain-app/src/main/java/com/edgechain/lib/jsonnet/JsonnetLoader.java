@@ -2,6 +2,7 @@ package com.edgechain.lib.jsonnet;
 
 import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.exceptions.JsonnetLoaderException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jam01.xtrasonnet.Transformer;
 import org.apache.commons.io.FileUtils;
@@ -13,12 +14,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
+
 public abstract class JsonnetLoader {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private Map<String, JsonnetArgs> args = new HashMap<>();
   private Map<String, String> xtraArgsMap = new HashMap<>();
+  private final static ObjectMapper objectMapper = new ObjectMapper();
   private JSONObject jsonObject;
 
   public JsonnetLoader() {}
@@ -47,47 +50,26 @@ public abstract class JsonnetLoader {
       printWriter.flush();
       printWriter.close();
 
-//      List<String> argsList = new ArrayList<>();
-//      argsList.add(file.getAbsolutePath());
 
       // Transform Jsonnet Args
       for (Map.Entry<String, JsonnetArgs> entry : this.args.entrySet()) {
 
         if (entry.getValue().getDataType().equals(DataType.STRING)) {
-//          argsList.add("--ext-str");
           String regex = "[^\\p{L}\\p{N}\\p{P}\\p{Z}]";
-//          argsList.add(entry.getKey() + "=" + entry.getValue().getVal().replaceAll(regex, ""));
 
           xtraArgsMap.put(entry.getKey(), entry.getValue().getVal().replaceAll(regex, ""));
 
         } else if (entry.getValue().getDataType().equals(DataType.INTEGER)
             || entry.getValue().getDataType().equals(DataType.BOOLEAN)) {
-//          argsList.add("--ext-code");
-//          argsList.add(entry.getKey() + "=" + entry.getValue().getVal());
-
           xtraArgsMap.put(entry.getKey(), entry.getValue().getVal());
         }
       }
-
-//      logger.info("Args: " + argsList);
-
-//      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//      PrintStream printStream = new PrintStream(outputStream);
-
-//      sjsonnet.SjsonnetMain.main0(
-//          argsList.toArray(String[]::new),
-//          new DefaultParseCache(),
-//          System.in,
-//          printStream,
-//          System.err,
-//          new os.Path(Path.of(System.getProperty("java.io.tmpdir"))),
-//          scala.None$.empty(),
-//          scala.None$.empty());
 
       var res = Transformer.builder(text)
               .withLibrary(new XtraSonnetCustomFunc())
               .build()
               .transform(serializeXtraArgs(xtraArgsMap));
+      logger.info("Jsonnet Output: " + res);
 
       // Get the String Output & Transform it into JsonnetSchema
       this.jsonObject = new JSONObject(res);
@@ -101,7 +83,6 @@ public abstract class JsonnetLoader {
   }
   private static String serializeXtraArgs(Map<String, String> xtraArgsMap) {
     try {
-      ObjectMapper objectMapper = new ObjectMapper();
       return objectMapper.writeValueAsString(xtraArgsMap);
     } catch (Exception e) {
       e.printStackTrace();
