@@ -14,7 +14,6 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.RedisEndpoint;
 import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
-import com.edgechain.lib.endpoint.impl.WikiEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;

@@ -1,32 +1,19 @@
 package com.edgechain;
 
-import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
-import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
 import com.edgechain.lib.chains.RedisRetrieval;
 import com.edgechain.lib.chains.Retrieval;
-import com.edgechain.lib.chunk.enums.LangType;
 import com.edgechain.lib.configuration.domain.CorsEnableOrigins;
 import com.edgechain.lib.configuration.domain.ExcludeMappingFilter;
 import com.edgechain.lib.configuration.domain.RedisEnv;
-import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.embeddings.request.Doc2VecRequest;
 import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.RedisEndpoint;
-import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
-import com.edgechain.lib.jsonnet.JsonnetArgs;
-import com.edgechain.lib.jsonnet.JsonnetLoader;
-import com.edgechain.lib.jsonnet.enums.DataType;
-import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
-import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.reader.impl.PdfReader;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
-import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 import java.io.FileInputStream;
@@ -38,7 +25,6 @@ import java.util.stream.IntStream;
 
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

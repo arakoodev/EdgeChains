@@ -38,14 +38,12 @@ public class WikiExample {
     SpringApplication.run(WikiExample.class, args);
   }
 
-
   // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
   @Bean
   @Primary
   public CorsEnableOrigins corsEnableOrigins() {
     CorsEnableOrigins origins = new CorsEnableOrigins();
-    origins.setOrigins(
-            Arrays.asList("http://localhost:4200","http://localhost:4201"));
+    origins.setOrigins(Arrays.asList("http://localhost:4200", "http://localhost:4201"));
     return origins;
   }
 
@@ -72,8 +70,8 @@ public class WikiExample {
      * @return ArkResponse
      */
     @GetMapping(
-            value = "/wiki-summary",
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+        value = "/wiki-summary",
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
     public ArkResponse wikiSummary(ArkRequest arkRequest) {
 
       String query = arkRequest.getQueryParam("query");
@@ -81,9 +79,9 @@ public class WikiExample {
 
       // Step 1: Create JsonnetLoader to Load JsonnetFile & Pass Args To Jsonnet
       JsonnetLoader loader =
-              new FileJsonnetLoader("R:\\Github\\wiki.jsonnet")
-                      .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-                      .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
+          new FileJsonnetLoader("R:\\Github\\wiki.jsonnet")
+              .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+              .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
       /* Step 2: Create WikiEndpoint to extract content from Wikipedia;
       If RetryPolicy is not passed; then there won't be any backoff mechanism.... */
@@ -93,32 +91,31 @@ public class WikiExample {
 
       /* Step 3: Create OpenAiEndpoint to communicate with OpenAiServices; */
       OpenAiEndpoint openAiEndpoint =
-              new OpenAiEndpoint(
-                      OPENAI_CHAT_COMPLETION_API,
-                      OPENAI_AUTH_KEY,
-                      "gpt-3.5-turbo",
-                      "user",
-                      0.7,
-                      stream,
-                      new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+          new OpenAiEndpoint(
+              OPENAI_CHAT_COMPLETION_API,
+              OPENAI_AUTH_KEY,
+              "gpt-3.5-turbo",
+              "user",
+              0.7,
+              stream,
+              new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
       return new EdgeChain<>(wikiEndpoint.getPageContent(query))
-              .transform(
-                      wiki -> {
-                        loader
-                                .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
-                                .put(
-                                        "context",
-                                        new JsonnetArgs(
-                                                DataType.STRING,
-                                                wiki.getText())) // Step 4: Concatenate ${Base Prompt} + ${Wiki Output}
-                                .loadOrReload(); // Step 5: Reloading Jsonnet File
+          .transform(
+              wiki -> {
+                loader
+                    .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
+                    .put(
+                        "context",
+                        new JsonnetArgs(
+                            DataType.STRING,
+                            wiki.getText())) // Step 4: Concatenate ${Base Prompt} + ${Wiki Output}
+                    .loadOrReload(); // Step 5: Reloading Jsonnet File
 
-                        return loader.get("prompt");
-                      })
-              .transform(openAiEndpoint::getChatCompletion)
-              .getArkResponse();
+                return loader.get("prompt");
+              })
+          .transform(openAiEndpoint::getChatCompletion)
+          .getArkResponse();
     }
-
   }
 }

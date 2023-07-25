@@ -3,22 +3,18 @@ package com.edgechain.parser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.edgechain.lib.openai.parser.StringParser;
 
 @SpringBootTest
 public class StringParserTest {
 
-
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
 
   @Test
   @DisplayName("Test string parser Get Thought Content")
@@ -58,7 +54,7 @@ public class StringParserTest {
 
   @Test
   @DisplayName("Test string parser Get Observation Content")
-  public void StringParser_GetObservationContent_ReturnsExpectedValue()  {
+  public void StringParser_GetObservationContent_ReturnsExpectedValue() {
 
     logger.info("======== " + "Test Get Observation Content" + " ========");
 
@@ -76,7 +72,7 @@ public class StringParserTest {
 
   @Test
   @DisplayName("Test string parser Get Final Answer")
-  public void StringParser_GetFinalAnswer_ReturnsExpectedValue()  {
+  public void StringParser_GetFinalAnswer_ReturnsExpectedValue() {
 
     logger.info("======== " + "Test Get Final Answer" + " ========");
 
