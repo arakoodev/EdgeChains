@@ -16,17 +16,11 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.edgechain.lib.openai.plugin.parser.PluginParser;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 public class PluginParserTest {
-
-  @LocalServerPort int randomServerPort;
-
+  
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  @BeforeEach
-  public void setup() {
-    System.setProperty("server.port", "" + randomServerPort);
-  }
 
   @Test
   @DisplayName("Test Plugin Parser")
@@ -81,7 +75,7 @@ public class PluginParserTest {
 
   @Test
   @DisplayName("Test Plugin Parser Get Final Answer Not Found")
-  public void pluginParser_GetFinalAnswerNotFound_ReturnsNull(TestInfo testInfo) throws Exception {
+  public void pluginParser_GetFinalAnswerNotFound_ReturnsNull(TestInfo testInfo) {
 
     logger.info("======== " + testInfo.getDisplayName() + " ========");
 

@@ -36,10 +36,8 @@ import com.edgechain.lib.supabase.services.impl.UserServiceImpl;
 import com.edgechain.service.controllers.supabase.SupabaseController;
 
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 public class AuthControllerTest {
-
-  @LocalServerPort int randomServerPort;
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -51,10 +49,6 @@ public class AuthControllerTest {
 
   @Mock private SupabaseAuthService supabaseAuthService;
 
-  @BeforeEach
-  public void setup() {
-    System.setProperty("server.port", "" + randomServerPort);
-  }
 
   @Test
   @DisplayName("Test Signup with valid credential")
