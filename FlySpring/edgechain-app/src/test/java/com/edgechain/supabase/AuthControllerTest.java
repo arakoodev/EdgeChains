@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -22,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.edgechain.lib.supabase.entities.User;
 import com.edgechain.lib.supabase.exceptions.SupabaseAuthException;
@@ -48,7 +46,6 @@ public class AuthControllerTest {
   @InjectMocks @Spy private UserServiceImpl userService;
 
   @Mock private SupabaseAuthService supabaseAuthService;
-
 
   @Test
   @DisplayName("Test Signup with valid credential")

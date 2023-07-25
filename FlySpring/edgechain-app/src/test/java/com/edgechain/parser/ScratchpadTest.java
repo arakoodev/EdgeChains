@@ -3,14 +3,12 @@ package com.edgechain.parser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.edgechain.lib.openai.parser.Scratchpad;
 
@@ -18,7 +16,6 @@ import com.edgechain.lib.openai.parser.Scratchpad;
 public class ScratchpadTest {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
 
   @Test
   @DisplayName("Test Get Action Content")

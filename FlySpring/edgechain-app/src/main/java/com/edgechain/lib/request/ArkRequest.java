@@ -30,17 +30,18 @@ public class ArkRequest {
 
     String contentType = request.getContentType();
 
-    if(Objects.isNull(contentType)) {
-      logger.error("ArkRequest can only accept Content-Type:application/json ||"
+    if (Objects.isNull(contentType)) {
+      logger.error(
+          "ArkRequest can only accept Content-Type:application/json ||"
               + " Content-Type:multipart/form-data - You haven't specified Content-Type");
 
       throw new InvalidArkRequest(
-              "ArkRequest can only accept Content-Type:application/json ||"
-                      + " Content-Type:multipart/form-data - You haven't specified Content-Type");
-    }
-
-    else if (!contentType.contains("application/json") && !contentType.contains("multipart/form-data")) {
-      logger.error("ArkRequest can only accept Content-Type:application/json ||"
+          "ArkRequest can only accept Content-Type:application/json ||"
+              + " Content-Type:multipart/form-data - You haven't specified Content-Type");
+    } else if (!contentType.contains("application/json")
+        && !contentType.contains("multipart/form-data")) {
+      logger.error(
+          "ArkRequest can only accept Content-Type:application/json ||"
               + " Content-Type:multipart/form-data");
 
       throw new InvalidArkRequest(

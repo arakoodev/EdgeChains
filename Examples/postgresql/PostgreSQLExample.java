@@ -4,18 +4,14 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
 import com.edgechain.lib.chains.PostgresRetrieval;
-import com.edgechain.lib.chains.RedisRetrieval;
 import com.edgechain.lib.chains.Retrieval;
-import com.edgechain.lib.chunk.enums.LangType;
 import com.edgechain.lib.configuration.domain.CorsEnableOrigins;
 import com.edgechain.lib.configuration.domain.ExcludeMappingFilter;
-import com.edgechain.lib.configuration.domain.RedisEnv;
 import com.edgechain.lib.configuration.domain.SupabaseEnv;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.*;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
-import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;

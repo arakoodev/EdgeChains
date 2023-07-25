@@ -1,6 +1,5 @@
 package com.edgechain.doc2vec;
 
-
 import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
 import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +30,8 @@ public class Doc2VecTest {
 
   @Test
   @DisplayName("Test Doc2Vec Model Training")
-  public void doc2VecEndpoint_TrainModel_AssertNoErrors(TestInfo testInfo) throws InterruptedException {
+  public void doc2VecEndpoint_TrainModel_AssertNoErrors(TestInfo testInfo)
+      throws InterruptedException {
 
     logger.info("======== " + testInfo.getDisplayName() + " ========");
 
@@ -57,5 +57,4 @@ public class Doc2VecTest {
 
     test.assertNoErrors();
   }
-
 }
