@@ -1,16 +1,14 @@
 package com.edgechain.lib.context.domain;
 
-import com.edgechain.lib.endpoint.Endpoint;
-
-public class ContextPutRequest {
+public class ContextPutRequest<T> {
 
   private String id;
   private String response;
-  private Endpoint endpoint;
+  private T endpoint;
 
   public ContextPutRequest() {}
 
-  public ContextPutRequest(String id, String response, Endpoint endpoint) {
+  public ContextPutRequest(String id, String response, T endpoint) {
     this.id = id;
     this.response = response;
     this.endpoint = endpoint;
@@ -32,11 +30,7 @@ public class ContextPutRequest {
     this.response = response;
   }
 
-  public Endpoint getEndpoint() {
+  public T getEndpoint() {
     return endpoint;
-  }
-
-  public void setEndpoint(Endpoint endpoint) {
-    this.endpoint = endpoint;
   }
 }

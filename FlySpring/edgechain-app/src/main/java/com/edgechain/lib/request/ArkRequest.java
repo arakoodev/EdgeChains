@@ -4,6 +4,8 @@ import com.edgechain.lib.request.exception.InvalidArkRequest;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -18,6 +20,8 @@ public class ArkRequest {
 
   private final HttpServletRequest request;
 
+  private static final Logger logger = LoggerFactory.getLogger(ArkRequest.class);
+
   public ArkRequest() {
     this.request =
         ((ServletRequestAttributes)
@@ -26,7 +30,20 @@ public class ArkRequest {
 
     String contentType = request.getContentType();
 
-    if (!contentType.contains("application/json") && !contentType.contains("multipart/form-data")) {
+    if (Objects.isNull(contentType)) {
+      logger.error(
+          "ArkRequest can only accept Content-Type:application/json ||"
+              + " Content-Type:multipart/form-data - You haven't specified Content-Type");
+
+      throw new InvalidArkRequest(
+          "ArkRequest can only accept Content-Type:application/json ||"
+              + " Content-Type:multipart/form-data - You haven't specified Content-Type");
+    } else if (!contentType.contains("application/json")
+        && !contentType.contains("multipart/form-data")) {
+      logger.error(
+          "ArkRequest can only accept Content-Type:application/json ||"
+              + " Content-Type:multipart/form-data");
+
       throw new InvalidArkRequest(
           "ArkRequest can only accept Content-Type:application/json ||"
               + " Content-Type:multipart/form-data");
