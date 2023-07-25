@@ -14,17 +14,11 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.edgechain.lib.openai.parser.Scratchpad;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 public class ScratchpadTest {
-
-  @LocalServerPort int randomServerPort;
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  @BeforeEach
-  public void setup() {
-    System.setProperty("server.port", "" + randomServerPort);
-  }
 
   @Test
   @DisplayName("Test Get Action Content")

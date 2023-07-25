@@ -4,7 +4,10 @@ import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.configuration.domain.SecurityUUID;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Retrofit;
@@ -54,6 +57,9 @@ public class RetrofitClientInstance {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     objectMapper.registerModule(new JavaTimeModule());
+    objectMapper.registerModule(new ParameterNamesModule());
+    objectMapper.registerModule(new Jdk8Module());
+    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     return JacksonConverterFactory.create(objectMapper);
   }
 }

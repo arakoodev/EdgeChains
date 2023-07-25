@@ -13,21 +13,16 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.edgechain.lib.openai.parser.StringParser;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 public class StringParserTest {
 
-  @LocalServerPort int randomServerPort;
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  @BeforeEach
-  public void setup() {
-    System.setProperty("server.port", "" + randomServerPort);
-  }
 
   @Test
   @DisplayName("Test string parser Get Thought Content")
-  public void StringParser_GetThoughtContent_ReturnsExpectedValue() throws Exception {
+  public void StringParser_GetThoughtContent_ReturnsExpectedValue() {
 
     logger.info("======== " + "Test Get Thought Content" + " ========");
 
@@ -45,7 +40,7 @@ public class StringParserTest {
 
   @Test
   @DisplayName("Test string parser Get Action Content")
-  public void StringParser_GetActionContent_ReturnsExpectedValue() throws Exception {
+  public void StringParser_GetActionContent_ReturnsExpectedValue() {
 
     logger.info("======== " + "Test Get Action Content" + " ========");
 
@@ -63,7 +58,7 @@ public class StringParserTest {
 
   @Test
   @DisplayName("Test string parser Get Observation Content")
-  public void StringParser_GetObservationContent_ReturnsExpectedValue() throws Exception {
+  public void StringParser_GetObservationContent_ReturnsExpectedValue()  {
 
     logger.info("======== " + "Test Get Observation Content" + " ========");
 
@@ -81,7 +76,7 @@ public class StringParserTest {
 
   @Test
   @DisplayName("Test string parser Get Final Answer")
-  public void StringParser_GetFinalAnswer_ReturnsExpectedValue() throws Exception {
+  public void StringParser_GetFinalAnswer_ReturnsExpectedValue()  {
 
     logger.info("======== " + "Test Get Final Answer" + " ========");
 

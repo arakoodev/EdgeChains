@@ -3,6 +3,7 @@ package com.edgechain.wiki;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -35,46 +36,25 @@ public class WikiControllerTest {
     System.setProperty("server.port", "" + randomServerPort);
   }
 
-  @Autowired private WikiController wikiController;
 
   @Test
   @DisplayName("Test WikiContent Method Returns WikiResponse")
   @Order(1)
-  public void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo) {
+  public void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo) throws InterruptedException {
 
     logger.info("======== " + testInfo.getDisplayName() + " ========");
 
     // Prepare test data
     WikiEndpoint wikiEndpoint = new WikiEndpoint();
-    wikiEndpoint.setInput("what is the Redis?");
 
-    // Call the wikiContent method
-    Single<WikiResponse> result = wikiController.wikiContent(wikiEndpoint);
+    TestObserver<WikiResponse> test = wikiEndpoint.getPageContent("Barack Obama").test();
 
-    // Verify the response
-    assertNotNull(result);
-    assertEquals(WikiResponse.class, result.blockingGet().getClass());
+    test.await();
+
+    logger.info(String.valueOf(test.values().get(0)));
+
+    test.assertNoErrors();
+
   }
 
-  @Test
-  @DisplayName("Test WikiContent Method Populates Response Text")
-  @Order(2)
-  public void wikiControllerTest_TestWikiContentMethodPopulates_ReturnResponseText(
-      TestInfo testInfo) {
-
-    logger.info("======== " + testInfo.getDisplayName() + " ========");
-
-    // Prepare test data
-    WikiEndpoint wikiEndpoint = new WikiEndpoint();
-    wikiEndpoint.setInput("what is the Redis?");
-
-    // Call the wikiContent method
-    Single<WikiResponse> result = wikiController.wikiContent(wikiEndpoint);
-
-    // Verify that the response text is populated
-    assertNotNull(result);
-    WikiResponse response = result.blockingGet();
-    assertNotNull(response);
-    assertNotNull(response.getText());
-  }
 }

@@ -2,29 +2,20 @@ package com.edgechain.chunker;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.edgechain.lib.chunk.Chunker;
 import com.edgechain.lib.chunk.enums.LangType;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 public class ChunkerTest {
 
-  @LocalServerPort int randomServerPort;
-
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-  @BeforeEach
-  public void setup() {
-    System.setProperty("server.port", "" + randomServerPort);
-  }
 
   @Test
   @DisplayName("Test By Chunk Size")
