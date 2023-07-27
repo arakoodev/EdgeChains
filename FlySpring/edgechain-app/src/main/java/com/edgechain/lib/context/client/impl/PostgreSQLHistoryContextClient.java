@@ -9,7 +9,9 @@ import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -20,7 +22,9 @@ public class PostgreSQLHistoryContextClient
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  @Autowired private PostgreSQLHistoryContextRepository repository;
+  @Autowired private PostgreSQLHistoryContextRepository historyContextRepository;
+
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private static final String PREFIX = "historycontext:";
 
@@ -34,12 +38,10 @@ public class PostgreSQLHistoryContextClient
                 if (Objects.isNull(id) || id.isEmpty())
                   throw new RuntimeException("Postgres history_context id cannot be empty or null");
 
-                this.repository.createTable(); // Create Table IF NOT EXISTS;
+                this.createTable(); // Create Table IF NOT EXISTS;
 
                 HistoryContext context = new HistoryContext(PREFIX + id, "", LocalDateTime.now());
-                this.repository.insert(context);
-
-                emitter.onNext(context);
+                emitter.onNext(historyContextRepository.save(context));
                 emitter.onComplete();
 
               } catch (final Exception e) {
@@ -61,12 +63,12 @@ public class PostgreSQLHistoryContextClient
                 String input = response.replaceAll("'", "");
                 historyContext.setResponse(input);
 
-                this.repository.update(historyContext);
-
+                HistoryContext returnValue = this.historyContextRepository.save(historyContext);
                 logger.info(String.format("%s is updated", id));
 
-                emitter.onNext(historyContext);
+                emitter.onNext(returnValue);
                 emitter.onComplete();
+
               } catch (final Exception e) {
                 emitter.onError(e);
               }
@@ -81,7 +83,7 @@ public class PostgreSQLHistoryContextClient
             emitter -> {
               try {
                 emitter.onNext(
-                    this.repository
+                    this.historyContextRepository
                         .findById(id)
                         .orElseThrow(
                             () ->
@@ -101,7 +103,10 @@ public class PostgreSQLHistoryContextClient
         Observable.create(
             emitter -> {
               try {
-                this.repository.delete(id);
+
+                HistoryContext historyContext = this.get(id, null).get();
+                this.historyContextRepository.delete(historyContext);
+
                 emitter.onNext("");
                 emitter.onComplete();
               } catch (final Exception e) {
@@ -109,5 +114,12 @@ public class PostgreSQLHistoryContextClient
               }
             }),
         endpoint);
+  }
+
+  @Transactional
+  public void createTable() {
+    jdbcTemplate.execute(
+        "CREATE TABLE IF NOT EXISTS history_context (id TEXT PRIMARY KEY, response TEXT, created_at"
+            + " timestamp)");
   }
 }
