@@ -16,10 +16,8 @@ public class JarRunner {
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-  @Autowired
-  ProjectSetup projectSetup;
-  @Autowired
-  FileTools fileTools;
+  @Autowired ProjectSetup projectSetup;
+  @Autowired FileTools fileTools;
 
   public void run(File jarFile) {
     try {
