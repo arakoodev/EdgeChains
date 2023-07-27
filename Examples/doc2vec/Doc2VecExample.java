@@ -1,6 +1,5 @@
 package com.edgechain;
 
-
 import com.edgechain.lib.chains.RedisRetrieval;
 import com.edgechain.lib.chains.Retrieval;
 import com.edgechain.lib.configuration.domain.CorsEnableOrigins;

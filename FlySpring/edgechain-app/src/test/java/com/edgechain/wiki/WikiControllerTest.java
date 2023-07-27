@@ -1,6 +1,5 @@
 package com.edgechain.wiki;
 
-
 import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +15,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.edgechain.lib.endpoint.impl.WikiEndpoint;
 import com.edgechain.lib.wiki.response.WikiResponse;
-
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
