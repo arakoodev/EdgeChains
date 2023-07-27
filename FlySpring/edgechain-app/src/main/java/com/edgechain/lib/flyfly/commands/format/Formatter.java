@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Formatter {
-  @Autowired
-  ProjectSetup projectSetup;
+  @Autowired ProjectSetup projectSetup;
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 

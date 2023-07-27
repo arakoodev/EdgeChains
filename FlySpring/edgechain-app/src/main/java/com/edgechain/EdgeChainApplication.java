@@ -13,7 +13,7 @@ import java.net.URL;
 import java.nio.file.Paths;
 
 @SpringBootApplication
-public class EdgeChainApplication  {
+public class EdgeChainApplication {
 
   private static final Logger logger = LoggerFactory.getLogger(EdgeChainApplication.class);
 
@@ -21,12 +21,13 @@ public class EdgeChainApplication  {
 
     System.setProperty("jar.name", getJarFileName(EdgeChainApplication.class));
 
-    logger.info("Executed jar file: "+System.getProperty("jar.name"));
+    logger.info("Executed jar file: " + System.getProperty("jar.name"));
 
     SpringApplication springApplication =
-            new SpringApplicationBuilder()
-                    .sources(EdgeChainApplication.class).web(WebApplicationType.NONE)
-                    .build();
+        new SpringApplicationBuilder()
+            .sources(EdgeChainApplication.class)
+            .web(WebApplicationType.NONE)
+            .build();
 
     springApplication.run(args);
   }
