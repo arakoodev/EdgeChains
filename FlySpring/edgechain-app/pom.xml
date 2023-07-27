@@ -227,11 +227,10 @@
             <classifier>linux-x86_64</classifier>
         </dependency>
 
-        <!-- Jsonnet -->
         <dependency>
-            <groupId>com.databricks</groupId>
-            <artifactId>sjsonnet_2.13</artifactId>
-            <version>0.4.2</version>
+            <groupId>io.github.jam01</groupId>
+            <artifactId>xtrasonnet</artifactId>
+            <version>0.5.3</version>
         </dependency>
 
         <!-- flyfly -->

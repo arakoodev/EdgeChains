@@ -69,8 +69,6 @@ public abstract class JsonnetLoader {
               .withLibrary(new XtraSonnetCustomFunc())
               .build()
               .transform(serializeXtraArgs(xtraArgsMap));
-      logger.info("Jsonnet Output: " + res);
-
       // Get the String Output & Transform it into JsonnetSchema
       this.jsonObject = new JSONObject(res);
 
