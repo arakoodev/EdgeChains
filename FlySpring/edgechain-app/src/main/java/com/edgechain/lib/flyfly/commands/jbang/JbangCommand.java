@@ -14,8 +14,8 @@ public class JbangCommand implements Runnable {
   @Parameters(description = "Java file to be executed with jbang")
   private String javaFile;
 
-  @Parameters(description = "ClassPath Jar to be used")
-  private String classPathJar;
+//  @Parameters(description = "ClassPath Jar to be used")
+//  private String classPathJar;
 
   @Override
   public void run() {
@@ -23,7 +23,7 @@ public class JbangCommand implements Runnable {
     try {
       File jarFile = extractFileFromResources(resourcePath);
       if (jarFile != null) {
-        runJbang(jarFile, javaFile, classPathJar);
+        runJbang(jarFile, javaFile, System.getProperty("jar.name"));
       } else {
         System.out.println("Could not find jbang.jar in resources.");
       }
@@ -78,7 +78,7 @@ public class JbangCommand implements Runnable {
       String filename = file.getName().split("\\.")[0];
       mainClass = String.format("com.edgechain.%s", filename);
 
-      System.out.println("Extracted Filename" + filename);
+      System.out.println("Extracted Filename: " + filename);
       System.out.println("Main Class: " + mainClass);
 
       process.waitFor();
