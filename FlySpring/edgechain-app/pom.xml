@@ -10,7 +10,6 @@
     <packaging>jar</packaging>
     <properties>
         <java.version>17</java.version>
-        <spring-cloud.version>2022.0.3</spring-cloud.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
@@ -35,6 +34,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>redis.clients</groupId>
@@ -76,18 +81,6 @@
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
             <version>2.3.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>5.0.1</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
         </dependency>
 
 
@@ -241,6 +234,35 @@
             <version>0.4.2</version>
         </dependency>
 
+        <!-- flyfly -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli-spring-boot-starter</artifactId>
+            <version>4.7.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.lingala.zip4j</groupId>
+            <artifactId>zip4j</artifactId>
+            <version>2.11.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.zeroturnaround</groupId>
+            <artifactId>zt-exec</artifactId>
+            <version>1.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>1.17.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -263,13 +285,6 @@
                 <scope>import</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
         </dependencies>
 
     </dependencyManagement>
@@ -314,6 +329,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>edgechain</finalName>
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
@@ -326,14 +342,56 @@
                                 </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                <!--                                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
-                                <!--                                        <mainClass></mainClass>-->
-                                <!--                                    </transformer>-->
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.edgechain.EdgeChainApplication</mainClass>
+                                </transformer>
                             </transformers>
+
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>download-and-unpack-jbang</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- Download Jbang archive -->
+                                <get src="https://github.com/jbangdev/jbang/releases/download/v0.109.0/jbang.zip"
+                                     dest="${project.build.directory}/jbang.zip"
+                                     skipexisting="true" />
+
+                                <!-- Unpack Jbang archive -->
+                                <unzip src="${project.build.directory}/jbang.zip"
+                                       dest="${project.build.directory}/jbang" />
+
+                                <!-- Copy only the 'jbang.jar' file to the 'src/main/resources' directory -->
+                                <copy
+                                        file="${project.build.directory}/jbang/jbang/bin/jbang.jar"
+                                        tofile="${project.basedir}/src/main/resources/jbang.jar" />
+
+                                <!-- Remove the temporary Jbang folder -->
+                                <delete includeemptydirs="true">
+                                    <fileset dir="${project.build.directory}">
+                                        <include name="jbang/**" />
+                                    </fileset>
+                                </delete>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
