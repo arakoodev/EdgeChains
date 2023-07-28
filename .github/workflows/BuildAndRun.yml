@@ -9,22 +9,22 @@ jobs:
       VALUE: ${{ steps.short_hash.outputs.VALUE }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-        
+        uses: actions/checkout@v3
+
       - name: Set SHORT_HASH
         run: |
-             echo "::set-output name=VALUE::${LONG_HASH:0:8}"
-             echo "RELEASE_TAG=${LONG_HASH:0:8}-$(TZ=UTC-8 date +"%Y.%m.%d")" >> $GITHUB_ENV
+          echo "::set-output name=VALUE::${LONG_HASH:0:8}"
+          echo "RELEASE_TAG=${LONG_HASH:0:8}-$(TZ=UTC-8 date +"%Y.%m.%d")" >> $GITHUB_ENV
         id: short_hash
         env:
-         LONG_HASH: ${{ github.sha }}
+          LONG_HASH: ${{ github.sha }}
 
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'adopt'
-      
+
       - name: Set up Maven
         uses: stCarolas/setup-maven@v4.5
         with:
@@ -33,34 +33,31 @@ jobs:
       - name: Create output folder
         run: mkdir BuildOutput
 
+#      - name: Build flyfly project
+#        working-directory: ./FlySpring/flyfly
+#        run: mvn clean package
 
-      - name: Build flyfly project
-        working-directory: ./FlySpring/flyfly
-        run: mvn clean package
-
-
-
-      - name: Copy flyfly JAR to Examples folder and rename
-        run: cp ./FlySpring/flyfly/target/flyfly-0.0.1-SNAPSHOT.jar ././BuildOutput/flyfly.jar
+#      - name: Copy flyfly JAR to Examples folder and rename
+#        run: cp ./FlySpring/flyfly/target/flyfly-0.0.1-SNAPSHOT.jar ././BuildOutput/flyfly.jar
 
       - name: Build edgechain-app project
         working-directory: ./FlySpring/edgechain-app
-#         run: mvn -Djavacpp.platform=linux-x86_64 clean package -DskipTests
+        #         run: mvn -Djavacpp.platform=linux-x86_64 clean package -DskipTests
         run: mvn  clean package -DskipTests
-      
+
       - name: Run edgechain testcases
         working-directory: ./FlySpring/edgechain-app
         run: mvn test
 
       - name: Copy edgechain-app JAR to Examples folder
-        run: cp ./FlySpring/edgechain-app/target/edgechain-app-1.0.0.jar ./BuildOutput/
+        run: cp ./FlySpring/edgechain-app/target/edgechain.jar ./BuildOutput/
 
       - name: Upload Examples folder as artifact
         uses: actions/upload-artifact@v3
         with:
           name: Output
           path: ./BuildOutput/
-          
+
   release:
     name: Release jar
     needs: build_and_run
@@ -68,31 +65,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download jar from build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: Output
           path: Output
       - name: Display structure of downloaded files
         run: ls -R
 
-#       - name: Create Release
-#         id: create_release
-#         uses: actions/create-release@v1.1.4
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           tag_name: ${{ github.ref }}
-#           release_name: ${{ github.ref }}
-#       - name: Upload Release jar
-#         id: upload_release_asset
-#         uses: actions/upload-release-asset@v1.0.1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           upload_url: ${{ steps.create_release.outputs.upload_url }}
-#           asset_path: Examples/
-#           asset_name: Examples
-#           asset_content_type: application/zip
+      #       - name: Create Release
+      #         id: create_release
+      #         uses: actions/create-release@v1.1.4
+      #         env:
+      #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #         with:
+      #           tag_name: ${{ github.ref }}
+      #           release_name: ${{ github.ref }}
+      #       - name: Upload Release jar
+      #         id: upload_release_asset
+      #         uses: actions/upload-release-asset@v1.0.1
+      #         env:
+      #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #         with:
+      #           upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #           asset_path: Examples/
+      #           asset_name: Examples
+      #           asset_content_type: application/zip
       - name: 'Get variables'
         id: vars
         run: |
@@ -100,10 +97,10 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-            tag_name: ${{ env.RELEASE_TAG }}
-#             body: 🚀 Automated build
-            files: |
-              ./Output/**/*.*
-              
-              #             tag_name: ${{needs.build_and_run.steps.short_hash.outputs.VALUE}}
+          tag_name: ${{ env.RELEASE_TAG }}
+          #             body: 🚀 Automated build
+          files: |
+            ./Output/**/*.*
+
+            #             tag_name: ${{needs.build_and_run.steps.short_hash.outputs.VALUE}}
 

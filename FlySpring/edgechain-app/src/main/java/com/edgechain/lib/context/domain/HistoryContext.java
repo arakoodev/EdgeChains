@@ -1,13 +1,19 @@
 package com.edgechain.lib.context.domain;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+@Entity(name = "HistoryContext")
+@Table(name = "history_context")
 public class HistoryContext implements Serializable {
 
   private static final long serialVersionUID = 2819947915596690671L;
 
-  private String id;
+  @Id private String id;
   private String response;
 
   private LocalDateTime createdAt;
