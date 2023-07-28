@@ -5,18 +5,21 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.retrofit.client.OpenAiStreamService;
 import com.edgechain.lib.retrofit.OpenAiService;
 import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.jsonFormat.dto.FunctionRequest;
+import com.edgechain.lib.jsonFormat.dto.MessagesRequest;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
+import java.util.List;
 import java.util.Objects;
 
 public class OpenAiEndpoint extends Endpoint {
 
-  private final OpenAiStreamService openAiStreamService =
-      ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
+  private final OpenAiStreamService openAiStreamService = ApplicationContextHolder.getContext()
+      .getBean(OpenAiStreamService.class);
 
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
   private final OpenAiService openAiService = retrofit.create(OpenAiService.class);
@@ -25,13 +28,17 @@ public class OpenAiEndpoint extends Endpoint {
   private String model;
   private String role;
   private Double temperature;
+  private List<MessagesRequest> messages;
+  private FunctionRequest functions;
+  private String function_call;
 
   private Boolean stream;
 
   /** Getter Fields ** */
   private String input;
 
-  public OpenAiEndpoint() {}
+  public OpenAiEndpoint() {
+  }
 
   public OpenAiEndpoint(String url, String apiKey, String model) {
     super(url, apiKey, null);
@@ -120,6 +127,13 @@ public class OpenAiEndpoint extends Endpoint {
     this.stream = stream;
   }
 
+  public OpenAiEndpoint(String url, String apiKey, String orgId, String model,
+      List<MessagesRequest> messages, double temperature, FunctionRequest functions, String function_call) {
+    this.messages = messages;
+    this.functions = functions;
+    this.function_call = function_call;
+  }
+
   public String getModel() {
     return model;
   }
@@ -160,6 +174,30 @@ public class OpenAiEndpoint extends Endpoint {
     this.stream = stream;
   }
 
+  public List<MessagesRequest> getMessages() {
+    return messages;
+  }
+
+  public void setMessages(List<MessagesRequest> messages) {
+    this.messages = messages;
+  }
+
+  public FunctionRequest getFunctions() {
+    return functions;
+  }
+
+  public void setFunctions(FunctionRequest functions) {
+    this.functions = functions;
+  }
+
+  public String getFunction_call() {
+    return function_call;
+  }
+
+  public void setFunction_call(String function_call) {
+    this.function_call = function_call;
+  }
+
   public String getInput() {
     return input;
   }
@@ -176,9 +214,11 @@ public class OpenAiEndpoint extends Endpoint {
                 if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
                   chatResponse.getChoices().get(0).getMessage().setContent("");
                   return chatResponse;
-                } else return chatResponse;
+                } else
+                  return chatResponse;
               });
-    else return Observable.fromSingle(this.openAiService.chatCompletion(this));
+    else
+      return Observable.fromSingle(this.openAiService.chatCompletion(this));
   }
 
   public Observable<WordEmbeddings> getEmbeddings(String input) {
@@ -188,7 +228,6 @@ public class OpenAiEndpoint extends Endpoint {
         openAiService
             .embeddings(this)
             .map(
-                embeddingResponse ->
-                    new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
+                embeddingResponse -> new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
   }
 }
