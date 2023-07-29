@@ -52,23 +52,18 @@ public class DashboardApp {
   }
 
   private StringBuilder currentContent;
-
   public List<MessageItem> messages = new ArrayList<>();
-
   private String Url = "http://localhost:8080/v1/examples/wiki-summary?query=";
 
   @GetMapping
   public String index(Model model) {
-    addChat();
     addAttributeForIndex(model);
     return "index";
   }
 
   @PostMapping
   public String sendMessage(@ModelAttribute("item") MessageItem messageItem, Model model) {
-    System.out.println(messageItem);
     messages.add(messageItem);
-    System.out.println(messages);
     return "redirect:/";
   }
 
@@ -96,7 +91,6 @@ public class DashboardApp {
 
   @GetMapping("/responce")
   public String reply(Model model) {
-    System.out.println("reply");
     currentContent = new StringBuilder();
     MessageItem messageItem = new MessageItem("", true);
     model.addAttribute("item", messageItem);
