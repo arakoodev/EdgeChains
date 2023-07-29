@@ -22,7 +22,7 @@ jobs:
           path-to-document: 'https://github.com/arakoodev/.github/blob/main/CLA.md' # e.g. a CLA or a DCO document
           # branch should not be protected
           branch: 'main'
-          allowlist: user1,bot*
+          allowlist: user1,dependabot-preview[bot], dependabot[bot],github-actions,github-actions[bot],[pre-commit*,pre-commit*,bot*
           custom-pr-sign-comment: 'I have read the Arakoo CLA Document and I hereby sign the CLA'
           custom-notsigned-prcomment: 'Thank you for your submission, we really appreciate it. Before we can accept your contribution, we ask that you sign the [Arakoo Contributor License Agreement](https://github.com/arakoodev/.github/blob/main/CLA.md). You can sign the CLA by adding a new comment to this pull request and pasting exactly the following text.'
           remote-organization-name: arakoodev
