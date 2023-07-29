@@ -3,7 +3,7 @@ package com.edgechain.lib.jsonFormat.dto;
 public class UserPromptRequest {
 
     public String prompt;
-    public String format;
+    public Object format;
 
     public UserPromptRequest(String prompt, String format) {
         this.prompt = prompt;
@@ -18,7 +18,7 @@ public class UserPromptRequest {
         this.prompt = prompt;
     }
 
-    public String getFormat() {
+    public Object getFormat() {
         return format;
     }
 

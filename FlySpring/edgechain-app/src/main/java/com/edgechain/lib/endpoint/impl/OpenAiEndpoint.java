@@ -5,15 +5,12 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.retrofit.client.OpenAiStreamService;
 import com.edgechain.lib.retrofit.OpenAiService;
 import com.edgechain.lib.endpoint.Endpoint;
-import com.edgechain.lib.jsonFormat.dto.FunctionRequest;
-import com.edgechain.lib.jsonFormat.dto.MessagesRequest;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
-import java.util.List;
 import java.util.Objects;
 
 public class OpenAiEndpoint extends Endpoint {
@@ -28,9 +25,6 @@ public class OpenAiEndpoint extends Endpoint {
   private String model;
   private String role;
   private Double temperature;
-  private List<MessagesRequest> messages;
-  private FunctionRequest functions;
-  private String function_call;
 
   private Boolean stream;
 
@@ -127,13 +121,6 @@ public class OpenAiEndpoint extends Endpoint {
     this.stream = stream;
   }
 
-  public OpenAiEndpoint(String url, String apiKey, String orgId, String model,
-      List<MessagesRequest> messages, double temperature, FunctionRequest functions, String function_call) {
-    this.messages = messages;
-    this.functions = functions;
-    this.function_call = function_call;
-  }
-
   public String getModel() {
     return model;
   }
@@ -172,30 +159,6 @@ public class OpenAiEndpoint extends Endpoint {
 
   public void setStream(Boolean stream) {
     this.stream = stream;
-  }
-
-  public List<MessagesRequest> getMessages() {
-    return messages;
-  }
-
-  public void setMessages(List<MessagesRequest> messages) {
-    this.messages = messages;
-  }
-
-  public FunctionRequest getFunctions() {
-    return functions;
-  }
-
-  public void setFunctions(FunctionRequest functions) {
-    this.functions = functions;
-  }
-
-  public String getFunction_call() {
-    return function_call;
-  }
-
-  public void setFunction_call(String function_call) {
-    this.function_call = function_call;
   }
 
   public String getInput() {

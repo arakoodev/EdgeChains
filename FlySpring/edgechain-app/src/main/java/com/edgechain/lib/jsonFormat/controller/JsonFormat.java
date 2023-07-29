@@ -28,9 +28,11 @@ public class JsonFormat {
 
         private final String OPENAI_AUTH_KEY = "";
         private final String OPENAI_ORG_ID = "";
+        private static final ObjectMapper objectMapper = new ObjectMapper();
 
         @GetMapping("/extract")
         public Single<String> extract(@RequestBody UserPromptRequest UserPromptRequest) {
+
                 String rePrompt = "INPUT = " + UserPromptRequest.getPrompt() + " EXTRACTED = "
                                 + UserPromptRequest.getFormat()
                                 + " Return EXTRACTED as a valid JSON object.";
@@ -53,8 +55,6 @@ public class JsonFormat {
                         return Single.just("ChatGptResponse is null. There was an error processing the request.");
                 }
 
-                // Verify if the return message is a valid JSON string
-                ObjectMapper objectMapper = new ObjectMapper();
                 try {
                         JsonNode jsonNode = objectMapper.readTree(gptResponse);
                         System.out.println("The response is a valid JSON string." + jsonNode);
@@ -109,7 +109,6 @@ public class JsonFormat {
                 System.out.println("response3: " + response3);
 
                 try {
-                        ObjectMapper objectMapper = new ObjectMapper();
                         JsonNode jsonNode = objectMapper.readTree(response3);
                         System.out.println("The response is a valid JSON string." + jsonNode);
                         return response3;
@@ -133,28 +132,33 @@ public class JsonFormat {
         @GetMapping("/function")
         public String function(@RequestBody UserPromptRequest userPromptRequest) {
 
-                FunctionRequest functions = new FunctionRequest("reply_user", "reply to user's query",
+                FunctionRequest function = new FunctionRequest("reply_user", "reply to user's query",
                                 new Parameter("object", userPromptRequest.getFormat()));
+
+                List<FunctionRequest> functions = new ArrayList<>();
+                functions.add(function);
 
                 List<MessagesRequest> messages = new ArrayList<MessagesRequest>();
                 messages.add(new MessagesRequest("system",
                                 "Only use function_call to reply to use. Do not use content"));
-                messages.add(new MessagesRequest("user", userPromptRequest.prompt));
+                messages.add(new MessagesRequest("user", userPromptRequest.getPrompt()));
 
-                OpenAiEndpoint userChat = new OpenAiEndpoint(
-                                EndpointConstants.OPENAI_CHAT_COMPLETION_API,
-                                OPENAI_AUTH_KEY,
-                                OPENAI_ORG_ID,
-                                "gpt-3.5-turbo-0613",
-                                messages,
-                                0.7,
-                                functions,
-                                "auto");
-                String gptResponse = userChat.getChatCompletion("").blockingFirst().getChoices().get(0).getMessage()
-                                .getContent();
+                // OpenAiEndpoint userChat = new OpenAiEndpoint(
+                // EndpointConstants.OPENAI_CHAT_COMPLETION_API,
+                // OPENAI_AUTH_KEY,
+                // OPENAI_ORG_ID,
+                // "gpt-3.5-turbo-0613",
+                // messages,
+                // 0.7,
+                // functions,
+                // "auto");
+                // String gptResponse =
+                // userChat.getChatCompletion("").blockingFirst().getChoices().get(0).getMessage()
+                // .getContent();
 
-                System.out.println(gptResponse);
-                return gptResponse;
+                // System.out.println(gptResponse);
+                // return gptResponse;
+                return "";
         }
 
 }
