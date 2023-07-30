@@ -27,7 +27,10 @@ public class RedisConfiguration {
   @Lazy
   public JedisPooled jedisPooled() {
     return new JedisPooled(
-        env.getProperty("redis.url"), Integer.parseInt(env.getProperty("redis.port")), env.getProperty("redis.username"), env.getProperty("redis.password"));
+        env.getProperty("redis.url"),
+        Integer.parseInt(env.getProperty("redis.port")),
+        env.getProperty("redis.username"),
+        env.getProperty("redis.password"));
   }
 
   @Bean
@@ -37,9 +40,9 @@ public class RedisConfiguration {
     RedisStandaloneConfiguration redisConfiguration = new RedisStandaloneConfiguration();
     redisConfiguration.setUsername(env.getProperty("redis.username"));
     redisConfiguration.setPassword(RedisPassword.of(env.getProperty("redis.password")));
-    if(Objects.isNull(env.getProperty("redis.port"))) {
+    if (Objects.isNull(env.getProperty("redis.port"))) {
       redisConfiguration.setPort(6379);
-    }else{
+    } else {
       redisConfiguration.setPort(Integer.parseInt(env.getProperty("redis.port")));
     }
     redisConfiguration.setHostName(env.getProperty("redis.url"));

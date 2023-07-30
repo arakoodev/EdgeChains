@@ -1,7 +1,6 @@
 package com.edgechain.wiki;
 
 import com.edgechain.lib.endpoint.impl.WikiEndpoint;
-import com.edgechain.lib.wiki.client.WikiClient;
 import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
@@ -10,8 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.edgechain.lib.wiki.response.WikiResponse;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -37,8 +34,7 @@ public class WikiControllerTest {
     // Prepare test data
 
     WikiEndpoint wikiEndpoint = new WikiEndpoint();
-    TestObserver<WikiResponse> test =
-        wikiEndpoint.getPageContent("Barack Obama").test();
+    TestObserver<WikiResponse> test = wikiEndpoint.getPageContent("Barack Obama").test();
 
     test.await();
 

@@ -20,24 +20,21 @@ public class PostgresController {
   private PostgresEndpoint postgresEndpoint;
 
   private PostgresEndpoint getInstance() {
-      if( Objects.isNull(postgresEndpoint))
-          return postgresEndpoint = new PostgresEndpoint(new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-      else
-          return postgresEndpoint;
+    if (Objects.isNull(postgresEndpoint))
+      return postgresEndpoint =
+          new PostgresEndpoint(new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    else return postgresEndpoint;
   }
 
-    @DeleteMapping("/deleteAll")
-    public ArkResponse deletePostgres(ArkRequest arkRequest) {
+  @DeleteMapping("/deleteAll")
+  public ArkResponse deletePostgres(ArkRequest arkRequest) {
 
-        String table = arkRequest.getQueryParam("table");
-        String namespace = arkRequest.getQueryParam("namespace");
+    String table = arkRequest.getQueryParam("table");
+    String namespace = arkRequest.getQueryParam("namespace");
 
-        getInstance().setTableName(table);
-        getInstance().setNamespace(namespace);
+    getInstance().setTableName(table);
+    getInstance().setNamespace(namespace);
 
-        return new EdgeChain<>(getInstance().deleteAll()).getArkResponse();
-    }
-
-
+    return new EdgeChain<>(getInstance().deleteAll()).getArkResponse();
+  }
 }

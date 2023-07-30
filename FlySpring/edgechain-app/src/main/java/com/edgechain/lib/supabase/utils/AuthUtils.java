@@ -1,8 +1,6 @@
 package com.edgechain.lib.supabase.utils;
 
 import com.edgechain.lib.request.ArkRequest;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class AuthUtils {
@@ -18,7 +16,4 @@ public class AuthUtils {
     if (header != null && header.startsWith("Bearer")) return header.replace("Bearer ", "");
     return null;
   }
-
-
-
 }

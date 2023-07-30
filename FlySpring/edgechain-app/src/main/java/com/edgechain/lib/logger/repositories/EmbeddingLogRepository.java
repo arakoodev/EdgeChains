@@ -10,6 +10,7 @@ public interface EmbeddingLogRepository extends JpaRepository<EmbeddingLog, Long
 
   @Override
   Page<EmbeddingLog> findAll(@NotNull Pageable pageable);
+
   Page<EmbeddingLog> findAllByOrderByCompletedAtDesc(Pageable pageable);
 
   Page<EmbeddingLog> findAllByModel(String model, Pageable pageable);
@@ -17,8 +18,11 @@ public interface EmbeddingLogRepository extends JpaRepository<EmbeddingLog, Long
   Page<EmbeddingLog> findAllByModelOrderByCompletedAtDesc(String model, Pageable pageable);
 
   Page<EmbeddingLog> findAllByCallIdentifier(String callIdentifier, Pageable pageable);
-  Page<EmbeddingLog> findAllByCallIdentifierOrderByCompletedAtDesc(String callIdentifier, Pageable pageable);
+
+  Page<EmbeddingLog> findAllByCallIdentifierOrderByCompletedAtDesc(
+      String callIdentifier, Pageable pageable);
 
   Page<EmbeddingLog> findAllByLatencyLessThanEqual(long latency, Pageable pageable);
+
   Page<EmbeddingLog> findAllByLatencyGreaterThanEqual(long latency, Pageable pageable);
 }

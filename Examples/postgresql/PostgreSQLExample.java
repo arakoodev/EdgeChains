@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.*;
 @SpringBootApplication
 public class PostgreSQLExample {
 
-  private final static String OPENAI_AUTH_KEY = "";
+  private static final String OPENAI_AUTH_KEY = "";
 
   private static OpenAiEndpoint ada002Embedding;
   private static OpenAiEndpoint gpt3Endpoint;
@@ -56,7 +56,7 @@ public class PostgreSQLExample {
     properties.setProperty("spring.jpa.show-sql", "true");
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
-    //Adding Cors ==> You can configure multiple cors w.r.t your urls.;
+    // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
     properties.setProperty("cors.origins", "http://localhost:4200");
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
@@ -68,13 +68,15 @@ public class PostgreSQLExample {
     new SpringApplicationBuilder(PostgreSQLExample.class).properties(properties).run(args);
 
     // Variables Initialization ==> Endpoints must be intialized in main method...
-    ada002Embedding = new OpenAiEndpoint(
+    ada002Embedding =
+        new OpenAiEndpoint(
             OPENAI_EMBEDDINGS_API,
             OPENAI_AUTH_KEY,
             "text-embedding-ada-002",
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    gpt3Endpoint = new OpenAiEndpoint(
+    gpt3Endpoint =
+        new OpenAiEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             "gpt-3.5-turbo",
@@ -84,34 +86,35 @@ public class PostgreSQLExample {
 
     postgresEndpoint = new PostgresEndpoint(new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
     contextEndpoint = new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
-
   }
-  /** By Default, every API is unauthenticated & exposed without any sort of authentication;
-   * To authenticate, your custom APIs in Controller you would need @PreAuthorize(hasAuthority("")); this will authenticate by JWT having two fields: a) email, b) role
-   * To authenticate, internal APIs related to historyContext & Logging, Delete Redis/Postgres
-   *                           we need to create bean of AuthFilter; you can uncomment the code.
-   * Note, you need to define "jwt.secret" property as well to decode accessToken.
-   */
-//  @Bean
-//  @Primary
-//  public AuthFilter authFilter() {
-//    AuthFilter filter = new AuthFilter();
-//    // new MethodAuthentication(List.of(APIs), roles)
-//    filter.setRequestPost(new MethodAuthentication(List.of("/v1/postgresql/historycontext"), "authenticated")); // define multiple roles by comma
-//    filter.setRequestGet(new MethodAuthentication(List.of(""), ""));
-//    filter.setRequestDelete(new MethodAuthentication(List.of(""), ""));
-//    filter.setRequestPatch(new MethodAuthentication(List.of(""), ""));
-//    filter.setRequestPut(new MethodAuthentication(List.of(""), ""));
-//    return filter;
-//  }
 
+  /**
+   * By Default, every API is unauthenticated & exposed without any sort of authentication; To
+   * authenticate, your custom APIs in Controller you would need @PreAuthorize(hasAuthority(""));
+   * this will authenticate by JWT having two fields: a) email, b) role To authenticate, internal
+   * APIs related to historyContext & Logging, Delete Redis/Postgres we need to create bean of
+   * AuthFilter; you can uncomment the code. Note, you need to define "jwt.secret" property as well
+   * to decode accessToken.
+   */
+  //  @Bean
+  //  @Primary
+  //  public AuthFilter authFilter() {
+  //    AuthFilter filter = new AuthFilter();
+  //    // new MethodAuthentication(List.of(APIs), roles)
+  //    filter.setRequestPost(new MethodAuthentication(List.of("/v1/postgresql/historycontext"),
+  // "authenticated")); // define multiple roles by comma
+  //    filter.setRequestGet(new MethodAuthentication(List.of(""), ""));
+  //    filter.setRequestDelete(new MethodAuthentication(List.of(""), ""));
+  //    filter.setRequestPatch(new MethodAuthentication(List.of(""), ""));
+  //    filter.setRequestPut(new MethodAuthentication(List.of(""), ""));
+  //    return filter;
+  //  }
 
   @RestController
   @RequestMapping("/v1/examples")
   public class PostgreSQLController {
 
     @Autowired private PdfReader pdfReader;
-
 
     // ========== PGVectors ==============
     /**
@@ -132,7 +135,8 @@ public class PostgreSQLExample {
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
-      Retrieval retrieval = new PostgresRetrieval(postgresEndpoint, 1536, ada002Embedding, arkRequest);
+      Retrieval retrieval =
+          new PostgresRetrieval(postgresEndpoint, 1536, ada002Embedding, arkRequest);
       IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
     }
 
@@ -154,11 +158,12 @@ public class PostgreSQLExample {
 
       // Configure JsonnetLoader
       queryLoader
-              .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-              .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
+          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
       return new EdgeChain<>(
-              ada002Embedding.embeddings(query,arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
+              ada002Embedding.embeddings(
+                  query, arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
           .transform(
               embeddings ->
                   new EdgeChain<>(
@@ -181,13 +186,16 @@ public class PostgreSQLExample {
                           "context",
                           new JsonnetArgs(
                               DataType.STRING,
-                              pinecone)) // Step 3: Concatenate the Prompt: ${Base Prompt} - ${Pinecone Output}
+                              pinecone)) // Step 3: Concatenate the Prompt: ${Base Prompt} -
+                                         // ${Pinecone Output}
                       .loadOrReload();
                   // Step 4: Now, pass the prompt to OpenAI ChatCompletion & Add it to the list
                   // which will be returned
                   resp.add(
                       EdgeChain.fromObservable(
-                              gpt3Endpoint.chatCompletion(queryLoader.get("prompt"), "PostgresQueryChain", arkRequest)).get()); // You can use both new EdgeChain<>() or
+                              gpt3Endpoint.chatCompletion(
+                                  queryLoader.get("prompt"), "PostgresQueryChain", arkRequest))
+                          .get()); // You can use both new EdgeChain<>() or
                   // EdgeChain.fromObservable()
                   // Wrap the Observable & get the data in a blocking way... Pass the concatenated
                   // prompt to ChatCompletion..
@@ -213,11 +221,11 @@ public class PostgreSQLExample {
 
       // Configure JsonnetLoader
       chatLoader
-              .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-              .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
-              .put("query", new JsonnetArgs(DataType.STRING, query))
-              .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "false"))
-              .loadOrReload();
+          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
+          .put("query", new JsonnetArgs(DataType.STRING, query))
+          .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "false"))
+          .loadOrReload();
 
       // Configure PostgresEndpoint
       postgresEndpoint.setTableName(table);
@@ -231,7 +239,8 @@ public class PostgreSQLExample {
       int topK = chatLoader.getInt("topK");
 
       return new EdgeChain<>(
-              ada002Embedding.embeddings(query,arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
+              ada002Embedding.embeddings(
+                  query, arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
           .transform(
               embeddings ->
                   EdgeChain.fromObservable(
@@ -275,7 +284,10 @@ public class PostgreSQLExample {
 
                 StringBuilder openAiResponseBuilder = new StringBuilder();
                 return gpt3Endpoint
-                    .chatCompletion(chatLoader.get("prompt"), "PostgresChatChain",arkRequest) // Pass the concatenated prompt to JsonnetLoader
+                    .chatCompletion(
+                        chatLoader.get("prompt"),
+                        "PostgresChatChain",
+                        arkRequest) // Pass the concatenated prompt to JsonnetLoader
                     /**
                      * Here is the interesting part; So, with ChatCompletion Stream we will have
                      * streaming Therefore, we create a StringBuilder to append the response as we
@@ -333,7 +345,5 @@ public class PostgreSQLExample {
               })
           .getArkResponse();
     }
-
-
   }
 }

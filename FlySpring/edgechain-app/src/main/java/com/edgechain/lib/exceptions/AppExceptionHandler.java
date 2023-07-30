@@ -42,9 +42,9 @@ public class AppExceptionHandler {
 
   @ExceptionHandler(value = {DataIntegrityViolationException.class})
   public ResponseEntity<Object> handleDataIntegrityViolationException(
-          DataIntegrityViolationException ex) {
+      DataIntegrityViolationException ex) {
     ErrorResponse response =
-            new ErrorResponse((Objects.requireNonNull(ex.getRootCause()).getMessage()));
+        new ErrorResponse((Objects.requireNonNull(ex.getRootCause()).getMessage()));
     return new ResponseEntity<>(response, new HttpHeaders(), HttpStatus.BAD_REQUEST);
   }
 }

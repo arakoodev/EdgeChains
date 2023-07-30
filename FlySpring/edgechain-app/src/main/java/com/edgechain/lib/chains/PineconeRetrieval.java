@@ -19,17 +19,18 @@ public class PineconeRetrieval extends Retrieval {
   private final ArkRequest arkRequest;
   private OpenAiEndpoint openAiEndpoint;
 
-
   private Doc2VecEndpoint doc2VecEndpoint;
 
-  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint, OpenAiEndpoint openAiEndpoint, ArkRequest arkRequest) {
+  public PineconeRetrieval(
+      PineconeEndpoint pineconeEndpoint, OpenAiEndpoint openAiEndpoint, ArkRequest arkRequest) {
     this.pineconeEndpoint = pineconeEndpoint;
     this.openAiEndpoint = openAiEndpoint;
     this.arkRequest = arkRequest;
     logger.info("Using OpenAI Embedding Service");
   }
 
-  public PineconeRetrieval(PineconeEndpoint pineconeEndpoint, Doc2VecEndpoint doc2VecEndpoint, ArkRequest arkRequest) {
+  public PineconeRetrieval(
+      PineconeEndpoint pineconeEndpoint, Doc2VecEndpoint doc2VecEndpoint, ArkRequest arkRequest) {
     this.pineconeEndpoint = pineconeEndpoint;
     this.doc2VecEndpoint = doc2VecEndpoint;
     this.arkRequest = arkRequest;
@@ -42,7 +43,7 @@ public class PineconeRetrieval extends Retrieval {
     if (Objects.nonNull(openAiEndpoint)) {
       new EdgeChain<>(
               this.openAiEndpoint
-                  .embeddings(input,arkRequest)
+                  .embeddings(input, arkRequest)
                   .map(w -> this.pineconeEndpoint.upsert(w))
                   .firstOrError()
                   .blockingGet())

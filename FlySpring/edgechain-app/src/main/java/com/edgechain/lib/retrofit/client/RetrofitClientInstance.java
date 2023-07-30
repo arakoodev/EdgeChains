@@ -17,13 +17,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
-import scala.App;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -34,16 +30,23 @@ public class RetrofitClientInstance {
 
   private static final String BASE_URL = "http://0.0.0.0";
 
-  private static SecurityUUID securityUUID = ApplicationContextHolder.getContext().getBean(SecurityUUID.class);
+  private static SecurityUUID securityUUID =
+      ApplicationContextHolder.getContext().getBean(SecurityUUID.class);
 
   private static Retrofit retrofit;
 
   public static Retrofit getInstance() {
     if (retrofit == null) {
 
-        return retrofit =
+      return retrofit =
           new Retrofit.Builder()
-              .baseUrl(BASE_URL + ":" + System.getProperty("server.port") + "" + WebConfiguration.CONTEXT_PATH +"/")
+              .baseUrl(
+                  BASE_URL
+                      + ":"
+                      + System.getProperty("server.port")
+                      + ""
+                      + WebConfiguration.CONTEXT_PATH
+                      + "/")
               .addConverterFactory(JacksonBuilder())
               .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
               .client(
@@ -71,10 +74,9 @@ public class RetrofitClientInstance {
                               // Convert JSON string into a map
                               Map<String, String> map = gson.fromJson(body, type);
 
-                              if( Objects.nonNull(map)){
-                                  errorMessage = map.toString();
+                              if (Objects.nonNull(map)) {
+                                errorMessage = map.toString();
                               }
-
                             }
 
                             return response

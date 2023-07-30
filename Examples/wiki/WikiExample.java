@@ -16,19 +16,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
-import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
 @SpringBootApplication
-public class WikiExample  {
+public class WikiExample {
 
   private static final String OPENAI_AUTH_KEY = "";
 
@@ -44,7 +40,7 @@ public class WikiExample  {
     // Optional, for logging SQL queries (shouldn't be used in prod)
     Properties properties = new Properties();
 
-    //Adding Cors ==> You can configure multiple cors w.r.t your urls.;
+    // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
     properties.setProperty("cors.origins", "http://localhost:4200");
 
     properties.setProperty("spring.jpa.show-sql", "true");
@@ -57,16 +53,15 @@ public class WikiExample  {
     new SpringApplicationBuilder(WikiExample.class).properties(properties).run(args);
 
     gpt4Endpoint =
-            new OpenAiEndpoint(
-                    OPENAI_CHAT_COMPLETION_API,
-                    OPENAI_AUTH_KEY,
-                    "gpt-4",
-                    "user",
-                    0.7,
-                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-4",
+            "user",
+            0.7,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     wikiEndpoint = new WikiEndpoint();
-
   }
 
   @RestController
@@ -87,13 +82,14 @@ public class WikiExample  {
       String query = arkRequest.getQueryParam("query");
       boolean stream = arkRequest.getBooleanHeader("stream");
 
-      //configure GPT4Endpoint
+      // configure GPT4Endpoint
       gpt4Endpoint.setStream(stream);
 
       // Step 1: Create JsonnetLoader to Load JsonnetFile & Pass Args To Jsonnet
 
-              loader.put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-              .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
+      loader
+          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
       return new EdgeChain<>(wikiEndpoint.getPageContent(query))
           .transform(
@@ -109,9 +105,8 @@ public class WikiExample  {
 
                 return loader.get("prompt");
               })
-          .transform(prompt -> gpt4Endpoint.chatCompletion(prompt,"WikiChain", arkRequest))
+          .transform(prompt -> gpt4Endpoint.chatCompletion(prompt, "WikiChain", arkRequest))
           .getArkResponse();
     }
-
   }
 }

@@ -12,7 +12,8 @@ import picocli.CommandLine.Parameters;
 @Command(
     name = "jbang",
     description =
-        "Activate jbang through the jar placed in resources. Ignore if your application is executed.")
+        "Activate jbang through the jar placed in resources. Ignore if your application is"
+            + " executed.")
 public class JbangCommand implements Runnable {
 
   @Parameters(description = "Java file to be executed with jbang")

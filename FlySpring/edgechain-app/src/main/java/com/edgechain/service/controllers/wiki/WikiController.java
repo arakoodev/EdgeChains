@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.*;
 public class WikiController {
 
   @PostMapping(
-          value = "/page-content",
-          consumes = {MediaType.APPLICATION_JSON_VALUE},
-          produces = {MediaType.APPLICATION_JSON_VALUE})
+      value = "/page-content",
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   public Single<WikiResponse> wikiContent(@RequestBody WikiEndpoint wikiEndpoint) {
     EdgeChain<WikiResponse> edgeChain =
-            new WikiClient(wikiEndpoint).getPageContent(wikiEndpoint.getInput());
+        new WikiClient(wikiEndpoint).getPageContent(wikiEndpoint.getInput());
     return edgeChain.toSingle();
   }
 }

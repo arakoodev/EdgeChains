@@ -36,28 +36,32 @@ public class ChatCompletionLogService {
   }
 
   @Transactional(readOnly = true)
-  public Page<ChatCompletionLog> findAllByNameOrderByCompletedAtDesc(String name, Pageable pageable) {
+  public Page<ChatCompletionLog> findAllByNameOrderByCompletedAtDesc(
+      String name, Pageable pageable) {
     return this.chatCompletionLogRepository.findAllByNameOrderByCompletedAtDesc(name, pageable);
   }
 
   @Transactional(readOnly = true)
-  public  Page<ChatCompletionLog> findAllByModel(String model, Pageable pageable) {
+  public Page<ChatCompletionLog> findAllByModel(String model, Pageable pageable) {
     return this.chatCompletionLogRepository.findAllByModel(model, pageable);
   }
 
   @Transactional(readOnly = true)
-  public Page<ChatCompletionLog> findAllByModelOrderByCompletedAtDesc(String model, Pageable pageable) {
+  public Page<ChatCompletionLog> findAllByModelOrderByCompletedAtDesc(
+      String model, Pageable pageable) {
     return this.chatCompletionLogRepository.findAllByModelOrderByCompletedAtDesc(model, pageable);
   }
 
   @Transactional(readOnly = true)
   public Page<ChatCompletionLog> findAllByCallIdentifier(String callIdentifier, Pageable pageable) {
-    return this.chatCompletionLogRepository.findAllByCallIdentifier(callIdentifier,pageable);
+    return this.chatCompletionLogRepository.findAllByCallIdentifier(callIdentifier, pageable);
   }
 
   @Transactional(readOnly = true)
-  public Page<ChatCompletionLog> findAllByCallIdentifierOrderByCompletedAtDesc(String callIdentifier, Pageable pageable) {
-    return this.chatCompletionLogRepository.findAllByCallIdentifierOrderByCompletedAtDesc(callIdentifier, pageable);
+  public Page<ChatCompletionLog> findAllByCallIdentifierOrderByCompletedAtDesc(
+      String callIdentifier, Pageable pageable) {
+    return this.chatCompletionLogRepository.findAllByCallIdentifierOrderByCompletedAtDesc(
+        callIdentifier, pageable);
   }
 
   @Transactional(readOnly = true)

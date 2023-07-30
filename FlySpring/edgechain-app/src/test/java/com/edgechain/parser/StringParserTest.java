@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.edgechain.lib.openai.parser.StringParser;
-import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
 public class StringParserTest {

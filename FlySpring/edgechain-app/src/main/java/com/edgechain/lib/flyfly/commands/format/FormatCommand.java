@@ -14,8 +14,7 @@ public class FormatCommand implements Runnable {
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   @Autowired Formatter formatter;
-  @Autowired
-  ProjectTypeChecker projectTypeChecker;
+  @Autowired ProjectTypeChecker projectTypeChecker;
 
   @Override
   public void run() {
