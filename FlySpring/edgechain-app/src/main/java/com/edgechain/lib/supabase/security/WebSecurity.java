@@ -65,7 +65,6 @@ public class WebSecurity {
               try {
                 auth.requestMatchers(""+ WebConfiguration.CONTEXT_PATH+"/**").permitAll()
 
-
                         .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests())
                         .hasAnyAuthority(authFilter.getRequestPost().getAuthorities())
 //
@@ -73,13 +72,13 @@ public class WebSecurity {
                         .hasAnyAuthority(authFilter.getRequestGet().getAuthorities())
 
                         .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
-                        .hasAnyAuthority(authFilter.getRequestGet().getAuthorities())
+                        .hasAnyAuthority(authFilter.getRequestDelete().getAuthorities())
 
                         .requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
-                        .hasAnyAuthority(authFilter.getRequestGet().getAuthorities())
+                        .hasAnyAuthority(authFilter.getRequestPut().getAuthorities())
 
                         .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
-                        .hasAnyAuthority(authFilter.getRequestGet().getAuthorities())
+                        .hasAnyAuthority(authFilter.getRequestPatch().getAuthorities())
 
                         .anyRequest().permitAll();
 
