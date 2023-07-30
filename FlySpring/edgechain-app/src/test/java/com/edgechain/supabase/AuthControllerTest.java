@@ -32,6 +32,7 @@ import com.edgechain.lib.supabase.response.SupabaseUser;
 import com.edgechain.lib.supabase.services.SupabaseAuthService;
 import com.edgechain.lib.supabase.services.impl.UserServiceImpl;
 import com.edgechain.service.controllers.supabase.SupabaseController;
+import org.springframework.test.context.ContextConfiguration;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest

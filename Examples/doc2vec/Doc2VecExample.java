@@ -1,10 +1,8 @@
 package com.edgechain;
 
+
 import com.edgechain.lib.chains.RedisRetrieval;
 import com.edgechain.lib.chains.Retrieval;
-import com.edgechain.lib.configuration.domain.CorsEnableOrigins;
-import com.edgechain.lib.configuration.domain.ExcludeMappingFilter;
-import com.edgechain.lib.configuration.domain.RedisEnv;
 import com.edgechain.lib.embeddings.request.Doc2VecRequest;
 import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
 import com.edgechain.lib.endpoint.impl.RedisEndpoint;
@@ -25,57 +23,34 @@ import java.util.stream.IntStream;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication
 public class Doc2VecExample {
 
+  private static Doc2VecEndpoint doc2VecEndpoint;
+  private static RedisEndpoint redisEndpoint;
+
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
-    SpringApplication.run(Doc2VecExample.class, args);
+    Properties properties = new Properties();
+
+    properties.setProperty("redis.url", "");
+    properties.setProperty("redis.port","");
+    properties.setProperty("redis.username", "default");
+    properties.setProperty("redis.password", "");
+    properties.setProperty("redis.ttl", "3600");
+
+    new SpringApplicationBuilder(Doc2VecExample.class).properties(properties).run(args);
+
+    doc2VecEndpoint = new Doc2VecEndpoint();
+    redisEndpoint = new RedisEndpoint(new ExponentialDelay(3,3,2,TimeUnit.SECONDS));
+
   }
 
-  // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
-  @Bean
-  @Primary
-  public CorsEnableOrigins corsEnableOrigins() {
-    CorsEnableOrigins origins = new CorsEnableOrigins();
-    origins.setOrigins(Arrays.asList("http://localhost:4200", "http://localhost:4201"));
-    return origins;
-  }
-
-  /* Optional (not required if you are not using Redis), always create bean with @Primary annotation */
-  @Bean
-  @Primary
-  public RedisEnv redisEnv() {
-    RedisEnv redisEnv = new RedisEnv();
-    redisEnv.setUrl("");
-    redisEnv.setPort(12285);
-    redisEnv.setUsername("default");
-    redisEnv.setPassword("");
-    redisEnv.setTtl(3600); // Configuring ttl for HistoryContext;
-    return redisEnv;
-  }
-
-  /**
-   * Optional, Create it to exclude api calls from filtering; otherwise API calls will filter via
-   * ROLE_BASE access *
-   */
-  @Bean
-  @Primary
-  public ExcludeMappingFilter mappingFilter() {
-    ExcludeMappingFilter mappingFilter = new ExcludeMappingFilter();
-    mappingFilter.setRequestPost(List.of("/v1/examples/**"));
-    mappingFilter.setRequestGet(List.of("/v1/examples/**"));
-    mappingFilter.setRequestDelete(List.of("/v1/examples/**"));
-    mappingFilter.setRequestPut(List.of("/v1/examples/**"));
-    return mappingFilter;
-  }
 
   @RestController
   @RequestMapping("/v1/examples")
@@ -101,8 +76,8 @@ public class Doc2VecExample {
       doc2Vec.setBatchSize(15);
       doc2Vec.setWindowSize(3);
 
-      Doc2VecEndpoint endpoint = new Doc2VecEndpoint();
-      EdgeChain.fromObservable(endpoint.build(doc2Vec))
+
+      EdgeChain.fromObservable(doc2VecEndpoint.build(doc2Vec))
           .execute(); // Executing/Subscribing to Observable....
       // (Model has now started building; do check the console)
 
@@ -115,21 +90,19 @@ public class Doc2VecExample {
       String namespace = arkRequest.getQueryParam("namespace");
       InputStream file = arkRequest.getMultiPart("file").getInputStream();
 
-      RedisEndpoint redisEndpoint =
-          new RedisEndpoint(
-              "doc2vec_index", namespace, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+      redisEndpoint.setIndexName("doc2vec_index");
+      redisEndpoint.setNamespace(namespace);
 
       // Remember model is loaded once (this is just for example)
       ParagraphVectors paragraphVectors =
           WordVectorSerializer.readParagraphVectors(
               new FileInputStream("R:\\Github\\doc_vector.bin"));
 
-      Doc2VecEndpoint embeddingEndpoint = new Doc2VecEndpoint(paragraphVectors);
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
       Retrieval retrieval =
-          new RedisRetrieval(redisEndpoint, embeddingEndpoint, 1536, RedisDistanceMetric.COSINE);
+          new RedisRetrieval(redisEndpoint, doc2VecEndpoint, 1536, RedisDistanceMetric.COSINE,arkRequest);
       IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
     }
 
@@ -144,19 +117,17 @@ public class Doc2VecExample {
       int topK = arkRequest.getIntQueryParam("topK");
 
       // Redis Searches by indexName.
-      RedisEndpoint redisEndpoint =
-          new RedisEndpoint(
-              "doc2vec_index", namespace, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+      redisEndpoint.setIndexName("doc2vec_index");
+      redisEndpoint.setNamespace(namespace);
 
       // Remember model is loaded once (this is just for example)
       ParagraphVectors paragraphVectors =
           WordVectorSerializer.readParagraphVectors(
               new FileInputStream("R:\\Github\\doc_vector.bin"));
 
-      Doc2VecEndpoint embeddingEndpoint = new Doc2VecEndpoint(paragraphVectors);
 
       return new EdgeChain<>(
-              embeddingEndpoint.getEmbeddings(
+              doc2VecEndpoint.embeddings(
                   query)) // Step 1: Generate embedding using OpenAI for provided input
           .transform(
               embeddings ->
@@ -171,7 +142,6 @@ public class Doc2VecExample {
     // keys start with machine-learning namespace
     public void deleteRedis(ArkRequest arkRequest) {
       String patternName = arkRequest.getQueryParam("pattern");
-      RedisEndpoint redisEndpoint = new RedisEndpoint();
       redisEndpoint.delete(patternName);
     }
   }

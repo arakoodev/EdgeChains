@@ -21,8 +21,10 @@ public class ProjectRunner {
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
+
   @Autowired TestContainersStarter testContainersStarter;
-  @Autowired ProjectSetup projectSetup;
+  @Autowired
+  ProjectSetup projectSetup;
 
   Process runningProcess;
   WatchService filesWatcher;
@@ -83,9 +85,10 @@ public class ProjectRunner {
 
   void checkAndConfigureServices() throws IOException {
     log.info("Checking if services are needed");
-    //    Set<String> supportedDBGroupIds =
-    //        Set.of("mysql", "com.mysql", "org.postgresql", "org.mariadb.jdbc");
-    Set<String> supportedDBGroupIds = Set.of("org.postgresql");
+//    Set<String> supportedDBGroupIds =
+//        Set.of("mysql", "com.mysql", "org.postgresql", "org.mariadb.jdbc");
+    Set<String> supportedDBGroupIds =
+            Set.of( "org.postgresql");
     BufferedReader reader = new BufferedReader(new FileReader("build.gradle"));
     String line;
     while ((line = reader.readLine()) != null) {
@@ -99,9 +102,9 @@ public class ProjectRunner {
             if (!testContainersStarter.isServiesNeeded()) break;
             log.info("Found : " + groupID);
             switch (groupID) {
-                //              case "mysql", "com.mysql" -> testContainersStarter.startMySQL();
+//              case "mysql", "com.mysql" -> testContainersStarter.startMySQL();
               case "org.postgresql" -> testContainersStarter.startPostgreSQL();
-                //              case "org.mariadb.jdbc" -> testContainersStarter.startMariaDB();
+//              case "org.mariadb.jdbc" -> testContainersStarter.startMariaDB();
             }
             break;
           }

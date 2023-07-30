@@ -2,8 +2,8 @@ package com.edgechain.lib.supabase.services;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
-import com.edgechain.lib.configuration.domain.SupabaseEnv;
 import com.edgechain.lib.supabase.exceptions.SupabaseAuthException;
 import com.edgechain.lib.supabase.request.Credential;
 import com.edgechain.lib.supabase.response.AuthenticatedResponse;
@@ -11,6 +11,7 @@ import com.edgechain.lib.supabase.response.SupabaseUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -24,7 +25,8 @@ public class SupabaseAuthService {
 
   @Autowired private RestTemplate restTemplate;
 
-  @Autowired private SupabaseEnv supabaseEnv;
+  @Autowired
+  private Environment env;
 
   public SupabaseUser signUpWithEmail(Credential credential) {
     try {
@@ -130,12 +132,12 @@ public class SupabaseAuthService {
   private HttpHeaders setHeaders() {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    headers.set("apikey", this.supabaseEnv.getAnnonKey());
+    headers.set("apikey", env.getProperty("supabase.annon.key"));
     headers.set("X-Client-Info", "supabase-java/0.0.0-automated");
     return headers;
   }
 
   private String setPath() {
-    return this.supabaseEnv.getUrl() + AUTH_MAPPING;
+    return env.getProperty("supabase.url") + AUTH_MAPPING;
   }
 }

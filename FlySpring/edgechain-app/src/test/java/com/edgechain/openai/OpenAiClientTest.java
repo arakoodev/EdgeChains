@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,18 +26,13 @@ import java.util.concurrent.TimeUnit;
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class OpenAiClientTest {
 
-  @LocalServerPort int randomServerPort;
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  @BeforeEach
-  public void setup() {
-    System.setProperty("server.port", "" + randomServerPort);
-  }
 
   @ParameterizedTest
   @ValueSource(classes = {ChatCompletionRequest.class})
@@ -107,7 +102,12 @@ public class OpenAiClientTest {
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     TestObserver<ChatCompletionResponse> test =
-        endpoint.getChatCompletion("Can you write two unique sentences on Java Language?").test();
+        endpoint
+            .chatCompletion(
+                "Can you write two unique sentences on Java Language?",
+                "TestChain",
+                null)
+            .test();
 
     // Step 4: To act & assert
     test.await();
@@ -136,7 +136,12 @@ public class OpenAiClientTest {
             false);
 
     TestObserver<ChatCompletionResponse> test =
-        endpoint.getChatCompletion("Can you write two unique sentences on Java Language?").test();
+        endpoint
+            .chatCompletion(
+                "Can you write two unique sentences on Java Language?",
+                "TestChain",
+                null)
+            .test();
 
     // Step 4: To act & assert
     test.await();

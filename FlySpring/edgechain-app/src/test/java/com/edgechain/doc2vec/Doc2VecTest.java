@@ -16,7 +16,7 @@ import com.edgechain.lib.response.StringResponse;
 
 import java.io.File;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class Doc2VecTest {
 
   @LocalServerPort int randomServerPort;

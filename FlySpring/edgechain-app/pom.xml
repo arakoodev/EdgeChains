@@ -234,6 +234,12 @@
             <version>0.4.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.knuddels</groupId>
+            <artifactId>jtokkit</artifactId>
+            <version>0.6.1</version>
+        </dependency>
+
         <!-- flyfly -->
         <dependency>
             <groupId>info.picocli</groupId>
@@ -264,12 +270,18 @@
             <artifactId>postgresql</artifactId>
         </dependency>
 
+
+        <dependency>
+            <groupId>com.danielflower.apprunner</groupId>
+            <artifactId>javasysmon</artifactId>
+            <version>0.3.5.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
 
     </dependencies>
 

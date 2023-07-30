@@ -1,5 +1,6 @@
 package com.edgechain.service.controllers.index;
 
+import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
 import com.edgechain.lib.index.client.impl.PineconeClient;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController("Service PineconeController")
-@RequestMapping(value = "/v2/index/pinecone")
+@RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/pinecone")
 public class PineconeController {
 
   @PostMapping("/upsert")
