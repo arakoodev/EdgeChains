@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.edgechain.lib.openai.plugin.parser.PluginParser;
+import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
 public class PluginParserTest {

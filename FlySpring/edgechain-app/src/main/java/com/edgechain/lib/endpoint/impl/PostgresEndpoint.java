@@ -29,6 +29,10 @@ public class PostgresEndpoint extends Endpoint {
 
   public PostgresEndpoint() {}
 
+  public PostgresEndpoint(RetryPolicy retryPolicy) {
+    super(retryPolicy);
+  }
+
   public PostgresEndpoint(String tableName, String namespace) {
     this.tableName = tableName;
     this.namespace = namespace;

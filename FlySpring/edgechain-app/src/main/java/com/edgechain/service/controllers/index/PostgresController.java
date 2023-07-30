@@ -1,5 +1,6 @@
 package com.edgechain.service.controllers.index;
 
+import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.client.impl.PostgresClient;
@@ -10,7 +11,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 @RestController("Service PostgresController")
-@RequestMapping(value = "/v2/index/postgres")
+@RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/postgres")
 public class PostgresController {
 
   @PostMapping("/upsert")

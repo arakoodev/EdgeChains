@@ -19,7 +19,10 @@ public class WikiClient {
 
   private static final String WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php";
 
-  private final WikiEndpoint wikiEndpoint;
+  private  WikiEndpoint wikiEndpoint;
+
+  public WikiClient() {
+  }
 
   public WikiClient(WikiEndpoint wikiEndpoint) {
     this.wikiEndpoint = wikiEndpoint;
@@ -67,7 +70,7 @@ public class WikiClient {
                   }
                 }
 
-                if (Objects.isNull(output)) output = "";
+                if (Objects.isNull(output)) throw new RuntimeException("Unable to find content from Wiki.");
 
                 emitter.onNext(new WikiResponse(output));
                 emitter.onComplete();

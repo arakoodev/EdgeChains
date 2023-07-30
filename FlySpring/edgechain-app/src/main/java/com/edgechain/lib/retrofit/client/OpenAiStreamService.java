@@ -1,5 +1,6 @@
 package com.edgechain.lib.retrofit.client;
 
+import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.configuration.domain.SecurityUUID;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
@@ -8,6 +9,7 @@ import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,7 +20,8 @@ public class OpenAiStreamService {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  @Autowired private SecurityUUID securityUUID;
+  @Autowired
+  private SecurityUUID securityUUID;
 
   public Observable<ChatCompletionResponse> chatCompletion(OpenAiEndpoint openAiEndpoint) {
 
@@ -33,7 +36,7 @@ public class OpenAiStreamService {
                 "http://0.0.0.0"
                     + ":"
                     + System.getProperty("server.port")
-                    + "/v2"
+                    + ""+WebConfiguration.CONTEXT_PATH
                     + "/openai/chat-completion-stream")
             .headers(
                 httpHeaders -> {

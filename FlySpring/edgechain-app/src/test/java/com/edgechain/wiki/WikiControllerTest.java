@@ -1,32 +1,29 @@
 package com.edgechain.wiki;
 
+import com.edgechain.lib.endpoint.impl.WikiEndpoint;
+import com.edgechain.lib.wiki.client.WikiClient;
 import io.reactivex.rxjava3.observers.TestObserver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
-import com.edgechain.lib.endpoint.impl.WikiEndpoint;
 import com.edgechain.lib.wiki.response.WikiResponse;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class WikiControllerTest {
 
-  @LocalServerPort int randomServerPort;
+  @LocalServerPort private int port;
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @BeforeEach
   public void setup() {
-    System.setProperty("server.port", "" + randomServerPort);
+    System.setProperty("server.port", "" + port);
   }
 
   @Test
@@ -38,9 +35,10 @@ public class WikiControllerTest {
     logger.info("======== " + testInfo.getDisplayName() + " ========");
 
     // Prepare test data
-    WikiEndpoint wikiEndpoint = new WikiEndpoint();
 
-    TestObserver<WikiResponse> test = wikiEndpoint.getPageContent("Barack Obama").test();
+    WikiEndpoint wikiEndpoint = new WikiEndpoint();
+    TestObserver<WikiResponse> test =
+        wikiEndpoint.getPageContent("Barack Obama").test();
 
     test.await();
 

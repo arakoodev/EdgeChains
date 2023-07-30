@@ -1,12 +1,13 @@
 package com.edgechain.lib.supabase.security;
 
-import com.edgechain.lib.configuration.domain.CorsEnableOrigins;
-import com.edgechain.lib.configuration.domain.ExcludeMappingFilter;
+import com.edgechain.lib.configuration.WebConfiguration;
+import com.edgechain.lib.configuration.domain.AuthFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -25,16 +26,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 @EnableWebSecurity
 @EnableMethodSecurity
 @Configuration
 public class WebSecurity {
 
-  @Autowired private ExcludeMappingFilter mappingFilter;
+
+  @Autowired private Environment env;
+  @Autowired private AuthFilter authFilter;
   @Autowired private JwtFilter jwtFilter;
 
-  @Autowired private CorsEnableOrigins corsEnableOrigins;
 
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
@@ -50,6 +53,8 @@ public class WebSecurity {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+
+
     return http.cors()
         .configurationSource(corsConfiguration())
         .and()
@@ -58,20 +63,25 @@ public class WebSecurity {
         .authorizeHttpRequests(
             (auth) -> {
               try {
-                auth.requestMatchers("/v2/**")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.POST, mappingFilter.getRequestPost())
-                    .permitAll()
-                    .requestMatchers(HttpMethod.GET, mappingFilter.getRequestGet())
-                    .permitAll()
-                    .requestMatchers(HttpMethod.DELETE, mappingFilter.getRequestDelete())
-                    .permitAll()
-                    .requestMatchers(HttpMethod.PUT, mappingFilter.getRequestPut())
-                    .permitAll()
-                    .requestMatchers(HttpMethod.PATCH, mappingFilter.getRequestPatch())
-                    .permitAll()
-                    .anyRequest()
-                    .authenticated();
+                auth.requestMatchers(""+ WebConfiguration.CONTEXT_PATH+"/**").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests())
+                        .hasAnyAuthority(authFilter.getRequestPost().getAuthorities())
+//
+                        .requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests())
+                        .hasAnyAuthority(authFilter.getRequestGet().getAuthorities())
+
+                        .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
+                        .hasAnyAuthority(authFilter.getRequestDelete().getAuthorities())
+
+                        .requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
+                        .hasAnyAuthority(authFilter.getRequestPut().getAuthorities())
+
+                        .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
+                        .hasAnyAuthority(authFilter.getRequestPatch().getAuthorities())
+
+                        .anyRequest().permitAll();
+
               } catch (Exception e) {
                 throw new RuntimeException(e);
               }
@@ -92,8 +102,15 @@ public class WebSecurity {
   @Bean
   public CorsConfigurationSource corsConfiguration() {
 
+
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(corsEnableOrigins.getOrigins());
+
+    String cors = env.getProperty("cors.origins");
+
+    if(Objects.nonNull(cors) && !cors.isEmpty()) {
+      configuration.setAllowedOrigins(Arrays.stream(cors.split(",")).toList());
+    }
+
     configuration.setAllowCredentials(true);
     configuration.setAllowedMethods(
         Arrays.asList("GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE", "HEAD"));
