@@ -15,38 +15,38 @@ import java.util.concurrent.TimeUnit;
 @RestController("App RedisHistoryContextController")
 @RequestMapping("/v1/redis/historycontext")
 public class RedisHistoryContextController {
-    private RedisHistoryContextEndpoint endpoint;
+  private RedisHistoryContextEndpoint endpoint;
 
-    private RedisHistoryContextEndpoint getInstance() {
-        if( Objects.isNull(endpoint))
-          return  endpoint = new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+  private RedisHistoryContextEndpoint getInstance() {
+    if (Objects.isNull(endpoint))
+      return endpoint = new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
+    else return endpoint;
+  }
 
-        else
-            return endpoint;
-    }
+  @PostMapping
+  public ArkResponse createRedisHistoryContext(
+      @RequestParam(value = "id", defaultValue = "initialValue") String id) {
+    if (id.equals("initialValue"))
+      return new ArkResponse(
+          getInstance().create(UUID.randomUUID().toString())); // Here randomId is generated.
+    else return new ArkResponse(getInstance().create(id));
+  }
 
-    @PostMapping
-    public ArkResponse createRedisHistoryContext(@RequestParam(value = "id", defaultValue = "initialValue") String id) {
-        if(id.equals("initialValue")) return new ArkResponse(getInstance().create(UUID.randomUUID().toString()));// Here randomId is generated.
-        else return new ArkResponse(getInstance().create(id));
-    }
+  @PutMapping
+  public ArkResponse putRedisHistoryContext(ArkRequest arkRequest) throws IOException {
+    JSONObject json = arkRequest.getBody();
+    return new ArkResponse(getInstance().put(json.getString("id"), json.getString("response")));
+  }
 
-    @PutMapping
-    public ArkResponse putRedisHistoryContext(ArkRequest arkRequest) throws IOException {
-        JSONObject json = arkRequest.getBody();
-        return new ArkResponse(getInstance().put(json.getString("id"), json.getString("response")));
-    }
+  @GetMapping
+  public ArkResponse getRedisHistoryContext(ArkRequest arkRequest) {
+    String id = arkRequest.getQueryParam("id");
+    return new ArkResponse(getInstance().get(id));
+  }
 
-    @GetMapping
-    public ArkResponse getRedisHistoryContext(ArkRequest arkRequest) {
-        String id = arkRequest.getQueryParam("id");
-        return new ArkResponse(getInstance().get(id));
-    }
-
-    @DeleteMapping
-    public void deleteRedisHistoryContext(ArkRequest arkRequest) {
-        String id = arkRequest.getQueryParam("id");
-        getInstance().delete(id);
-    }
-
+  @DeleteMapping
+  public void deleteRedisHistoryContext(ArkRequest arkRequest) {
+    String id = arkRequest.getQueryParam("id");
+    getInstance().delete(id);
+  }
 }

@@ -16,11 +16,9 @@ import java.time.LocalDateTime;
 @Table(name = "history_context")
 public class HistoryContext implements Serializable {
 
-  @Transient
-  private static final long serialVersionUID = 2819947915596690671L;
+  @Transient private static final long serialVersionUID = 2819947915596690671L;
 
-  @Id
-  private String id;
+  @Id private String id;
   private String response;
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)

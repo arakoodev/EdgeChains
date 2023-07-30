@@ -1,5 +1,3 @@
-
-
 package com.edgechain.lib.retrofit.utils;
 
 import java.io.IOException;
@@ -19,18 +17,19 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.springframework.data.domain.Sort;
 
 /**
- * This class provides provides support for serializing and deserializing for Spring
- * {@link Sort} object.
+ * This class provides provides support for serializing and deserializing for Spring {@link Sort}
+ * object.
  *
  * @author Can Bezmen
  */
 public class SortJsonComponent {
 
-	public static class SortSerializer extends JsonSerializer<Sort> {
+  public static class SortSerializer extends JsonSerializer<Sort> {
 
-		@Override
-		public void serialize(Sort value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-			gen.writeStartArray();
+    @Override
+    public void serialize(Sort value, JsonGenerator gen, SerializerProvider serializers)
+        throws IOException {
+      gen.writeStartArray();
       value
           .iterator()
           .forEachRemaining(
@@ -41,40 +40,39 @@ public class SortJsonComponent {
                   throw new RuntimeException("Couldn't serialize object " + v);
                 }
               });
-			gen.writeEndArray();
-		}
+      gen.writeEndArray();
+    }
 
-		@Override
-		public Class<Sort> handledType() {
-			return Sort.class;
-		}
+    @Override
+    public Class<Sort> handledType() {
+      return Sort.class;
+    }
+  }
 
-	}
+  public static class SortDeserializer extends JsonDeserializer<Sort> {
 
-	public static class SortDeserializer extends JsonDeserializer<Sort> {
+    @Override
+    public Sort deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
+        throws IOException {
+      TreeNode treeNode = jsonParser.getCodec().readTree(jsonParser);
+      if (treeNode.isArray()) {
+        ArrayNode arrayNode = (ArrayNode) treeNode;
+        List<Sort.Order> orders = new ArrayList<>();
+        for (JsonNode jsonNode : arrayNode) {
+          Sort.Order order =
+              new Sort.Order(
+                  Sort.Direction.valueOf(jsonNode.get("direction").textValue()),
+                  jsonNode.get("property").textValue());
+          orders.add(order);
+        }
+        return Sort.by(orders);
+      }
+      return null;
+    }
 
-		@Override
-		public Sort deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-				throws IOException {
-			TreeNode treeNode = jsonParser.getCodec().readTree(jsonParser);
-			if (treeNode.isArray()) {
-				ArrayNode arrayNode = (ArrayNode) treeNode;
-				List<Sort.Order> orders = new ArrayList<>();
-				for (JsonNode jsonNode : arrayNode) {
-					Sort.Order order = new Sort.Order(Sort.Direction.valueOf(jsonNode.get("direction").textValue()),
-							jsonNode.get("property").textValue());
-					orders.add(order);
-				}
-				return Sort.by(orders);
-			}
-			return null;
-		}
-
-		@Override
-		public Class<Sort> handledType() {
-			return Sort.class;
-		}
-
-	}
-
+    @Override
+    public Class<Sort> handledType() {
+      return Sort.class;
+    }
+  }
 }

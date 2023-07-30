@@ -2,7 +2,6 @@ package com.edgechain.lib.supabase.services;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import com.edgechain.lib.supabase.exceptions.SupabaseAuthException;
 import com.edgechain.lib.supabase.request.Credential;
@@ -25,8 +24,7 @@ public class SupabaseAuthService {
 
   @Autowired private RestTemplate restTemplate;
 
-  @Autowired
-  private Environment env;
+  @Autowired private Environment env;
 
   public SupabaseUser signUpWithEmail(Credential credential) {
     try {

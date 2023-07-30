@@ -4,8 +4,6 @@ import com.edgechain.lib.logger.entities.ChatCompletionLog;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.retrofit.logger.ChatCompletionLoggerService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import retrofit2.Retrofit;
 
@@ -36,7 +34,7 @@ public class ChatCompletionLogger {
   }
 
   public Page<ChatCompletionLog> findAllByNameOrderByCompletedAtDesc(
-          String name, int page, int size) {
+      String name, int page, int size) {
 
     HashMap<String, String> mapper = new HashMap<>();
     mapper.put("name", name);
@@ -88,7 +86,7 @@ public class ChatCompletionLogger {
   public Page<ChatCompletionLog> findAllByLatencyLessThanEqual(
       long latency, @PathVariable int page, @PathVariable int size) {
 
-    HashMap<String,Long> mapper = new HashMap<>();
+    HashMap<String, Long> mapper = new HashMap<>();
     mapper.put("latency", latency);
 
     return this.chatCompletionLoggerService
@@ -99,7 +97,7 @@ public class ChatCompletionLogger {
   public Page<ChatCompletionLog> findAllByLatencyGreaterThanEqual(
       long latency, @PathVariable int page, @PathVariable int size) {
 
-    HashMap<String,Long> mapper = new HashMap<>();
+    HashMap<String, Long> mapper = new HashMap<>();
     mapper.put("latency", latency);
     return this.chatCompletionLoggerService
         .findAllByLatencyGreaterThanEqual(mapper, page, size)

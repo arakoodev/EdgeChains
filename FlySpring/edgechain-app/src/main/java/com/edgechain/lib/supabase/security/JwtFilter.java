@@ -30,50 +30,46 @@ public class JwtFilter extends OncePerRequestFilter {
 
   @Autowired private UserSecurityService userSecurityService;
 
-  @Autowired
-  private SecurityUUID securityUUID;
+  @Autowired private SecurityUUID securityUUID;
 
-  @Autowired
-  private Environment env;
+  @Autowired private Environment env;
 
   @Override
   protected void doFilterInternal(
-          HttpServletRequest request, HttpServletResponse response, FilterChain filter)
-          throws ServletException, IOException {
+      HttpServletRequest request, HttpServletResponse response, FilterChain filter)
+      throws ServletException, IOException {
 
-      boolean test = env.acceptsProfiles(Profiles.of("test"));
-      
-      if (request.getRequestURI().startsWith(WebConfiguration.CONTEXT_PATH) && !test) {
+    boolean test = env.acceptsProfiles(Profiles.of("test"));
 
-        String authHeader = request.getHeader("Authorization");
-        if (!authHeader.equals(securityUUID.getAuthKey()))
-          throw new FilterException("Access Denied");
-      }
+    if (request.getRequestURI().startsWith(WebConfiguration.CONTEXT_PATH) && !test) {
 
-      String token = AuthUtils.extractToken(request);
-      if (token != null) {
-        /** If you are using Supabase, then uncomment this line; * */
-        //      User user = userSecurityService.loadUserByUsername(token);
+      String authHeader = request.getHeader("Authorization");
+      if (!authHeader.equals(securityUUID.getAuthKey())) throw new FilterException("Access Denied");
+    }
 
-        /**
-         * Because, EdgeChains is a project independent of supabase; therefore, your jwt must
-         * contain these two fields: a) email: "", b) role: "authenticated, user_create"
-         */
-        Jws<Claims> claimsJws = jwtHelper.parseToken(token);
-        String email = (String) claimsJws.getBody().get("email");
-        String role = (String) claimsJws.getBody().get("role");
+    String token = AuthUtils.extractToken(request);
+    if (token != null) {
+      /** If you are using Supabase, then uncomment this line; * */
+      //      User user = userSecurityService.loadUserByUsername(token);
 
-        User user = new User();
-        user.setEmail(email);
-        user.setAccessToken(token);
-        user.setRole(role);
+      /**
+       * Because, EdgeChains is a project independent of supabase; therefore, your jwt must contain
+       * these two fields: a) email: "", b) role: "authenticated, user_create"
+       */
+      Jws<Claims> claimsJws = jwtHelper.parseToken(token);
+      String email = (String) claimsJws.getBody().get("email");
+      String role = (String) claimsJws.getBody().get("role");
 
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-      }
+      User user = new User();
+      user.setEmail(email);
+      user.setAccessToken(token);
+      user.setRole(role);
 
-      filter.doFilter(request, response);
+      UsernamePasswordAuthenticationToken authToken =
+          new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+      SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
 
+    filter.doFilter(request, response);
   }
 }

@@ -10,8 +10,6 @@ import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import retrofit2.Retrofit;
 
 import java.util.Objects;
@@ -34,11 +32,10 @@ public class OpenAiEndpoint extends Endpoint {
   /** Getter Fields ** */
   private String input;
 
-  /** Log fields **/
+  /** Log fields * */
   private String chainName;
+
   private String callIdentifier;
-
-
 
   public OpenAiEndpoint() {}
 
@@ -129,8 +126,6 @@ public class OpenAiEndpoint extends Endpoint {
     this.stream = stream;
   }
 
-
-
   public String getModel() {
     return model;
   }
@@ -187,36 +182,33 @@ public class OpenAiEndpoint extends Endpoint {
     return callIdentifier;
   }
 
-
-  public Observable<ChatCompletionResponse> chatCompletion(String input, String chainName, ArkRequest arkRequest) {
+  public Observable<ChatCompletionResponse> chatCompletion(
+      String input, String chainName, ArkRequest arkRequest) {
     this.input = input; // set Input/Prompt
     this.chainName = chainName;
 
-    if(Objects.nonNull(arkRequest)) {
+    if (Objects.nonNull(arkRequest)) {
       this.callIdentifier = arkRequest.getRequestURI();
     }
 
-
     if (Objects.nonNull(this.getStream()) && this.getStream())
       return this.openAiStreamService
-              .chatCompletion(this)
-              .map(
-                      chatResponse -> {
-                        if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
-                          chatResponse.getChoices().get(0).getMessage().setContent("");
-                          return chatResponse;
-                        } else return chatResponse;
-                      });
+          .chatCompletion(this)
+          .map(
+              chatResponse -> {
+                if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
+                  chatResponse.getChoices().get(0).getMessage().setContent("");
+                  return chatResponse;
+                } else return chatResponse;
+              });
     else return Observable.fromSingle(this.openAiService.chatCompletion(this));
-
   }
 
   public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
     this.input = input; // set Input
-    if(Objects.nonNull(arkRequest)) {
+    if (Objects.nonNull(arkRequest)) {
       this.callIdentifier = arkRequest.getRequestURI();
     }
-
 
     return Observable.fromSingle(
         openAiService

@@ -19,7 +19,6 @@ import com.edgechain.lib.reader.impl.PdfReader;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
-import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 import java.io.IOException;
@@ -28,9 +27,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.MediaType;
@@ -39,15 +36,14 @@ import org.springframework.web.bind.annotation.*;
 @SpringBootApplication
 public class RedisExample {
 
-  private final static String OPENAI_AUTH_KEY = "";
+  private static final String OPENAI_AUTH_KEY = "";
 
   private static OpenAiEndpoint ada002Embedding;
   private static OpenAiEndpoint gpt3Endpoint;
   private static RedisEndpoint redisEndpoint;
   private static RedisHistoryContextEndpoint contextEndpoint;
 
-  private JsonnetLoader queryLoader =
-          new FileJsonnetLoader("R:\\Github\\redis-query.jsonnet");
+  private JsonnetLoader queryLoader = new FileJsonnetLoader("R:\\Github\\redis-query.jsonnet");
   private JsonnetLoader chatLoader = new FileJsonnetLoader("R:\\Github\\redis-chat.jsonnet");
 
   public static void main(String[] args) {
@@ -58,7 +54,7 @@ public class RedisExample {
     properties.setProperty("spring.jpa.show-sql", "true");
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
-    //Adding Cors ==> You can configure multiple cors w.r.t your urls.;
+    // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
     properties.setProperty("cors.origins", "http://localhost:4200");
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
@@ -69,7 +65,7 @@ public class RedisExample {
 
     // Redis Configuration
     properties.setProperty("redis.url", "");
-    properties.setProperty("redis.port","12285");
+    properties.setProperty("redis.port", "12285");
     properties.setProperty("redis.username", "default");
     properties.setProperty("redis.password", "");
     properties.setProperty("redis.ttl", "3600");
@@ -77,13 +73,15 @@ public class RedisExample {
     new SpringApplicationBuilder(RedisExample.class).properties(properties).run(args);
 
     // Variables Initialization ==> Endpoints must be intialized in main method...
-    ada002Embedding = new OpenAiEndpoint(
+    ada002Embedding =
+        new OpenAiEndpoint(
             OPENAI_EMBEDDINGS_API,
             OPENAI_AUTH_KEY,
             "text-embedding-ada-002",
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    gpt3Endpoint = new OpenAiEndpoint(
+    gpt3Endpoint =
+        new OpenAiEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             "gpt-3.5-turbo",
@@ -92,28 +90,31 @@ public class RedisExample {
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     redisEndpoint = new RedisEndpoint(new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-    contextEndpoint = new RedisHistoryContextEndpoint(new ExponentialDelay(2, 2, 2, TimeUnit.SECONDS));
+    contextEndpoint =
+        new RedisHistoryContextEndpoint(new ExponentialDelay(2, 2, 2, TimeUnit.SECONDS));
   }
 
-    /** By Default, every API is unauthenticated & exposed without any sort of authentication;
-     * To authenticate, your custom APIs in Controller you would need @PreAuthorize(hasAuthority("")); this will authenticate by JWT having two fields: a) email, b) role
-     * To authenticate, internal APIs related to historyContext & Logging, Delete Redis/Postgres
-     *                           we need to create bean of AuthFilter; you can uncomment the code.
-     * Note, you need to define "jwt.secret" property as well to decode accessToken.
-     */
-//  @Bean
-//  @Primary
-//  public AuthFilter authFilter() {
-//    AuthFilter filter = new AuthFilter();
-//    // new MethodAuthentication(List.of(APIs), roles)
-//    filter.setRequestPost(new MethodAuthentication(List.of("/v1/postgresql/historycontext"), "authenticated")); // define multiple roles by comma
-//    filter.setRequestGet(new MethodAuthentication(List.of(""), ""));
-//    filter.setRequestDelete(new MethodAuthentication(List.of(""), ""));
-//    filter.setRequestPatch(new MethodAuthentication(List.of(""), ""));
-//    filter.setRequestPut(new MethodAuthentication(List.of(""), ""));
-//    return filter;
-//  }
-
+  /**
+   * By Default, every API is unauthenticated & exposed without any sort of authentication; To
+   * authenticate, your custom APIs in Controller you would need @PreAuthorize(hasAuthority(""));
+   * this will authenticate by JWT having two fields: a) email, b) role To authenticate, internal
+   * APIs related to historyContext & Logging, Delete Redis/Postgres we need to create bean of
+   * AuthFilter; you can uncomment the code. Note, you need to define "jwt.secret" property as well
+   * to decode accessToken.
+   */
+  //  @Bean
+  //  @Primary
+  //  public AuthFilter authFilter() {
+  //    AuthFilter filter = new AuthFilter();
+  //    // new MethodAuthentication(List.of(APIs), roles)
+  //    filter.setRequestPost(new MethodAuthentication(List.of("/v1/postgresql/historycontext"),
+  // "authenticated")); // define multiple roles by comma
+  //    filter.setRequestGet(new MethodAuthentication(List.of(""), ""));
+  //    filter.setRequestDelete(new MethodAuthentication(List.of(""), ""));
+  //    filter.setRequestPatch(new MethodAuthentication(List.of(""), ""));
+  //    filter.setRequestPut(new MethodAuthentication(List.of(""), ""));
+  //    return filter;
+  //  }
 
   @RestController
   @RequestMapping("/v1/examples")
@@ -133,7 +134,8 @@ public class RedisExample {
 
       /**
        * Both IndexName & namespace are integral for upsert & performing similarity search; If you
-       * are creating different namespace; recommended to use different index_name because filtering is done by index_name *
+       * are creating different namespace; recommended to use different index_name because filtering
+       * is done by index_name *
        */
 
       // Configure RedisEndpoint
@@ -155,7 +157,8 @@ public class RedisExample {
        * provided, then it will emit an error
        */
       Retrieval retrieval =
-          new RedisRetrieval(redisEndpoint, ada002Embedding, 1536, RedisDistanceMetric.COSINE, arkRequest);
+          new RedisRetrieval(
+              redisEndpoint, ada002Embedding, 1536, RedisDistanceMetric.COSINE, arkRequest);
       IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
     }
 
@@ -180,7 +183,8 @@ public class RedisExample {
       redisEndpoint.setIndexName(indexName);
 
       return new EdgeChain<>(
-              ada002Embedding.embeddings(query,arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
+              ada002Embedding.embeddings(
+                  query, arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
           .transform(
               embeddings ->
                   EdgeChain.fromObservable(redisEndpoint.query(embeddings, topK))
@@ -202,11 +206,13 @@ public class RedisExample {
       redisEndpoint.setNamespace(namespace);
       redisEndpoint.setIndexName(indexName);
 
-      queryLoader.put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-              .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
+      queryLoader
+          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
       return new EdgeChain<>(
-              ada002Embedding.embeddings(query,arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
+              ada002Embedding.embeddings(
+                  query, arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
           .transform(
               embeddings ->
                   EdgeChain.fromObservable(redisEndpoint.query(embeddings, topK))
@@ -232,7 +238,8 @@ public class RedisExample {
                   // Step 4: Now, pass the prompt to OpenAI ChatCompletion & Add it to the list
                   // which will be returned
                   resp.add(
-                      gpt3Endpoint.chatCompletion(queryLoader.get("prompt"), "RedisQueryChain", arkRequest)
+                      gpt3Endpoint
+                          .chatCompletion(queryLoader.get("prompt"), "RedisQueryChain", arkRequest)
                           .firstOrError()
                           .blockingGet());
                 }
@@ -253,29 +260,29 @@ public class RedisExample {
       boolean stream = arkRequest.getBooleanHeader("stream");
 
       // configure GPT3Endpoint
-       gpt3Endpoint.setStream(stream);
+      gpt3Endpoint.setStream(stream);
 
       HistoryContext historyContext =
           EdgeChain.fromObservable(contextEndpoint.get(contextId)).get();
 
       // Step 1: Create JsonnetLoader || Pass Args || Load The File;
-          chatLoader
+      chatLoader
           .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
           .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
           .put("query", new JsonnetArgs(DataType.STRING, query))
           .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "false"))
           .loadOrReload();
 
-
-       // Configure Redis
-        redisEndpoint.setIndexName(indexName);
-        redisEndpoint.setNamespace(namespace);
+      // Configure Redis
+      redisEndpoint.setIndexName(indexName);
+      redisEndpoint.setNamespace(namespace);
 
       // Extract topK value from JsonnetLoader;
       int topK = chatLoader.getInt("topK");
 
       return new EdgeChain<>(
-              ada002Embedding.embeddings(query, arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
+              ada002Embedding.embeddings(
+                  query, arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
           .transform(
               embeddings ->
                   EdgeChain.fromObservable(redisEndpoint.query(embeddings, topK))
@@ -317,7 +324,11 @@ public class RedisExample {
                     .loadOrReload(); // Step 5: Pass the Args & Reload Jsonnet
 
                 StringBuilder openAiResponseBuilder = new StringBuilder();
-                return gpt3Endpoint.chatCompletion(chatLoader.get("prompt"), "RedisChatChain", arkRequest) // Pass the concatenated prompt to JsonnetLoader
+                return gpt3Endpoint
+                    .chatCompletion(
+                        chatLoader.get("prompt"),
+                        "RedisChatChain",
+                        arkRequest) // Pass the concatenated prompt to JsonnetLoader
                     /**
                      * Here is the interesting part; So, with ChatCompletion Stream we will have
                      * streaming Therefore, we create a StringBuilder to append the response as we
@@ -375,11 +386,5 @@ public class RedisExample {
               })
           .getArkResponse();
     }
-
-
-
-
-
-
   }
 }

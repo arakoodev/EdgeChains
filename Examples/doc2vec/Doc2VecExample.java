@@ -1,6 +1,5 @@
 package com.edgechain;
 
-
 import com.edgechain.lib.chains.RedisRetrieval;
 import com.edgechain.lib.chains.Retrieval;
 import com.edgechain.lib.embeddings.request.Doc2VecRequest;
@@ -39,7 +38,7 @@ public class Doc2VecExample {
     Properties properties = new Properties();
 
     properties.setProperty("redis.url", "");
-    properties.setProperty("redis.port","");
+    properties.setProperty("redis.port", "");
     properties.setProperty("redis.username", "default");
     properties.setProperty("redis.password", "");
     properties.setProperty("redis.ttl", "3600");
@@ -47,10 +46,8 @@ public class Doc2VecExample {
     new SpringApplicationBuilder(Doc2VecExample.class).properties(properties).run(args);
 
     doc2VecEndpoint = new Doc2VecEndpoint();
-    redisEndpoint = new RedisEndpoint(new ExponentialDelay(3,3,2,TimeUnit.SECONDS));
-
+    redisEndpoint = new RedisEndpoint(new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
   }
-
 
   @RestController
   @RequestMapping("/v1/examples")
@@ -76,7 +73,6 @@ public class Doc2VecExample {
       doc2Vec.setBatchSize(15);
       doc2Vec.setWindowSize(3);
 
-
       EdgeChain.fromObservable(doc2VecEndpoint.build(doc2Vec))
           .execute(); // Executing/Subscribing to Observable....
       // (Model has now started building; do check the console)
@@ -98,11 +94,11 @@ public class Doc2VecExample {
           WordVectorSerializer.readParagraphVectors(
               new FileInputStream("R:\\Github\\doc_vector.bin"));
 
-
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
       Retrieval retrieval =
-          new RedisRetrieval(redisEndpoint, doc2VecEndpoint, 1536, RedisDistanceMetric.COSINE,arkRequest);
+          new RedisRetrieval(
+              redisEndpoint, doc2VecEndpoint, 1536, RedisDistanceMetric.COSINE, arkRequest);
       IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
     }
 
@@ -124,7 +120,6 @@ public class Doc2VecExample {
       ParagraphVectors paragraphVectors =
           WordVectorSerializer.readParagraphVectors(
               new FileInputStream("R:\\Github\\doc_vector.bin"));
-
 
       return new EdgeChain<>(
               doc2VecEndpoint.embeddings(

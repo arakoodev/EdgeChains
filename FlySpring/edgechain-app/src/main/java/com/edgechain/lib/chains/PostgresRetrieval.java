@@ -22,9 +22,11 @@ public class PostgresRetrieval extends Retrieval {
 
   private Doc2VecEndpoint doc2VecEndpoint;
 
-
   public PostgresRetrieval(
-      PostgresEndpoint postgresEndpoint, int dimensions, OpenAiEndpoint openAiEndpoint, ArkRequest arkRequest) {
+      PostgresEndpoint postgresEndpoint,
+      int dimensions,
+      OpenAiEndpoint openAiEndpoint,
+      ArkRequest arkRequest) {
     this.postgresEndpoint = postgresEndpoint;
     this.dimensions = dimensions;
     this.openAiEndpoint = openAiEndpoint;
@@ -33,7 +35,10 @@ public class PostgresRetrieval extends Retrieval {
   }
 
   public PostgresRetrieval(
-      PostgresEndpoint postgresEndpoint, int dimensions, Doc2VecEndpoint doc2VecEndpoint, ArkRequest arkRequest) {
+      PostgresEndpoint postgresEndpoint,
+      int dimensions,
+      Doc2VecEndpoint doc2VecEndpoint,
+      ArkRequest arkRequest) {
     this.postgresEndpoint = postgresEndpoint;
     this.dimensions = dimensions;
     this.doc2VecEndpoint = doc2VecEndpoint;
@@ -47,7 +52,7 @@ public class PostgresRetrieval extends Retrieval {
     if (Objects.nonNull(openAiEndpoint)) {
       new EdgeChain<>(
               this.openAiEndpoint
-                  .embeddings(input,arkRequest)
+                  .embeddings(input, arkRequest)
                   .map(w -> this.postgresEndpoint.upsert(w, this.dimensions))
                   .firstOrError()
                   .blockingGet())

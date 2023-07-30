@@ -51,7 +51,8 @@ public class RedisHistoryContextClient
                 context.setCreatedAt(LocalDateTime.now());
 
                 this.redisTemplate.opsForValue().set(key, context);
-                this.redisTemplate.expire(key, Long.parseLong(env.getProperty("redis.ttl")), TimeUnit.SECONDS);
+                this.redisTemplate.expire(
+                    key, Long.parseLong(env.getProperty("redis.ttl")), TimeUnit.SECONDS);
 
                 emitter.onNext(context);
                 emitter.onComplete();
@@ -75,7 +76,8 @@ public class RedisHistoryContextClient
                 historyContext.setResponse(response);
 
                 this.redisTemplate.opsForValue().set(key, historyContext);
-                this.redisTemplate.expire(key, Long.parseLong(env.getProperty("redis.ttl")), TimeUnit.SECONDS);
+                this.redisTemplate.expire(
+                    key, Long.parseLong(env.getProperty("redis.ttl")), TimeUnit.SECONDS);
 
                 logger.info(String.format("%s is updated", key));
 

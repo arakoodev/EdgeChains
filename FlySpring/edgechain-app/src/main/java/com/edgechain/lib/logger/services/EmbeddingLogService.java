@@ -1,6 +1,5 @@
 package com.edgechain.lib.logger.services;
 
-import com.edgechain.lib.logger.entities.ChatCompletionLog;
 import com.edgechain.lib.logger.entities.EmbeddingLog;
 import com.edgechain.lib.logger.entities.EmbeddingLog;
 import com.edgechain.lib.logger.repositories.EmbeddingLogRepository;
@@ -34,7 +33,7 @@ public class EmbeddingLogService {
   }
 
   @Transactional(readOnly = true)
-  public  Page<EmbeddingLog> findAllByModel(String model, Pageable pageable) {
+  public Page<EmbeddingLog> findAllByModel(String model, Pageable pageable) {
     return this.embeddingLogRepository.findAllByModel(model, pageable);
   }
 
@@ -45,12 +44,14 @@ public class EmbeddingLogService {
 
   @Transactional(readOnly = true)
   public Page<EmbeddingLog> findAllByCallIdentifier(String callIdentifier, Pageable pageable) {
-    return this.embeddingLogRepository.findAllByCallIdentifier(callIdentifier,pageable);
+    return this.embeddingLogRepository.findAllByCallIdentifier(callIdentifier, pageable);
   }
 
   @Transactional(readOnly = true)
-  public Page<EmbeddingLog> findAllByCallIdentifierOrderByCompletedAtDesc(String callIdentifier, Pageable pageable) {
-    return this.embeddingLogRepository.findAllByCallIdentifierOrderByCompletedAtDesc(callIdentifier, pageable);
+  public Page<EmbeddingLog> findAllByCallIdentifierOrderByCompletedAtDesc(
+      String callIdentifier, Pageable pageable) {
+    return this.embeddingLogRepository.findAllByCallIdentifierOrderByCompletedAtDesc(
+        callIdentifier, pageable);
   }
 
   @Transactional(readOnly = true)

@@ -31,8 +31,7 @@ public class WebConfiguration {
 
   @Bean
   @Primary
-  public SecurityUUID securityUUID()
-  {
+  public SecurityUUID securityUUID() {
 
     String uuid = UUID.randomUUID().toString();
     System.out.println(uuid);
@@ -51,6 +50,4 @@ public class WebConfiguration {
 
     return filter;
   }
-
-
 }

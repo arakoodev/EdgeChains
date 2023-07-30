@@ -14,24 +14,20 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/v1/redis")
 public class RedisController {
 
-    private  RedisEndpoint redisEndpoint;
+  private RedisEndpoint redisEndpoint;
 
-    private RedisEndpoint getInstance() {
-        if( Objects.isNull(redisEndpoint)) {
-            return redisEndpoint = new RedisEndpoint(new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-        }
-        else
-            return redisEndpoint;
-    }
+  private RedisEndpoint getInstance() {
+    if (Objects.isNull(redisEndpoint)) {
+      return redisEndpoint = new RedisEndpoint(new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+    } else return redisEndpoint;
+  }
 
-    /** Delete Redis By Pattern Name * */
-    @DeleteMapping("/delete")
-    // delete all the
-    // keys start with machine-learning namespace
-    public void deleteRedis(ArkRequest arkRequest) {
-        String patternName = arkRequest.getQueryParam("pattern");
-        getInstance().delete(patternName);
-    }
-
-
+  /** Delete Redis By Pattern Name * */
+  @DeleteMapping("/delete")
+  // delete all the
+  // keys start with machine-learning namespace
+  public void deleteRedis(ArkRequest arkRequest) {
+    String patternName = arkRequest.getQueryParam("pattern");
+    getInstance().delete(patternName);
+  }
 }

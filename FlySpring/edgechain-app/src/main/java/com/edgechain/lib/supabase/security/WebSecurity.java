@@ -33,11 +33,9 @@ import java.util.Objects;
 @Configuration
 public class WebSecurity {
 
-
   @Autowired private Environment env;
   @Autowired private AuthFilter authFilter;
   @Autowired private JwtFilter jwtFilter;
-
 
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
@@ -53,8 +51,6 @@ public class WebSecurity {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-
-
     return http.cors()
         .configurationSource(corsConfiguration())
         .and()
@@ -63,24 +59,21 @@ public class WebSecurity {
         .authorizeHttpRequests(
             (auth) -> {
               try {
-                auth.requestMatchers(""+ WebConfiguration.CONTEXT_PATH+"/**").permitAll()
-
-                        .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests())
-                        .hasAnyAuthority(authFilter.getRequestPost().getAuthorities())
-//
-                        .requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests())
-                        .hasAnyAuthority(authFilter.getRequestGet().getAuthorities())
-
-                        .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
-                        .hasAnyAuthority(authFilter.getRequestDelete().getAuthorities())
-
-                        .requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
-                        .hasAnyAuthority(authFilter.getRequestPut().getAuthorities())
-
-                        .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
-                        .hasAnyAuthority(authFilter.getRequestPatch().getAuthorities())
-
-                        .anyRequest().permitAll();
+                auth.requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests())
+                    .hasAnyAuthority(authFilter.getRequestPost().getAuthorities())
+                    //
+                    .requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests())
+                    .hasAnyAuthority(authFilter.getRequestGet().getAuthorities())
+                    .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
+                    .hasAnyAuthority(authFilter.getRequestDelete().getAuthorities())
+                    .requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
+                    .hasAnyAuthority(authFilter.getRequestPut().getAuthorities())
+                    .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
+                    .hasAnyAuthority(authFilter.getRequestPatch().getAuthorities())
+                    .anyRequest()
+                    .permitAll();
 
               } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -102,12 +95,11 @@ public class WebSecurity {
   @Bean
   public CorsConfigurationSource corsConfiguration() {
 
-
     CorsConfiguration configuration = new CorsConfiguration();
 
     String cors = env.getProperty("cors.origins");
 
-    if(Objects.nonNull(cors) && !cors.isEmpty()) {
+    if (Objects.nonNull(cors) && !cors.isEmpty()) {
       configuration.setAllowedOrigins(Arrays.stream(cors.split(",")).toList());
     }
 
