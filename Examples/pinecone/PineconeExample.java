@@ -5,9 +5,6 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_AP
 
 import com.edgechain.lib.chains.PineconeRetrieval;
 import com.edgechain.lib.chains.Retrieval;
-import com.edgechain.lib.configuration.domain.CorsEnableOrigins;
-import com.edgechain.lib.configuration.domain.ExcludeMappingFilter;
-import com.edgechain.lib.configuration.domain.RedisEnv;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
@@ -29,114 +26,121 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication
 public class PineconeExample {
 
-  private final String OPENAI_AUTH_KEY = "";
-  private final String PINECONE_AUTH_KEY = "";
-  private final String PINECONE_QUERY_API = "";
-  private final String PINECONE_UPSERT_API = "";
-  private final String PINECONE_DELETE = "";
+  private static final String OPENAI_AUTH_KEY = "";
+  private static final String PINECONE_AUTH_KEY = "";
+  private static final String PINECONE_QUERY_API = "";
+  private static final String PINECONE_UPSERT_API = "";
+  private static final String PINECONE_DELETE = "";
+
+  private static OpenAiEndpoint ada002Embedding;
+  private static OpenAiEndpoint gpt3Endpoint;
+
+  private static PineconeEndpoint upsertPineconeEndpoint;
+  private static PineconeEndpoint queryPineconeEndpoint;
+
+  private static PineconeEndpoint deletePineconeEndpoint;
+
+  private static RedisHistoryContextEndpoint contextEndpoint;
+
+  private JsonnetLoader queryLoader = new FileJsonnetLoader("R:\\Github\\pinecone-query.jsonnet");
+  private JsonnetLoader chatLoader = new FileJsonnetLoader("R:\\Github\\pinecone-chat.jsonnet");
 
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
-    SpringApplication.run(PineconeExample.class, args);
-  }
+    Properties properties = new Properties();
 
-  // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
-  @Bean
-  @Primary
-  public CorsEnableOrigins corsEnableOrigins() {
-    CorsEnableOrigins origins = new CorsEnableOrigins();
-    origins.setOrigins(Arrays.asList("http://localhost:4200", "http://localhost:4201"));
-    return origins;
-  }
+    properties.setProperty("spring.jpa.show-sql", "true");
+    properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
-  /* Optional (not required if you are not using Redis), always create bean with @Primary annotation */
-  @Bean
-  @Primary
-  public RedisEnv redisEnv() {
-    RedisEnv redisEnv = new RedisEnv();
-    redisEnv.setUrl("");
-    redisEnv.setPort(12285);
-    redisEnv.setUsername("default");
-    redisEnv.setPassword("");
-    redisEnv.setTtl(3600); // Configuring ttl for HistoryContext;
-    return redisEnv;
+    // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
+    properties.setProperty("cors.origins", "http://localhost:4200");
+
+    // Redis Configuration
+    properties.setProperty("redis.url", "");
+    properties.setProperty("redis.port", "12285");
+    properties.setProperty("redis.username", "");
+    properties.setProperty("redis.password", "");
+    properties.setProperty("redis.ttl", "3600");
+
+    // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
+    // If you haven't specified PostgreSQL, then logs won't be stored.
+    properties.setProperty("postgres.db.host", "");
+    properties.setProperty("postgres.db.username", "postgres");
+    properties.setProperty("postgres.db.password", "");
+
+    new SpringApplicationBuilder(PineconeExample.class).properties(properties).run(args);
+
+    // Variables Initialization ==> Endpoints must be intialized in main method...
+    ada002Embedding =
+        new OpenAiEndpoint(
+            OPENAI_EMBEDDINGS_API,
+            OPENAI_AUTH_KEY,
+            "text-embedding-ada-002",
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
+    gpt3Endpoint =
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+
+    upsertPineconeEndpoint =
+        new PineconeEndpoint(
+            PINECONE_UPSERT_API,
+            PINECONE_AUTH_KEY,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
+    queryPineconeEndpoint =
+        new PineconeEndpoint(
+            PINECONE_QUERY_API, PINECONE_AUTH_KEY, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
+    deletePineconeEndpoint =
+        new PineconeEndpoint(
+            PINECONE_DELETE, PINECONE_AUTH_KEY, new FixedDelay(4, 5, TimeUnit.SECONDS));
+
+    contextEndpoint =
+        new RedisHistoryContextEndpoint(new ExponentialDelay(2, 2, 2, TimeUnit.SECONDS));
   }
 
   /**
-   * Optional, Create it to exclude api calls from filtering; otherwise API calls will filter via
-   * ROLE_BASE access *
+   * By Default, every API is unauthenticated & exposed without any sort of authentication; To
+   * authenticate, your custom APIs in Controller you would need @PreAuthorize(hasAuthority(""));
+   * this will authenticate by JWT having two fields: a) email, b) role:"authenticated,user_create"
+   * To authenticate, internal APIs related to historyContext & Logging, Delete Redis/Postgres we
+   * need to create bean of AuthFilter; you can uncomment the code. Note, you need to define
+   * "jwt.secret" property as well to decode accessToken.
    */
-  @Bean
-  @Primary
-  public ExcludeMappingFilter mappingFilter() {
-    ExcludeMappingFilter mappingFilter = new ExcludeMappingFilter();
-    mappingFilter.setRequestPost(List.of("/v1/examples/**"));
-    mappingFilter.setRequestGet(List.of("/v1/examples/**"));
-    mappingFilter.setRequestDelete(List.of("/v1/examples/**"));
-    mappingFilter.setRequestPut(List.of("/v1/examples/**"));
-    return mappingFilter;
-  }
+  //  @Bean
+  //  @Primary
+  //  public AuthFilter authFilter() {
+  //    AuthFilter filter = new AuthFilter();
+  //    // ======== new MethodAuthentication(List.of(APIs), authorities) =============
+  //    filter.setRequestPost(new MethodAuthentication(List.of("/v1/postgresql/historycontext"),
+  // "authenticated")); // define multiple roles by comma
+  //    filter.setRequestGet(new MethodAuthentication(List.of(""), ""));
+  //    filter.setRequestDelete(new MethodAuthentication(List.of(""), ""));
+  //    filter.setRequestPatch(new MethodAuthentication(List.of(""), ""));
+  //    filter.setRequestPut(new MethodAuthentication(List.of(""), ""));
+  //    return filter;
+  //  }
 
   @RestController
   @RequestMapping("/v1/examples")
   public class PineconeController {
 
     @Autowired private PdfReader pdfReader;
-
-    /*** Creating HistoryContext (Using Redis)  ****/
-    @PostMapping("/redis/historycontext")
-    public ArkResponse createRedisHistoryContext(ArkRequest arkRequest) {
-
-      RedisHistoryContextEndpoint endpoint =
-          new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
-
-      return new ArkResponse(
-          endpoint.create(
-              UUID.randomUUID()
-                  .toString())); // Here randomId is generated, you can provide your own ids....
-    }
-
-    @PutMapping("/redis/historycontext")
-    public ArkResponse updateRedisHistoryContext(ArkRequest arkRequest) throws IOException {
-      JSONObject json = arkRequest.getBody();
-
-      RedisHistoryContextEndpoint endpoint =
-          new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
-
-      return new ArkResponse(endpoint.put(json.getString("id"), json.getString("response")));
-    }
-
-    @GetMapping("/redis/historycontext")
-    public ArkResponse getRedisHistoryContext(ArkRequest arkRequest) {
-      String id = arkRequest.getQueryParam("id");
-
-      RedisHistoryContextEndpoint endpoint =
-          new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
-
-      return new ArkResponse(endpoint.get(id));
-    }
-
-    @DeleteMapping("/redis/historycontext")
-    public void deleteRedisHistoryContext(ArkRequest arkRequest) {
-      String id = arkRequest.getQueryParam("id");
-
-      RedisHistoryContextEndpoint endpoint =
-          new RedisHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
-
-      endpoint.delete(id);
-    }
 
     /********************** PINECONE WITH OPENAI ****************************/
 
@@ -159,28 +163,9 @@ public class PineconeExample {
       String namespace = arkRequest.getQueryParam("namespace");
       InputStream file = arkRequest.getMultiPart("file").getInputStream();
 
-      PineconeEndpoint pineconeEndpoint =
-          new PineconeEndpoint(
-              PINECONE_UPSERT_API,
-              PINECONE_AUTH_KEY,
-              namespace,
-              new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+      // Configure Pinecone
+      upsertPineconeEndpoint.setNamespace(namespace);
 
-      OpenAiEndpoint embeddingEndpoint =
-          new OpenAiEndpoint(
-              OPENAI_EMBEDDINGS_API,
-              OPENAI_AUTH_KEY,
-              "text-embedding-ada-002",
-              new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-      /**
-       * Currently, the entire file is loaded into memory (later; it will be loaded in buffers); We
-       * have two implementation for Read By Sentence: a) readBySentence(LangType, Your File)
-       * EdgeChains sdk has predefined support to chunk by sentences w.r.t to 5 languages (english,
-       * france, german, italy, dutch....) ==> Used with Redis Example (below)....
-       *
-       * <p>b) readBySentence(Custom OpenNLP Trained Model, Your File)
-       */
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
       /**
@@ -188,7 +173,8 @@ public class PineconeExample {
        * Embedding Endpoint is not provided; then Doc2Vec constructor is used If the model is not
        * provided, then it will emit an error
        */
-      Retrieval retrieval = new PineconeRetrieval(pineconeEndpoint, embeddingEndpoint);
+      Retrieval retrieval =
+          new PineconeRetrieval(upsertPineconeEndpoint, ada002Embedding, arkRequest);
       IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
     }
 
@@ -201,40 +187,19 @@ public class PineconeExample {
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
 
-      PineconeEndpoint pineconeEndpoint =
-          new PineconeEndpoint(
-              PINECONE_QUERY_API,
-              PINECONE_AUTH_KEY,
-              namespace,
-              new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+      // Configure Pinecone
+      queryPineconeEndpoint.setNamespace(namespace);
 
-      OpenAiEndpoint embeddingEndpoint =
-          new OpenAiEndpoint(
-              OPENAI_EMBEDDINGS_API,
-              OPENAI_AUTH_KEY,
-              "text-embedding-ada-002",
-              new FixedDelay(3, 5, TimeUnit.SECONDS));
-
-      OpenAiEndpoint chatEndpoint =
-          new OpenAiEndpoint(
-              OPENAI_CHAT_COMPLETION_API,
-              OPENAI_AUTH_KEY,
-              "gpt-3.5-turbo",
-              "user",
-              0.7,
-              new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
-
-      JsonnetLoader loader =
-          new FileJsonnetLoader("R:\\Github\\pinecone-query.jsonnet")
-              .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-              .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
+      queryLoader
+          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
 
       return new EdgeChain<>(
-              embeddingEndpoint.getEmbeddings(
-                  query)) // Step 1: Generate embedding using OpenAI for provided input
+              ada002Embedding.embeddings(
+                  query, arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
           .transform(
               embeddings ->
-                  new EdgeChain<>(pineconeEndpoint.query(embeddings, topK))
+                  new EdgeChain<>(queryPineconeEndpoint.query(embeddings, topK))
                       .get()) // Step 2: Block The Observable & Get the result from Pinecone(id,//
           // scores)
           .transform(
@@ -247,7 +212,7 @@ public class PineconeExample {
 
                   String pinecone = iterator.next().getId();
 
-                  loader
+                  queryLoader
                       .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
                       .put(
                           "context",
@@ -259,7 +224,9 @@ public class PineconeExample {
                   // Step 4: Now, pass the prompt to OpenAI ChatCompletion & Add it to the list
                   // which will be returned
                   resp.add(
-                      EdgeChain.fromObservable(chatEndpoint.getChatCompletion(loader.get("prompt")))
+                      EdgeChain.fromObservable(
+                              gpt3Endpoint.chatCompletion(
+                                  queryLoader.get("prompt"), "PineconeQueryChain", arkRequest))
                           .get()); // You can use both new EdgeChain<>() or
                   // EdgeChain.fromObservable()
                   // Wrap the Observable & get the data in a blocking way... Pass the concatenated
@@ -287,60 +254,32 @@ public class PineconeExample {
       String namespace = arkRequest.getQueryParam("namespace");
       boolean stream = arkRequest.getBooleanHeader("stream");
 
-      System.out.println(contextId);
-      System.out.println(query);
-      System.out.println(namespace);
-      System.out.println(stream);
+      // Configure Pinecone
+      queryPineconeEndpoint.setNamespace(namespace);
 
-      RedisHistoryContextEndpoint contextEndpoint =
-          new RedisHistoryContextEndpoint(new FixedDelay(3, 3, TimeUnit.SECONDS));
+      // Configure GPT3endpoint
+      gpt3Endpoint.setStream(stream);
+
       HistoryContext historyContext =
           EdgeChain.fromObservable(contextEndpoint.get(contextId)).get();
 
       // Step 1: Create JsonnetLoader || Pass Args || Load The File;
-      JsonnetLoader loader = new FileJsonnetLoader("R:\\Github\\pinecone-chat.jsonnet");
-      loader
+      chatLoader
           .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
           .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
           .put("query", new JsonnetArgs(DataType.STRING, query))
           .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "false"))
           .loadOrReload();
 
-      // Step 2: Create PineconeEndpoint for Query, OpenAIEndpoint for Using Embedding & Chat
-      // Service
-      PineconeEndpoint pineconeEndpoint =
-          new PineconeEndpoint(
-              PINECONE_QUERY_API,
-              PINECONE_AUTH_KEY,
-              namespace,
-              new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-      OpenAiEndpoint embeddingEndpoint =
-          new OpenAiEndpoint(
-              OPENAI_EMBEDDINGS_API,
-              OPENAI_AUTH_KEY,
-              "text-embedding-ada-002",
-              new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
-      OpenAiEndpoint chatEndpoint =
-          new OpenAiEndpoint(
-              OPENAI_CHAT_COMPLETION_API,
-              OPENAI_AUTH_KEY,
-              "gpt-3.5-turbo",
-              "user",
-              0.7,
-              stream,
-              new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
       // Extract topK value from JsonnetLoader;
-      int topK = loader.getInt("topK");
+      int topK = chatLoader.getInt("topK");
 
       return new EdgeChain<>(
-              embeddingEndpoint.getEmbeddings(
-                  query)) // Step 1: Generate embedding using OpenAI for provided input
+              ada002Embedding.embeddings(
+                  query, arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
           .transform(
               embeddings ->
-                  EdgeChain.fromObservable(pineconeEndpoint.query(embeddings, topK))
+                  EdgeChain.fromObservable(queryPineconeEndpoint.query(embeddings, topK))
                       .get()) // Step 2: Block the Observables &  Get topK queries from Pinecone
           // Iterator over PineconeResponse & Get the ids;
           .transform(
@@ -364,7 +303,7 @@ public class PineconeExample {
           // our JsonnetLoader
           .transform(
               mapper -> {
-                loader
+                chatLoader
                     .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "true"))
                     .put(
                         "history",
@@ -379,9 +318,11 @@ public class PineconeExample {
                     .loadOrReload(); // Step 5: Pass the Args & Reload Jsonnet
 
                 StringBuilder openAiResponseBuilder = new StringBuilder();
-                return chatEndpoint
-                    .getChatCompletion(
-                        loader.get("prompt")) // Pass the concatenated prompt to JsonnetLoader
+                return gpt3Endpoint
+                    .chatCompletion(
+                        chatLoader.get("prompt"),
+                        "PineconeChatChain",
+                        arkRequest) // Pass the concatenated prompt to JsonnetLoader
                     /**
                      * Here is the interesting part; So, with ChatCompletion Stream we will have
                      * streaming Therefore, we create a StringBuilder to append the response as we
@@ -444,13 +385,8 @@ public class PineconeExample {
     @DeleteMapping("/pinecone/deleteAll")
     public ArkResponse deletePinecone(ArkRequest arkRequest) {
       String namespace = arkRequest.getQueryParam("namespace");
-      PineconeEndpoint pineconeEndpoint =
-          new PineconeEndpoint(
-              PINECONE_DELETE,
-              PINECONE_AUTH_KEY,
-              namespace,
-              new FixedDelay(4, 5, TimeUnit.SECONDS));
-      return new EdgeChain<>(pineconeEndpoint.deleteAll()).getArkResponse();
+      deletePineconeEndpoint.setNamespace(namespace);
+      return new EdgeChain<>(deletePineconeEndpoint.deleteAll()).getArkResponse();
     }
   }
 }

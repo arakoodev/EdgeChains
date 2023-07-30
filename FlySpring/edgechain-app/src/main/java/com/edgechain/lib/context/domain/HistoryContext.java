@@ -1,8 +1,13 @@
 package com.edgechain.lib.context.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -11,12 +16,14 @@ import java.time.LocalDateTime;
 @Table(name = "history_context")
 public class HistoryContext implements Serializable {
 
-  private static final long serialVersionUID = 2819947915596690671L;
+  @Transient private static final long serialVersionUID = 2819947915596690671L;
 
   @Id
   private String id;
   private String response;
 
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
   private LocalDateTime createdAt;
 
   public HistoryContext() {}

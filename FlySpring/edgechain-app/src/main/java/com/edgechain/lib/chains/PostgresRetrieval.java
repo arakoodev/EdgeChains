@@ -3,6 +3,7 @@ package com.edgechain.lib.chains;
 import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
+import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -14,23 +15,34 @@ public class PostgresRetrieval extends Retrieval {
 
   private final PostgresEndpoint postgresEndpoint;
   private final int dimensions;
+
+  private final ArkRequest arkRequest;
+
   private OpenAiEndpoint openAiEndpoint;
 
   private Doc2VecEndpoint doc2VecEndpoint;
 
   public PostgresRetrieval(
-      PostgresEndpoint postgresEndpoint, int dimensions, OpenAiEndpoint openAiEndpoint) {
+      PostgresEndpoint postgresEndpoint,
+      int dimensions,
+      OpenAiEndpoint openAiEndpoint,
+      ArkRequest arkRequest) {
     this.postgresEndpoint = postgresEndpoint;
     this.dimensions = dimensions;
     this.openAiEndpoint = openAiEndpoint;
+    this.arkRequest = arkRequest;
     logger.info("Using OpenAI Embedding Service");
   }
 
   public PostgresRetrieval(
-      PostgresEndpoint postgresEndpoint, int dimensions, Doc2VecEndpoint doc2VecEndpoint) {
+      PostgresEndpoint postgresEndpoint,
+      int dimensions,
+      Doc2VecEndpoint doc2VecEndpoint,
+      ArkRequest arkRequest) {
     this.postgresEndpoint = postgresEndpoint;
     this.dimensions = dimensions;
     this.doc2VecEndpoint = doc2VecEndpoint;
+    this.arkRequest = arkRequest;
     logger.info("Using Doc2Vec Embedding Service");
   }
 
@@ -40,7 +52,7 @@ public class PostgresRetrieval extends Retrieval {
     if (Objects.nonNull(openAiEndpoint)) {
       new EdgeChain<>(
               this.openAiEndpoint
-                  .getEmbeddings(input)
+                  .embeddings(input, arkRequest)
                   .map(w -> this.postgresEndpoint.upsert(w, this.dimensions))
                   .firstOrError()
                   .blockingGet())
@@ -52,7 +64,7 @@ public class PostgresRetrieval extends Retrieval {
     if (Objects.nonNull(doc2VecEndpoint)) {
       new EdgeChain<>(
               this.doc2VecEndpoint
-                  .getEmbeddings(input)
+                  .embeddings(input)
                   .map(embeddings -> this.postgresEndpoint.upsert(embeddings, dimensions))
                   .firstOrError()
                   .blockingGet())

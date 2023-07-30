@@ -1,6 +1,5 @@
 package com.edgechain.lib.context.client.impl;
 
-import com.edgechain.lib.configuration.domain.RedisEnv;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.context.client.HistoryContextClient;
 import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
@@ -10,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -27,7 +27,7 @@ public class RedisHistoryContextClient
 
   @Autowired private RedisTemplate redisTemplate;
 
-  @Autowired @Lazy private RedisEnv redisEnv;
+  @Autowired @Lazy private Environment env;
 
   @Override
   public EdgeChain<HistoryContext> create(String id, RedisHistoryContextEndpoint endpoint) {
@@ -51,7 +51,8 @@ public class RedisHistoryContextClient
                 context.setCreatedAt(LocalDateTime.now());
 
                 this.redisTemplate.opsForValue().set(key, context);
-                this.redisTemplate.expire(key, redisEnv.getTtl(), TimeUnit.SECONDS);
+                this.redisTemplate.expire(
+                    key, Long.parseLong(env.getProperty("redis.ttl")), TimeUnit.SECONDS);
 
                 emitter.onNext(context);
                 emitter.onComplete();
@@ -75,7 +76,8 @@ public class RedisHistoryContextClient
                 historyContext.setResponse(response);
 
                 this.redisTemplate.opsForValue().set(key, historyContext);
-                this.redisTemplate.expire(key, redisEnv.getTtl(), TimeUnit.SECONDS);
+                this.redisTemplate.expire(
+                    key, Long.parseLong(env.getProperty("redis.ttl")), TimeUnit.SECONDS);
 
                 logger.info(String.format("%s is updated", key));
 

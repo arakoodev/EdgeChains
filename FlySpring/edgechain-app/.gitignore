@@ -30,8 +30,16 @@ build/
 !**/src/test/**/build/
 
 /src/main/java/com/edgechain/EdgeChainAppRunner.java
-
+/src/main/resources/jbang.jar
+/src/main/java/com/edgechain/Doc2VecExample.java
+/src/main/java/com/edgechain/PineconeExample.java
+/src/main/java/com/edgechain/PostgreSQLExample.java
+/src/main/java/com/edgechain/RedisExample.java
+/src/main/java/com/edgechain/SupabaseExample.java
+/src/main/java/com/edgechain/WikiExample.java
+/src/main/java/com/edgechain/OpenAiLoggerExample.java
 
 ### VS Code ###
 .vscode/
-/src/main/resources/jbang.jar
+
+

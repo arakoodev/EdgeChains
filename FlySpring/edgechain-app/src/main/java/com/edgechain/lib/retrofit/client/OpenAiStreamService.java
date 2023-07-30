@@ -1,5 +1,6 @@
 package com.edgechain.lib.retrofit.client;
 
+import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.configuration.domain.SecurityUUID;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
@@ -33,7 +34,8 @@ public class OpenAiStreamService {
                 "http://0.0.0.0"
                     + ":"
                     + System.getProperty("server.port")
-                    + "/v2"
+                    + ""
+                    + WebConfiguration.CONTEXT_PATH
                     + "/openai/chat-completion-stream")
             .headers(
                 httpHeaders -> {
