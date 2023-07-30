@@ -29,6 +29,14 @@ public class PineconeEndpoint extends Endpoint {
     this.namespace = namespace;
   }
 
+  public PineconeEndpoint(String url, String apiKey) {
+    super(url, apiKey);
+  }
+
+  public PineconeEndpoint(String url, String apiKey, RetryPolicy retryPolicy) {
+    super(url, apiKey, retryPolicy);
+  }
+
   public PineconeEndpoint(String url, String apiKey, String namespace) {
     super(url, apiKey);
     this.namespace = namespace;

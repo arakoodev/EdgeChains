@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.edgechain.lib.chunk.Chunker;
 import com.edgechain.lib.chunk.enums.LangType;
+import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
 public class ChunkerTest {

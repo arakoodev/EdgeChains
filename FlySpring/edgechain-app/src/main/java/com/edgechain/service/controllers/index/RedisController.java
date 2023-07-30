@@ -1,5 +1,6 @@
 package com.edgechain.service.controllers.index;
 
+import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.RedisEndpoint;
 import com.edgechain.lib.index.client.impl.RedisClient;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController("Service RedisController")
-@RequestMapping(value = "/v2/index/redis")
+@RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/redis")
 public class RedisController {
 
   @PostMapping("/upsert")

@@ -3,6 +3,7 @@ package com.edgechain.lib.flyfly.commands.jbang;
 import java.io.*;
 import java.util.HashMap;
 
+import com.jezhumble.javasysmon.JavaSysMon;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -11,8 +12,7 @@ import picocli.CommandLine.Parameters;
 @Command(
     name = "jbang",
     description =
-        "Activate jbang through the jar placed in resources. Ignore if your application is"
-            + " executed.")
+        "Activate jbang through the jar placed in resources. Ignore if your application is executed.")
 public class JbangCommand implements Runnable {
 
   @Parameters(description = "Java file to be executed with jbang")
@@ -20,6 +20,8 @@ public class JbangCommand implements Runnable {
 
   //  @Parameters(description = "ClassPath Jar to be used")
   //  private String classPathJar;
+
+  private final JavaSysMon sysMon = new JavaSysMon();
 
   @Override
   public void run() {
@@ -50,6 +52,7 @@ public class JbangCommand implements Runnable {
   }
 
   private void runJbang(File jarFile, String javaFile, String classPathJar) {
+
     try {
       // Step One: Execute the initial command to get the classpath
       ProcessBuilder pb =
@@ -63,8 +66,10 @@ public class JbangCommand implements Runnable {
               javaFile);
       pb.redirectErrorStream(true);
       Process process = pb.start();
-      BufferedReader bufferedReader =
-          new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+      InputStreamReader inputStreamReader = new InputStreamReader(process.getInputStream());
+
+      BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
       String classPath = extractClassPathFromOutput(bufferedReader);
       String mainClass;
@@ -93,6 +98,7 @@ public class JbangCommand implements Runnable {
       } else {
         System.out.println("Could not extract classpath or main class from the output.");
       }
+
     } catch (IOException | InterruptedException e) {
       e.printStackTrace();
     }
@@ -142,8 +148,11 @@ public class JbangCommand implements Runnable {
     try {
       ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, mainClass);
       pb.inheritIO();
-      pb.start().waitFor();
-    } catch (IOException | InterruptedException e) {
+      pb.start();
+
+      sysMon.killProcess(sysMon.currentPid());
+
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }

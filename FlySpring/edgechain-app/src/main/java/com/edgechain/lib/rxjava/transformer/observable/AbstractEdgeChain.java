@@ -29,6 +29,8 @@ public abstract class AbstractEdgeChain<T> implements Serializable {
 
   public abstract AbstractEdgeChain<T> concatWith(ObservableSource<T> other);
 
+  // doOnEach, doOnSubscribe(), doOnComplete(),
+
   public abstract AbstractEdgeChain<T> doOnComplete(Action onComplete);
 
   public abstract AbstractEdgeChain<T> doOnNext(Consumer<? super T> onNext);

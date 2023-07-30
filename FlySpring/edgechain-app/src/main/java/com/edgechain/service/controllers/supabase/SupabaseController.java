@@ -1,5 +1,6 @@
 package com.edgechain.service.controllers.supabase;
 
+import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.supabase.request.Credential;
 import com.edgechain.lib.supabase.response.AuthenticatedResponse;
 import com.edgechain.lib.supabase.response.SupabaseUser;
@@ -10,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController("Service SupabaseController")
-@RequestMapping(value = "/v2/supabase")
+@RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/supabase")
 public class SupabaseController {
 
   @Autowired private UserService userService;

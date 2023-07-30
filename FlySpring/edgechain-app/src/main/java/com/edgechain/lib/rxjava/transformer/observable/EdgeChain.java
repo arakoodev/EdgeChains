@@ -61,7 +61,7 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
   }
 
   @Override
-  public AbstractEdgeChain<T> doOnComplete(Action onComplete) {
+  public EdgeChain<T> doOnComplete(Action onComplete) {
     return new EdgeChain<>(this.observable.doOnComplete(onComplete));
   }
 
@@ -152,9 +152,8 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
   @Override
   public Single<T> toSingle() {
     if (RetryUtils.available(endpoint))
-      return this.observable
+      return this.observable.subscribeOn(Schedulers.io())
           .retryWhen(endpoint.getRetryPolicy())
-          .subscribeOn(Schedulers.io())
           .firstOrError();
     else return this.observable.subscribeOn(Schedulers.io()).firstOrError();
   }

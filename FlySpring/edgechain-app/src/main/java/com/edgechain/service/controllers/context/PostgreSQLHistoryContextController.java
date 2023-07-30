@@ -1,5 +1,6 @@
 package com.edgechain.service.controllers.context;
 
+import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.context.client.impl.PostgreSQLHistoryContextClient;
 import com.edgechain.lib.context.domain.ContextPutRequest;
 import com.edgechain.lib.context.domain.HistoryContext;
@@ -10,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/v2/context/postgresql")
+@RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/context/postgresql")
 public class PostgreSQLHistoryContextController {
 
   @Autowired private PostgreSQLHistoryContextClient contextClient;
