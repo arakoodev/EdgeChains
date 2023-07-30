@@ -13,7 +13,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/v2/context/postgresql")
 public class PostgreSQLHistoryContextController {
 
-  @Autowired private PostgreSQLHistoryContextClient contextClient;
+    private final PostgreSQLHistoryContextClient contextClient;
+
+    @Autowired
+    public PostgreSQLHistoryContextController(PostgreSQLHistoryContextClient contextClient) {
+        this.contextClient = contextClient;
+    }
 
   @PostMapping("/create")
   public Single<HistoryContext> create(
@@ -21,7 +26,7 @@ public class PostgreSQLHistoryContextController {
     return this.contextClient.create(id, endpoint).toSingle();
   }
 
-  @PostMapping("/update")
+  @PutMapping("/update")
   public Single<HistoryContext> put(
       @RequestBody ContextPutRequest<PostgreSQLHistoryContextEndpoint> request) {
     return this.contextClient
