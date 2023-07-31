@@ -97,10 +97,7 @@ public class JsonnetLoaderTest {
   @Test
   @DisplayName("Test external variable with xtrasonnet")
   public void test_external_variable_xtrasonnet() throws Exception {
-    String inputJsonnet = """
-                local externalVar = payload.x;
-                {externalVar: externalVar}
-                """;
+    String inputJsonnet = "local externalVar = payload.x;\n{externalVar: externalVar}";
     InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
     JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
     jsonnetLoader.put("x", new JsonnetArgs(DataType.INTEGER, "5"));
