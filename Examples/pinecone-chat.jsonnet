@@ -4,7 +4,7 @@ local preset = |||
                   Use the following pieces of context to answer the question at the end. If
                   you don't know the answer, just say that you don't know, don't try to make up an answer.
                 |||;
-local query = "Question: "+std.extVar("query");
+local query = "Question: "+ payload.query;
 local context = if(payload.keepContext == "true") then payload.context else "";
 local history = "Chat History: "+ if(payload.keepHistory == "true") then payload.history else "";
 
