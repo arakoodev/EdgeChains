@@ -60,15 +60,6 @@ public class ReactChainApplication {
   @RequestMapping("/v1/examples")
   public class ExampleController {
 
-    @GetMapping(value = "/sample")
-    public String sample() {
-      JsonnetLoader loader = new FileJsonnetLoader("sample.jsonnet")
-              .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
-              .put("flag", new JsonnetArgs(DataType.BOOLEAN, "true"))
-              .loadOrReload();
-      return "sample";
-    }
-
     @GetMapping(value = "/react-chain")
     public String reactChain(ArkRequest arkRequest) {
       String prompt = (String) arkRequest.getBody().get("prompt");
