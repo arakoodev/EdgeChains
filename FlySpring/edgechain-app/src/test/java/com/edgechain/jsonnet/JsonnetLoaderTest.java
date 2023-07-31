@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import com.edgechain.lib.jsonnet.JsonnetArgs;
+import com.edgechain.lib.jsonnet.enums.DataType;
 import org.json.JSONArray;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -89,5 +91,22 @@ public class JsonnetLoaderTest {
     boolean flag = jsonnetLoader.getBoolean("flag");
 
     assertTrue(flag);
+  }
+
+  //Test for accessing external variable with xtrasonnet library
+  @Test
+  @DisplayName("Test external variable with xtrasonnet")
+  public void test_external_variable_xtrasonnet() throws Exception {
+    String inputJsonnet = """
+                local externalVar = payload.x;
+                {externalVar: externalVar}
+                """;
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    jsonnetLoader.put("x", new JsonnetArgs(DataType.INTEGER, "5"));
+    jsonnetLoader.load(inputStream);
+    String externalVar = jsonnetLoader.get("externalVar");
+    assertNotNull(externalVar);
+    assertEquals(externalVar, "5");
   }
 }
