@@ -29,7 +29,7 @@ public class Doc2VecEndpoint extends Endpoint {
     return Observable.fromSingle(this.doc2VecService.build(doc2VecRequest));
   }
 
-  public Observable<WordEmbeddings> getEmbeddings(String input) {
+  public Observable<WordEmbeddings> embeddings(String input) {
 
     return Observable.just(new Doc2VecInference(paragraphVectors, input).inferVectors())
         .map(floatList -> new WordEmbeddings(input, floatList));

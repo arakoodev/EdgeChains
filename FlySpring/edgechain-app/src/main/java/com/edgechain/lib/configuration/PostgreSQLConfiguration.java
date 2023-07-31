@@ -1,35 +1,49 @@
 package com.edgechain.lib.configuration;
 
-import com.edgechain.lib.configuration.domain.SupabaseEnv;
-import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import javax.sql.DataSource;
+import java.util.Objects;
 
 @Configuration
 public class PostgreSQLConfiguration {
 
-  @Autowired private SupabaseEnv supabaseEnv;
+  @Autowired private Environment env;
 
   @Bean
-  public HikariDataSource dataSource() {
+  public DataSource dataSource() {
 
-    HikariDataSource hikariDataSource =
-        DataSourceBuilder.create()
-            .type(HikariDataSource.class)
-            .url(supabaseEnv.getDbHost())
-            .driverClassName("org.postgresql.Driver")
-            .username(supabaseEnv.getDbUsername())
-            .password(supabaseEnv.getDbPassword())
-            .build();
+    String dbHost = env.getProperty("postgres.db.host");
+    String dbUsername = env.getProperty("postgres.db.username");
+    String dbPassword = env.getProperty("postgres.db.password");
 
-    return hikariDataSource;
+    return DataSourceBuilder.create()
+        .url(dbHost)
+        .driverClassName("org.postgresql.Driver")
+        .username(dbUsername)
+        .password(dbPassword)
+        .build();
+
+    //    return DataSourceBuilder.create()
+    //              .type(HikariDataSource.class)
+    //              .url(dbHost)
+    //              .driverClassName("org.postgresql.Driver")
+    //              .username(dbUsername)
+    //              .password(dbPassword)
+    //              .build();
   }
 
   @Bean
   public JdbcTemplate jdbcTemplate() {
     return new JdbcTemplate(dataSource());
+  }
+
+  private boolean nonNullAndNotEmpty(String val) {
+    return Objects.nonNull(val) && val.trim().isEmpty();
   }
 }

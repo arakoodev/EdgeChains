@@ -4,6 +4,7 @@ import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.RedisEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
+import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ public class RedisRetrieval extends Retrieval {
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final RedisEndpoint redisEndpoint;
+  private final ArkRequest arkRequest;
   private OpenAiEndpoint openAiEndpoint;
 
   private Doc2VecEndpoint doc2VecEndpoint;
@@ -26,11 +28,13 @@ public class RedisRetrieval extends Retrieval {
       RedisEndpoint redisEndpoint,
       OpenAiEndpoint openAiEndpoint,
       int dimension,
-      RedisDistanceMetric metric) {
+      RedisDistanceMetric metric,
+      ArkRequest arkRequest) {
     this.redisEndpoint = redisEndpoint;
     this.openAiEndpoint = openAiEndpoint;
     this.dimension = dimension;
     this.metric = metric;
+    this.arkRequest = arkRequest;
     logger.info("Using OpenAI Embedding Service");
   }
 
@@ -38,11 +42,13 @@ public class RedisRetrieval extends Retrieval {
       RedisEndpoint redisEndpoint,
       Doc2VecEndpoint doc2VecEndpoint,
       int dimension,
-      RedisDistanceMetric metric) {
+      RedisDistanceMetric metric,
+      ArkRequest arkRequest) {
     this.redisEndpoint = redisEndpoint;
     this.doc2VecEndpoint = doc2VecEndpoint;
     this.dimension = dimension;
     this.metric = metric;
+    this.arkRequest = arkRequest;
     logger.info("Using Doc2Vec Embedding Service");
   }
 
@@ -52,7 +58,7 @@ public class RedisRetrieval extends Retrieval {
     if (Objects.nonNull(openAiEndpoint)) {
       new EdgeChain<>(
               this.openAiEndpoint
-                  .getEmbeddings(input)
+                  .embeddings(input, arkRequest)
                   .map(embeddings -> this.redisEndpoint.upsert(embeddings, dimension, metric))
                   .firstOrError()
                   .blockingGet())
@@ -64,7 +70,7 @@ public class RedisRetrieval extends Retrieval {
     if (Objects.nonNull(doc2VecEndpoint)) {
       new EdgeChain<>(
               this.doc2VecEndpoint
-                  .getEmbeddings(input)
+                  .embeddings(input)
                   .map(embeddings -> this.redisEndpoint.upsert(embeddings, dimension, metric))
                   .firstOrError()
                   .blockingGet())

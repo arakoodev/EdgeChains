@@ -30,13 +30,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class OpenAiClientTest {
 
-  @LocalServerPort int randomServerPort;
+  @LocalServerPort private int port;
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @BeforeEach
   public void setup() {
-    System.setProperty("server.port", "" + randomServerPort);
+    System.setProperty("server.port", "" + port);
   }
 
   @ParameterizedTest
@@ -107,7 +107,10 @@ public class OpenAiClientTest {
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     TestObserver<ChatCompletionResponse> test =
-        endpoint.getChatCompletion("Can you write two unique sentences on Java Language?").test();
+        endpoint
+            .chatCompletion(
+                "Can you write two unique sentences on Java Language?", "TestChain", null)
+            .test();
 
     // Step 4: To act & assert
     test.await();
@@ -136,7 +139,10 @@ public class OpenAiClientTest {
             false);
 
     TestObserver<ChatCompletionResponse> test =
-        endpoint.getChatCompletion("Can you write two unique sentences on Java Language?").test();
+        endpoint
+            .chatCompletion(
+                "Can you write two unique sentences on Java Language?", "TestChain", null)
+            .test();
 
     // Step 4: To act & assert
     test.await();

@@ -1,5 +1,6 @@
 package com.edgechain.service.controllers.embeddings;
 
+import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.embeddings.request.Doc2VecRequest;
 import com.edgechain.lib.embeddings.services.Doc2VecBuilder;
 import com.edgechain.lib.response.StringResponse;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController("Service Doc2VecController")
-@RequestMapping(value = "/v2/doc2vec")
+@RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/doc2vec")
 public class Doc2VecController {
 
   @PostMapping

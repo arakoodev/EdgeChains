@@ -7,12 +7,14 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import java.net.URL;
 import java.nio.file.Paths;
 
 @SpringBootApplication
+@EnableScheduling
 public class EdgeChainApplication {
 
   private static final Logger logger = LoggerFactory.getLogger(EdgeChainApplication.class);
@@ -20,7 +22,6 @@ public class EdgeChainApplication {
   public static void main(String[] args) {
 
     System.setProperty("jar.name", getJarFileName(EdgeChainApplication.class));
-
     logger.info("Executed jar file: " + System.getProperty("jar.name"));
 
     SpringApplication springApplication =
