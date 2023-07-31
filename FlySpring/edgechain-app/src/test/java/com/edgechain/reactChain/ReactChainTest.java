@@ -12,14 +12,14 @@ import java.io.InputStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-
 @SpringBootTest
 public class ReactChainTest {
 
     @Test
     @DisplayName("Test extractAction method for Reach Chain")
     public void test_extractAction_fromJsonnet() throws Exception {
-        String inputJsonnet = "local extractAction(str) =\n    local action = xtr.strings.substringBefore(xtr.strings.substringAfter(str, \"[\"), \"]\");\n    action;\n{ \"action\": extractAction(\"Thought 1: I need to search ABC and XYZ, and find which was started first.Action 1: Search[ABC]\") }";
+        String inputJsonnet =
+                "local extractAction(str) =\n    local action = xtr.strings.substringBefore(xtr.strings.substringAfter(str, \"[\"), \"]\");\n    action;\n{ \"action\": extractAction(\"Thought 1: I need to search ABC and XYZ, and find which was started first.Action 1: Search[ABC]\") }";
         InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
         JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
         jsonnetLoader.load(inputStream);
@@ -31,7 +31,8 @@ public class ReactChainTest {
     @Test
     @DisplayName("Test extractThought method for Reach Chain")
     public void test_extractThought_fromJsonnet() throws Exception {
-        String inputJsonnet = "local extractThought(str) =\n   local thought = xtr.strings.substringAfter(xtr.strings.substringBefore(str, \"Action\"), \":\");\n   thought;\n{ \"thought\": extractThought(\"Thought 1:I need to search ABC and XYZ, and find which was started first.Action 1: Search[ABC]\") }";
+        String inputJsonnet =
+                "local extractThought(str) =\n   local thought = xtr.strings.substringAfter(xtr.strings.substringBefore(str, \"Action\"), \":\");\n   thought;\n{ \"thought\": extractThought(\"Thought 1:I need to search ABC and XYZ, and find which was started first.Action 1: Search[ABC]\") }";
         InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
         JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
         jsonnetLoader.load(inputStream);
@@ -40,25 +41,24 @@ public class ReactChainTest {
         assertEquals(thought, "I need to search ABC and XYZ, and find which was started first.");
     }
 
-
-
     @Test
     @DisplayName("Mapper search function test")
     public void test_mapper() {
-        String inputJsonnet = """
-                local config = {
-                  "edgechains.config": {
-                    "mapper": {
-                      "search": "udf.fn",
-                    },
-                  },
-                };
-                local callFunction(funcName) =
-                    local mapper = config["edgechains.config"].mapper;
-                    mapper[funcName];
-                local searchFunction = callFunction("search");
-                { "searchFunction": searchFunction }
-                """;
+        String inputJsonnet =
+                """
+                        local config = {
+                          "edgechains.config": {
+                            "mapper": {
+                              "search": "udf.fn",
+                            },
+                          },
+                        };
+                        local callFunction(funcName) =
+                            local mapper = config["edgechains.config"].mapper;
+                            mapper[funcName];
+                        local searchFunction = callFunction("search");
+                        { "searchFunction": searchFunction }
+                        """;
         InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
         JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
         jsonnetLoader.load(inputStream);
@@ -66,6 +66,4 @@ public class ReactChainTest {
         assertNotNull(searchFunction);
         assertEquals(searchFunction, "udf.fn");
     }
-
-
 }

@@ -93,7 +93,7 @@ public class JsonnetLoaderTest {
     assertTrue(flag);
   }
 
-  //Test for accessing external variable with xtrasonnet library
+  // Test for accessing external variable with xtrasonnet library
   @Test
   @DisplayName("Test external variable with xtrasonnet")
   public void test_external_variable_xtrasonnet() throws Exception {
