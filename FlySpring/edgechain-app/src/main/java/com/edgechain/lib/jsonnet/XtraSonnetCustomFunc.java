@@ -22,6 +22,9 @@ public class XtraSonnetCustomFunc extends Library {
         var res = new HashMap<String, Val.Func>();
         res.put("fn", builtin(new String[]{"param"}, (vals, pos, ev) -> {
             String prompt = vals[0].asString();
+            if(prompt == null || prompt.equals("")) {
+                return new Val.Str(dummyPosition(), "");
+            }
             WikiEndpoint wikiEndpoint = new WikiEndpoint();
 
             Observable<WikiResponse> result = wikiEndpoint.getPageContent(prompt);
