@@ -2,7 +2,6 @@ package com.edgechain.lib.jsonnet;
 
 import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.exceptions.JsonnetLoaderException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jam01.xtrasonnet.Transformer;
 import org.apache.commons.io.FileUtils;
@@ -21,7 +20,7 @@ public abstract class JsonnetLoader {
 
   private Map<String, JsonnetArgs> args = new HashMap<>();
   private Map<String, String> xtraArgsMap = new HashMap<>();
-  private final static ObjectMapper objectMapper = new ObjectMapper();
+  private static final ObjectMapper objectMapper = new ObjectMapper();
   private JSONObject jsonObject;
 
   public JsonnetLoader() {}
@@ -50,7 +49,6 @@ public abstract class JsonnetLoader {
       printWriter.flush();
       printWriter.close();
 
-
       // Transform Jsonnet Args
       for (Map.Entry<String, JsonnetArgs> entry : this.args.entrySet()) {
 
@@ -65,7 +63,8 @@ public abstract class JsonnetLoader {
         }
       }
 
-      var res = Transformer.builder(text)
+      var res =
+          Transformer.builder(text)
               .withLibrary(new XtraSonnetCustomFunc())
               .build()
               .transform(serializeXtraArgs(xtraArgsMap));
@@ -79,6 +78,7 @@ public abstract class JsonnetLoader {
       throw new JsonnetLoaderException(e.getMessage());
     }
   }
+
   private static String serializeXtraArgs(Map<String, String> xtraArgsMap) {
     try {
       return objectMapper.writeValueAsString(xtraArgsMap);

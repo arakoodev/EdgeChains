@@ -12,25 +12,30 @@ import sjsonnet.Val;
 import java.util.*;
 
 public class XtraSonnetCustomFunc extends Library {
-    @Override
-    public String namespace() {
-        return "udf";
-    }
+  @Override
+  public String namespace() {
+    return "udf";
+  }
 
-    @Override
-    public Map<String, Val.Func> functions(DataFormatService dataFormats, Header header, Importer importer) {
-        var res = new HashMap<String, Val.Func>();
-        res.put("fn", builtin(new String[]{"param"}, (vals, pos, ev) -> {
-            String prompt = vals[0].asString();
-            if(prompt == null || prompt.equals("")) {
+  @Override
+  public Map<String, Val.Func> functions(
+      DataFormatService dataFormats, Header header, Importer importer) {
+    var res = new HashMap<String, Val.Func>();
+    res.put(
+        "fn",
+        builtin(
+            new String[] {"param"},
+            (vals, pos, ev) -> {
+              String prompt = vals[0].asString();
+              if (prompt == null || prompt.equals("")) {
                 return new Val.Str(dummyPosition(), "");
-            }
-            WikiEndpoint wikiEndpoint = new WikiEndpoint();
+              }
+              WikiEndpoint wikiEndpoint = new WikiEndpoint();
 
-            Observable<WikiResponse> result = wikiEndpoint.getPageContent(prompt);
-            String response = result.blockingFirst().getText();
-            return new Val.Str(dummyPosition(), response);
-        }));
-        return res;
-    }
+              Observable<WikiResponse> result = wikiEndpoint.getPageContent(prompt);
+              String response = result.blockingFirst().getText();
+              return new Val.Str(dummyPosition(), response);
+            }));
+    return res;
+  }
 }
