@@ -187,7 +187,7 @@ public class PostgreSQLExample {
                           new JsonnetArgs(
                               DataType.STRING,
                               pinecone)) // Step 3: Concatenate the Prompt: ${Base Prompt} -
-                                         // ${Pinecone Output}
+                      // ${Pinecone Output}
                       .loadOrReload();
                   // Step 4: Now, pass the prompt to OpenAI ChatCompletion & Add it to the list
                   // which will be returned
