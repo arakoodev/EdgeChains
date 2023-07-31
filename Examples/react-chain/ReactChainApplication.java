@@ -1,4 +1,5 @@
 package com.edgechain;
+
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
@@ -24,7 +25,6 @@ public class ReactChainApplication {
 
   private static OpenAiEndpoint userChatEndpoint;
 
-
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
 
@@ -42,18 +42,16 @@ public class ReactChainApplication {
     properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
-
     new SpringApplicationBuilder(ReactChainApplication.class).properties(properties).run(args);
 
     userChatEndpoint =
-            new OpenAiEndpoint(
-                    OPENAI_CHAT_COMPLETION_API,
-                    OPENAI_AUTH_KEY,
-                    "gpt-3.5-turbo",
-                    "user",
-                    0.7,
-                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
-
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
   }
 
   @RestController
@@ -64,7 +62,8 @@ public class ReactChainApplication {
     public String reactChain(ArkRequest arkRequest) {
       String prompt = (String) arkRequest.getBody().get("prompt");
       StringBuilder context = new StringBuilder();
-      JsonnetLoader loader = new FileJsonnetLoader("react-chain.jsonnet")
+      JsonnetLoader loader =
+          new FileJsonnetLoader("react-chain.jsonnet")
               .put("context", new JsonnetArgs(DataType.STRING, "This is context"))
               .put("gptResponse", new JsonnetArgs(DataType.STRING, ""))
               .loadOrReload();
@@ -72,15 +71,29 @@ public class ReactChainApplication {
 
       prompt = preset + " \nQuestion: " + prompt;
 
-      String gptResponse = userChatEndpoint.chatCompletion(prompt, "React-Chain", arkRequest).blockingFirst().getChoices().get(0).getMessage().getContent();
+      String gptResponse =
+          userChatEndpoint
+              .chatCompletion(prompt, "React-Chain", arkRequest)
+              .blockingFirst()
+              .getChoices()
+              .get(0)
+              .getMessage()
+              .getContent();
       context.append(prompt);
       loader.put("context", new JsonnetArgs(DataType.STRING, context.toString()));
       loader.put("gptResponse", new JsonnetArgs(DataType.STRING, gptResponse));
 
-      while(!checkIfFinished(gptResponse)) {
+      while (!checkIfFinished(gptResponse)) {
         loader.loadOrReload();
         prompt = loader.get("prompt");
-        gptResponse = userChatEndpoint.chatCompletion(prompt, "React-Chain", arkRequest).blockingFirst().getChoices().get(0).getMessage().getContent();
+        gptResponse =
+            userChatEndpoint
+                .chatCompletion(prompt, "React-Chain", arkRequest)
+                .blockingFirst()
+                .getChoices()
+                .get(0)
+                .getMessage()
+                .getContent();
         context.append("\n" + prompt);
         loader.put("context", new JsonnetArgs(DataType.STRING, context.toString()));
         loader.put("gptResponse", new JsonnetArgs(DataType.STRING, gptResponse));
@@ -92,5 +105,4 @@ public class ReactChainApplication {
       return gptResponse.contains("Finish");
     }
   }
-
 }
