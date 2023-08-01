@@ -60,8 +60,6 @@ public class OpenAiController {
     EdgeChain<ChatCompletionResponse> edgeChain =
         new OpenAiClient(openAiEndpoint).createChatCompletion(chatCompletionRequest);
 
-    System.out.println(openAiEndpoint.getRetryPolicy());
-
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
       ChatCompletionLog chatCompletionLog = new ChatCompletionLog();
