@@ -16,6 +16,7 @@ import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.openai.response.CompletionResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.rxjava.utils.AtomInteger;
+import com.edgechain.lib.utils.RetryUtils;
 import com.knuddels.jtokkit.Encodings;
 import com.knuddels.jtokkit.api.Encoding;
 import com.knuddels.jtokkit.api.EncodingRegistry;
@@ -46,8 +47,7 @@ public class OpenAiController {
   @Autowired private Environment env;
 
   @PostMapping(value = "/chat-completion")
-  public Single<ChatCompletionResponse> chatCompletion(@RequestBody OpenAiEndpoint openAiEndpoint)
-      throws SQLException {
+  public Single<ChatCompletionResponse> chatCompletion(@RequestBody OpenAiEndpoint openAiEndpoint) {
 
     ChatCompletionRequest chatCompletionRequest =
         ChatCompletionRequest.builder()
@@ -64,10 +64,10 @@ public class OpenAiController {
 
       ChatCompletionLog chatCompletionLog = new ChatCompletionLog();
       chatCompletionLog.setName(openAiEndpoint.getChainName());
+      chatCompletionLog.setCreatedAt(LocalDateTime.now());
       chatCompletionLog.setCallIdentifier(openAiEndpoint.getCallIdentifier());
       chatCompletionLog.setInput(openAiEndpoint.getInput());
       chatCompletionLog.setModel(openAiEndpoint.getModel());
-      chatCompletionLog.setCreatedAt(LocalDateTime.now());
 
       return edgeChain
           .doOnNext(
@@ -168,6 +168,7 @@ public class OpenAiController {
                     }
                   });
             } else {
+
               Observable<ChatCompletionResponse> obs = edgeChain.getScheduledObservable();
               obs.subscribe(
                   res -> {
