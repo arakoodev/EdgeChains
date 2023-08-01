@@ -63,7 +63,7 @@ public class Doc2VecExample {
 
       // Configuring parameters for our doc2vec model
       Doc2VecRequest doc2Vec = new Doc2VecRequest();
-      doc2Vec.setFolderDirectory("R:\\Github\\train_files");
+      doc2Vec.setFolderDirectory("./train_files");
       doc2Vec.setModelName("doc_vector"); // Will be stored as doc_vector.bin
       doc2Vec.setDestination("R:\\Github");
       doc2Vec.setEpochs(5);
@@ -92,7 +92,7 @@ public class Doc2VecExample {
       // Remember model is loaded once (this is just for example)
       ParagraphVectors paragraphVectors =
           WordVectorSerializer.readParagraphVectors(
-              new FileInputStream("R:\\Github\\doc_vector.bin"));
+              new FileInputStream("./doc_vector.bin"));
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
@@ -119,7 +119,7 @@ public class Doc2VecExample {
       // Remember model is loaded once (this is just for example)
       ParagraphVectors paragraphVectors =
           WordVectorSerializer.readParagraphVectors(
-              new FileInputStream("R:\\Github\\doc_vector.bin"));
+              new FileInputStream("./doc_vector.bin"));
 
       return new EdgeChain<>(
               doc2VecEndpoint.embeddings(
