@@ -146,11 +146,11 @@ public class JbangCommand implements Runnable {
     try {
       ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, mainClass);
       pb.inheritIO();
-      Process process = pb.start();
-      process.waitFor();
+      pb.start();
+
       System.exit(0);
 
-    } catch (IOException | InterruptedException e) {
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }
