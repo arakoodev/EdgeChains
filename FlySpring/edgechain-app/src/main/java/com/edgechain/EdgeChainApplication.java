@@ -33,8 +33,6 @@ public class EdgeChainApplication {
             .build();
 
     springApplication.run(args);
-
-
   }
 
   @Bean(name = "mvcHandlerMappingIntrospector")
