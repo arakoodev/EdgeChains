@@ -91,8 +91,7 @@ public class Doc2VecExample {
 
       // Remember model is loaded once (this is just for example)
       ParagraphVectors paragraphVectors =
-          WordVectorSerializer.readParagraphVectors(
-              new FileInputStream("./doc_vector.bin"));
+          WordVectorSerializer.readParagraphVectors(new FileInputStream("./doc_vector.bin"));
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
@@ -118,8 +117,7 @@ public class Doc2VecExample {
 
       // Remember model is loaded once (this is just for example)
       ParagraphVectors paragraphVectors =
-          WordVectorSerializer.readParagraphVectors(
-              new FileInputStream("./doc_vector.bin"));
+          WordVectorSerializer.readParagraphVectors(new FileInputStream("./doc_vector.bin"));
 
       return new EdgeChain<>(
               doc2VecEndpoint.embeddings(

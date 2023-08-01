@@ -16,7 +16,6 @@ import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.openai.response.CompletionResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.rxjava.utils.AtomInteger;
-import com.edgechain.lib.utils.RetryUtils;
 import com.knuddels.jtokkit.Encodings;
 import com.knuddels.jtokkit.api.Encoding;
 import com.knuddels.jtokkit.api.EncodingRegistry;
