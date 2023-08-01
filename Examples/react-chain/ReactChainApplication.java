@@ -63,7 +63,7 @@ public class ReactChainApplication {
       String prompt = (String) arkRequest.getBody().get("prompt");
       StringBuilder context = new StringBuilder();
       JsonnetLoader loader =
-          new FileJsonnetLoader("react-chain.jsonnet")
+          new FileJsonnetLoader("./react-chain.jsonnet")
               .put("context", new JsonnetArgs(DataType.STRING, "This is context"))
               .put("gptResponse", new JsonnetArgs(DataType.STRING, ""))
               .loadOrReload();

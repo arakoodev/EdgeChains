@@ -3,7 +3,6 @@ package com.edgechain.lib.flyfly.commands.jbang;
 import java.io.*;
 import java.util.HashMap;
 
-import com.jezhumble.javasysmon.JavaSysMon;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -21,8 +20,6 @@ public class JbangCommand implements Runnable {
 
   //  @Parameters(description = "ClassPath Jar to be used")
   //  private String classPathJar;
-
-  private final JavaSysMon sysMon = new JavaSysMon();
 
   @Override
   public void run() {
@@ -149,11 +146,11 @@ public class JbangCommand implements Runnable {
     try {
       ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, mainClass);
       pb.inheritIO();
-      pb.start();
+      Process process = pb.start();
+      process.waitFor();
+      System.exit(0);
 
-      sysMon.killProcess(sysMon.currentPid());
-
-    } catch (IOException e) {
+    } catch (IOException | InterruptedException e) {
       e.printStackTrace();
     }
   }
