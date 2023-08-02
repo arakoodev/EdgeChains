@@ -27,17 +27,26 @@ public class JsonFormat {
 
     private static final String OPENAI_AUTH_KEY = "";
 
-    // need only for v1 situation endpoint
-    private final String OPENAI_ORG_ID = "";
+    // need only for situation endpoint
+    private static final String OPENAI_ORG_ID = "";
 
     private static OpenAiEndpoint userChatEndpoint;
-    private JsonnetLoader loader = new FileJsonnetLoader("./json-format.jsonnet");
+    private static JsonnetLoader loader = new FileJsonnetLoader("./json-format.jsonnet");
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static void main(String[] args) {
         System.setProperty("server.port", "8080");
         new SpringApplicationBuilder(JsonFormat.class).run(args);
 
+        loader.put("prompt", new JsonnetArgs(DataType.STRING, ""))
+                .put("format", new JsonnetArgs(DataType.STRING, ""))
+                .put("situation", new JsonnetArgs(DataType.STRING, ""))
+                .put("validAction", new JsonnetArgs(DataType.STRING, ""))
+                .put("callToAction", new JsonnetArgs(DataType.STRING, ""))
+                .put("actionFormat", new JsonnetArgs(DataType.STRING, ""))
+                .put("response1", new JsonnetArgs(DataType.STRING, ""))
+                .put("response2", new JsonnetArgs(DataType.STRING, ""))
+                .put("response3", new JsonnetArgs(DataType.STRING, ""));
     }
 
     @RestController
@@ -101,15 +110,10 @@ public class JsonFormat {
                     new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
             loader
-                    .put("prompt", new JsonnetArgs(DataType.STRING, ""))
-                    .put("format", new JsonnetArgs(DataType.STRING, ""))
                     .put("situation", new JsonnetArgs(DataType.STRING, json.getString("situation")))
                     .put("validAction", new JsonnetArgs(DataType.STRING, json.getString("validAction")))
                     .put("callToAction", new JsonnetArgs(DataType.STRING, json.getString("callToAction")))
                     .put("actionFormat", new JsonnetArgs(DataType.STRING, json.getString("actionFormat")))
-                    .put("response1", new JsonnetArgs(DataType.STRING, ""))
-                    .put("response2", new JsonnetArgs(DataType.STRING, ""))
-                    .put("response3", new JsonnetArgs(DataType.STRING, ""))
                     .loadOrReload();
 
             String response1 = userChat
