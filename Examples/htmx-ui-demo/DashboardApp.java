@@ -1,12 +1,12 @@
 package com.edgechain;
 
-//SOURCES ChatMessage.java
-//SOURCES MessageItem.java
-//SOURCES Chat.java
-//SOURCES User.java
+// SOURCES ChatMessage.java
+// SOURCES MessageItem.java
+// SOURCES Chat.java
+// SOURCES User.java
 
-//FILES resources/templates/index.html=./index.html
-//FILES resources/templates/fragments.html=./fragments.html
+// FILES resources/templates/index.html=./index.html
+// FILES resources/templates/fragments.html=./fragments.html
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.supabase.response.AuthenticatedResponse;
 import org.springframework.boot.SpringApplication;
@@ -44,8 +44,8 @@ public class DashboardApp {
   private String Url = "http://localhost:8080/v1/examples/wiki-summary?query=";
 
   @GetMapping
-  public String index(Model model,HttpServletRequest request){
-    if((String)request.getSession().getAttribute("access_token") == null){
+  public String index(Model model, HttpServletRequest request) {
+    if ((String) request.getSession().getAttribute("access_token") == null) {
       return "redirect:/login";
     }
 
@@ -114,63 +114,65 @@ public class DashboardApp {
   }
 
   @GetMapping("login")
-  public String logIn(){
+  public String logIn() {
     return "signIn";
   }
 
   @GetMapping("signup")
-  public String singUp(){
+  public String singUp() {
     return "signUp";
   }
 
   @GetMapping("signinlink")
-  public String signInLink(){
+  public String signInLink() {
     return "signInLink";
   }
 
   public User user = new User();
 
   @PostMapping("signup")
-  public String signUpRequest(HttpServletRequest request){
+  public String signUpRequest(HttpServletRequest request) {
 
-    user.email=request.getParameter("email");
-    user.password= request.getParameter("password");
+    user.email = request.getParameter("email");
+    user.password = request.getParameter("password");
 
-    User info = webClient()
-      .post()
-      .uri("http://localhost:8080/v1/signup")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(Mono.just(user),User.class)
-      .retrieve()
-      .bodyToMono(User.class)
-      .block();
+    User info =
+        webClient()
+            .post()
+            .uri("http://localhost:8080/v1/signup")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(Mono.just(user), User.class)
+            .retrieve()
+            .bodyToMono(User.class)
+            .block();
 
     return "redirect:/signInLink";
   }
 
   @PostMapping("signin")
-  public String signInRequest(HttpServletRequest request){
-    user.email=request.getParameter("email");
-    user.password=request.getParameter("password");
+  public String signInRequest(HttpServletRequest request) {
+    user.email = request.getParameter("email");
+    user.password = request.getParameter("password");
 
-    AuthenticatedResponse authResponse = webClient()
-      .post()
-      .uri("http://localhost:8080/v1/login")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(Mono.just(user),User.class)
-      .retrieve()
-      .bodyToMono(AuthenticatedResponse.class)
-      .block();
+    AuthenticatedResponse authResponse =
+        webClient()
+            .post()
+            .uri("http://localhost:8080/v1/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(Mono.just(user), User.class)
+            .retrieve()
+            .bodyToMono(AuthenticatedResponse.class)
+            .block();
 
     HttpSession session = request.getSession();
-    session.setAttribute("access_token",authResponse.getAccess_token());
+    session.setAttribute("access_token", authResponse.getAccess_token());
 
     return "redirect:/";
   }
 
   @GetMapping("logout")
-  public String logOut(HttpServletRequest request){
-    request.getSession().setAttribute("access_token",null);
+  public String logOut(HttpServletRequest request) {
+    request.getSession().setAttribute("access_token", null);
     return "redirect:/login";
   }
 }
