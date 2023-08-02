@@ -43,8 +43,8 @@ public class PostgreSQLExample {
   private static PostgresEndpoint postgresEndpoint;
   private static PostgreSQLHistoryContextEndpoint contextEndpoint;
 
-  private JsonnetLoader queryLoader = new FileJsonnetLoader("R:\\Github\\postgres-query.jsonnet");
-  private JsonnetLoader chatLoader = new FileJsonnetLoader("R:\\Github\\postgres-chat.jsonnet");
+  private JsonnetLoader queryLoader = new FileJsonnetLoader("./postgres-query.jsonnet");
+  private JsonnetLoader chatLoader = new FileJsonnetLoader("./postgres-chat.jsonnet");
 
   public static void main(String[] args) {
 

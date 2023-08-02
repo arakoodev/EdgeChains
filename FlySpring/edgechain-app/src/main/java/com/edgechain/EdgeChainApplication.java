@@ -21,6 +21,8 @@ public class EdgeChainApplication {
 
   public static void main(String[] args) {
 
+    logger.info("Please avoid special symbols such as hypen(-) in naming the directory.");
+
     System.setProperty("jar.name", getJarFileName(EdgeChainApplication.class));
     logger.info("Executed jar file: " + System.getProperty("jar.name"));
 

@@ -14,9 +14,41 @@
   
 ---
 
-Large language models (LLMs) have revolutionized the way developers create applications by unlocking new possibilities. However, leveraging the full potential of LLMs often requires integrating them with other sources of computation or knowledge. Edgechains is specifically designed to facilitate the development of such applications, enabling developers to harness the true power of LLMs by seamlessly combining them with complementary technologies. 
+Leveraging the full potential of Large language models (LLMs) often requires integrating them with other sources of computation or knowledge. Edgechains is specifically designed to **orchestrate** such applications.
 
-Specifically built for Java, EdgeChains is an open-source chain-of-thought engineering framework tailored for Large Language Models (LLMs) and OpenAI GPT. With a focus on enterprise-grade applications and scalability, EdgeChains addresses the complexities and challenges associated with working with OpenAI APIs. 
+EdgeChains is an open-source chain-of-thought engineering framework tailored for Large Language Models (LLMs)- like OpenAI GPT, LLama2, Falcon, etc. - With a focus on enterprise-grade deployability and scalability. 
+
+## Understanding EdgeChains
+
+At EdgeChains, we take a unique approach to Generative AI - we think Generative AI is a deployment and configuration management challenge rather than a UI and library design pattern challenge. We build on top of a tech that has solved this problem in a different domain - Kubernetes Config Management - and bring that to Generative AI.
+Edgechains is built on top of jsonnet, originally built by Google based on their experience managing a vast amount of configuration code in the Borg infrastructure. 
+
+Edgechains gives you:
+
+* **Versioning for Prompts**: Prompts are written in jsonnet. Makes them easily versionable and diffable. 
+* **Automatic parallelism**: EdgeChains automatically parallelizes LLM chains & chain-of-thought tasks across CPUs, GPUs, and TPUs using the JVM.
+* **Fault tolerance**: EdgeChains is designed to be fault-tolerant, and can continue to retry & backoff even if some of the requests in the system fail.
+* **Scalability**: EdgeChains is designed to be scalable, and can be used to write your chain-of-thought applications on large number of APIs, prompt lengths and vector datasets.
+
+## Why do you need Prompt & Chain Engineering
+Most people who are new to Generative AI think that the way to use OpenAI or other LLMs is to simply ask it a question and have it magically reply. The answer is extremely different and complex.
+
+### Complexity of Prompt Engineering
+Generative AI, OpenAI and LLMs need you to write your prompt in very specific ways. Each of these ways to write prompts is very involved and highly complex - it is in fact so complex that there are research papers published for this. E.g.:
+- [Reason & Act - REACT style prompt chains](https://ai.googleblog.com/2022/11/react-synergizing-reasoning-and-acting.html)
+- [HyDE prompt chains - Precise Zero-Shot Dense Retrieval without Relevance Labels](https://arxiv.org/abs/2212.10496)
+- [FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance](https://arxiv.org/abs/2305.05176)
+
+### *Prompt Explosion* - Too many Prompts for too many LLMs
+Moreover, these prompt techniques work on one kind of LLMs, but dont work on other LLMs. For e.g. prompts & chains that are written in a specific way for GPT-3.5 will need to be rewritten for Llama2 **to achieve the same goal**. This causes prompts to explode in number, making them challenging to version and manage.
+
+### Testability in Production
+One of the big challenge in production is how to keep testing your prompts & chains and iterate on them quickly. If your prompts sit beneath many layers of libraries and abstractions, this is impossible. But if your prompts ***live outside the code*** and are declarative, this is easy to do. In fact, in EdgeChains, you can have your entire prompt & chain logic sit in s3 or an API.
+
+### Token costs & measurement
+Each prompt or chain has a token cost associated with it. You may think that a certain prompt is very good...but it may be consuming a huge amount of tokens. For example, Chain-of-Thought style prompts consume atleast 3X as many **output tokens** as a normal prompt. you need to have fine-grained tracking and measurement built into your framework to be able to manage this. Edgechains has this built in.
+
+
 
 <!-- Demo if present -->
 
@@ -61,17 +93,6 @@ To start the application, execute the following command in your terminal:
 java -jar flyfly.jar jbang EdgeChainApplication.java edgechain-app-1.0.0.jar
 ```
 ---
-## Understanding EdgeChains
-
-At EdgeChains, we take a unique approach to development, viewing it as a deployment and configuration management challenge rather than solely focusing on the user interface and code library aspects. We understand the difficulties developers face when using OpenAI APIs, which can result in code complexity and prompt-related issues.  To overcome them, we have leveraged the power of jsonnet, the advanced library developed by Google based on their experience managing a vast amount of configuration code in the Borg infrastructure, which underlies their extensive cloud and Kubernetes clusters. And building on top of this, Edgechains gives you:
-
-* **Versioning for Prompts**: Prompts are written in jsonnet. Makes them easily versionable and diffable. 
-* **Automatic parallelism**: EdgeChains automatically parallelizes LLM chains & chain-of-thought tasks across CPUs, GPUs, and TPUs using the JVM.
-* **Fault tolerance**: EdgeChains is designed to be fault-tolerant, and can continue to retry & backoff even if some of the requests in the system fail.
-* **Scalability**: EdgeChains is designed to be scalable, and can be used to write your chain-of-thought applications on large number of APIs, prompt lengths and vector datasets.
-
-With EdgeChains, you can make your product live from day one, thanks to its robust features and seamless integration capabilities.
-
 ### Tutorial - Document-based Chatting with EdgeChains
 
 Sometimes the best way to understand a complicated system is to start by understanding a basic example. The following example illustrates how to run your own Automata agent. The agent will be initialized with a trivial instruction, and will then attempt to write code to fulfill the instruction. The agent will then return the result of its attempt.

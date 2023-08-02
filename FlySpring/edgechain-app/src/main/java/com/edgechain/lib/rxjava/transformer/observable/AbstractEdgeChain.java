@@ -1,7 +1,9 @@
 package com.edgechain.lib.rxjava.transformer.observable;
 
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.*;
 
 import java.io.Serializable;
@@ -35,7 +37,14 @@ public abstract class AbstractEdgeChain<T> implements Serializable {
 
   public abstract AbstractEdgeChain<T> doOnNext(Consumer<? super T> onNext);
 
+  public abstract AbstractEdgeChain<T> doOnEach(
+      @NonNull Consumer<? super Notification<T>> onNotification);
+
+  public abstract AbstractEdgeChain<T> doAfterNext(Consumer<? super T> onAfterNext);
+
   public abstract AbstractEdgeChain<T> doOnError(Consumer<? super Throwable> onError);
+
+  public abstract AbstractEdgeChain<T> doOnSubscribe(Consumer<? super Disposable> onSubscribe);
 
   public abstract AbstractEdgeChain<T> schedule();
 
