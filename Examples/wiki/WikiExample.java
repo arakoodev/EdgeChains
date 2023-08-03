@@ -32,7 +32,7 @@ public class WikiExample {
   private static OpenAiEndpoint gpt4Endpoint;
   private static WikiEndpoint wikiEndpoint;
 
-  private final JsonnetLoader loader = new FileJsonnetLoader("R:\\Github\\wiki.jsonnet");
+  private final JsonnetLoader loader = new FileJsonnetLoader("./wiki.jsonnet");
 
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");

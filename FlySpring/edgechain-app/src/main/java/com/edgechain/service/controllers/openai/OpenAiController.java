@@ -46,8 +46,7 @@ public class OpenAiController {
   @Autowired private Environment env;
 
   @PostMapping(value = "/chat-completion")
-  public Single<ChatCompletionResponse> chatCompletion(@RequestBody OpenAiEndpoint openAiEndpoint)
-      throws SQLException {
+  public Single<ChatCompletionResponse> chatCompletion(@RequestBody OpenAiEndpoint openAiEndpoint) {
 
     ChatCompletionRequest chatCompletionRequest =
         ChatCompletionRequest.builder()
@@ -64,10 +63,10 @@ public class OpenAiController {
 
       ChatCompletionLog chatCompletionLog = new ChatCompletionLog();
       chatCompletionLog.setName(openAiEndpoint.getChainName());
+      chatCompletionLog.setCreatedAt(LocalDateTime.now());
       chatCompletionLog.setCallIdentifier(openAiEndpoint.getCallIdentifier());
       chatCompletionLog.setInput(openAiEndpoint.getInput());
       chatCompletionLog.setModel(openAiEndpoint.getModel());
-      chatCompletionLog.setCreatedAt(LocalDateTime.now());
 
       return edgeChain
           .doOnNext(
@@ -168,6 +167,7 @@ public class OpenAiController {
                     }
                   });
             } else {
+
               Observable<ChatCompletionResponse> obs = edgeChain.getScheduledObservable();
               obs.subscribe(
                   res -> {
