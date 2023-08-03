@@ -15,6 +15,7 @@ import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.search.*;
@@ -45,8 +46,8 @@ public class RedisClient {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private final JedisPooled jedisPooled =
-      ApplicationContextHolder.getContext().getBean(JedisPooled.class);
+  @Autowired
+  private JedisPooled jedisPooled;
 
   public EdgeChain<StringResponse> upsert(
       WordEmbeddings words2Vec, int dimension, RedisDistanceMetric metric) {

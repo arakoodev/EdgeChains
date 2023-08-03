@@ -27,7 +27,7 @@ public class RedisConfiguration {
   public JedisPooled jedisPooled() {
 
     int port = 6379;
-    String host = "redis://";
+    String host = "127.0.0.1";
 
     if (Objects.nonNull(env.getProperty("redis.port"))) {
       port = Integer.parseInt(env.getProperty("redis.port"));
@@ -46,7 +46,7 @@ public class RedisConfiguration {
   public JedisConnectionFactory jedisConnectionFactory() {
 
     int port = 6379;
-    String host = "redis://";
+    String host = "127.0.0.1";
 
     if (Objects.nonNull(env.getProperty("redis.port"))) {
       port = Integer.parseInt(env.getProperty("redis.port"));

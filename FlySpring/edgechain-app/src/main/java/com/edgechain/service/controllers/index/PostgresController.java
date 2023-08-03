@@ -12,13 +12,16 @@ import io.reactivex.rxjava3.core.Single;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 @RestController("Service PostgresController")
 @RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/postgres")
 public class PostgresController {
 
-  @Autowired private PostgresClient postgresClient;
+  @Autowired
+  @Lazy
+  private PostgresClient postgresClient;
 
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {

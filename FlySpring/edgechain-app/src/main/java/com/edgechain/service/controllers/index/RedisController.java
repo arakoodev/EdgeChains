@@ -8,6 +8,7 @@ import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,9 @@ import java.util.List;
 @RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/redis")
 public class RedisController {
 
-  @Autowired private RedisClient redisClient;
+  @Autowired
+  @Lazy
+  private RedisClient redisClient;
 
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody RedisEndpoint redisEndpoint) {
