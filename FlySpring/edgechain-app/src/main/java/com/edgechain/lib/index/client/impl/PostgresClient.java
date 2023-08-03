@@ -11,7 +11,6 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 
 public class PostgresClient {
@@ -55,6 +54,7 @@ public class PostgresClient {
             }),
         postgresEndpoint);
   }
+
   public EdgeChain<StringResponse> upsertWithFilename(WordEmbeddings wordEmbeddings) {
 
     return new EdgeChain<>(
@@ -68,7 +68,11 @@ public class PostgresClient {
 
                 // Upsert Embeddings
                 this.repository.upsertEmbeddingsWithFilename(
-                    postgresEndpoint.getTableName(), input, wordEmbeddings, this.namespace, postgresEndpoint.getFileName());
+                    postgresEndpoint.getTableName(),
+                    input,
+                    wordEmbeddings,
+                    this.namespace,
+                    postgresEndpoint.getFileName());
 
                 emitter.onNext(new StringResponse("Upserted"));
                 emitter.onComplete();
@@ -110,41 +114,40 @@ public class PostgresClient {
             }),
         postgresEndpoint);
   }
+
   public EdgeChain<List<PostgresResponse>> queryWithFilename(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
 
     return new EdgeChain<>(
-            Observable.create(
-                    emitter -> {
-                      try {
-                          List<Map<String, Object>> rows =
-                                  this.repository.queryWithFilename(
-                                          postgresEndpoint.getTableName(),
-                                          this.namespace,
-                                          metric,
-                                          wordEmbeddings,
-                                          topK);
+        Observable.create(
+            emitter -> {
+              try {
+                List<Map<String, Object>> rows =
+                    this.repository.queryWithFilename(
+                        postgresEndpoint.getTableName(),
+                        this.namespace,
+                        metric,
+                        wordEmbeddings,
+                        topK);
 
-                          List<PostgresResponse> wordEmbeddingsList = new ArrayList<>();
+                List<PostgresResponse> wordEmbeddingsList = new ArrayList<>();
 
-                          for (Map row : rows) {
-                              wordEmbeddingsList.add(
-                                      new PostgresResponse(
-                                              (String) row.get("id"),
-                                              new WordEmbeddings((String) row.get("raw")),
-                                              (String) row.get("filename"),
-                                              (Integer) row.get("sno"),
-                                              (Timestamp) row.get("timestamp")
-                                      )
-                              );
-                          }
-                        emitter.onNext(wordEmbeddingsList);
-                        emitter.onComplete();
-                      } catch (final Exception e) {
-                        emitter.onError(e);
-                      }
-                    }), postgresEndpoint
-    );
+                for (Map row : rows) {
+                  wordEmbeddingsList.add(
+                      new PostgresResponse(
+                          (String) row.get("id"),
+                          new WordEmbeddings((String) row.get("raw")),
+                          (String) row.get("filename"),
+                          (Integer) row.get("sno"),
+                          (Timestamp) row.get("timestamp")));
+                }
+                emitter.onNext(wordEmbeddingsList);
+                emitter.onComplete();
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        postgresEndpoint);
   }
 
   public EdgeChain<StringResponse> deleteAll() {

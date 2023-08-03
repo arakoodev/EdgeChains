@@ -14,6 +14,7 @@ public interface PostgresService {
 
   @POST(value = "index/postgres/upsert")
   Single<StringResponse> upsert(@Body PostgresEndpoint postgresEndpoint);
+
   @POST(value = "index/postgres/upsert-filename")
   Single<StringResponse> upsertWithFilename(@Body PostgresEndpoint postgresEndpoint);
 

@@ -38,30 +38,39 @@ public class PostgresClientRepository {
     LocalDateTime timestamp = LocalDateTime.now();
     jdbcTemplate.execute(
         String.format(
-            "INSERT INTO %s (id, raw, embedding, namespace, timestamp) VALUES ('%s', '%s', '%s', '%s', '%s')\n"
+            "INSERT INTO %s (id, raw, embedding, namespace, timestamp) VALUES ('%s', '%s', '%s',"
+                + " '%s', '%s')\n"
                 + "    ON CONFLICT (id) DO UPDATE SET embedding = EXCLUDED.embedding;",
             tableName,
             id,
             input,
             Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
-            namespace, timestamp.toString()));
+            namespace,
+            timestamp.toString()));
   }
 
-  //Use this function to insert embeddings with filename
+  // Use this function to insert embeddings with filename
   @Transactional
   public void upsertEmbeddingsWithFilename(
-      String tableName, String input, WordEmbeddings wordEmbeddings, String namespace, String fileName) {
+      String tableName,
+      String input,
+      WordEmbeddings wordEmbeddings,
+      String namespace,
+      String fileName) {
     String id = UuidCreator.getTimeOrderedEpoch().toString();
     LocalDateTime timestamp = LocalDateTime.now();
     jdbcTemplate.execute(
         String.format(
-            "INSERT INTO %s (id, raw, embedding, namespace, fileName, timestamp) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')\n"
+            "INSERT INTO %s (id, raw, embedding, namespace, fileName, timestamp) VALUES ('%s',"
+                + " '%s', '%s', '%s', '%s', '%s')\n"
                 + "    ON CONFLICT (id) DO UPDATE SET embedding = EXCLUDED.embedding;",
             tableName,
             id,
             input,
             Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
-            namespace, fileName, timestamp.toString()));
+            namespace,
+            fileName,
+            timestamp.toString()));
   }
 
   @Transactional(readOnly = true)
@@ -82,7 +91,7 @@ public class PostgresClientRepository {
             topK));
   }
 
-  //Use this function to query embeddings with filename
+  // Use this function to query embeddings with filename
   @Transactional(readOnly = true)
   public List<Map<String, Object>> queryWithFilename(
       String tableName,
@@ -93,7 +102,8 @@ public class PostgresClientRepository {
 
     return jdbcTemplate.queryForList(
         String.format(
-            "SELECT id, sno, raw, filename, timestamp FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+            "SELECT id, sno, raw, filename, timestamp FROM %s WHERE namespace='%s' ORDER BY"
+                + " embedding %s '%s' LIMIT %s;",
             tableName,
             namespace,
             PostgresDistanceMetric.getDistanceMetric(metric),

@@ -21,10 +21,12 @@ public class PostgresController {
         new PostgresClient(postgresEndpoint).upsert(postgresEndpoint.getWordEmbeddings());
     return edgeChain.toSingle();
   }
+
   @PostMapping("/upsert-filename")
   public Single<StringResponse> upsertWithFilename(@RequestBody PostgresEndpoint postgresEndpoint) {
     EdgeChain<StringResponse> edgeChain =
-        new PostgresClient(postgresEndpoint).upsertWithFilename(postgresEndpoint.getWordEmbeddings());
+        new PostgresClient(postgresEndpoint)
+            .upsertWithFilename(postgresEndpoint.getWordEmbeddings());
     return edgeChain.toSingle();
   }
 
@@ -38,8 +40,10 @@ public class PostgresController {
                 postgresEndpoint.getTopK());
     return edgeChain.toSingle();
   }
+
   @PostMapping("/query-filename")
-  public Single<List<PostgresResponse>> queryWithFilename(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<List<PostgresResponse>> queryWithFilename(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
     EdgeChain<List<PostgresResponse>> edgeChain =
         new PostgresClient(postgresEndpoint)
             .queryWithFilename(
