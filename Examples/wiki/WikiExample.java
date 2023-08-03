@@ -51,6 +51,10 @@ public class WikiExample {
     properties.setProperty("spring.jpa.show-sql", "true");
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
+    properties.setProperty("postgres.db.host", "");
+    properties.setProperty("postgres.db.username", "");
+    properties.setProperty("postgres.db.password", "");
+
     new SpringApplicationBuilder(WikiExample.class).properties(properties).run(args);
 
     wikiEndpoint = new WikiEndpoint();
