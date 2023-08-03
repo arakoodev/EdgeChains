@@ -5,6 +5,7 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.index.repositories.PostgresClientRepository;
+import com.edgechain.lib.index.responses.PostgresResponse;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
@@ -51,6 +52,30 @@ public class PostgresClient {
             }),
         postgresEndpoint);
   }
+  public EdgeChain<StringResponse> upsertWithFilename(WordEmbeddings wordEmbeddings) {
+
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
+                // Create Table
+                this.repository.createTable(postgresEndpoint);
+
+                String input = wordEmbeddings.getId().replaceAll("'", "");
+
+                // Upsert Embeddings
+                this.repository.upsertEmbeddingsWithFilename(
+                    postgresEndpoint.getTableName(), input, wordEmbeddings, this.namespace, postgresEndpoint.getFileName());
+
+                emitter.onNext(new StringResponse("Upserted"));
+                emitter.onComplete();
+
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        postgresEndpoint);
+  }
 
   public EdgeChain<List<WordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
@@ -81,6 +106,39 @@ public class PostgresClient {
               }
             }),
         postgresEndpoint);
+  }
+  public EdgeChain<List<PostgresResponse>> queryWithFilename(
+      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
+
+    return new EdgeChain<>(
+            Observable.create(
+                    emitter -> {
+                      try {
+                          List<Map<String, Object>> rows =
+                                  this.repository.queryWithFilename(
+                                          postgresEndpoint.getTableName(),
+                                          this.namespace,
+                                          metric,
+                                          wordEmbeddings,
+                                          topK);
+
+                          List<PostgresResponse> wordEmbeddingsList = new ArrayList<>();
+
+                          for (Map row : rows) {
+                              wordEmbeddingsList.add(
+                                      new PostgresResponse(
+                                              new WordEmbeddings((String) row.get("id")),
+                                              (String) row.get("filename")
+                                      )
+                              );
+                          }
+                        emitter.onNext(wordEmbeddingsList);
+                        emitter.onComplete();
+                      } catch (final Exception e) {
+                        emitter.onError(e);
+                      }
+                    }), postgresEndpoint
+    );
   }
 
   public EdgeChain<StringResponse> deleteAll() {

@@ -3,6 +3,7 @@ package com.edgechain.lib.endpoint.impl;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.responses.PostgresResponse;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.retrofit.PostgresService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
@@ -26,6 +27,7 @@ public class PostgresEndpoint extends Endpoint {
   private PostgresDistanceMetric metric;
   private int dimensions;
   private int topK;
+  private String fileName;
 
   public PostgresEndpoint() {}
 
@@ -42,6 +44,10 @@ public class PostgresEndpoint extends Endpoint {
     super(retryPolicy);
     this.tableName = tableName;
     this.namespace = namespace;
+  }
+
+  public void setFileName(String fileName) {
+    this.fileName = fileName;
   }
 
   public void setTableName(String tableName) {
@@ -61,6 +67,10 @@ public class PostgresEndpoint extends Endpoint {
   }
 
   // Getters
+
+  public String getFileName() {
+    return fileName;
+  }
 
   public WordEmbeddings getWordEmbeddings() {
     return wordEmbeddings;
@@ -82,7 +92,11 @@ public class PostgresEndpoint extends Endpoint {
   public Observable<StringResponse> upsert(WordEmbeddings wordEmbeddings, int dimension) {
     this.wordEmbeddings = wordEmbeddings;
     this.dimensions = dimension;
-    return Observable.fromSingle(postgresService.upsert(this));
+    if(fileName != null) {
+      return Observable.fromSingle(postgresService.upsertWithFilename(this));
+    } else {
+      return Observable.fromSingle(postgresService.upsert(this));
+    }
   }
 
   public Observable<List<WordEmbeddings>> query(
@@ -91,6 +105,13 @@ public class PostgresEndpoint extends Endpoint {
     this.topK = topK;
     this.metric = metric;
     return Observable.fromSingle(this.postgresService.query(this));
+  }
+  public Observable<List<PostgresResponse>> queryWithFilename(
+      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
+    this.wordEmbeddings = wordEmbeddings;
+    this.topK = topK;
+    this.metric = metric;
+    return Observable.fromSingle(this.postgresService.queryWithFilename(this));
   }
 
   public Observable<StringResponse> deleteAll() {

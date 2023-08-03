@@ -25,7 +25,7 @@ public class PostgresClientRepository {
     jdbcTemplate.execute(
         String.format(
             "CREATE TABLE IF NOT EXISTS %s (id TEXT PRIMARY KEY, embedding"
-                + " vector(%s), namespace TEXT);",
+                + " vector(%s), namespace TEXT, fileName TEXT);",
             postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
   }
 
@@ -43,6 +43,21 @@ public class PostgresClientRepository {
             namespace));
   }
 
+  //Use this function to insert embeddings with filename
+  @Transactional
+  public void upsertEmbeddingsWithFilename(
+      String tableName, String input, WordEmbeddings wordEmbeddings, String namespace, String fileName) {
+
+    jdbcTemplate.execute(
+        String.format(
+            "INSERT INTO %s (id, embedding, namespace, fileName) VALUES ('%s', '%s', '%s', '%s')\n"
+                + "    ON CONFLICT (id) DO UPDATE SET embedding = EXCLUDED.embedding;",
+            tableName,
+            input,
+            Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+            namespace, fileName));
+  }
+
   @Transactional(readOnly = true)
   public List<Map<String, Object>> query(
       String tableName,
@@ -54,6 +69,25 @@ public class PostgresClientRepository {
     return jdbcTemplate.queryForList(
         String.format(
             "SELECT id FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+            tableName,
+            namespace,
+            PostgresDistanceMetric.getDistanceMetric(metric),
+            Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+            topK));
+  }
+
+  //Use this function to query embeddings with filename
+  @Transactional(readOnly = true)
+  public List<Map<String, Object>> queryWithFilename(
+      String tableName,
+      String namespace,
+      PostgresDistanceMetric metric,
+      WordEmbeddings wordEmbeddings,
+      int topK) {
+
+    return jdbcTemplate.queryForList(
+        String.format(
+            "SELECT id,filename FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
             tableName,
             namespace,
             PostgresDistanceMetric.getDistanceMetric(metric),
