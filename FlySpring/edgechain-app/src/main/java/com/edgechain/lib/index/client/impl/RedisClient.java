@@ -15,11 +15,14 @@ import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.search.*;
 
 import java.util.*;
 
+@Service
 public class RedisClient {
 
   private static final String REDIS_DELETE_SCRIPT_IN_LUA =
@@ -33,28 +36,33 @@ public class RedisClient {
   private String indexName;
   private String namespace;
 
-  public RedisClient() {}
+  public RedisEndpoint getEndpoint() {
+    return endpoint;
+  }
 
-  public RedisClient(RedisEndpoint endpoint) {
+  public void setEndpoint(RedisEndpoint endpoint) {
     this.endpoint = endpoint;
-    this.indexName = endpoint.getIndexName();
-    this.namespace =
-        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-            ? "knowledge"
-            : endpoint.getNamespace();
   }
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private final JedisPooled jedisPooled =
-      ApplicationContextHolder.getContext().getBean(JedisPooled.class);
+  @Autowired
+  private JedisPooled jedisPooled;
 
   public EdgeChain<StringResponse> upsert(
       WordEmbeddings words2Vec, int dimension, RedisDistanceMetric metric) {
+
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
+
+
+                this.indexName = endpoint.getIndexName();
+                this.namespace =
+                        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                                ? "knowledge"
+                                : endpoint.getNamespace();
 
                 this.createSearchIndex(dimension, RedisDistanceMetric.getDistanceMetric(metric));
 
@@ -81,10 +89,19 @@ public class RedisClient {
 
   public EdgeChain<List<WordEmbeddings>> query(WordEmbeddings words2Vec, int topK) {
 
+
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
+
+
+                this.indexName = endpoint.getIndexName();
+                this.namespace =
+                        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                                ? "knowledge"
+                                : endpoint.getNamespace();
+
                 Query query =
                     new Query("*=>[KNN $k @values $values]")
                         .addParam(
@@ -129,6 +146,14 @@ public class RedisClient {
         Observable.create(
             emitter -> {
               try {
+
+
+                this.indexName = endpoint.getIndexName();
+                this.namespace =
+                        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                                ? "knowledge"
+                                : endpoint.getNamespace();
+
                 jedisPooled.eval(String.format(REDIS_DELETE_SCRIPT_IN_LUA, pattern));
 
                 jedisPooled.getPool().returnResource(jedisPooled.getPool().getResource());

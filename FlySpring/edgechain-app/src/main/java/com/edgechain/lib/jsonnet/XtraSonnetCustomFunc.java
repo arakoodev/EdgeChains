@@ -32,8 +32,7 @@ public class XtraSonnetCustomFunc extends Library {
               }
               WikiEndpoint wikiEndpoint = new WikiEndpoint();
 
-              Observable<WikiResponse> result = wikiEndpoint.getPageContent(prompt);
-              String response = result.blockingFirst().getText();
+              String response = wikiEndpoint.getPageContent(prompt).getText();
               return new Val.Str(dummyPosition(), response);
             }));
     return res;

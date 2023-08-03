@@ -2,8 +2,8 @@ package com.edgechain.lib.endpoint.impl;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
-import com.edgechain.lib.index.responses.PostgresResponse;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.retrofit.PostgresService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
@@ -22,12 +22,13 @@ public class PostgresEndpoint extends Endpoint {
 
   private String namespace;
 
+  private String filename;
+
   // Getters
   private WordEmbeddings wordEmbeddings;
   private PostgresDistanceMetric metric;
   private int dimensions;
   private int topK;
-  private String fileName;
 
   public PostgresEndpoint() {}
 
@@ -35,27 +36,13 @@ public class PostgresEndpoint extends Endpoint {
     super(retryPolicy);
   }
 
-  public PostgresEndpoint(String tableName, String namespace) {
+  public PostgresEndpoint(String tableName) {
     this.tableName = tableName;
-    this.namespace = namespace;
   }
 
-  public PostgresEndpoint(String tableName, String namespace, RetryPolicy retryPolicy) {
+  public PostgresEndpoint(String tableName,RetryPolicy retryPolicy) {
     super(retryPolicy);
     this.tableName = tableName;
-    this.namespace = namespace;
-  }
-
-  public void setFileName(String fileName) {
-    this.fileName = fileName;
-  }
-
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
-
-  public void setNamespace(String namespace) {
-    this.namespace = namespace;
   }
 
   public String getTableName() {
@@ -66,11 +53,15 @@ public class PostgresEndpoint extends Endpoint {
     return namespace;
   }
 
-  // Getters
-
-  public String getFileName() {
-    return fileName;
+  public void setTableName(String tableName) {
+    this.tableName = tableName;
   }
+
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+
+  // Getters
 
   public WordEmbeddings getWordEmbeddings() {
     return wordEmbeddings;
@@ -84,38 +75,32 @@ public class PostgresEndpoint extends Endpoint {
     return topK;
   }
 
+  public String getFilename() {
+    return filename;
+  }
+
   public PostgresDistanceMetric getMetric() {
     return metric;
   }
 
   // Convenience Methods
-  public Observable<StringResponse> upsert(WordEmbeddings wordEmbeddings, int dimension) {
+  public StringResponse upsert(WordEmbeddings wordEmbeddings, String filename,  int dimension) {
     this.wordEmbeddings = wordEmbeddings;
     this.dimensions = dimension;
-    if (fileName != null) {
-      return Observable.fromSingle(postgresService.upsertWithFilename(this));
-    } else {
-      return Observable.fromSingle(postgresService.upsert(this));
-    }
+    this.filename = filename;
+    return postgresService.upsert(this).blockingGet();
   }
 
-  public Observable<List<WordEmbeddings>> query(
+
+  public List<PostgresWordEmbeddings> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
     this.wordEmbeddings = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;
-    return Observable.fromSingle(this.postgresService.query(this));
+    return this.postgresService.query(this).blockingGet();
   }
 
-  public Observable<List<PostgresResponse>> queryWithFilename(
-      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
-    this.wordEmbeddings = wordEmbeddings;
-    this.topK = topK;
-    this.metric = metric;
-    return Observable.fromSingle(this.postgresService.queryWithFilename(this));
-  }
-
-  public Observable<StringResponse> deleteAll() {
-    return Observable.fromSingle(this.postgresService.deleteAll(this));
+  public StringResponse deleteAll() {
+    return this.postgresService.deleteAll(this).blockingGet();
   }
 }

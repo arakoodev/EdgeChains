@@ -1,7 +1,10 @@
 package com.edgechain.lib.chains;
 
-import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
+import com.edgechain.lib.embeddings.WordEmbeddings;
+import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
+import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.endpoint.impl.RedisEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.request.ArkRequest;
@@ -17,65 +20,43 @@ public class RedisRetrieval extends Retrieval {
 
   private final RedisEndpoint redisEndpoint;
   private final ArkRequest arkRequest;
-  private OpenAiEndpoint openAiEndpoint;
-
-  private Doc2VecEndpoint doc2VecEndpoint;
-
+  private final Endpoint endpoint;
   private final int dimension;
   private final RedisDistanceMetric metric;
 
   public RedisRetrieval(
       RedisEndpoint redisEndpoint,
-      OpenAiEndpoint openAiEndpoint,
+      Endpoint endpoint,
       int dimension,
       RedisDistanceMetric metric,
       ArkRequest arkRequest) {
     this.redisEndpoint = redisEndpoint;
-    this.openAiEndpoint = openAiEndpoint;
+    this.endpoint = endpoint;
     this.dimension = dimension;
     this.metric = metric;
     this.arkRequest = arkRequest;
-    logger.info("Using OpenAI Embedding Service");
+    if(endpoint instanceof OpenAiEndpoint openAiEndpoint)
+      logger.info("Using OpenAi Embedding Service: "+openAiEndpoint.getModel());
+
+    else if(endpoint instanceof MiniLMEndpoint miniLMEndpoint)
+      logger.info(String.format("Using %s",miniLMEndpoint.getMiniLMModel().getName()));
   }
 
-  public RedisRetrieval(
-      RedisEndpoint redisEndpoint,
-      Doc2VecEndpoint doc2VecEndpoint,
-      int dimension,
-      RedisDistanceMetric metric,
-      ArkRequest arkRequest) {
-    this.redisEndpoint = redisEndpoint;
-    this.doc2VecEndpoint = doc2VecEndpoint;
-    this.dimension = dimension;
-    this.metric = metric;
-    this.arkRequest = arkRequest;
-    logger.info("Using Doc2Vec Embedding Service");
-  }
 
   @Override
   public void upsert(String input) {
 
-    if (Objects.nonNull(openAiEndpoint)) {
-      new EdgeChain<>(
-              this.openAiEndpoint
-                  .embeddings(input, arkRequest)
-                  .map(embeddings -> this.redisEndpoint.upsert(embeddings, dimension, metric))
-                  .firstOrError()
-                  .blockingGet())
-          .await()
-          .blockingAwait();
+    if(endpoint instanceof OpenAiEndpoint openAiEndpoint) {
+      WordEmbeddings embeddings =  openAiEndpoint.embeddings(input, arkRequest) ;
+      this.redisEndpoint.upsert(embeddings, dimension, metric);
     }
-    // For Doc2Vec ===>
+    else if(endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
+      WordEmbeddings embeddings =  miniLMEndpoint.embeddings(input, arkRequest) ;
+      this.redisEndpoint.upsert(embeddings, dimension, metric);
+    }
 
-    if (Objects.nonNull(doc2VecEndpoint)) {
-      new EdgeChain<>(
-              this.doc2VecEndpoint
-                  .embeddings(input)
-                  .map(embeddings -> this.redisEndpoint.upsert(embeddings, dimension, metric))
-                  .firstOrError()
-                  .blockingGet())
-          .await()
-          .blockingAwait();
-    }
+    else
+      throw new RuntimeException("Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
+
   }
 }

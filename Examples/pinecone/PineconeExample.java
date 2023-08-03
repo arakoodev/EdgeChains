@@ -10,6 +10,8 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
 import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
+import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
+import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
@@ -65,17 +67,18 @@ public class PineconeExample {
     properties.setProperty("cors.origins", "http://localhost:4200");
 
     // Redis Configuration
-    properties.setProperty("redis.url", "");
+    properties.setProperty("redis.url", "redis-12285.c8.us-east-1-2.ec2.cloud.redislabs.com");
     properties.setProperty("redis.port", "12285");
-    properties.setProperty("redis.username", "");
-    properties.setProperty("redis.password", "");
+    properties.setProperty("redis.username", "default");
+    properties.setProperty("redis.password", "EgZcqW5gj7ZRnoA582vjQsmztr0uim1d");
     properties.setProperty("redis.ttl", "3600");
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
-    properties.setProperty("postgres.db.host", "");
+    properties.setProperty(
+        "postgres.db.host", "jdbc:postgresql://db.itlgddqhlxhdbncdqowa.supabase.co:5432/postgres");
     properties.setProperty("postgres.db.username", "postgres");
-    properties.setProperty("postgres.db.password", "");
+    properties.setProperty("postgres.db.password", "fsfVFQM4u2rYZehP");
 
     new SpringApplicationBuilder(PineconeExample.class).properties(properties).run(args);
 
@@ -137,7 +140,7 @@ public class PineconeExample {
   //  }
 
   @RestController
-  @RequestMapping("/v1/examples")
+  @RequestMapping("/v1/examples/pinecone")
   public class PineconeController {
 
     @Autowired private PdfReader pdfReader;
@@ -157,7 +160,7 @@ public class PineconeExample {
      * @return
      */
     // Namespace is optional (if not provided, it will be using Empty String "")
-    @PostMapping("/pinecone/openai/upsert") // /v1/examples/openai/upsert?namespace=machine-learning
+    @PostMapping("/openai/upsert") // /v1/examples/openai/upsert?namespace=machine-learning
     public void upsertPinecone(ArkRequest arkRequest) throws IOException {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -175,13 +178,14 @@ public class PineconeExample {
        */
       Retrieval retrieval =
           new PineconeRetrieval(upsertPineconeEndpoint, ada002Embedding, arkRequest);
+
       IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
     }
 
     @PostMapping(
-        value = "/pinecone/openai/query",
+        value = "/openai/query",
         produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ArkResponse queryPinecone(ArkRequest arkRequest) {
+    public ArkResponse query(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
       String query = arkRequest.getBody().getString("query");
@@ -190,50 +194,17 @@ public class PineconeExample {
       // Configure Pinecone
       queryPineconeEndpoint.setNamespace(namespace);
 
-      queryLoader
-          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
+      // Step 1: Chain ==> Get Embeddings  From Input & Then Query To Pinecone
+      EdgeChain<WordEmbeddings> embeddingsChain =
+          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
 
-      return new EdgeChain<>(
-              ada002Embedding.embeddings(
-                  query, arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
-          .transform(
-              embeddings ->
-                  new EdgeChain<>(queryPineconeEndpoint.query(embeddings, topK))
-                      .get()) // Step 2: Block The Observable & Get the result from Pinecone(id,//
-          // scores)
-          .transform(
-              embeddingsQuery -> {
-                List<ChatCompletionResponse> resp = new ArrayList<>();
+      // Step 2: Chain ==> Query Embeddings from Pinecone
+      EdgeChain<List<WordEmbeddings>> queryChain =
+          new EdgeChain<>(queryPineconeEndpoint.query(embeddingsChain.get(), topK));
 
-                // Iterate over each Query result; returned from Pinecone
-                Iterator<WordEmbeddings> iterator = embeddingsQuery.iterator();
-                while (iterator.hasNext()) {
-
-                  String pinecone = iterator.next().getId();
-
-                  queryLoader
-                      .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
-                      .put(
-                          "context",
-                          new JsonnetArgs(
-                              DataType.STRING,
-                              pinecone)) // Step 3: Concatenate the Prompt: ${Base Prompt} - //
-                      // ${Pinecone Output}
-                      .loadOrReload();
-                  // Step 4: Now, pass the prompt to OpenAI ChatCompletion & Add it to the list
-                  // which will be returned
-                  resp.add(
-                      EdgeChain.fromObservable(
-                              gpt3Endpoint.chatCompletion(
-                                  queryLoader.get("prompt"), "PineconeQueryChain", arkRequest))
-                          .get()); // You can use both new EdgeChain<>() or
-                  // EdgeChain.fromObservable()
-                  // Wrap the Observable & get the data in a blocking way... Pass the concatenated
-                  // prompt to ChatCompletion..
-                }
-                return resp;
-              })
+      // Step 3: Create Function which create prompt for each query & pass it to ChatCompletion
+      return queryChain
+          .transform(wordEmbeddings -> queryFn(wordEmbeddings, arkRequest))
           .getArkResponse();
     }
 
@@ -245,7 +216,7 @@ public class PineconeExample {
      * @return
      */
     @PostMapping(
-        value = "/pinecone/openai/chat",
+        value = "/openai/chat",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
     public ArkResponse chatWithPinecone(ArkRequest arkRequest) {
 
@@ -260,10 +231,10 @@ public class PineconeExample {
       // Configure GPT3endpoint
       gpt3Endpoint.setStream(stream);
 
-      HistoryContext historyContext =
-          EdgeChain.fromObservable(contextEndpoint.get(contextId)).get();
+      // Get HistoryContext
+      HistoryContext historyContext = contextEndpoint.get(contextId);
 
-      // Step 1: Create JsonnetLoader || Pass Args || Load The File;
+      // Load Jsonnet To extract topK query dynamically
       chatLoader
           .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
           .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
@@ -274,119 +245,125 @@ public class PineconeExample {
       // Extract topK value from JsonnetLoader;
       int topK = chatLoader.getInt("topK");
 
-      return new EdgeChain<>(
-              ada002Embedding.embeddings(
-                  query, arkRequest)) // Step 1: Generate embedding using OpenAI for provided input
-          .transform(
-              embeddings ->
-                  EdgeChain.fromObservable(queryPineconeEndpoint.query(embeddings, topK))
-                      .get()) // Step 2: Block the Observables &  Get topK queries from Pinecone
-          // Iterator over PineconeResponse & Get the ids;
-          .transform(
-              embeddingsQuery -> { // Step 3: Now, we concatenate/join each query with "\n";
-                // let's say topK=5; then we concatenate them and pass to ChatCompletion
-                List<String> ids = new ArrayList<>();
-                embeddingsQuery.forEach(v -> ids.add(v.getId()));
-                // Now Joining it with delimiter (new line i.e, \n)
-                return String.join("\n", ids);
-              })
-          .transform(
-              queries -> {
-                // Creating HashMap<String,String> to store both my chatHistory & pineconeOutput
-                // (queries) because I would be needing them in the chains
-                HashMap<String, String> mapper = new HashMap<>();
-                mapper.put("queries", queries);
-                mapper.put("chatHistory", historyContext.getResponse());
+      // Step 1: Chain ==> Get Embeddings From Input
+      EdgeChain<WordEmbeddings> embeddingsChain =
+          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
 
-                return mapper;
-              }) // Step 4: Get the ChatHistory, and then we pass ChatHistory & PineconeOutput to
-          // our JsonnetLoader
+      // Step 2: Chain ==> Query Embeddings from Pinecone & Then concatenate it (preparing for prompt)
+      // let's say topK=5; then we concatenate List into a string
+      EdgeChain<String> queryChain =
+          new EdgeChain<>(
+                  queryPineconeEndpoint.query(embeddingsChain.get(), topK))
+              .transform(
+                  queries -> {
+                    List<String> queryList = new ArrayList<>();
+                    queries.forEach(q -> queryList.add(q.getId()));
+                    return String.join("\n", queryList);
+                  });
+
+      // Step 3: Create fn() to prepare your chat prompt
+      EdgeChain<String> promptChain =
+          queryChain.transform(queries -> chatFn(historyContext.getResponse(), queries));
+
+      /**
+       * Step 4: Here is the interesting part; So, with ChatCompletion Stream we will have streaming
+       * response Therefore, we create a StringBuilder to append the response as we need to save
+       * response in Postgres Database
+       */
+      StringBuilder stringBuilder = new StringBuilder();
+
+      return promptChain
           .transform(
-              mapper -> {
-                chatLoader
-                    .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "true"))
-                    .put(
-                        "history",
-                        new JsonnetArgs(
-                            DataType.STRING,
-                            mapper.get("chatHistory"))) // Getting ChatHistory from Mapper
-                    .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
-                    .put(
-                        "context",
-                        new JsonnetArgs(
-                            DataType.STRING, mapper.get("queries"))) // Getting Queries from Mapper
-                    .loadOrReload(); // Step 5: Pass the Args & Reload Jsonnet
+              prompt ->
+                  gpt3Endpoint
+                      .chatCompletion(prompt, "PostgresChatChain", arkRequest)
+                      .doOnNext(
+                          chatResponse -> {
+                            // If ChatCompletion (stream = true);
+                            if (chatResponse.getObject().equals("chat.completion.chunk")) {
+                              // Append the ChatCompletion Response until, we have FinishReason;
+                              // otherwise, we update the history
+                              if (Objects.isNull(
+                                  chatResponse.getChoices().get(0).getFinishReason())) {
+                                stringBuilder.append(
+                                    chatResponse.getChoices().get(0).getMessage().getContent());
+                              }
 
-                StringBuilder openAiResponseBuilder = new StringBuilder();
-                return gpt3Endpoint
-                    .chatCompletion(
-                        chatLoader.get("prompt"),
-                        "PineconeChatChain",
-                        arkRequest) // Pass the concatenated prompt to JsonnetLoader
-                    /**
-                     * Here is the interesting part; So, with ChatCompletion Stream we will have
-                     * streaming Therefore, we create a StringBuilder to append the response as we
-                     * need to save in redis
-                     */
-                    .doOnNext(
-                        chatCompletionResponse -> {
-                          // If ChatCompletion (stream = true);
-                          if (chatCompletionResponse.getObject().equals("chat.completion.chunk")) {
-                            // Append the ChatCompletion Response until, we have FinishReason;
-                            // otherwise, we update the history
-                            if (Objects.isNull(
-                                chatCompletionResponse.getChoices().get(0).getFinishReason())) {
-                              openAiResponseBuilder.append(
-                                  chatCompletionResponse
-                                      .getChoices()
-                                      .get(0)
-                                      .getMessage()
-                                      .getContent());
-                            } else {
-                              EdgeChain.fromObservable(
-                                      contextEndpoint.put(
-                                          historyContext.getId(),
-                                          query
-                                              + openAiResponseBuilder
-                                              + mapper.get(
-                                                  "chatHistory")) // Getting ChatHistory from Mapper
-                                      )
-                                  .get();
-
+                              // When response is finished, then update it to Database
                               // Query(What is the collect stage for data maturity) + OpenAiResponse
                               // + Prev. ChatHistory
-                            }
-                          }
-                          // If ChatCompletion (stream = false);
-                          else if (chatCompletionResponse.getObject().equals("chat.completion")) {
+                              else {
+                                contextEndpoint.put(
+                                    historyContext.getId(),
+                                    query + stringBuilder + historyContext.getResponse());
+                              }
 
-                            EdgeChain.fromObservable(
-                                    contextEndpoint.put(
-                                        historyContext.getId(),
-                                        query
-                                            + chatCompletionResponse
-                                                .getChoices()
-                                                .get(0)
-                                                .getMessage()
-                                                .getContent()
-                                            + mapper.get(
-                                                "chatHistory")) // Getting ChatHistory from Mapper
-                                    )
-                                .get();
-                            // Query(What is the collect stage for data maturity) +OpenAiResponse +
+                            }
+                            // if ChatCompletion (stream = false) -->
+                            // Query(What is the collect stage for data maturity) + OpenAiResponse +
                             // Prev. ChatHistory
-                          }
-                        });
-              })
+                            else
+                              contextEndpoint.put(
+                                  historyContext.getId(),
+                                  query
+                                      + chatResponse.getChoices().get(0).getMessage().getContent()
+                                      + historyContext.getResponse());
+                          }))
           .getArkResponse();
     }
 
     // Namespace is optional (if not provided, it will be using Empty String "")
-    @DeleteMapping("/pinecone/deleteAll")
+    @DeleteMapping("/deleteAll")
     public ArkResponse deletePinecone(ArkRequest arkRequest) {
       String namespace = arkRequest.getQueryParam("namespace");
       deletePineconeEndpoint.setNamespace(namespace);
       return new EdgeChain<>(deletePineconeEndpoint.deleteAll()).getArkResponse();
+    }
+
+    public List<ChatCompletionResponse> queryFn(
+        List<WordEmbeddings> wordEmbeddings, ArkRequest arkRequest) {
+
+      List<ChatCompletionResponse> resp = new ArrayList<>();
+
+      // Iterate over each Query result; returned from Postgres
+      for (WordEmbeddings wordEmbedding : wordEmbeddings) {
+
+        String query = wordEmbedding.getId();
+
+        queryLoader
+            .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+            .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
+            .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
+            .put(
+                "context",
+                new JsonnetArgs(
+                    DataType.STRING,
+                    query)) // Step 3: Concatenate the Prompt: ${Base Prompt} - ${Postgres
+            // Output}
+            .loadOrReload();
+        // Step 4: Now, pass the prompt to OpenAI ChatCompletion & Add it to the list which will be
+        // returned
+        resp.add(
+            new EdgeChain<>(
+                    gpt3Endpoint.chatCompletion(
+                        queryLoader.get("prompt"), "PostgresQueryChain", arkRequest))
+                .get());
+      }
+
+      return resp;
+    }
+
+    public String chatFn(String chatHistory, String queries) {
+      chatLoader
+          .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put(
+              "history",
+              new JsonnetArgs(DataType.STRING, chatHistory)) // Getting ChatHistory from Mapper
+          .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put("context", new JsonnetArgs(DataType.STRING, queries)) // Getting Queries from Mapper
+          .loadOrReload(); // Step 5: Pass the Args & Reload Jsonnet
+
+      return chatLoader.get("prompt");
     }
   }
 }

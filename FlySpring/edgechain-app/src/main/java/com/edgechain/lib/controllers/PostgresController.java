@@ -3,6 +3,7 @@ package com.edgechain.lib.controllers;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.ArkResponse;
+import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 
 import java.util.Objects;
@@ -26,8 +27,9 @@ public class PostgresController {
     else return postgresEndpoint;
   }
 
+
   @DeleteMapping("/deleteAll")
-  public ArkResponse deletePostgres(ArkRequest arkRequest) {
+  public StringResponse deletePostgres(ArkRequest arkRequest) {
 
     String table = arkRequest.getQueryParam("table");
     String namespace = arkRequest.getQueryParam("namespace");
@@ -35,6 +37,7 @@ public class PostgresController {
     getInstance().setTableName(table);
     getInstance().setNamespace(namespace);
 
-    return new EdgeChain<>(getInstance().deleteAll()).getArkResponse();
+
+    return getInstance().deleteAll();
   }
 }
