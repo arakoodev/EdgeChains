@@ -29,15 +29,15 @@ public class OpenAiClient {
 
   private OpenAiEndpoint endpoint;
 
-    public OpenAiEndpoint getEndpoint() {
-        return endpoint;
-    }
+  public OpenAiEndpoint getEndpoint() {
+    return endpoint;
+  }
 
-    public void setEndpoint(OpenAiEndpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+  public void setEndpoint(OpenAiEndpoint endpoint) {
+    this.endpoint = endpoint;
+  }
 
-    public EdgeChain<ChatCompletionResponse> createChatCompletion(ChatCompletionRequest request) {
+  public EdgeChain<ChatCompletionResponse> createChatCompletion(ChatCompletionRequest request) {
 
     return new EdgeChain<>(
         Observable.create(

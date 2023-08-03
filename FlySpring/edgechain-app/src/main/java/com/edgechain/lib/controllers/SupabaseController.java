@@ -20,10 +20,9 @@ public class SupabaseController {
   private static SupabaseEndpoint supabaseEndpoint;
 
   private SupabaseEndpoint getInstance() {
-    if( Objects.isNull(supabaseEndpoint)) supabaseEndpoint = new SupabaseEndpoint();
+    if (Objects.isNull(supabaseEndpoint)) supabaseEndpoint = new SupabaseEndpoint();
     return supabaseEndpoint;
   }
-
 
   @PostMapping(
       value = "/signup") // Confirmation email is sent to the specified address.. Click on "Confirm

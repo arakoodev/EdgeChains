@@ -3,7 +3,6 @@ package com.edgechain.lib.controllers;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
 import com.edgechain.lib.request.ArkRequest;
-import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.*;

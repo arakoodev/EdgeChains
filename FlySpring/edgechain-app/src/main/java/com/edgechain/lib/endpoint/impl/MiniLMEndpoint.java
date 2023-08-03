@@ -61,5 +61,4 @@ public class MiniLMEndpoint extends Endpoint {
         .map(m -> new WordEmbeddings(input, m.getEmbedding()))
         .blockingGet();
   }
-
 }

@@ -18,9 +18,7 @@ import java.util.List;
 @RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/redis")
 public class RedisController {
 
-  @Autowired
-  @Lazy
-  private RedisClient redisClient;
+  @Autowired @Lazy private RedisClient redisClient;
 
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody RedisEndpoint redisEndpoint) {
@@ -28,10 +26,10 @@ public class RedisController {
     this.redisClient.setEndpoint(redisEndpoint);
 
     EdgeChain<StringResponse> edgeChain =
-            this.redisClient.upsert(
-                    redisEndpoint.getWordEmbeddings(),
-                    redisEndpoint.getDimensions(),
-                    redisEndpoint.getMetric());
+        this.redisClient.upsert(
+            redisEndpoint.getWordEmbeddings(),
+            redisEndpoint.getDimensions(),
+            redisEndpoint.getMetric());
 
     return edgeChain.toSingle();
   }
@@ -42,14 +40,14 @@ public class RedisController {
     this.redisClient.setEndpoint(redisEndpoint);
 
     EdgeChain<List<WordEmbeddings>> edgeChain =
-            this.redisClient.query(redisEndpoint.getWordEmbeddings(), redisEndpoint.getTopK());
+        this.redisClient.query(redisEndpoint.getWordEmbeddings(), redisEndpoint.getTopK());
 
     return edgeChain.toSingle();
   }
 
   @DeleteMapping("/delete")
   public Completable deleteByPattern(
-          @RequestParam("pattern") String pattern, @RequestBody RedisEndpoint redisEndpoint) {
+      @RequestParam("pattern") String pattern, @RequestBody RedisEndpoint redisEndpoint) {
 
     this.redisClient.setEndpoint(redisEndpoint);
 

@@ -59,7 +59,8 @@ public class OpenAiController {
 
     this.openAiClient.setEndpoint(openAiEndpoint);
 
-    EdgeChain<ChatCompletionResponse> edgeChain = openAiClient.createChatCompletion(chatCompletionRequest);
+    EdgeChain<ChatCompletionResponse> edgeChain =
+        openAiClient.createChatCompletion(chatCompletionRequest);
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
@@ -206,10 +207,9 @@ public class OpenAiController {
             .temperature(openAiEndpoint.getTemperature())
             .build();
 
-      this.openAiClient.setEndpoint(openAiEndpoint);
-    
-    EdgeChain<CompletionResponse> edgeChain =
-        openAiClient.createCompletion(completionRequest);
+    this.openAiClient.setEndpoint(openAiEndpoint);
+
+    EdgeChain<CompletionResponse> edgeChain = openAiClient.createCompletion(completionRequest);
 
     return edgeChain.toSingle();
   }
@@ -217,11 +217,12 @@ public class OpenAiController {
   @PostMapping("/embeddings")
   public Single<OpenAiEmbeddingResponse> embeddings(@RequestBody OpenAiEndpoint openAiEndpoint)
       throws SQLException {
-      
-      this.openAiClient.setEndpoint(openAiEndpoint);
-      
-      EdgeChain<OpenAiEmbeddingResponse> edgeChain = openAiClient.createEmbeddings(
-                new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), openAiEndpoint.getInput()));
+
+    this.openAiClient.setEndpoint(openAiEndpoint);
+
+    EdgeChain<OpenAiEmbeddingResponse> edgeChain =
+        openAiClient.createEmbeddings(
+            new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), openAiEndpoint.getInput()));
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 

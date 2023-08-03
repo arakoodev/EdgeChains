@@ -2,7 +2,6 @@ package com.edgechain.service.controllers.miniLM;
 
 import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.embeddings.miniLLM.MiniLMClient;
-import com.edgechain.lib.embeddings.miniLLM.enums.MiniLMModel;
 import com.edgechain.lib.embeddings.miniLLM.response.MiniLMResponse;
 import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
 import com.edgechain.lib.logger.entities.EmbeddingLog;
@@ -24,39 +23,39 @@ import java.util.Objects;
 @RequestMapping(WebConfiguration.CONTEXT_PATH + "/miniLM")
 public class MiniLMController {
 
-    @Autowired private MiniLMClient miniLMClient;
+  @Autowired private MiniLMClient miniLMClient;
 
-    @Autowired private EmbeddingLogService embeddingLogService;
+  @Autowired private EmbeddingLogService embeddingLogService;
 
-    @Autowired private Environment env;
+  @Autowired private Environment env;
 
-    @PostMapping
-    public Single<MiniLMResponse> embeddings(@RequestBody MiniLMEndpoint miniLMEndpoint)  {
+  @PostMapping
+  public Single<MiniLMResponse> embeddings(@RequestBody MiniLMEndpoint miniLMEndpoint) {
 
-        miniLMClient.setEndpoint(miniLMEndpoint);
+    miniLMClient.setEndpoint(miniLMEndpoint);
 
-        EdgeChain<MiniLMResponse> edgeChain =
-                miniLMClient.createEmbeddings(miniLMEndpoint.getInput(), miniLMEndpoint.getMiniLMModel());
+    EdgeChain<MiniLMResponse> edgeChain =
+        miniLMClient.createEmbeddings(miniLMEndpoint.getInput(), miniLMEndpoint.getMiniLMModel());
 
-        if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
+    if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
-            EmbeddingLog embeddingLog = new EmbeddingLog();
-            embeddingLog.setCreatedAt(LocalDateTime.now());
-            embeddingLog.setCallIdentifier(miniLMEndpoint.getCallIdentifier());
-            embeddingLog.setModel(miniLMEndpoint.getMiniLMModel().getName());
+      EmbeddingLog embeddingLog = new EmbeddingLog();
+      embeddingLog.setCreatedAt(LocalDateTime.now());
+      embeddingLog.setCallIdentifier(miniLMEndpoint.getCallIdentifier());
+      embeddingLog.setModel(miniLMEndpoint.getMiniLMModel().getName());
 
-            return edgeChain
-                    .doOnNext(
-                            c -> {
-                                embeddingLog.setCompletedAt(LocalDateTime.now());
-                                Duration duration =
-                                        Duration.between(embeddingLog.getCreatedAt(), embeddingLog.getCompletedAt());
-                                embeddingLog.setLatency(duration.toMillis());
-                                embeddingLogService.saveOrUpdate(embeddingLog);
-                            })
-                    .toSingle();
-        }
-
-        return edgeChain.toSingle();
+      return edgeChain
+          .doOnNext(
+              c -> {
+                embeddingLog.setCompletedAt(LocalDateTime.now());
+                Duration duration =
+                    Duration.between(embeddingLog.getCreatedAt(), embeddingLog.getCompletedAt());
+                embeddingLog.setLatency(duration.toMillis());
+                embeddingLogService.saveOrUpdate(embeddingLog);
+              })
+          .toSingle();
     }
+
+    return edgeChain.toSingle();
+  }
 }

@@ -10,8 +10,6 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
 import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
-import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
-import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
@@ -249,11 +247,11 @@ public class PineconeExample {
       EdgeChain<WordEmbeddings> embeddingsChain =
           new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
 
-      // Step 2: Chain ==> Query Embeddings from Pinecone & Then concatenate it (preparing for prompt)
+      // Step 2: Chain ==> Query Embeddings from Pinecone & Then concatenate it (preparing for
+      // prompt)
       // let's say topK=5; then we concatenate List into a string
       EdgeChain<String> queryChain =
-          new EdgeChain<>(
-                  queryPineconeEndpoint.query(embeddingsChain.get(), topK))
+          new EdgeChain<>(queryPineconeEndpoint.query(embeddingsChain.get(), topK))
               .transform(
                   queries -> {
                     List<String> queryList = new ArrayList<>();

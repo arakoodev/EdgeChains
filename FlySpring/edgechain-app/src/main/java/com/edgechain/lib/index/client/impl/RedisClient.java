@@ -1,6 +1,5 @@
 package com.edgechain.lib.index.client.impl;
 
-import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.RedisEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
@@ -46,8 +45,7 @@ public class RedisClient {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  @Autowired
-  private JedisPooled jedisPooled;
+  @Autowired private JedisPooled jedisPooled;
 
   public EdgeChain<StringResponse> upsert(
       WordEmbeddings words2Vec, int dimension, RedisDistanceMetric metric) {
@@ -57,12 +55,11 @@ public class RedisClient {
             emitter -> {
               try {
 
-
                 this.indexName = endpoint.getIndexName();
                 this.namespace =
-                        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                                ? "knowledge"
-                                : endpoint.getNamespace();
+                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                        ? "knowledge"
+                        : endpoint.getNamespace();
 
                 this.createSearchIndex(dimension, RedisDistanceMetric.getDistanceMetric(metric));
 
@@ -89,18 +86,16 @@ public class RedisClient {
 
   public EdgeChain<List<WordEmbeddings>> query(WordEmbeddings words2Vec, int topK) {
 
-
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
 
-
                 this.indexName = endpoint.getIndexName();
                 this.namespace =
-                        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                                ? "knowledge"
-                                : endpoint.getNamespace();
+                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                        ? "knowledge"
+                        : endpoint.getNamespace();
 
                 Query query =
                     new Query("*=>[KNN $k @values $values]")
@@ -147,12 +142,11 @@ public class RedisClient {
             emitter -> {
               try {
 
-
                 this.indexName = endpoint.getIndexName();
                 this.namespace =
-                        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                                ? "knowledge"
-                                : endpoint.getNamespace();
+                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                        ? "knowledge"
+                        : endpoint.getNamespace();
 
                 jedisPooled.eval(String.format(REDIS_DELETE_SCRIPT_IN_LUA, pattern));
 

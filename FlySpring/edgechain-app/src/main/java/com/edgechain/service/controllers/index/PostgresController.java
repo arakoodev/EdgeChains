@@ -1,7 +1,6 @@
 package com.edgechain.service.controllers.index;
 
 import com.edgechain.lib.configuration.WebConfiguration;
-import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.client.impl.PostgresClient;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
@@ -19,9 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/postgres")
 public class PostgresController {
 
-  @Autowired
-  @Lazy
-  private PostgresClient postgresClient;
+  @Autowired @Lazy private PostgresClient postgresClient;
 
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
@@ -34,9 +31,9 @@ public class PostgresController {
     return edgeChain.toSingle();
   }
 
-
   @PostMapping("/query")
-  public Single<List<PostgresWordEmbeddings>> query(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<List<PostgresWordEmbeddings>> query(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
 
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
 
@@ -48,7 +45,6 @@ public class PostgresController {
 
     return edgeChain.toSingle();
   }
-
 
   @DeleteMapping("/deleteAll")
   public Single<StringResponse> deleteAll(@RequestBody PostgresEndpoint postgresEndpoint) {

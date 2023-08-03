@@ -6,7 +6,6 @@ import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.retrofit.RedisContextService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
 import java.util.Objects;

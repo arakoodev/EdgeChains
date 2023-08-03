@@ -21,7 +21,6 @@ import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import com.edgechain.lib.rxjava.utils.AtomInteger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication
@@ -64,8 +62,7 @@ public class PostgreSQLExample {
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
-    properties.setProperty(
-        "postgres.db.host", "");
+    properties.setProperty("postgres.db.host", "");
     properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
@@ -153,8 +150,7 @@ public class PostgreSQLExample {
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
       Retrieval retrieval =
-          new PostgresRetrieval(
-              postgresEndpoint, filename, 1536, ada002Embedding, arkRequest);
+          new PostgresRetrieval(postgresEndpoint, filename, 1536, ada002Embedding, arkRequest);
 
       IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
     }
@@ -172,18 +168,17 @@ public class PostgreSQLExample {
 
       // Step 1: Chain ==> Get Embeddings  From Input & Then Query To PostgreSQL
       EdgeChain<WordEmbeddings> embeddingsChain =
-              new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
+          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
 
       // Step 2: Chain ==> Query Embeddings from PostgreSQL
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
-              new EdgeChain<>(
-                      postgresEndpoint.query(
-                              embeddingsChain.get(), PostgresDistanceMetric.L2, topK));
+          new EdgeChain<>(
+              postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK));
 
       // Step 3: Create Function which create prompt for each query & pass it to ChatCompletion
       return queryChain
-              .transform(wordEmbeddings -> queryFn(wordEmbeddings, arkRequest))
-              .getArkResponse();
+          .transform(wordEmbeddings -> queryFn(wordEmbeddings, arkRequest))
+          .getArkResponse();
     }
 
     @PostMapping(
@@ -227,8 +222,7 @@ public class PostgreSQLExample {
       // let's say topK=5; then we concatenate List into a string
       EdgeChain<String> queryChain =
           new EdgeChain<>(
-                  postgresEndpoint.query(
-                      embeddingsChain.get(), PostgresDistanceMetric.L2, topK))
+                  postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK))
               .transform(
                   queries -> {
                     List<String> queryList = new ArrayList<>();

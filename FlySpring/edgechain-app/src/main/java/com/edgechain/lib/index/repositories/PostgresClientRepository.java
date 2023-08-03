@@ -2,7 +2,6 @@ package com.edgechain.lib.index.repositories;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
-import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.utils.FloatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,20 +25,26 @@ public class PostgresClientRepository {
 
     jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector;");
     jdbcTemplate.execute(
-            String.format(
-                    "CREATE TABLE IF NOT EXISTS %s (embedding_id SERIAL PRIMARY KEY, id VARCHAR(255) NOT NULL UNIQUE, "
-                            + "raw_text TEXT NOT NULL UNIQUE, embedding"
-                            + " vector(%s), timestamp TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255));",
-                    postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
+        String.format(
+            "CREATE TABLE IF NOT EXISTS %s (embedding_id SERIAL PRIMARY KEY, id VARCHAR(255) NOT"
+                + " NULL UNIQUE, raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
+                + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255));",
+            postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
   }
 
   @Transactional
   public void upsertEmbeddings(
-          String tableName, String input, String filename, WordEmbeddings wordEmbeddings, String namespace) {
+      String tableName,
+      String input,
+      String filename,
+      WordEmbeddings wordEmbeddings,
+      String namespace) {
 
-    jdbcTemplate.execute(String.format(
-            "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')"
-                    + "  ON CONFLICT (raw_text) DO UPDATE SET embedding = EXCLUDED.embedding;",
+    jdbcTemplate.execute(
+        String.format(
+            "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES ('%s',"
+                + " '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE SET embedding ="
+                + " EXCLUDED.embedding;",
             tableName,
             UUID.randomUUID(),
             input,
@@ -51,25 +56,26 @@ public class PostgresClientRepository {
 
   @Transactional(readOnly = true)
   public List<Map<String, Object>> query(
-          String tableName,
-          String namespace,
-          PostgresDistanceMetric metric,
-          WordEmbeddings wordEmbeddings,
-          int topK) {
+      String tableName,
+      String namespace,
+      PostgresDistanceMetric metric,
+      WordEmbeddings wordEmbeddings,
+      int topK) {
 
     return jdbcTemplate.queryForList(
-            String.format(
-                    "SELECT id, raw_text, namespace, timestamp FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
-                    tableName,
-                    namespace,
-                    PostgresDistanceMetric.getDistanceMetric(metric),
-                    Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
-                    topK));
+        String.format(
+            "SELECT id, raw_text, namespace, timestamp FROM %s WHERE namespace='%s' ORDER BY"
+                + " embedding %s '%s' LIMIT %s;",
+            tableName,
+            namespace,
+            PostgresDistanceMetric.getDistanceMetric(metric),
+            Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+            topK));
   }
 
   @Transactional
   public void deleteAll(String tableName, String namespace) {
     jdbcTemplate.execute(
-            String.format("delete from %s where namespace='%s'", tableName, namespace));
+        String.format("delete from %s where namespace='%s'", tableName, namespace));
   }
 }

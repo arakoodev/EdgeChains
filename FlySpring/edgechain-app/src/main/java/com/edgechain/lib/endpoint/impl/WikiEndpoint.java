@@ -5,7 +5,6 @@ import com.edgechain.lib.retrofit.WikiService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import com.edgechain.lib.wiki.response.WikiResponse;
-import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
 public class WikiEndpoint extends Endpoint {

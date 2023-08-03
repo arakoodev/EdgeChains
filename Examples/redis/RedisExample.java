@@ -9,8 +9,6 @@ import com.edgechain.lib.chunk.enums.LangType;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.*;
-import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
-import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
@@ -60,8 +58,7 @@ public class RedisExample {
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
-    properties.setProperty(
-            "postgres.db.host", "");
+    properties.setProperty("postgres.db.host", "");
     properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
@@ -246,8 +243,7 @@ public class RedisExample {
       // prompt)
       // let's say topK=5; then we concatenate List into a string
       EdgeChain<String> queryChain =
-          new EdgeChain<>(
-                  redisEndpoint.query(embeddingsChain.get(), topK))
+          new EdgeChain<>(redisEndpoint.query(embeddingsChain.get(), topK))
               .transform(
                   queries -> {
                     List<String> queryList = new ArrayList<>();
