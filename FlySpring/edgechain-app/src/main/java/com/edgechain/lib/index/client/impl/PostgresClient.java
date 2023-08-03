@@ -9,6 +9,9 @@ import com.edgechain.lib.index.responses.PostgresResponse;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
+
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class PostgresClient {
@@ -95,7 +98,7 @@ public class PostgresClient {
                 List<WordEmbeddings> wordEmbeddingsList = new ArrayList<>();
 
                 for (Map row : rows) {
-                  wordEmbeddingsList.add(new WordEmbeddings((String) row.get("id")));
+                  wordEmbeddingsList.add(new WordEmbeddings((String) row.get("raw")));
                 }
 
                 emitter.onNext(wordEmbeddingsList);
@@ -127,8 +130,11 @@ public class PostgresClient {
                           for (Map row : rows) {
                               wordEmbeddingsList.add(
                                       new PostgresResponse(
-                                              new WordEmbeddings((String) row.get("id")),
-                                              (String) row.get("filename")
+                                              (String) row.get("id"),
+                                              new WordEmbeddings((String) row.get("raw")),
+                                              (String) row.get("filename"),
+                                              (Integer) row.get("sno"),
+                                              (Timestamp) row.get("timestamp")
                                       )
                               );
                           }
