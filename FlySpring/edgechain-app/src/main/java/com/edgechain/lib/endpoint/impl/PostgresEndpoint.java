@@ -92,7 +92,7 @@ public class PostgresEndpoint extends Endpoint {
   public Observable<StringResponse> upsert(WordEmbeddings wordEmbeddings, int dimension) {
     this.wordEmbeddings = wordEmbeddings;
     this.dimensions = dimension;
-    if(fileName != null) {
+    if (fileName != null) {
       return Observable.fromSingle(postgresService.upsertWithFilename(this));
     } else {
       return Observable.fromSingle(postgresService.upsert(this));
@@ -106,6 +106,7 @@ public class PostgresEndpoint extends Endpoint {
     this.metric = metric;
     return Observable.fromSingle(this.postgresService.query(this));
   }
+
   public Observable<List<PostgresResponse>> queryWithFilename(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
     this.wordEmbeddings = wordEmbeddings;
