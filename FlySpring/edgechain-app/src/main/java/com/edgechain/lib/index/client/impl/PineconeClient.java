@@ -36,9 +36,9 @@ public class PineconeClient {
               try {
 
                 this.namespace =
-                        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                                ? ""
-                                : endpoint.getNamespace();
+                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                        ? ""
+                        : endpoint.getNamespace();
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -73,9 +73,9 @@ public class PineconeClient {
               try {
 
                 this.namespace =
-                        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                                ? ""
-                                : endpoint.getNamespace();
+                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                        ? ""
+                        : endpoint.getNamespace();
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -113,10 +113,9 @@ public class PineconeClient {
               try {
 
                 this.namespace =
-                        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                                ? ""
-                                : endpoint.getNamespace();
-
+                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                        ? ""
+                        : endpoint.getNamespace();
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));

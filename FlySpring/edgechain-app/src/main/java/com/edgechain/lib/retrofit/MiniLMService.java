@@ -9,7 +9,6 @@ import retrofit2.http.POST;
 
 public interface MiniLMService {
 
-    @POST(value = "miniLM")
-    Single<MiniLMResponse> embeddings(@Body MiniLMEndpoint miniLMEndpoint);
-
+  @POST(value = "miniLM")
+  Single<MiniLMResponse> embeddings(@Body MiniLMEndpoint miniLMEndpoint);
 }

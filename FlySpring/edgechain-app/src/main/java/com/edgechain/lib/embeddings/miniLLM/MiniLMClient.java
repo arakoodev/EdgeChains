@@ -21,231 +21,214 @@ import java.util.List;
 @Service
 public class MiniLMClient {
 
-    private MiniLMEndpoint endpoint;
+  private MiniLMEndpoint endpoint;
 
-    private static volatile ZooModel<String, float[]>  allMiniL6V2;
-    private static volatile ZooModel<String, float[]>  allMiniL12V2;
+  private static volatile ZooModel<String, float[]> allMiniL6V2;
+  private static volatile ZooModel<String, float[]> allMiniL12V2;
 
-    private static volatile ZooModel<String, float[]> paraphraseMiniLML3v2;
+  private static volatile ZooModel<String, float[]> paraphraseMiniLML3v2;
 
-    private static volatile  ZooModel<String, float[]>  multiQAMiniLML6CosV1;
+  private static volatile ZooModel<String, float[]> multiQAMiniLML6CosV1;
 
+  public MiniLMEndpoint getEndpoint() {
+    return endpoint;
+  }
 
-    public MiniLMEndpoint getEndpoint() {
-        return endpoint;
-    }
+  public void setEndpoint(MiniLMEndpoint endpoint) {
+    this.endpoint = endpoint;
+  }
 
-    public void setEndpoint(MiniLMEndpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+  public EdgeChain<MiniLMResponse> createEmbeddings(String input, MiniLMModel miniLMModel) {
 
-    public EdgeChain<MiniLMResponse> createEmbeddings(String input, MiniLMModel miniLMModel)  {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
 
-        return new EdgeChain<>(Observable.create(emitter ->{
+                if (miniLMModel.equals(MiniLMModel.ALL_MINILM_L6_V2)) {
 
-            try{
+                  Predictor<String, float[]> predictor =
+                      loadAllMiniL6V2(miniLMModel).newPredictor();
 
-                if(miniLMModel.equals(MiniLMModel.ALL_MINILM_L6_V2)) {
+                  float[] predict = predictor.predict(input);
 
-                    Predictor<String, float[]> predictor = loadAllMiniL6V2(miniLMModel).newPredictor();
+                  List<Float> floatList = new LinkedList<>();
+                  for (float v : predict) {
+                    floatList.add(v);
+                  }
 
-                    float[] predict = predictor.predict(input);
+                  emitter.onNext(new MiniLMResponse(floatList));
+                  emitter.onComplete();
+                } else if (miniLMModel.equals(MiniLMModel.ALL_MINILM_L12_V2)) {
 
-                    List<Float> floatList = new LinkedList<>();
-                    for (float v : predict) {
-                        floatList.add(v);
-                    }
+                  Predictor<String, float[]> predictor =
+                      loadAllMiniL12V2(miniLMModel).newPredictor();
 
-                    emitter.onNext(new MiniLMResponse(floatList));
-                    emitter.onComplete();
+                  float[] predict = predictor.predict(input);
+
+                  List<Float> floatList = new LinkedList<>();
+                  for (float v : predict) {
+                    floatList.add(v);
+                  }
+
+                  emitter.onNext(new MiniLMResponse(floatList));
+                  emitter.onComplete();
+                } else if (miniLMModel.equals(MiniLMModel.PARAPHRASE_MINILM_L3_V2)) {
+
+                  Predictor<String, float[]> predictor =
+                      loadParaphraseMiniLML3v2(miniLMModel).newPredictor();
+
+                  float[] predict = predictor.predict(input);
+
+                  List<Float> floatList = new LinkedList<>();
+                  for (float v : predict) {
+                    floatList.add(v);
+                  }
+
+                  emitter.onNext(new MiniLMResponse(floatList));
+                  emitter.onComplete();
+                } else {
+
+                  ZooModel<String, float[]> zooModel = loadMultiQAMiniLML6CosV1(miniLMModel);
+
+                  Predictor<String, float[]> predictor = zooModel.newPredictor();
+
+                  float[] predict = predictor.predict(input);
+
+                  List<Float> floatList = new LinkedList<>();
+                  for (float v : predict) {
+                    floatList.add(v);
+                  }
+
+                  emitter.onNext(new MiniLMResponse(floatList));
+                  emitter.onComplete();
                 }
 
-                else if(miniLMModel.equals(MiniLMModel.ALL_MINILM_L12_V2)) {
-
-                    Predictor<String, float[]> predictor = loadAllMiniL12V2(miniLMModel).newPredictor();
-
-                    float[] predict = predictor.predict(input);
-
-                    List<Float> floatList = new LinkedList<>();
-                    for (float v : predict) {
-                        floatList.add(v);
-                    }
-
-                    emitter.onNext(new MiniLMResponse(floatList));
-                    emitter.onComplete();
-                }
-
-                else if(miniLMModel.equals(MiniLMModel.PARAPHRASE_MINILM_L3_V2)) {
-
-
-                    Predictor<String, float[]> predictor = loadParaphraseMiniLML3v2(miniLMModel).newPredictor();
-
-                    float[] predict = predictor.predict(input);
-
-                    List<Float> floatList = new LinkedList<>();
-                    for (float v : predict) {
-                        floatList.add(v);
-                    }
-
-                    emitter.onNext(new MiniLMResponse(floatList));
-                    emitter.onComplete();
-                }
-
-                else  {
-
-                    ZooModel<String, float[]> zooModel = loadMultiQAMiniLML6CosV1(miniLMModel);
-
-                    Predictor<String, float[]> predictor = zooModel.newPredictor();
-
-                    float[] predict = predictor.predict(input);
-
-                    List<Float> floatList = new LinkedList<>();
-                    for (float v : predict) {
-                        floatList.add(v);
-                    }
-
-                    emitter.onNext(new MiniLMResponse(floatList));
-                    emitter.onComplete();
-                }
-
-
-            }catch (final Exception e){
+              } catch (final Exception e) {
                 emitter.onError(e);
-            }
+              }
+            }),
+        endpoint);
+  }
 
-        }),endpoint);
+  private ZooModel<String, float[]> loadAllMiniL6V2(MiniLMModel miniLMModel) {
 
-    }
+    ZooModel<String, float[]> r = allMiniL6V2;
 
-    private ZooModel<String, float[]> loadAllMiniL6V2(MiniLMModel miniLMModel) {
+    if (r == null) {
+      synchronized (this) {
+        r = allMiniL6V2;
+        if (r == null) {
 
-        ZooModel<String, float[]> r = allMiniL6V2;
+          Criteria<String, float[]> criteria =
+              Criteria.builder()
+                  .setTypes(String.class, float[].class)
+                  .optModelUrls(MiniLMModel.getURL(miniLMModel))
+                  .optEngine("PyTorch")
+                  .optTranslatorFactory(new TextEmbeddingTranslatorFactory())
+                  .optProgress(new ProgressBar())
+                  .build();
 
-        if(r == null) {
-            synchronized (this) {
-                r = allMiniL6V2;
-                if(r == null) {
-
-                    Criteria<String, float[]> criteria =
-                            Criteria.builder()
-                                    .setTypes(String.class, float[].class)
-                                    .optModelUrls(
-                                            MiniLMModel.getURL(miniLMModel))
-                                    .optEngine("PyTorch")
-                                    .optTranslatorFactory(new TextEmbeddingTranslatorFactory())
-                                    .optProgress(new ProgressBar())
-                                    .build();
-
-
-                    try {
-                        r = criteria.loadModel();
-                        allMiniL6V2 = r;
-                    } catch (IOException | ModelNotFoundException | MalformedModelException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
+          try {
+            r = criteria.loadModel();
+            allMiniL6V2 = r;
+          } catch (IOException | ModelNotFoundException | MalformedModelException e) {
+            throw new RuntimeException(e);
+          }
         }
-        return r;
+      }
     }
+    return r;
+  }
 
-    private ZooModel<String, float[]> loadAllMiniL12V2(MiniLMModel miniLMModel) {
+  private ZooModel<String, float[]> loadAllMiniL12V2(MiniLMModel miniLMModel) {
 
-        ZooModel<String, float[]> r = allMiniL12V2;
+    ZooModel<String, float[]> r = allMiniL12V2;
 
-        if(r == null) {
-            synchronized (this) {
-                r = allMiniL12V2;
-                if(r == null) {
+    if (r == null) {
+      synchronized (this) {
+        r = allMiniL12V2;
+        if (r == null) {
 
-                    Criteria<String, float[]> criteria =
-                            Criteria.builder()
-                                    .setTypes(String.class, float[].class)
-                                    .optModelUrls(
-                                            MiniLMModel.getURL(miniLMModel))
-                                    .optEngine("PyTorch")
-                                    .optTranslatorFactory(new TextEmbeddingTranslatorFactory())
-                                    .optProgress(new ProgressBar())
-                                    .build();
+          Criteria<String, float[]> criteria =
+              Criteria.builder()
+                  .setTypes(String.class, float[].class)
+                  .optModelUrls(MiniLMModel.getURL(miniLMModel))
+                  .optEngine("PyTorch")
+                  .optTranslatorFactory(new TextEmbeddingTranslatorFactory())
+                  .optProgress(new ProgressBar())
+                  .build();
 
-
-                    try {
-                        r = criteria.loadModel();
-                        allMiniL12V2 = r;
-                    } catch (IOException | ModelNotFoundException | MalformedModelException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
+          try {
+            r = criteria.loadModel();
+            allMiniL12V2 = r;
+          } catch (IOException | ModelNotFoundException | MalformedModelException e) {
+            throw new RuntimeException(e);
+          }
         }
-
-        return r;
-
+      }
     }
 
-    private ZooModel<String, float[]> loadParaphraseMiniLML3v2(MiniLMModel miniLMModel) {
+    return r;
+  }
 
-        ZooModel<String, float[]> r = paraphraseMiniLML3v2;
+  private ZooModel<String, float[]> loadParaphraseMiniLML3v2(MiniLMModel miniLMModel) {
 
-        if(r == null) {
-            synchronized (this) {
-                r = paraphraseMiniLML3v2;
-                if(r == null) {
+    ZooModel<String, float[]> r = paraphraseMiniLML3v2;
 
-                    Criteria<String, float[]> criteria =
-                            Criteria.builder()
-                                    .setTypes(String.class, float[].class)
-                                    .optModelUrls(
-                                            MiniLMModel.getURL(miniLMModel))
-                                    .optEngine("PyTorch")
-                                    .optTranslatorFactory(new TextEmbeddingTranslatorFactory())
-                                    .optProgress(new ProgressBar())
-                                    .build();
+    if (r == null) {
+      synchronized (this) {
+        r = paraphraseMiniLML3v2;
+        if (r == null) {
 
+          Criteria<String, float[]> criteria =
+              Criteria.builder()
+                  .setTypes(String.class, float[].class)
+                  .optModelUrls(MiniLMModel.getURL(miniLMModel))
+                  .optEngine("PyTorch")
+                  .optTranslatorFactory(new TextEmbeddingTranslatorFactory())
+                  .optProgress(new ProgressBar())
+                  .build();
 
-                    try {
-                        r = criteria.loadModel();
-                        paraphraseMiniLML3v2 = r;
-                    } catch (IOException | ModelNotFoundException | MalformedModelException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
+          try {
+            r = criteria.loadModel();
+            paraphraseMiniLML3v2 = r;
+          } catch (IOException | ModelNotFoundException | MalformedModelException e) {
+            throw new RuntimeException(e);
+          }
         }
-        return r;
+      }
     }
+    return r;
+  }
 
-    private ZooModel<String, float[]> loadMultiQAMiniLML6CosV1(MiniLMModel miniLMModel) {
+  private ZooModel<String, float[]> loadMultiQAMiniLML6CosV1(MiniLMModel miniLMModel) {
 
-        ZooModel<String, float[]> r = multiQAMiniLML6CosV1;
+    ZooModel<String, float[]> r = multiQAMiniLML6CosV1;
 
-        if(r == null) {
-            synchronized (this) {
-                r = multiQAMiniLML6CosV1;
-                if(r == null) {
-                    Criteria<String, float[]> criteria =
-                            Criteria.builder()
-                                    .setTypes(String.class, float[].class)
-                                    .optModelUrls(
-                                            MiniLMModel.getURL(miniLMModel))
-                                    .optEngine("PyTorch")
-                                    .optTranslatorFactory(new TextEmbeddingTranslatorFactory())
-                                    .optProgress(new ProgressBar())
-                                    .build();
+    if (r == null) {
+      synchronized (this) {
+        r = multiQAMiniLML6CosV1;
+        if (r == null) {
+          Criteria<String, float[]> criteria =
+              Criteria.builder()
+                  .setTypes(String.class, float[].class)
+                  .optModelUrls(MiniLMModel.getURL(miniLMModel))
+                  .optEngine("PyTorch")
+                  .optTranslatorFactory(new TextEmbeddingTranslatorFactory())
+                  .optProgress(new ProgressBar())
+                  .build();
 
-
-                    try {
-                        r = criteria.loadModel();
-                        multiQAMiniLML6CosV1 = r;
-                    } catch (IOException | ModelNotFoundException | MalformedModelException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-            }
+          try {
+            r = criteria.loadModel();
+            multiQAMiniLML6CosV1 = r;
+          } catch (IOException | ModelNotFoundException | MalformedModelException e) {
+            throw new RuntimeException(e);
+          }
         }
-
-        return r;
+      }
     }
 
+    return r;
+  }
 }

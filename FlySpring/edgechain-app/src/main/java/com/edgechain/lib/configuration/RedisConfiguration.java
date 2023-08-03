@@ -38,7 +38,7 @@ public class RedisConfiguration {
     }
 
     return new JedisPooled(
-            host, port, env.getProperty("redis.username"), env.getProperty("redis.password"));
+        host, port, env.getProperty("redis.username"), env.getProperty("redis.password"));
   }
 
   @Bean

@@ -28,15 +28,15 @@ public class WikiClientTest {
   @Order(1)
   public void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo) {
 
-    assertDoesNotThrow(() -> {
-      logger.info("======== " + testInfo.getDisplayName() + " ========");
+    assertDoesNotThrow(
+        () -> {
+          logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-      // Prepare test data
-      WikiEndpoint wikiEndpoint = new WikiEndpoint();
-      WikiResponse wikiResponse = wikiEndpoint.getPageContent("Barack Obama");
+          // Prepare test data
+          WikiEndpoint wikiEndpoint = new WikiEndpoint();
+          WikiResponse wikiResponse = wikiEndpoint.getPageContent("Barack Obama");
 
-      logger.info(wikiResponse.getText());
-    });
-
+          logger.info(wikiResponse.getText());
+        });
   }
 }

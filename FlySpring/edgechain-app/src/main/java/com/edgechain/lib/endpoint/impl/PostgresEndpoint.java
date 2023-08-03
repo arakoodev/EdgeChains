@@ -8,7 +8,6 @@ import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.retrofit.PostgresService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
 import java.util.List;
@@ -40,7 +39,7 @@ public class PostgresEndpoint extends Endpoint {
     this.tableName = tableName;
   }
 
-  public PostgresEndpoint(String tableName,RetryPolicy retryPolicy) {
+  public PostgresEndpoint(String tableName, RetryPolicy retryPolicy) {
     super(retryPolicy);
     this.tableName = tableName;
   }
@@ -84,13 +83,12 @@ public class PostgresEndpoint extends Endpoint {
   }
 
   // Convenience Methods
-  public StringResponse upsert(WordEmbeddings wordEmbeddings, String filename,  int dimension) {
+  public StringResponse upsert(WordEmbeddings wordEmbeddings, String filename, int dimension) {
     this.wordEmbeddings = wordEmbeddings;
     this.dimensions = dimension;
     this.filename = filename;
     return postgresService.upsert(this).blockingGet();
   }
-
 
   public List<PostgresWordEmbeddings> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {

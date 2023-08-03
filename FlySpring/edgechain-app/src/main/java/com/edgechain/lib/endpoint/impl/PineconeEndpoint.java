@@ -6,7 +6,6 @@ import com.edgechain.lib.retrofit.PineconeService;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
 import java.util.List;

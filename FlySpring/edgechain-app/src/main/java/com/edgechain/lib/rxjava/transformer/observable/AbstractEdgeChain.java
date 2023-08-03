@@ -20,7 +20,6 @@ public abstract class AbstractEdgeChain<T> implements Serializable {
 
   public abstract <R> AbstractEdgeChain<R> transform(Function<T, R> mapper);
 
-
   public abstract <R> AbstractEdgeChain<R> combine(
       ObservableSource<T> other, BiFunction<T, T, R> zipper);
 

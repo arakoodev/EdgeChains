@@ -5,13 +5,10 @@ import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
-import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.request.ArkRequest;
-import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
 
 public class PineconeRetrieval extends Retrieval {
 
@@ -21,7 +18,6 @@ public class PineconeRetrieval extends Retrieval {
 
   private final ArkRequest arkRequest;
   private final Endpoint endpoint;
-
 
   public PineconeRetrieval(
       PineconeEndpoint pineconeEndpoint, Endpoint endpoint, ArkRequest arkRequest) {

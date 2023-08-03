@@ -6,7 +6,6 @@ import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.retrofit.PostgreSQLContextService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-import io.reactivex.rxjava3.core.Observable;
 import java.util.Objects;
 import retrofit2.Retrofit;
 

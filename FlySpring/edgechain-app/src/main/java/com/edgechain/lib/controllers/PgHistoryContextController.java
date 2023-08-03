@@ -3,12 +3,10 @@ package com.edgechain.lib.controllers;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.endpoint.impl.PostgreSQLHistoryContextEndpoint;
 import com.edgechain.lib.request.ArkRequest;
-import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -28,14 +26,15 @@ public class PgHistoryContextController {
 
   /*** Creating HistoryContext (Using PostgreSQL) Controller ****/
   @PostMapping
-  public HistoryContext create(@RequestParam(value = "id", defaultValue = "initialValue") String id) {
+  public HistoryContext create(
+      @RequestParam(value = "id", defaultValue = "initialValue") String id) {
     if (id.equals("initialValue"))
       return getInstance().create(UUID.randomUUID().toString()); // Here randomId is generated.
     else return getInstance().create(id);
   }
 
   @PutMapping
-  public HistoryContext update(ArkRequest arkRequest)  {
+  public HistoryContext update(ArkRequest arkRequest) {
     JSONObject json = arkRequest.getBody();
     return getInstance().put(json.getString("id"), json.getString("response"));
   }

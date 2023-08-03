@@ -6,7 +6,6 @@ import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
-import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
@@ -14,22 +13,16 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 import com.edgechain.lib.wiki.response.WikiResponse;
-import io.reactivex.rxjava3.core.Observable;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
-import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
 @SpringBootApplication
 public class WikiExample {
@@ -65,13 +58,13 @@ public class WikiExample {
     wikiEndpoint = new WikiEndpoint();
 
     gpt4Endpoint =
-            new OpenAiEndpoint(
-                    OPENAI_CHAT_COMPLETION_API,
-                    OPENAI_AUTH_KEY,
-                    "gpt-4",
-                    "user",
-                    0.7,
-                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-4",
+            "user",
+            0.7,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
   }
 
   @RestController
@@ -85,8 +78,8 @@ public class WikiExample {
      * @return ArkResponse
      */
     @GetMapping(
-            value = "/wiki-summary",
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+        value = "/wiki-summary",
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
     public ArkResponse wikiSummary(ArkRequest arkRequest) {
 
       String query = arkRequest.getQueryParam("query");
@@ -99,22 +92,22 @@ public class WikiExample {
       EdgeChain<WikiResponse> wikiChain = new EdgeChain<>(wikiEndpoint.getPageContent(query));
 
       return wikiChain
-              .transform(this::fn) // create prompt using JsonnetLoader ${basePrompt} +  ${wikiContent}
-              .transform(prompt -> gpt4Endpoint.chatCompletion(prompt, "WikiChain", arkRequest))
-              .getArkResponse();
+          .transform(this::fn) // create prompt using JsonnetLoader ${basePrompt} +  ${wikiContent}
+          .transform(prompt -> gpt4Endpoint.chatCompletion(prompt, "WikiChain", arkRequest))
+          .getArkResponse();
     }
 
     private String fn(WikiResponse wiki) {
       loader
-              .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-              .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
-              .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
-              .put(
-                      "context",
-                      new JsonnetArgs(
-                              DataType.STRING,
-                              wiki.getText())) // Step 4: Concatenate ${Base Prompt} + ${Wiki Output}
-              .loadOrReload(); // Step 5: Reloading Jsonnet File
+          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
+          .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put(
+              "context",
+              new JsonnetArgs(
+                  DataType.STRING,
+                  wiki.getText())) // Step 4: Concatenate ${Base Prompt} + ${Wiki Output}
+          .loadOrReload(); // Step 5: Reloading Jsonnet File
 
       return loader.get("prompt");
     }

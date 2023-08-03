@@ -7,7 +7,6 @@ import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 import java.util.List;
 
@@ -114,7 +113,7 @@ public class RedisEndpoint extends Endpoint {
     return this.redisService.upsert(this).blockingGet();
   }
 
-  public List<WordEmbeddings> query(WordEmbeddings embeddings,  int topK) {
+  public List<WordEmbeddings> query(WordEmbeddings embeddings, int topK) {
     this.topK = topK;
     this.wordEmbeddings = embeddings;
     return this.redisService.query(this).blockingGet();

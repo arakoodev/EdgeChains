@@ -22,8 +22,6 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
     super(observable);
   }
 
-
-
   public EdgeChain(Observable<T> observable, Endpoint endpoint) {
     super(observable);
     this.endpoint = endpoint;
@@ -33,12 +31,10 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
     super(Observable.just(item));
   }
 
-
   @Override
   public <R> EdgeChain<R> transform(Function<T, R> mapper) {
     return new EdgeChain<>(this.observable.map(mapper));
   }
-
 
   @Override
   public <R> EdgeChain<R> combine(ObservableSource<T> other, BiFunction<T, T, R> zipper) {
