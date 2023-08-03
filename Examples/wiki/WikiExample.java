@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.edgechain.lib.wiki.response.WikiResponse;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
 
-@SpringBootApplication
+/**
+ * Add exclude(RedisAutoConfiguration ==> if you aren't using Redis)
+ */
+@SpringBootApplication(exclude = RedisAutoConfiguration.class)
 public class WikiExample {
 
   private static final String OPENAI_AUTH_KEY = "";
@@ -46,12 +50,6 @@ public class WikiExample {
 
     properties.setProperty("spring.jpa.show-sql", "true");
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
-
-    //    properties.setProperty(
-    //            "postgres.db.host",
-    // "jdbc:postgresql://db.itlgddqhlxhdbncdqowa.supabase.co:5432/postgres");
-    //    properties.setProperty("postgres.db.username", "postgres");
-    //    properties.setProperty("postgres.db.password", "fsfVFQM4u2rYZehP");
 
     new SpringApplicationBuilder(WikiExample.class).properties(properties).run(args);
 

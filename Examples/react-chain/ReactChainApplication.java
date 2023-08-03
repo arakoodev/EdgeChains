@@ -8,6 +8,7 @@ import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +19,10 @@ import java.util.concurrent.TimeUnit;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
 
-@SpringBootApplication
+/**
+ * Add exclude(RedisAutoConfiguration ==> if you aren't using Redis)
+ */
+@SpringBootApplication(exclude = RedisAutoConfiguration.class)
 public class ReactChainApplication {
 
   private static final String OPENAI_AUTH_KEY = "";

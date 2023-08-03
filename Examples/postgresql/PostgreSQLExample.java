@@ -30,11 +30,15 @@ import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-@SpringBootApplication
+/**
+ * Add exclude(RedisAutoConfiguration ==> if you aren't using Redis)
+ */
+@SpringBootApplication(exclude = RedisAutoConfiguration.class)
 public class PostgreSQLExample {
 
   private static final String OPENAI_AUTH_KEY = "";
