@@ -1,8 +1,11 @@
 package com.edgechain.lib.chains;
 
-import com.edgechain.lib.endpoint.impl.Doc2VecEndpoint;
+import com.edgechain.lib.embeddings.WordEmbeddings;
+import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
+import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import org.slf4j.Logger;
@@ -17,50 +20,31 @@ public class PineconeRetrieval extends Retrieval {
   private final PineconeEndpoint pineconeEndpoint;
 
   private final ArkRequest arkRequest;
-  private OpenAiEndpoint openAiEndpoint;
+  private final Endpoint endpoint;
 
-  private Doc2VecEndpoint doc2VecEndpoint;
-
-  public PineconeRetrieval(
-      PineconeEndpoint pineconeEndpoint, OpenAiEndpoint openAiEndpoint, ArkRequest arkRequest) {
-    this.pineconeEndpoint = pineconeEndpoint;
-    this.openAiEndpoint = openAiEndpoint;
-    this.arkRequest = arkRequest;
-    logger.info("Using OpenAI Embedding Service");
-  }
 
   public PineconeRetrieval(
-      PineconeEndpoint pineconeEndpoint, Doc2VecEndpoint doc2VecEndpoint, ArkRequest arkRequest) {
+      PineconeEndpoint pineconeEndpoint, Endpoint endpoint, ArkRequest arkRequest) {
     this.pineconeEndpoint = pineconeEndpoint;
-    this.doc2VecEndpoint = doc2VecEndpoint;
+    this.endpoint = endpoint;
     this.arkRequest = arkRequest;
-    logger.info("Using Doc2Vec Embedding Service");
+
+    if (endpoint instanceof OpenAiEndpoint openAiEndpoint)
+      logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
+    else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint)
+      logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
   }
 
   @Override
   public void upsert(String input) {
-
-    if (Objects.nonNull(openAiEndpoint)) {
-      new EdgeChain<>(
-              this.openAiEndpoint
-                  .embeddings(input, arkRequest)
-                  .map(w -> this.pineconeEndpoint.upsert(w))
-                  .firstOrError()
-                  .blockingGet())
-          .await()
-          .blockingAwait();
-    }
-    // For Doc2Vec ===>
-
-    if (Objects.nonNull(doc2VecEndpoint)) {
-      new EdgeChain<>(
-              this.doc2VecEndpoint
-                  .embeddings(input)
-                  .map(w -> this.pineconeEndpoint.upsert(w))
-                  .firstOrError()
-                  .blockingGet())
-          .await()
-          .blockingAwait();
-    }
+    if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
+      WordEmbeddings embeddings = openAiEndpoint.embeddings(input, arkRequest);
+      this.pineconeEndpoint.upsert(embeddings);
+    } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
+      WordEmbeddings embeddings = miniLMEndpoint.embeddings(input, arkRequest);
+      this.pineconeEndpoint.upsert(embeddings);
+    } else
+      throw new RuntimeException(
+          "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
   }
 }

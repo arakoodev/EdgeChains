@@ -22,17 +22,16 @@ public class PostgreSQLHistoryContextEndpoint extends Endpoint {
     super(retryPolicy);
   }
 
-  public Observable<HistoryContext> create(String id) {
-    return Observable.fromSingle(this.contextService.create(id, this));
+  public HistoryContext create(String id) {
+    return this.contextService.create(id, this).blockingGet();
   }
 
-  public Observable<HistoryContext> put(String id, String response) {
-    return Observable.fromSingle(
-        this.contextService.put(new ContextPutRequest<>(id, response, this)));
+  public HistoryContext put(String id, String response) {
+    return this.contextService.put(new ContextPutRequest<>(id, response, this)).blockingGet();
   }
 
-  public Observable<HistoryContext> get(String id) {
-    return Observable.fromSingle(this.contextService.get(id, this));
+  public HistoryContext get(String id) {
+    return this.contextService.get(id, this).blockingGet();
   }
 
   public void delete(String id) {

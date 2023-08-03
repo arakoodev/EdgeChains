@@ -1,5 +1,6 @@
 package com.edgechain.lib.configuration;
 
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +16,6 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.clients.jedis.JedisPooled;
 
-import java.util.Objects;
-
 @Configuration
 @EnableRedisRepositories
 public class RedisConfiguration {
@@ -26,26 +25,43 @@ public class RedisConfiguration {
   @Bean
   @Lazy
   public JedisPooled jedisPooled() {
+
+    int port = 6379;
+    String host = "127.0.0.1";
+
+    if (Objects.nonNull(env.getProperty("redis.port"))) {
+      port = Integer.parseInt(env.getProperty("redis.port"));
+    }
+
+    if (Objects.nonNull(env.getProperty("redis.url"))) {
+      host = env.getProperty("redis.url");
+    }
+
     return new JedisPooled(
-        env.getProperty("redis.url"),
-        Integer.parseInt(env.getProperty("redis.port")),
-        env.getProperty("redis.username"),
-        env.getProperty("redis.password"));
+            host, port, env.getProperty("redis.username"), env.getProperty("redis.password"));
   }
 
   @Bean
   @Lazy
   public JedisConnectionFactory jedisConnectionFactory() {
 
+    int port = 6379;
+    String host = "127.0.0.1";
+
+    if (Objects.nonNull(env.getProperty("redis.port"))) {
+      port = Integer.parseInt(env.getProperty("redis.port"));
+    }
+
+    if (Objects.nonNull(env.getProperty("redis.url"))) {
+      host = env.getProperty("redis.url");
+    }
+
     RedisStandaloneConfiguration redisConfiguration = new RedisStandaloneConfiguration();
     redisConfiguration.setUsername(env.getProperty("redis.username"));
     redisConfiguration.setPassword(RedisPassword.of(env.getProperty("redis.password")));
-    if (Objects.isNull(env.getProperty("redis.port"))) {
-      redisConfiguration.setPort(6379);
-    } else {
-      redisConfiguration.setPort(Integer.parseInt(env.getProperty("redis.port")));
-    }
-    redisConfiguration.setHostName(env.getProperty("redis.url"));
+    redisConfiguration.setPort(port);
+    redisConfiguration.setHostName(host);
+
     return new JedisConnectionFactory(redisConfiguration);
   }
 

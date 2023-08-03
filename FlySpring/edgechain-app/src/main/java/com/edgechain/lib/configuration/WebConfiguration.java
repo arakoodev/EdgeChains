@@ -32,11 +32,7 @@ public class WebConfiguration {
   @Bean
   @Primary
   public SecurityUUID securityUUID() {
-
-    String uuid = UUID.randomUUID().toString();
-    System.out.println(uuid);
-
-    return new SecurityUUID(uuid);
+    return new SecurityUUID(UUID.randomUUID().toString());
   }
 
   @Bean

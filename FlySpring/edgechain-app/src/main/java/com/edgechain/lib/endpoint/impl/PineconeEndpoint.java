@@ -73,18 +73,18 @@ public class PineconeEndpoint extends Endpoint {
     this.topK = topK;
   }
 
-  public Observable<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
+  public StringResponse upsert(WordEmbeddings wordEmbeddings) {
     this.wordEmbeddings = wordEmbeddings;
-    return Observable.fromSingle(this.pineconeService.upsert(this));
+    return this.pineconeService.upsert(this).blockingGet();
   }
 
-  public Observable<List<WordEmbeddings>> query(WordEmbeddings wordEmbeddings, int topK) {
+  public List<WordEmbeddings> query(WordEmbeddings wordEmbeddings, int topK) {
     this.wordEmbeddings = wordEmbeddings;
     this.topK = topK;
-    return Observable.fromSingle(this.pineconeService.query(this));
+    return this.pineconeService.query(this).blockingGet();
   }
 
-  public Observable<StringResponse> deleteAll() {
-    return Observable.fromSingle(this.pineconeService.deleteAll(this));
+  public StringResponse deleteAll() {
+    return this.pineconeService.deleteAll(this).blockingGet();
   }
 }

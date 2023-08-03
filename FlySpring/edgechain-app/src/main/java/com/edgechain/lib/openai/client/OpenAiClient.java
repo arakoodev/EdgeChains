@@ -14,24 +14,30 @@ import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.adapter.rxjava.RxJava3Adapter;
 
 import java.util.Objects;
 
+@Service
 public class OpenAiClient {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate = new RestTemplate();
 
-  private final OpenAiEndpoint endpoint;
+  private OpenAiEndpoint endpoint;
 
-  public OpenAiClient(OpenAiEndpoint endpoint) {
-    this.endpoint = endpoint;
-  }
+    public OpenAiEndpoint getEndpoint() {
+        return endpoint;
+    }
 
-  public EdgeChain<ChatCompletionResponse> createChatCompletion(ChatCompletionRequest request) {
+    public void setEndpoint(OpenAiEndpoint endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public EdgeChain<ChatCompletionResponse> createChatCompletion(ChatCompletionRequest request) {
 
     return new EdgeChain<>(
         Observable.create(

@@ -12,6 +12,7 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <djl.version>0.23.0</djl.version>
     </properties>
     <dependencies>
 
@@ -145,87 +146,43 @@
         </dependency>
 
         <dependency>
-            <groupId>org.deeplearning4j</groupId>
-            <artifactId>deeplearning4j-core</artifactId>
-            <version>1.0.0-M2.1</version>
-            <exclusions>
-
-                <exclusion>
-                    <groupId>org.bytedeco</groupId>
-                    <artifactId>hdf5</artifactId>
-                </exclusion>
-
-                <!--                <exclusion>-->
-                <!--                    <groupId>org.bytedeco</groupId>-->
-                <!--                    <artifactId>javacpp</artifactId>-->
-                <!--                </exclusion>-->
-
-                <!--                <exclusion>-->
-                <!--                    <groupId>org.bytedeco</groupId>-->
-                <!--                    <artifactId>openblas</artifactId>-->
-                <!--                </exclusion>-->
-
-                <exclusion>
-                    <groupId>org.bytedeco</groupId>
-                    <artifactId>hdf5-platform</artifactId>
-                </exclusion>
-
-                <exclusion>
-                    <groupId>org.datavec</groupId>
-                    <artifactId>datavec-data-image</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.deeplearning4j</groupId>
-            <artifactId>deeplearning4j-nlp</artifactId>
-            <version>1.0.0-M2.1</version>
+            <groupId>ai.djl</groupId>
+            <artifactId>api</artifactId>
+            <version>${djl.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.nd4j</groupId>
-            <artifactId>nd4j-native-platform</artifactId>
-            <version>1.0.0-M2.1</version>
-            <exclusions>
-                <!--                <exclusion>-->
-                <!--                    <groupId>org.bytedeco</groupId>-->
-                <!--                    <artifactId>openblas-platform</artifactId>-->
-                <!--                </exclusion>-->
-                <exclusion>
-                    <groupId>org.bytedeco</groupId>
-                    <artifactId>mkl-platform</artifactId>
-                </exclusion>
-
-                <exclusion>
-                    <groupId>org.nd4j</groupId>
-                    <artifactId>nd4j-native</artifactId>
-                </exclusion>
-
-            </exclusions>
+            <groupId>ai.djl</groupId>
+            <artifactId>basicdataset</artifactId>
+            <version>${djl.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.nd4j</groupId>
-            <artifactId>nd4j-native</artifactId>
-            <version>1.0.0-M2.1</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.nd4j</groupId>
-            <artifactId>nd4j-native</artifactId>
-            <version>1.0.0-M2.1</version>
-            <classifier>windows-x86_64</classifier>
+            <groupId>ai.djl.huggingface</groupId>
+            <artifactId>tokenizers</artifactId>
+            <version>0.23.0</version>
         </dependency>
 
         <dependency>
-            <groupId>org.nd4j</groupId>
-            <artifactId>nd4j-native</artifactId>
-            <version>1.0.0-M2.1</version>
-            <classifier>linux-x86_64</classifier>
+            <groupId>ai.djl</groupId>
+            <artifactId>model-zoo</artifactId>
+            <version>${djl.version}</version>
         </dependency>
+
+        <!-- Pytorch -->
+
+        <dependency>
+            <groupId>ai.djl.pytorch</groupId>
+            <artifactId>pytorch-engine</artifactId>
+            <version>${djl.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ai.djl.pytorch</groupId>
+            <artifactId>pytorch-model-zoo</artifactId>
+            <version>${djl.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>io.github.jam01</groupId>
@@ -273,11 +230,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.f4b6a3</groupId>
-            <artifactId>uuid-creator</artifactId>
-            <version>5.2.0</version>
         </dependency>
 
     </dependencies>

@@ -6,6 +6,7 @@ import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
+import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
@@ -13,15 +14,22 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
+import com.edgechain.lib.wiki.response.WikiResponse;
+import io.reactivex.rxjava3.core.Observable;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
+import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
 @SpringBootApplication
 public class WikiExample {
@@ -46,22 +54,24 @@ public class WikiExample {
     properties.setProperty("spring.jpa.show-sql", "true");
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
-    properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "postgres");
-    properties.setProperty("postgres.db.password", "");
+    //    properties.setProperty(
+    //            "postgres.db.host",
+    // "jdbc:postgresql://db.itlgddqhlxhdbncdqowa.supabase.co:5432/postgres");
+    //    properties.setProperty("postgres.db.username", "postgres");
+    //    properties.setProperty("postgres.db.password", "fsfVFQM4u2rYZehP");
 
     new SpringApplicationBuilder(WikiExample.class).properties(properties).run(args);
 
-    gpt4Endpoint =
-        new OpenAiEndpoint(
-            OPENAI_CHAT_COMPLETION_API,
-            OPENAI_AUTH_KEY,
-            "gpt-4",
-            "user",
-            0.7,
-            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
-
     wikiEndpoint = new WikiEndpoint();
+
+    gpt4Endpoint =
+            new OpenAiEndpoint(
+                    OPENAI_CHAT_COMPLETION_API,
+                    OPENAI_AUTH_KEY,
+                    "gpt-4",
+                    "user",
+                    0.7,
+                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
   }
 
   @RestController
@@ -75,38 +85,38 @@ public class WikiExample {
      * @return ArkResponse
      */
     @GetMapping(
-        value = "/wiki-summary",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+            value = "/wiki-summary",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
     public ArkResponse wikiSummary(ArkRequest arkRequest) {
 
       String query = arkRequest.getQueryParam("query");
       boolean stream = arkRequest.getBooleanHeader("stream");
 
-      // configure GPT4Endpoint
+      // Configure GPT4Endpoint
       gpt4Endpoint.setStream(stream);
 
-      // Step 1: Create JsonnetLoader to Load JsonnetFile & Pass Args To Jsonnet
+      // Create Wiki Chain
+      EdgeChain<WikiResponse> wikiChain = new EdgeChain<>(wikiEndpoint.getPageContent(query));
 
+      return wikiChain
+              .transform(this::fn) // create prompt using JsonnetLoader ${basePrompt} +  ${wikiContent}
+              .transform(prompt -> gpt4Endpoint.chatCompletion(prompt, "WikiChain", arkRequest))
+              .getArkResponse();
+    }
+
+    private String fn(WikiResponse wiki) {
       loader
-          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
+              .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+              .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
+              .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
+              .put(
+                      "context",
+                      new JsonnetArgs(
+                              DataType.STRING,
+                              wiki.getText())) // Step 4: Concatenate ${Base Prompt} + ${Wiki Output}
+              .loadOrReload(); // Step 5: Reloading Jsonnet File
 
-      return new EdgeChain<>(wikiEndpoint.getPageContent(query))
-          .transform(
-              wiki -> {
-                loader
-                    .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
-                    .put(
-                        "context",
-                        new JsonnetArgs(
-                            DataType.STRING,
-                            wiki.getText())) // Step 4: Concatenate ${Base Prompt} + ${Wiki Output}
-                    .loadOrReload(); // Step 5: Reloading Jsonnet File
-
-                return loader.get("prompt");
-              })
-          .transform(prompt -> gpt4Endpoint.chatCompletion(prompt, "WikiChain", arkRequest))
-          .getArkResponse();
+      return loader.get("prompt");
     }
   }
 }

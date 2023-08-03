@@ -34,6 +34,15 @@ public class RedisEndpoint extends Endpoint {
     super(retryPolicy);
   }
 
+  public RedisEndpoint(String indexName) {
+    this.indexName = indexName;
+  }
+
+  public RedisEndpoint(String indexName, RetryPolicy retryPolicy) {
+    super(retryPolicy);
+    this.indexName = indexName;
+  }
+
   public RedisEndpoint(String indexName, String namespace) {
     this.indexName = indexName;
     this.namespace = namespace;
@@ -95,20 +104,20 @@ public class RedisEndpoint extends Endpoint {
   }
 
   // Convenience Methods
-  public Observable<StringResponse> upsert(
+  public StringResponse upsert(
       WordEmbeddings wordEmbeddings, int dimension, RedisDistanceMetric metric) {
 
     this.wordEmbeddings = wordEmbeddings;
     this.dimensions = dimension;
     this.metric = metric;
 
-    return Observable.fromSingle(this.redisService.upsert(this));
+    return this.redisService.upsert(this).blockingGet();
   }
 
-  public Observable<List<WordEmbeddings>> query(WordEmbeddings embeddings, int topK) {
+  public List<WordEmbeddings> query(WordEmbeddings embeddings,  int topK) {
     this.topK = topK;
     this.wordEmbeddings = embeddings;
-    return Observable.fromSingle(this.redisService.query(this));
+    return this.redisService.query(this).blockingGet();
   }
 
   public void delete(String patternName) {
