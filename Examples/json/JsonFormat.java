@@ -2,6 +2,8 @@ package com.edgechain;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
@@ -17,6 +19,8 @@ import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
+import com.edgechain.lib.openai.request.FunctionRequest;
+import com.edgechain.lib.openai.request.Parameters;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,6 +36,7 @@ public class JsonFormat {
 
     private static OpenAiEndpoint userChatEndpoint;
     private static JsonnetLoader loader = new FileJsonnetLoader("./json-format.jsonnet");
+    private static JsonnetLoader functionLoader = new FileJsonnetLoader("./function.jsonnet");
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static void main(String[] args) {
@@ -174,6 +179,58 @@ public class JsonFormat {
             }
 
         }
+
+        @PostMapping(value = "/function")
+        public String function(ArkRequest arkRequest) {
+
+            JSONObject json = arkRequest.getBody();
+            String prompt = json.getString("prompt");
+            try {
+                JSONObject format = json.getJSONObject("format");
+            } catch (Exception e) {
+                return "Format has no valid json format";
+            }
+
+            functionLoader
+                    .put("prompt", new JsonnetArgs(DataType.STRING, prompt))
+                    .loadOrReload();
+
+
+            FunctionRequest function = new FunctionRequest("reply_user", "reply to user's query",
+                    new Parameters("object", json.getJSONObject("format")));
+            
+            List<FunctionRequest> functions = new ArrayList<>();
+            functions.add(function);
+                
+            System.out.println("Function Request: " + function.getParameters().getProperties());
+
+             userChatEndpoint = new OpenAiEndpoint(
+                    OPENAI_CHAT_COMPLETION_API,
+                    OPENAI_AUTH_KEY,
+                    "gpt-3.5-turbo-0613",
+                    "user",
+                    0.7,
+                    functions,
+                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+            
+             System.out.println("Till user chat endpoint creation no error occured ");
+             System.out.println(userChatEndpoint.getFunctions().get(0).getParameters().getProperties());
+             System.out.println(userChatEndpoint.getFunctions());
+
+             System.out.println("Function Request: " + function.getParameters().getProperties());
+             String gptResponse = userChatEndpoint
+                    .chatCompletion( json.getString("prompt"), "Json-format", arkRequest)
+                    .blockingFirst()
+                    .getChoices()
+                    .get(0)
+                    .getMessage()
+                    .getContent();
+            
+            System.out.println("GPT Response:  no error  " + gptResponse);
+
+            return "success";
+        }
+
     }
 
 }

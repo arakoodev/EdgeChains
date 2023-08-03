@@ -8,14 +8,25 @@ public class ChatCompletionRequest {
   private Double temperature;
   private List<ChatMessage> messages;
   private Boolean stream;
+  private List<FunctionRequest> functions;
 
-  public ChatCompletionRequest() {}
+  public ChatCompletionRequest() {
+  }
 
   public ChatCompletionRequest(
       String model, List<ChatMessage> messages, Double temperature, Boolean stream) {
     this.model = model;
     this.temperature = temperature;
     this.messages = messages;
+    this.stream = stream;
+  }
+
+  public ChatCompletionRequest(
+      String model, List<ChatMessage> messages, Double temperature, List<FunctionRequest> functions, Boolean stream) {
+    this.model = model;
+    this.temperature = temperature;
+    this.messages = messages;
+    this.functions = functions;
     this.stream = stream;
   }
 
@@ -43,6 +54,14 @@ public class ChatCompletionRequest {
     this.temperature = temperature;
   }
 
+  public void setFunctions(List<FunctionRequest> functions) {
+    this.functions = functions;
+  }
+
+  public List<FunctionRequest> getFunctions() {
+    return functions;
+  }
+
   public Boolean getStream() {
     return stream;
   }
@@ -57,6 +76,7 @@ public class ChatCompletionRequest {
     sb.append("model='").append(model).append('\'');
     sb.append(", temperature=").append(temperature);
     sb.append(", messages=").append(messages);
+    sb.append(", functions=").append(functions);
     sb.append(", stream=").append(stream);
     sb.append('}');
     return sb.toString();
@@ -70,6 +90,7 @@ public class ChatCompletionRequest {
     private String model;
     private Double temperature;
     private List<ChatMessage> messages;
+    private List<FunctionRequest> functions;
 
     private Boolean stream = Boolean.FALSE;
 
@@ -93,8 +114,13 @@ public class ChatCompletionRequest {
       return this;
     }
 
+    public ChatCompletionRequestBuilder functions(List<FunctionRequest> functions) {
+      this.functions = functions;
+      return this;
+    }
+
     public ChatCompletionRequest build() {
-      return new ChatCompletionRequest(model, messages, temperature, stream);
+      return new ChatCompletionRequest(model, messages, temperature, functions, stream);
     }
   }
 }
