@@ -21,6 +21,8 @@ import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,9 +41,9 @@ import java.util.stream.IntStream;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
 
+
 @SpringBootApplication
 public class SupabaseMiniLMExample {
-
   private static final String OPENAI_AUTH_KEY = "";
 
   private static OpenAiEndpoint gpt3Endpoint;
@@ -50,8 +52,8 @@ public class SupabaseMiniLMExample {
 
   private static MiniLMEndpoint miniLMEndpoint;
 
-  private JsonnetLoader queryLoader = new FileJsonnetLoader("./postgres-query.jsonnet");
-  private JsonnetLoader chatLoader = new FileJsonnetLoader("./postgres-chat.jsonnet");
+  private JsonnetLoader queryLoader = new FileJsonnetLoader("./supabase-miniLM/postgres-query.jsonnet");
+  private JsonnetLoader chatLoader = new FileJsonnetLoader("./supabase-miniLM/postgres-chat.jsonnet");
 
   public static void main(String[] args) {
 
@@ -258,7 +260,7 @@ public class SupabaseMiniLMExample {
           .transform(
               prompt ->
                   gpt3Endpoint
-                      .chatCompletion(prompt, "PostgresChatChain", arkRequest)
+                      .chatCompletion(prompt, "MiniLLMPostgresChatChain", arkRequest)
                       .doOnNext(
                           chatResponse -> {
                             // If ChatCompletion (stream = true);
@@ -320,7 +322,7 @@ public class SupabaseMiniLMExample {
         resp.add(
             new EdgeChain<>(
                     gpt3Endpoint.chatCompletion(
-                        queryLoader.get("prompt"), "PostgresQueryChain", arkRequest))
+                        queryLoader.get("prompt"), "MiniLLMPostgresQueryChain", arkRequest))
                 .get());
       }
 

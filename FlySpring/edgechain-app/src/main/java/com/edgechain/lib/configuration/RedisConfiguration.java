@@ -17,7 +17,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.clients.jedis.JedisPooled;
 
 @Configuration
-@EnableRedisRepositories
 public class RedisConfiguration {
 
   @Autowired @Lazy private Environment env;
@@ -66,7 +65,6 @@ public class RedisConfiguration {
   }
 
   @Bean
-  @ConditionalOnBean(name = "redisEnv")
   public RedisTemplate<String, Object> redisTemplate() {
     RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(jedisConnectionFactory());

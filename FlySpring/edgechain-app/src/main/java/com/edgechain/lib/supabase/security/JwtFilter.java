@@ -39,16 +39,17 @@ public class JwtFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filter)
       throws ServletException, IOException {
 
-    boolean test = env.acceptsProfiles(Profiles.of("test"));
-
-    if (request.getRequestURI().startsWith(WebConfiguration.CONTEXT_PATH) && !test) {
-
+    if (request.getRequestURI().startsWith(WebConfiguration.CONTEXT_PATH)) {
       String authHeader = request.getHeader("Authorization");
       if (!authHeader.equals(securityUUID.getAuthKey())) throw new FilterException("Access Denied");
     }
 
     String token = AuthUtils.extractToken(request);
+
     if (token != null) {
+
+      System.out.println("Token: "+token);
+
       /** If you are using Supabase, then uncomment this line; * */
       //      User user = userSecurityService.loadUserByUsername(token);
 
