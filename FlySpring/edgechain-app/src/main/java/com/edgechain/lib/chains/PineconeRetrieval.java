@@ -9,7 +9,6 @@ import com.edgechain.lib.request.ArkRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class PineconeRetrieval extends Retrieval {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
