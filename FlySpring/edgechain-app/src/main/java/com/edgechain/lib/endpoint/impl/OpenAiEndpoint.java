@@ -204,17 +204,18 @@ public class OpenAiEndpoint extends Endpoint {
     else return Observable.fromSingle(this.openAiService.chatCompletion(this));
   }
 
-  public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
+  public WordEmbeddings embeddings(String input, ArkRequest arkRequest) {
     this.input = input; // set Input
+
     if (Objects.nonNull(arkRequest)) {
       this.callIdentifier = arkRequest.getRequestURI();
     }
 
-    return Observable.fromSingle(
-        openAiService
-            .embeddings(this)
-            .map(
-                embeddingResponse ->
-                    new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
+    return openAiService
+        .embeddings(this)
+        .map(
+            embeddingResponse ->
+                new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding()))
+        .blockingGet();
   }
 }

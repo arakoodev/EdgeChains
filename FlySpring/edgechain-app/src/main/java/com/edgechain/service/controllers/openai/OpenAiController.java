@@ -44,6 +44,7 @@ public class OpenAiController {
   @Autowired private EmbeddingLogService embeddingLogService;
 
   @Autowired private Environment env;
+  @Autowired private OpenAiClient openAiClient;
 
   @PostMapping(value = "/chat-completion")
   public Single<ChatCompletionResponse> chatCompletion(@RequestBody OpenAiEndpoint openAiEndpoint) {
@@ -56,8 +57,10 @@ public class OpenAiController {
             .stream(false)
             .build();
 
+    this.openAiClient.setEndpoint(openAiEndpoint);
+
     EdgeChain<ChatCompletionResponse> edgeChain =
-        new OpenAiClient(openAiEndpoint).createChatCompletion(chatCompletionRequest);
+        openAiClient.createChatCompletion(chatCompletionRequest);
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
@@ -103,6 +106,8 @@ public class OpenAiController {
             .stream(true)
             .build();
 
+    this.openAiClient.setEndpoint(openAiEndpoint);
+
     SseEmitter emitter = new SseEmitter();
     ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -110,7 +115,7 @@ public class OpenAiController {
         () -> {
           try {
             EdgeChain<ChatCompletionResponse> edgeChain =
-                new OpenAiClient(openAiEndpoint).createChatCompletionStream(chatCompletionRequest);
+                openAiClient.createChatCompletionStream(chatCompletionRequest);
 
             AtomInteger chunks = AtomInteger.of(0);
 
@@ -202,8 +207,9 @@ public class OpenAiController {
             .temperature(openAiEndpoint.getTemperature())
             .build();
 
-    EdgeChain<CompletionResponse> edgeChain =
-        new OpenAiClient(openAiEndpoint).createCompletion(completionRequest);
+    this.openAiClient.setEndpoint(openAiEndpoint);
+
+    EdgeChain<CompletionResponse> edgeChain = openAiClient.createCompletion(completionRequest);
 
     return edgeChain.toSingle();
   }
@@ -212,10 +218,11 @@ public class OpenAiController {
   public Single<OpenAiEmbeddingResponse> embeddings(@RequestBody OpenAiEndpoint openAiEndpoint)
       throws SQLException {
 
+    this.openAiClient.setEndpoint(openAiEndpoint);
+
     EdgeChain<OpenAiEmbeddingResponse> edgeChain =
-        new OpenAiClient(openAiEndpoint)
-            .createEmbeddings(
-                new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), openAiEndpoint.getInput()));
+        openAiClient.createEmbeddings(
+            new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), openAiEndpoint.getInput()));
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 

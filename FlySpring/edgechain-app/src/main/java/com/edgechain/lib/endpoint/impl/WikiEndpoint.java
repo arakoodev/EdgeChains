@@ -5,7 +5,6 @@ import com.edgechain.lib.retrofit.WikiService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import com.edgechain.lib.wiki.response.WikiResponse;
-import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
 public class WikiEndpoint extends Endpoint {
@@ -30,8 +29,8 @@ public class WikiEndpoint extends Endpoint {
     this.input = input;
   }
 
-  public Observable<WikiResponse> getPageContent(String input) {
+  public WikiResponse getPageContent(String input) {
     this.input = input;
-    return Observable.fromSingle(this.wikiService.getPageContent(this));
+    return this.wikiService.getPageContent(this).blockingGet();
   }
 }

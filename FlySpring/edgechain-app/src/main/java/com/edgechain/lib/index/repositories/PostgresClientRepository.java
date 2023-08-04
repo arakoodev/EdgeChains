@@ -9,9 +9,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Repository
 public class PostgresClientRepository {
@@ -24,23 +26,32 @@ public class PostgresClientRepository {
     jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector;");
     jdbcTemplate.execute(
         String.format(
-            "CREATE TABLE IF NOT EXISTS %s (id TEXT PRIMARY KEY, embedding"
-                + " vector(%s), namespace TEXT);",
+            "CREATE TABLE IF NOT EXISTS %s (embedding_id SERIAL PRIMARY KEY, id VARCHAR(255) NOT"
+                + " NULL UNIQUE, raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
+                + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255));",
             postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
   }
 
   @Transactional
   public void upsertEmbeddings(
-      String tableName, String input, WordEmbeddings wordEmbeddings, String namespace) {
+      String tableName,
+      String input,
+      String filename,
+      WordEmbeddings wordEmbeddings,
+      String namespace) {
 
     jdbcTemplate.execute(
         String.format(
-            "INSERT INTO %s (id, embedding, namespace) VALUES ('%s', '%s', '%s')\n"
-                + "    ON CONFLICT (id) DO UPDATE SET embedding = EXCLUDED.embedding;",
+            "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES ('%s',"
+                + " '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE SET embedding ="
+                + " EXCLUDED.embedding;",
             tableName,
+            UUID.randomUUID(),
             input,
             Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
-            namespace));
+            LocalDateTime.now(),
+            namespace,
+            filename));
   }
 
   @Transactional(readOnly = true)
@@ -53,7 +64,8 @@ public class PostgresClientRepository {
 
     return jdbcTemplate.queryForList(
         String.format(
-            "SELECT id FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+            "SELECT id, raw_text, namespace, timestamp FROM %s WHERE namespace='%s' ORDER BY"
+                + " embedding %s '%s' LIMIT %s;",
             tableName,
             namespace,
             PostgresDistanceMetric.getDistanceMetric(metric),

@@ -1,11 +1,9 @@
 package com.edgechain.lib.jsonnet;
 
 import com.edgechain.lib.endpoint.impl.WikiEndpoint;
-import com.edgechain.lib.wiki.response.WikiResponse;
 import io.github.jam01.xtrasonnet.DataFormatService;
 import io.github.jam01.xtrasonnet.header.Header;
 import io.github.jam01.xtrasonnet.spi.Library;
-import io.reactivex.rxjava3.core.Observable;
 import sjsonnet.Importer;
 import sjsonnet.Val;
 
@@ -32,8 +30,7 @@ public class XtraSonnetCustomFunc extends Library {
               }
               WikiEndpoint wikiEndpoint = new WikiEndpoint();
 
-              Observable<WikiResponse> result = wikiEndpoint.getPageContent(prompt);
-              String response = result.blockingFirst().getText();
+              String response = wikiEndpoint.getPageContent(prompt).getText();
               return new Val.Str(dummyPosition(), response);
             }));
     return res;
