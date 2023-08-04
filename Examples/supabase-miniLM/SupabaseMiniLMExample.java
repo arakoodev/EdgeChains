@@ -72,12 +72,14 @@ public class SupabaseMiniLMExample {
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
     // For DB config
-    properties.setProperty("postgres.db.host", "");
+    properties.setProperty(
+            "postgres.db.host", "");
     properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
     // For JWT decode
     properties.setProperty("jwt.secret", "");
+
 
     new SpringApplicationBuilder(SupabaseMiniLMExample.class).properties(properties).run(args);
 
@@ -241,7 +243,7 @@ public class SupabaseMiniLMExample {
               .transform(
                   queries -> {
                     List<String> queryList = new ArrayList<>();
-                    queries.forEach(q -> queryList.add(q.getId()));
+                    queries.forEach(q -> queryList.add(q.getRawText()));
                     return String.join("\n", queryList);
                   });
 
