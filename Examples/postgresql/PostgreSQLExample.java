@@ -228,7 +228,7 @@ public class PostgreSQLExample {
               .transform(
                   queries -> {
                     List<String> queryList = new ArrayList<>();
-                    queries.forEach(q -> queryList.add(q.getId()));
+                    queries.forEach(q -> queryList.add(q.getRawText()));
                     return String.join("\n", queryList);
                   });
 
