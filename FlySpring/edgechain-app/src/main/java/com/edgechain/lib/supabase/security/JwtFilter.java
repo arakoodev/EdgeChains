@@ -47,9 +47,7 @@ public class JwtFilter extends OncePerRequestFilter {
     String token = AuthUtils.extractToken(request);
 
     if (token != null) {
-
-      System.out.println("Token: "+token);
-
+      
       /** If you are using Supabase, then uncomment this line; * */
       //      User user = userSecurityService.loadUserByUsername(token);
 
