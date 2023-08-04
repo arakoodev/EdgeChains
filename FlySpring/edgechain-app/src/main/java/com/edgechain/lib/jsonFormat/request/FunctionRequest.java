@@ -1,12 +1,15 @@
-package com.edgechain.lib.openai.request;
+package com.edgechain.lib.jsonFormat.request;
 
 public class FunctionRequest {
-
+    
     private String name;
     private String description;
-    private Parameters parameters;
+    private Object parameters;
 
-    public FunctionRequest(String name, String description, Parameters parameters) {
+    public FunctionRequest() {
+    }
+
+    public FunctionRequest(String name, String description, Object parameters) {
         this.name = name;
         this.description = description;
         this.parameters = parameters;
@@ -28,12 +31,20 @@ public class FunctionRequest {
         this.description = description;
     }
 
-    public Parameters getParameters() {
+    public Object getParameters() {
         return parameters;
     }
 
     public void setParameters(Parameters parameters) {
         this.parameters = parameters;
     }
+
+    @Override
+    public String toString() {
+        return "FunctionRequest [name=" + name + ", description=" + description + ", parameters=" + parameters + "]";
+    }
+
+    
+    
 
 }

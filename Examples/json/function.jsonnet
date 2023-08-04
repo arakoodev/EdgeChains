@@ -1,6 +1,9 @@
-local prompt = payload.prompt;
 
+local functionPrompt = std.join(" ",[ 
+    payload.prompt+"I need a Exact json format like this:  ",
+    payload.format
+]);
 
 {
-    "prompt": prompt
+    "functionPrompt": functionPrompt
 }

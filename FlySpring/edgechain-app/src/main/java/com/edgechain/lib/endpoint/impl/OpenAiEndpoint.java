@@ -1,21 +1,18 @@
 package com.edgechain.lib.endpoint.impl;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.Endpoint;
-import com.edgechain.lib.openai.request.FunctionRequest;
-import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.request.ArkRequest;
-import com.edgechain.lib.retrofit.OpenAiService;
 import com.edgechain.lib.retrofit.client.OpenAiStreamService;
+import com.edgechain.lib.retrofit.OpenAiService;
+import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
+
+import java.util.Objects;
 
 public class OpenAiEndpoint extends Endpoint {
 
@@ -29,7 +26,6 @@ public class OpenAiEndpoint extends Endpoint {
   private String model;
   private String role;
   private Double temperature;
-  private List<FunctionRequest> functions;
 
   private Boolean stream;
 
@@ -71,21 +67,6 @@ public class OpenAiEndpoint extends Endpoint {
     this.model = model;
     this.role = role;
     this.temperature = temperature;
-  }
-
-  public OpenAiEndpoint(
-      String url,
-      String apiKey,
-      String model,
-      String role,
-      Double temperature,
-      List<FunctionRequest> functions,
-      RetryPolicy retryPolicy) {
-    super(url, apiKey, retryPolicy);
-    this.model = model;
-    this.role = role;
-    this.temperature = temperature;
-    this.functions = functions;
   }
 
   public OpenAiEndpoint(
@@ -179,14 +160,6 @@ public class OpenAiEndpoint extends Endpoint {
 
   public void setTemperature(Double temperature) {
     this.temperature = temperature;
-  }
-
-  public void setFunctions(List<FunctionRequest> functions) {
-    this.functions = functions;
-  }
-
-  public List<FunctionRequest> getFunctions() {
-    return functions;
   }
 
   public void setStream(Boolean stream) {
