@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Repository
 public class PostgresClientRepository {
@@ -65,8 +64,8 @@ public class PostgresClientRepository {
 
     return jdbcTemplate.queryForList(
         String.format(
-            "SELECT id, raw_text, namespace, filename, timestamp FROM %s WHERE namespace='%s' ORDER BY"
-                + " embedding %s '%s' LIMIT %s;",
+            "SELECT id, raw_text, namespace, filename, timestamp FROM %s WHERE namespace='%s' ORDER"
+                + " BY embedding %s '%s' LIMIT %s;",
             tableName,
             namespace,
             PostgresDistanceMetric.getDistanceMetric(metric),

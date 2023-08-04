@@ -18,9 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/postgres")
 public class PostgresController {
 
-  @Autowired
-  @Lazy
-  private PostgresClient postgresClient;
+  @Autowired @Lazy private PostgresClient postgresClient;
 
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
