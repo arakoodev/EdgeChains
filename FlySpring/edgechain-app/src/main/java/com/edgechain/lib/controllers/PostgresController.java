@@ -2,13 +2,12 @@ package com.edgechain.lib.controllers;
 
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.request.ArkRequest;
-import com.edgechain.lib.response.ArkResponse;
+import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,7 +26,7 @@ public class PostgresController {
   }
 
   @DeleteMapping("/deleteAll")
-  public ArkResponse deletePostgres(ArkRequest arkRequest) {
+  public StringResponse deletePostgres(ArkRequest arkRequest) {
 
     String table = arkRequest.getQueryParam("table");
     String namespace = arkRequest.getQueryParam("namespace");
@@ -35,6 +34,6 @@ public class PostgresController {
     getInstance().setTableName(table);
     getInstance().setNamespace(namespace);
 
-    return new EdgeChain<>(getInstance().deleteAll()).getArkResponse();
+    return getInstance().deleteAll();
   }
 }

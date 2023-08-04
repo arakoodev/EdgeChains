@@ -3,28 +3,40 @@ package com.edgechain.lib.index.client.impl;
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
+import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.index.repositories.PostgresClientRepository;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
 import java.util.*;
 
+@Service
 public class PostgresClient {
 
-  private final PostgresEndpoint postgresEndpoint;
-  private final String namespace;
+  private PostgresEndpoint postgresEndpoint;
+  private String namespace;
 
   private final PostgresClientRepository repository =
       ApplicationContextHolder.getContext().getBean(PostgresClientRepository.class);
 
-  public PostgresClient(PostgresEndpoint postgresEndpoint) {
+  public PostgresEndpoint getPostgresEndpoint() {
+    return postgresEndpoint;
+  }
+
+  public void setPostgresEndpoint(PostgresEndpoint postgresEndpoint) {
     this.postgresEndpoint = postgresEndpoint;
-    this.namespace =
-        (Objects.isNull(postgresEndpoint.getNamespace())
-                || postgresEndpoint.getNamespace().isEmpty())
-            ? "knowledge"
-            : postgresEndpoint.getNamespace();
+  }
+
+  public String getNamespace() {
+    return namespace;
+  }
+
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
   }
 
   public EdgeChain<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
@@ -33,6 +45,13 @@ public class PostgresClient {
         Observable.create(
             emitter -> {
               try {
+
+                this.namespace =
+                    (Objects.isNull(postgresEndpoint.getNamespace())
+                            || postgresEndpoint.getNamespace().isEmpty())
+                        ? "knowledge"
+                        : postgresEndpoint.getNamespace();
+
                 // Create Table
                 this.repository.createTable(postgresEndpoint);
 
@@ -40,7 +59,11 @@ public class PostgresClient {
 
                 // Upsert Embeddings
                 this.repository.upsertEmbeddings(
-                    postgresEndpoint.getTableName(), input, wordEmbeddings, this.namespace);
+                    postgresEndpoint.getTableName(),
+                    input,
+                    postgresEndpoint.getFilename(),
+                    wordEmbeddings,
+                    this.namespace);
 
                 emitter.onNext(new StringResponse("Upserted"));
                 emitter.onComplete();
@@ -52,12 +75,18 @@ public class PostgresClient {
         postgresEndpoint);
   }
 
-  public EdgeChain<List<WordEmbeddings>> query(
+  public EdgeChain<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
+
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
+                this.namespace =
+                    (Objects.isNull(postgresEndpoint.getNamespace())
+                            || postgresEndpoint.getNamespace().isEmpty())
+                        ? "knowledge"
+                        : postgresEndpoint.getNamespace();
 
                 List<Map<String, Object>> rows =
                     this.repository.query(
@@ -67,10 +96,18 @@ public class PostgresClient {
                         wordEmbeddings,
                         topK);
 
-                List<WordEmbeddings> wordEmbeddingsList = new ArrayList<>();
+                List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
 
                 for (Map row : rows) {
-                  wordEmbeddingsList.add(new WordEmbeddings((String) row.get("id")));
+
+                  PostgresWordEmbeddings val = new PostgresWordEmbeddings();
+                  val.setId((String) row.get("id"));
+                  val.setRawText((String) row.get("raw_text"));
+                  val.setFilename((String) row.get("filename"));
+                  val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
+                  val.setNamespace((String) row.get("namespace"));
+
+                  wordEmbeddingsList.add(val);
                 }
 
                 emitter.onNext(wordEmbeddingsList);
@@ -88,6 +125,12 @@ public class PostgresClient {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
+              this.namespace =
+                  (Objects.isNull(postgresEndpoint.getNamespace())
+                          || postgresEndpoint.getNamespace().isEmpty())
+                      ? "knowledge"
+                      : postgresEndpoint.getNamespace();
+
               try {
                 this.repository.deleteAll(postgresEndpoint.getTableName(), this.namespace);
                 emitter.onNext(

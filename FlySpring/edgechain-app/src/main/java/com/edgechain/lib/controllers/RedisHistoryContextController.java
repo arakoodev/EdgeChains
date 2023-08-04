@@ -1,8 +1,8 @@
 package com.edgechain.lib.controllers;
 
+import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
 import com.edgechain.lib.request.ArkRequest;
-import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
@@ -24,24 +24,23 @@ public class RedisHistoryContextController {
   }
 
   @PostMapping
-  public ArkResponse createRedisHistoryContext(
+  public HistoryContext create(
       @RequestParam(value = "id", defaultValue = "initialValue") String id) {
     if (id.equals("initialValue"))
-      return new ArkResponse(
-          getInstance().create(UUID.randomUUID().toString())); // Here randomId is generated.
-    else return new ArkResponse(getInstance().create(id));
+      return getInstance().create(UUID.randomUUID().toString()); // Here randomId is generated.
+    else return getInstance().create(id);
   }
 
   @PutMapping
-  public ArkResponse putRedisHistoryContext(ArkRequest arkRequest) throws IOException {
+  public HistoryContext put(ArkRequest arkRequest) throws IOException {
     JSONObject json = arkRequest.getBody();
-    return new ArkResponse(getInstance().put(json.getString("id"), json.getString("response")));
+    return getInstance().put(json.getString("id"), json.getString("response"));
   }
 
   @GetMapping
-  public ArkResponse getRedisHistoryContext(ArkRequest arkRequest) {
+  public HistoryContext get(ArkRequest arkRequest) {
     String id = arkRequest.getQueryParam("id");
-    return new ArkResponse(getInstance().get(id));
+    return getInstance().get(id);
   }
 
   @DeleteMapping

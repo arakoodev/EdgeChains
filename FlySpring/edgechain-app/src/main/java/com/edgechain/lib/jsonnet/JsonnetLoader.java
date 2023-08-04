@@ -5,7 +5,7 @@ import com.edgechain.lib.jsonnet.exceptions.JsonnetLoaderException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jam01.xtrasonnet.Transformer;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;

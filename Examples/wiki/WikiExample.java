@@ -14,7 +14,9 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import com.edgechain.lib.wiki.response.WikiResponse;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +34,7 @@ public class WikiExample {
   private static OpenAiEndpoint gpt4Endpoint;
   private static WikiEndpoint wikiEndpoint;
 
-  private final JsonnetLoader loader = new FileJsonnetLoader("./wiki.jsonnet");
+  private final JsonnetLoader loader = new FileJsonnetLoader("./wiki/wiki.jsonnet");
 
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
@@ -47,10 +49,12 @@ public class WikiExample {
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
     properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "postgres");
+    properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
     new SpringApplicationBuilder(WikiExample.class).properties(properties).run(args);
+
+    wikiEndpoint = new WikiEndpoint();
 
     gpt4Endpoint =
         new OpenAiEndpoint(
@@ -60,8 +64,6 @@ public class WikiExample {
             "user",
             0.7,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
-
-    wikiEndpoint = new WikiEndpoint();
   }
 
   @RestController
@@ -82,31 +84,31 @@ public class WikiExample {
       String query = arkRequest.getQueryParam("query");
       boolean stream = arkRequest.getBooleanHeader("stream");
 
-      // configure GPT4Endpoint
+      // Configure GPT4Endpoint
       gpt4Endpoint.setStream(stream);
 
-      // Step 1: Create JsonnetLoader to Load JsonnetFile & Pass Args To Jsonnet
+      // Create Wiki Chain
+      EdgeChain<WikiResponse> wikiChain = new EdgeChain<>(wikiEndpoint.getPageContent(query));
 
-      loader
-          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"));
-
-      return new EdgeChain<>(wikiEndpoint.getPageContent(query))
-          .transform(
-              wiki -> {
-                loader
-                    .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
-                    .put(
-                        "context",
-                        new JsonnetArgs(
-                            DataType.STRING,
-                            wiki.getText())) // Step 4: Concatenate ${Base Prompt} + ${Wiki Output}
-                    .loadOrReload(); // Step 5: Reloading Jsonnet File
-
-                return loader.get("prompt");
-              })
+      return wikiChain
+          .transform(this::fn) // create prompt using JsonnetLoader ${basePrompt} +  ${wikiContent}
           .transform(prompt -> gpt4Endpoint.chatCompletion(prompt, "WikiChain", arkRequest))
           .getArkResponse();
+    }
+
+    private String fn(WikiResponse wiki) {
+      loader
+          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
+          .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
+          .put(
+              "context",
+              new JsonnetArgs(
+                  DataType.STRING,
+                  wiki.getText())) // Step 4: Concatenate ${Base Prompt} + ${Wiki Output}
+          .loadOrReload(); // Step 5: Reloading Jsonnet File
+
+      return loader.get("prompt");
     }
   }
 }

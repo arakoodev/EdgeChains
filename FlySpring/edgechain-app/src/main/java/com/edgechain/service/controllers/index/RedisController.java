@@ -8,6 +8,8 @@ import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,15 +18,18 @@ import java.util.List;
 @RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/redis")
 public class RedisController {
 
+  @Autowired @Lazy private RedisClient redisClient;
+
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody RedisEndpoint redisEndpoint) {
 
+    this.redisClient.setEndpoint(redisEndpoint);
+
     EdgeChain<StringResponse> edgeChain =
-        new RedisClient(redisEndpoint)
-            .upsert(
-                redisEndpoint.getWordEmbeddings(),
-                redisEndpoint.getDimensions(),
-                redisEndpoint.getMetric());
+        this.redisClient.upsert(
+            redisEndpoint.getWordEmbeddings(),
+            redisEndpoint.getDimensions(),
+            redisEndpoint.getMetric());
 
     return edgeChain.toSingle();
   }
@@ -32,9 +37,10 @@ public class RedisController {
   @PostMapping("/query")
   public Single<List<WordEmbeddings>> query(@RequestBody RedisEndpoint redisEndpoint) {
 
+    this.redisClient.setEndpoint(redisEndpoint);
+
     EdgeChain<List<WordEmbeddings>> edgeChain =
-        new RedisClient(redisEndpoint)
-            .query(redisEndpoint.getWordEmbeddings(), redisEndpoint.getTopK());
+        this.redisClient.query(redisEndpoint.getWordEmbeddings(), redisEndpoint.getTopK());
 
     return edgeChain.toSingle();
   }
@@ -42,7 +48,10 @@ public class RedisController {
   @DeleteMapping("/delete")
   public Completable deleteByPattern(
       @RequestParam("pattern") String pattern, @RequestBody RedisEndpoint redisEndpoint) {
-    EdgeChain<StringResponse> edgeChain = new RedisClient(redisEndpoint).deleteByPattern(pattern);
+
+    this.redisClient.setEndpoint(redisEndpoint);
+
+    EdgeChain<StringResponse> edgeChain = this.redisClient.deleteByPattern(pattern);
     return edgeChain.await();
   }
 }

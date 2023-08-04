@@ -6,7 +6,6 @@ import com.edgechain.lib.retrofit.PineconeService;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
 import java.util.List;
@@ -73,18 +72,18 @@ public class PineconeEndpoint extends Endpoint {
     this.topK = topK;
   }
 
-  public Observable<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
+  public StringResponse upsert(WordEmbeddings wordEmbeddings) {
     this.wordEmbeddings = wordEmbeddings;
-    return Observable.fromSingle(this.pineconeService.upsert(this));
+    return this.pineconeService.upsert(this).blockingGet();
   }
 
-  public Observable<List<WordEmbeddings>> query(WordEmbeddings wordEmbeddings, int topK) {
+  public List<WordEmbeddings> query(WordEmbeddings wordEmbeddings, int topK) {
     this.wordEmbeddings = wordEmbeddings;
     this.topK = topK;
-    return Observable.fromSingle(this.pineconeService.query(this));
+    return this.pineconeService.query(this).blockingGet();
   }
 
-  public Observable<StringResponse> deleteAll() {
-    return Observable.fromSingle(this.pineconeService.deleteAll(this));
+  public StringResponse deleteAll() {
+    return this.pineconeService.deleteAll(this).blockingGet();
   }
 }

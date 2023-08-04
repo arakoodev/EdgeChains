@@ -27,8 +27,8 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
     this.endpoint = endpoint;
   }
 
-  public static <T> EdgeChain<T> fromObservable(Observable<T> observable) {
-    return new EdgeChain<>(observable);
+  public EdgeChain(T item) {
+    super(Observable.just(item));
   }
 
   @Override

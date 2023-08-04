@@ -9,22 +9,24 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
 import org.springframework.http.*;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.*;
 
+@Service
 public class PineconeClient {
 
-  private final PineconeEndpoint endpoint;
-  private final String namespace;
+  private PineconeEndpoint endpoint;
+  private String namespace;
 
-  public PineconeClient(PineconeEndpoint endpoint) {
+  public PineconeEndpoint getEndpoint() {
+    return endpoint;
+  }
+
+  public void setEndpoint(PineconeEndpoint endpoint) {
     this.endpoint = endpoint;
-    this.namespace =
-        (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-            ? ""
-            : endpoint.getNamespace();
   }
 
   public EdgeChain<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
@@ -32,6 +34,12 @@ public class PineconeClient {
         Observable.create(
             emitter -> {
               try {
+
+                this.namespace =
+                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                        ? ""
+                        : endpoint.getNamespace();
+
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
                 headers.setContentType(MediaType.APPLICATION_JSON);
@@ -63,6 +71,12 @@ public class PineconeClient {
         Observable.create(
             emitter -> {
               try {
+
+                this.namespace =
+                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                        ? ""
+                        : endpoint.getNamespace();
+
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
                 headers.setContentType(MediaType.APPLICATION_JSON);
@@ -97,6 +111,12 @@ public class PineconeClient {
         Observable.create(
             emitter -> {
               try {
+
+                this.namespace =
+                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+                        ? ""
+                        : endpoint.getNamespace();
+
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
                 headers.setContentType(MediaType.APPLICATION_JSON);
