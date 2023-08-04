@@ -18,42 +18,40 @@ import java.util.List;
 @RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/redis")
 public class RedisController {
 
-    @Autowired
-    @Lazy
-    private RedisClient redisClient;
+  @Autowired @Lazy private RedisClient redisClient;
 
-    @PostMapping("/upsert")
-    public Single<StringResponse> upsert(@RequestBody RedisEndpoint redisEndpoint) {
+  @PostMapping("/upsert")
+  public Single<StringResponse> upsert(@RequestBody RedisEndpoint redisEndpoint) {
 
-        this.redisClient.setEndpoint(redisEndpoint);
+    this.redisClient.setEndpoint(redisEndpoint);
 
-        EdgeChain<StringResponse> edgeChain =
-                this.redisClient.upsert(
-                        redisEndpoint.getWordEmbeddings(),
-                        redisEndpoint.getDimensions(),
-                        redisEndpoint.getMetric());
+    EdgeChain<StringResponse> edgeChain =
+        this.redisClient.upsert(
+            redisEndpoint.getWordEmbeddings(),
+            redisEndpoint.getDimensions(),
+            redisEndpoint.getMetric());
 
-        return edgeChain.toSingle();
-    }
+    return edgeChain.toSingle();
+  }
 
-    @PostMapping("/query")
-    public Single<List<WordEmbeddings>> query(@RequestBody RedisEndpoint redisEndpoint) {
+  @PostMapping("/query")
+  public Single<List<WordEmbeddings>> query(@RequestBody RedisEndpoint redisEndpoint) {
 
-        this.redisClient.setEndpoint(redisEndpoint);
+    this.redisClient.setEndpoint(redisEndpoint);
 
-        EdgeChain<List<WordEmbeddings>> edgeChain =
-                this.redisClient.query(redisEndpoint.getWordEmbeddings(), redisEndpoint.getTopK());
+    EdgeChain<List<WordEmbeddings>> edgeChain =
+        this.redisClient.query(redisEndpoint.getWordEmbeddings(), redisEndpoint.getTopK());
 
-        return edgeChain.toSingle();
-    }
+    return edgeChain.toSingle();
+  }
 
-    @DeleteMapping("/delete")
-    public Completable deleteByPattern(
-            @RequestParam("pattern") String pattern, @RequestBody RedisEndpoint redisEndpoint) {
+  @DeleteMapping("/delete")
+  public Completable deleteByPattern(
+      @RequestParam("pattern") String pattern, @RequestBody RedisEndpoint redisEndpoint) {
 
-        this.redisClient.setEndpoint(redisEndpoint);
+    this.redisClient.setEndpoint(redisEndpoint);
 
-        EdgeChain<StringResponse> edgeChain = this.redisClient.deleteByPattern(pattern);
-        return edgeChain.await();
-    }
+    EdgeChain<StringResponse> edgeChain = this.redisClient.deleteByPattern(pattern);
+    return edgeChain.await();
+  }
 }

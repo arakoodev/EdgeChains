@@ -73,8 +73,7 @@ public class PineconeExample {
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
-    properties.setProperty(
-        "postgres.db.host", "");
+    properties.setProperty("postgres.db.host", "");
     properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 

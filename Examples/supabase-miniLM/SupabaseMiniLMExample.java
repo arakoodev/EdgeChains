@@ -21,8 +21,6 @@ import com.edgechain.lib.rxjava.retry.impl.FixedDelay;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,7 +39,6 @@ import java.util.stream.IntStream;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
 
-
 @SpringBootApplication
 public class SupabaseMiniLMExample {
   private static final String OPENAI_AUTH_KEY = "";
@@ -52,8 +49,10 @@ public class SupabaseMiniLMExample {
 
   private static MiniLMEndpoint miniLMEndpoint;
 
-  private JsonnetLoader queryLoader = new FileJsonnetLoader("./supabase-miniLM/postgres-query.jsonnet");
-  private JsonnetLoader chatLoader = new FileJsonnetLoader("./supabase-miniLM/postgres-chat.jsonnet");
+  private JsonnetLoader queryLoader =
+      new FileJsonnetLoader("./supabase-miniLM/postgres-query.jsonnet");
+  private JsonnetLoader chatLoader =
+      new FileJsonnetLoader("./supabase-miniLM/postgres-chat.jsonnet");
 
   public static void main(String[] args) {
 
@@ -72,14 +71,12 @@ public class SupabaseMiniLMExample {
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
     // For DB config
-    properties.setProperty(
-            "postgres.db.host", "");
+    properties.setProperty("postgres.db.host", "");
     properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
     // For JWT decode
     properties.setProperty("jwt.secret", "");
-
 
     new SpringApplicationBuilder(SupabaseMiniLMExample.class).properties(properties).run(args);
 
