@@ -51,7 +51,7 @@ public class PineconeExample {
 
   private static RedisHistoryContextEndpoint contextEndpoint;
 
-  private JsonnetLoader queryLoader = new FileJsonnetLoader("./pinecone//pinecone-query.jsonnet");
+  private JsonnetLoader queryLoader = new FileJsonnetLoader("./pinecone/pinecone-query.jsonnet");
   private JsonnetLoader chatLoader = new FileJsonnetLoader("./pinecone/pinecone-chat.jsonnet");
 
   public static void main(String[] args) {
