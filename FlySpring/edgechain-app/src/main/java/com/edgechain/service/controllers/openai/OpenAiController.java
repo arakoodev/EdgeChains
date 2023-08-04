@@ -62,7 +62,7 @@ public class OpenAiController {
     EdgeChain<ChatCompletionResponse> edgeChain =
         openAiClient.createChatCompletion(chatCompletionRequest);
 
-    if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
+      if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
       ChatCompletionLog chatCompletionLog = new ChatCompletionLog();
       chatCompletionLog.setName(openAiEndpoint.getChainName());
@@ -119,7 +119,7 @@ public class OpenAiController {
 
             AtomInteger chunks = AtomInteger.of(0);
 
-            if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
+              if (Objects.nonNull(env.getProperty("postgres.db.host")))  {
 
               ChatCompletionLog chatCompletionLog = new ChatCompletionLog();
               chatCompletionLog.setName(openAiEndpoint.getChainName());
@@ -224,7 +224,7 @@ public class OpenAiController {
         openAiClient.createEmbeddings(
             new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), openAiEndpoint.getInput()));
 
-    if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
+      if (Objects.nonNull(env.getProperty("postgres.db.host")))  {
 
       EmbeddingLog embeddingLog = new EmbeddingLog();
       embeddingLog.setCreatedAt(LocalDateTime.now());

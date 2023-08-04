@@ -16,7 +16,8 @@ import java.util.List;
 @RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/index/pinecone")
 public class PineconeController {
 
-  @Autowired private PineconeClient pineconeClient;
+  @Autowired
+  private PineconeClient pineconeClient;
 
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody PineconeEndpoint pineconeEndpoint) {
