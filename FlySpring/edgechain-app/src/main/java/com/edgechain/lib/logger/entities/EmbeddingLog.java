@@ -7,7 +7,7 @@ import java.util.UUID;
 import javax.validation.constraints.NotBlank;
 
 @Table(name = "embedding_logs")
-@Entity(name = "Embedding")
+@Entity(name = "EmbeddingLog")
 public class EmbeddingLog {
 
   @Id

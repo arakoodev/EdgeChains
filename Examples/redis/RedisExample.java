@@ -42,8 +42,8 @@ public class RedisExample {
   private static RedisEndpoint redisEndpoint;
   private static RedisHistoryContextEndpoint contextEndpoint;
 
-  private JsonnetLoader queryLoader = new FileJsonnetLoader("./redis-query.jsonnet");
-  private JsonnetLoader chatLoader = new FileJsonnetLoader("./redis-chat.jsonnet");
+  private JsonnetLoader queryLoader = new FileJsonnetLoader("./redis/redis-query.jsonnet");
+  private JsonnetLoader chatLoader = new FileJsonnetLoader("./redis/redis-chat.jsonnet");
 
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");

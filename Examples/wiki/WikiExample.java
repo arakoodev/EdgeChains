@@ -16,6 +16,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.edgechain.lib.wiki.response.WikiResponse;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+
+import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +36,7 @@ public class WikiExample {
   private static OpenAiEndpoint gpt4Endpoint;
   private static WikiEndpoint wikiEndpoint;
 
-  private final JsonnetLoader loader = new FileJsonnetLoader("./wiki.jsonnet");
+  private final JsonnetLoader loader = new FileJsonnetLoader("./wiki/wiki.jsonnet");
 
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
@@ -47,11 +50,9 @@ public class WikiExample {
     properties.setProperty("spring.jpa.show-sql", "true");
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
-    //    properties.setProperty(
-    //            "postgres.db.host",
-    // "jdbc:postgresql://db.itlgddqhlxhdbncdqowa.supabase.co:5432/postgres");
-    //    properties.setProperty("postgres.db.username", "postgres");
-    //    properties.setProperty("postgres.db.password", "fsfVFQM4u2rYZehP");
+    properties.setProperty("postgres.db.host", "");
+    properties.setProperty("postgres.db.username", "");
+    properties.setProperty("postgres.db.password", "");
 
     new SpringApplicationBuilder(WikiExample.class).properties(properties).run(args);
 
