@@ -1,10 +1,7 @@
 package com.edgechain;
 
-import com.edgechain.lib.flyfly.commands.jbang.JbangCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,14 +9,13 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
-import picocli.CommandLine;
 
 import java.net.URL;
 import java.nio.file.Paths;
 
 @SpringBootApplication
 @EnableScheduling
-public class EdgeChainApplication  {
+public class EdgeChainApplication {
 
   private static final Logger logger = LoggerFactory.getLogger(EdgeChainApplication.class);
 
@@ -59,5 +55,4 @@ public class EdgeChainApplication  {
     }
     throw new RuntimeException("Invalid jar file");
   }
-
 }

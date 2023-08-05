@@ -8,10 +8,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
 @Component
-@Command(
-        name = "jbang",
-        description =
-                "Activate jbang through the jar placed in resources.")
+@Command(name = "jbang", description = "Activate jbang through the jar placed in resources.")
 public class JbangCommand implements Runnable {
 
   @Parameters(description = "Java file to be executed with jbang;")
@@ -53,14 +50,14 @@ public class JbangCommand implements Runnable {
     try {
       // Step One: Execute the initial command to get the classpath
       ProcessBuilder pb =
-              new ProcessBuilder(
-                      "java",
-                      "-cp",
-                      jarFile.getAbsolutePath(),
-                      "dev.jbang.Main",
-                      "--cp",
-                      classPathJar,
-                      javaFile);
+          new ProcessBuilder(
+              "java",
+              "-cp",
+              jarFile.getAbsolutePath(),
+              "dev.jbang.Main",
+              "--cp",
+              classPathJar,
+              javaFile);
       pb.redirectErrorStream(true);
       Process process = pb.start();
 

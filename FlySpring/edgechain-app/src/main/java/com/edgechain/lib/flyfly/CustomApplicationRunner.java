@@ -29,10 +29,10 @@ public class CustomApplicationRunner implements CommandLineRunner, ExitCodeGener
 
   public String getBootLoaderClass() {
     Map<String, Object> annotatedBeans =
-            context.getBeansWithAnnotation(SpringBootApplication.class);
+        context.getBeansWithAnnotation(SpringBootApplication.class);
     return annotatedBeans.isEmpty()
-            ? null
-            : annotatedBeans.values().toArray()[0].getClass().getName();
+        ? null
+        : annotatedBeans.values().toArray()[0].getClass().getName();
   }
 
   @Override
