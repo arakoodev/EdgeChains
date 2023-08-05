@@ -11,9 +11,9 @@ import picocli.CommandLine.Command;
 @Command(
     name = "edgechain",
     subcommands = {
-      RunCommand.class,
-      FormatCommand.class,
+//      RunCommand.class,
+//      FormatCommand.class,
       JbangCommand.class,
-      CommandLine.HelpCommand.class
+//      CommandLine.HelpCommand.class
     })
 public class FlyflyCommand {}

@@ -9,13 +9,12 @@ import picocli.CommandLine.Parameters;
 
 @Component
 @Command(
-    name = "jbang",
-    description =
-        "Activate jbang through the jar placed in resources. Ignore if your application is"
-            + " executed.")
+        name = "jbang",
+        description =
+                "Activate jbang through the jar placed in resources.")
 public class JbangCommand implements Runnable {
 
-  @Parameters(description = "Java file to be executed with jbang")
+  @Parameters(description = "Java file to be executed with jbang;")
   private String javaFile;
 
   //  @Parameters(description = "ClassPath Jar to be used")
@@ -54,14 +53,14 @@ public class JbangCommand implements Runnable {
     try {
       // Step One: Execute the initial command to get the classpath
       ProcessBuilder pb =
-          new ProcessBuilder(
-              "java",
-              "-cp",
-              jarFile.getAbsolutePath(),
-              "dev.jbang.Main",
-              "--cp",
-              classPathJar,
-              javaFile);
+              new ProcessBuilder(
+                      "java",
+                      "-cp",
+                      jarFile.getAbsolutePath(),
+                      "dev.jbang.Main",
+                      "--cp",
+                      classPathJar,
+                      javaFile);
       pb.redirectErrorStream(true);
       Process process = pb.start();
 
@@ -146,12 +145,11 @@ public class JbangCommand implements Runnable {
     try {
       ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, mainClass);
       pb.inheritIO();
-      pb.start();
+      Process process = pb.start();
+      process.waitFor();
 
-      System.exit(0);
-
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException | InterruptedException e) {
+      throw new RuntimeException(e);
     }
   }
 }
