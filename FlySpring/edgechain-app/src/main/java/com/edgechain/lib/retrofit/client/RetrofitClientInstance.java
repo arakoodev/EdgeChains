@@ -85,8 +85,8 @@ public class RetrofitClientInstance {
                                 .message(errorMessage)
                                 .build();
                           })
-                      .connectTimeout(2, TimeUnit.MINUTES)
-                      .readTimeout(2, TimeUnit.MINUTES)
+                      .connectTimeout(15, TimeUnit.MINUTES)
+                      .readTimeout(20, TimeUnit.MINUTES)
                       .build())
               .build();
     }
