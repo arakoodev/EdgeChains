@@ -2,7 +2,8 @@ package com.edgechain;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -21,8 +22,6 @@ import com.edgechain.lib.jsonFormat.request.FunctionRequest;
 import com.edgechain.lib.jsonFormat.request.Message;
 import com.edgechain.lib.jsonFormat.request.OpenApiFunctionRequest;
 import com.edgechain.lib.jsonFormat.request.Parameters;
-import com.edgechain.lib.jsonFormat.request.Parameters.Property;
-import com.edgechain.lib.jsonFormat.request.Parameters.Property.Types;
 import com.edgechain.lib.jsonFormat.response.FunctionResponse;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
@@ -30,6 +29,7 @@ import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -43,8 +43,7 @@ public class JsonFormat {
 
         private static OpenAiEndpoint userChatEndpoint;
         private static JsonnetLoader loader = new FileJsonnetLoader("./json/json-format.jsonnet");
-        private static JsonnetLoader functionLoader = new
-        FileJsonnetLoader("./json/function.jsonnet");
+        private static JsonnetLoader functionLoader = new FileJsonnetLoader("./json/function.jsonnet");
         private static final ObjectMapper objectMapper = new ObjectMapper();
 
         public static void main(String[] args) {
@@ -208,46 +207,63 @@ public class JsonFormat {
 
                 @PostMapping(value = "/function")
                 public Object function(ArkRequest arkRequest) {
-
                         JSONObject json = arkRequest.getBody();
 
+                        JsonNode userFormat = null;
                         try {
                                 JSONObject format = json.getJSONObject("format");
-                        } catch (Exception e) {
-                                return "Format has no valid json format";
+                                userFormat = objectMapper.readTree(format.toString());
+                                System.out.println("The user format is a valid JSON string." + format);
+                        } catch (JsonProcessingException e) {
+                                e.printStackTrace();
+                                return "Format has no valid JSON format";
                         }
 
-                        String format = json.getJSONObject("format").toString();
-
                         functionLoader
-                                .put("prompt", new JsonnetArgs(DataType.STRING, json.getString("prompt")))
-                                .put("format", new JsonnetArgs(DataType.STRING,format ))
-                                .loadOrReload();
-
+                                        .put("prompt", new JsonnetArgs(DataType.STRING, json.getString("prompt")))
+                                        .put("format", new JsonnetArgs(DataType.STRING, userFormat.toString()))
+                                        .loadOrReload();
 
                         FunctionRequest function = new FunctionRequest("reply_user", "reply to user's query",
-                                        new Parameters("object", new Property( new Types("string")))  );
+                                        new Parameters("object", userFormat));
 
-                        List<FunctionRequest> functions = new ArrayList<>();
-                        functions.add(function);
-
-                        Message message = new Message("system",
+                        Message systemMessage = new Message("system",
                                         "Only use function_call to reply to use. Do not use content.");
-                        Message message2 = new Message("user", functionLoader.get("functionPrompt") ) ;
+                        Message userMessage = new Message("user", functionLoader.get("functionPrompt"));
 
-                        List<Message> messages = new ArrayList<>();
-                        messages.add(message);
-                        messages.add(message2);
+                        List<Message> messages = Arrays.asList(systemMessage, userMessage);
 
-                        OpenApiFunctionRequest request = new OpenApiFunctionRequest("gpt-3.5-turbo-0613", messages,
-                                        functions);
-
+                        OpenApiFunctionRequest request = new OpenApiFunctionRequest(
+                                        "gpt-3.5-turbo-0613",
+                                        messages,
+                                        0.7,
+                                        Collections.singletonList(function),
+                                        "auto");
 
                         FunctionResponse response = functionCall().postForObject(OPENAI_CHAT_COMPLETION_API, request,
                                         FunctionResponse.class);
-                        
 
-                        return response.getChoices().get(0).getMessage().getFunction_call().getArguments();                        
+                        if (response == null ||
+                                        response.getChoices().isEmpty() ||
+                                        response.getChoices().get(0).getMessage().getFunction_call()
+                                                        .getArguments() == null
+                                        ||
+                                        response.getChoices().get(0).getMessage().getFunction_call().getArguments()
+                                                        .isEmpty()) {
+                                System.out.println(
+                                                "ChatGptResponse is null or empty. There was an error processing the request.");
+                                return "ChatGptResponse is empty. There was an error processing the request. Please try again.";
+                        } else {
+                                try {
+                                        JsonNode jsonNode = objectMapper.readTree(
+                                                        response.getChoices().get(0).getMessage().getFunction_call()
+                                                                        .getArguments());
+                                        System.out.println("The response is a valid JSON string." + jsonNode);
+                                } catch (Exception e) {
+                                        System.out.println("The response is not a valid JSON string.");
+                                }
+                                return response.getChoices().get(0).getMessage().getFunction_call().getArguments();
+                        }
                 }
 
         }

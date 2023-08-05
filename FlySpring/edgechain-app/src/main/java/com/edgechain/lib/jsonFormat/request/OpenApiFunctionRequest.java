@@ -3,17 +3,26 @@ package com.edgechain.lib.jsonFormat.request;
 import java.util.List;
 
 public class OpenApiFunctionRequest {
-    
+
     private String model;
     private List<Message> messages;
-    private double temperature = 0.7;
+    private double temperature;
     private List<FunctionRequest> functions;
-    private String function_call = "auto";
+    private String function_call;
 
     public OpenApiFunctionRequest(String model, List<Message> messages, List<FunctionRequest> functions) {
         this.model = model;
         this.messages = messages;
         this.functions = functions;
+    }
+
+    public OpenApiFunctionRequest(String model, List<Message> messages, double temperature,
+            List<FunctionRequest> functions, String function_call) {
+        this.model = model;
+        this.messages = messages;
+        this.temperature = temperature;
+        this.functions = functions;
+        this.function_call = function_call;
     }
 
     public OpenApiFunctionRequest() {
@@ -65,5 +74,4 @@ public class OpenApiFunctionRequest {
                 + ", functions=" + functions + ", function_call=" + function_call + "]";
     }
 
-    
 }

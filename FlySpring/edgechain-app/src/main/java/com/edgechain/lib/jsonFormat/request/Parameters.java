@@ -3,12 +3,12 @@ package com.edgechain.lib.jsonFormat.request;
 public class Parameters {
 
     private String type;
-    private Property properties;
+    private Object properties;
 
     public Parameters() {
     }
 
-    public Parameters(String type, Property properties) {
+    public Parameters(String type, Object properties) {
         this.type = type;
         this.properties = properties;
     }
@@ -19,60 +19,13 @@ public class Parameters {
     public void setType(String type) {
         this.type = type;
     }
-    public Property getProperties() {
+    public Object getProperties() {
         return properties;
     }
 
-    public void setProperties(Property properties) {
+    public void setProperties(Object properties) {
         this.properties = properties;
     }
 
-    @Override
-    public String toString() {
-        return "Parameters [type=" + type + ", properties=" + properties + "]";
-    }
-
-    public static class Property {
-
-        private Types items;
-
-        public Property() {
-        }
-
-        public Property(Types items) {
-            this.items = items;
-        }
-
-        public Types getItems() {
-            return items;
-        }
-
-        public void setItems(Types items) {
-            this.items = items;
-        }
-        
-        public static class Types {
-            private String type;
-
-            public Types() {
-            }
-
-            public Types(String type) {
-                this.type = type;
-            }
-
-            public String getType() {
-                return type;
-            }
-
-            public void setType(String type) {
-                this.type = type;
-            }
-            
-        }
-
-        
-    }
-    
     
 }
