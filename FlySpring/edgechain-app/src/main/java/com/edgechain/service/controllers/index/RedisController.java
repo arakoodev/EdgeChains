@@ -8,8 +8,8 @@ import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
-import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

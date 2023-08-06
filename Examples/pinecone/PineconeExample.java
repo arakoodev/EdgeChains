@@ -51,8 +51,8 @@ public class PineconeExample {
 
   private static RedisHistoryContextEndpoint contextEndpoint;
 
-  private JsonnetLoader queryLoader = new FileJsonnetLoader("./pinecone-query.jsonnet");
-  private JsonnetLoader chatLoader = new FileJsonnetLoader("./pinecone-chat.jsonnet");
+  private JsonnetLoader queryLoader = new FileJsonnetLoader("./pinecone/pinecone-query.jsonnet");
+  private JsonnetLoader chatLoader = new FileJsonnetLoader("./pinecone/pinecone-chat.jsonnet");
 
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
@@ -65,18 +65,17 @@ public class PineconeExample {
     properties.setProperty("cors.origins", "http://localhost:4200");
 
     // Redis Configuration
-    properties.setProperty("redis.url", "redis-12285.c8.us-east-1-2.ec2.cloud.redislabs.com");
+    properties.setProperty("redis.url", "");
     properties.setProperty("redis.port", "12285");
     properties.setProperty("redis.username", "default");
-    properties.setProperty("redis.password", "EgZcqW5gj7ZRnoA582vjQsmztr0uim1d");
+    properties.setProperty("redis.password", "");
     properties.setProperty("redis.ttl", "3600");
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
-    properties.setProperty(
-        "postgres.db.host", "jdbc:postgresql://db.itlgddqhlxhdbncdqowa.supabase.co:5432/postgres");
-    properties.setProperty("postgres.db.username", "postgres");
-    properties.setProperty("postgres.db.password", "fsfVFQM4u2rYZehP");
+    properties.setProperty("postgres.db.host", "");
+    properties.setProperty("postgres.db.username", "");
+    properties.setProperty("postgres.db.password", "");
 
     new SpringApplicationBuilder(PineconeExample.class).properties(properties).run(args);
 
@@ -274,7 +273,7 @@ public class PineconeExample {
           .transform(
               prompt ->
                   gpt3Endpoint
-                      .chatCompletion(prompt, "PostgresChatChain", arkRequest)
+                      .chatCompletion(prompt, "PineconeChatChain", arkRequest)
                       .doOnNext(
                           chatResponse -> {
                             // If ChatCompletion (stream = true);
@@ -344,7 +343,7 @@ public class PineconeExample {
         resp.add(
             new EdgeChain<>(
                     gpt3Endpoint.chatCompletion(
-                        queryLoader.get("prompt"), "PostgresQueryChain", arkRequest))
+                        queryLoader.get("prompt"), "PineconeQueryChain", arkRequest))
                 .get());
       }
 

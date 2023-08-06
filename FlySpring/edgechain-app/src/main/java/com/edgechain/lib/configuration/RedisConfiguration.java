@@ -2,7 +2,6 @@ package com.edgechain.lib.configuration;
 
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -11,13 +10,11 @@ import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.clients.jedis.JedisPooled;
 
 @Configuration
-@EnableRedisRepositories
 public class RedisConfiguration {
 
   @Autowired @Lazy private Environment env;
@@ -66,7 +63,6 @@ public class RedisConfiguration {
   }
 
   @Bean
-  @ConditionalOnBean(name = "redisEnv")
   public RedisTemplate<String, Object> redisTemplate() {
     RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(jedisConnectionFactory());

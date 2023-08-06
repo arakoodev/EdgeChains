@@ -4,6 +4,7 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.utils.FloatUtils;
+import com.github.f4b6a3.uuid.UuidCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -13,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Repository
 public class PostgresClientRepository {
@@ -46,7 +46,7 @@ public class PostgresClientRepository {
                 + " '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE SET embedding ="
                 + " EXCLUDED.embedding;",
             tableName,
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch().toString(),
             input,
             Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
             LocalDateTime.now(),
@@ -64,8 +64,8 @@ public class PostgresClientRepository {
 
     return jdbcTemplate.queryForList(
         String.format(
-            "SELECT id, raw_text, namespace, timestamp FROM %s WHERE namespace='%s' ORDER BY"
-                + " embedding %s '%s' LIMIT %s;",
+            "SELECT id, raw_text, namespace, filename, timestamp FROM %s WHERE namespace='%s' ORDER"
+                + " BY embedding %s '%s' LIMIT %s;",
             tableName,
             namespace,
             PostgresDistanceMetric.getDistanceMetric(metric),

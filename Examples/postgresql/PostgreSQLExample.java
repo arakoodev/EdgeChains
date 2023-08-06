@@ -44,8 +44,8 @@ public class PostgreSQLExample {
   private static PostgresEndpoint postgresEndpoint;
   private static PostgreSQLHistoryContextEndpoint contextEndpoint;
 
-  private JsonnetLoader queryLoader = new FileJsonnetLoader("./postgres-query.jsonnet");
-  private JsonnetLoader chatLoader = new FileJsonnetLoader("./postgres-chat.jsonnet");
+  private JsonnetLoader queryLoader = new FileJsonnetLoader("./postgresql/postgres-query.jsonnet");
+  private JsonnetLoader chatLoader = new FileJsonnetLoader("./postgresql/postgres-chat.jsonnet");
 
   public static void main(String[] args) {
 
@@ -226,7 +226,7 @@ public class PostgreSQLExample {
               .transform(
                   queries -> {
                     List<String> queryList = new ArrayList<>();
-                    queries.forEach(q -> queryList.add(q.getId()));
+                    queries.forEach(q -> queryList.add(q.getRawText()));
                     return String.join("\n", queryList);
                   });
 

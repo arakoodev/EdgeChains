@@ -15,8 +15,6 @@ import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.Profiles;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -32,23 +30,20 @@ public class JwtFilter extends OncePerRequestFilter {
 
   @Autowired private SecurityUUID securityUUID;
 
-  @Autowired private Environment env;
-
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filter)
       throws ServletException, IOException {
 
-    boolean test = env.acceptsProfiles(Profiles.of("test"));
-
-    if (request.getRequestURI().startsWith(WebConfiguration.CONTEXT_PATH) && !test) {
-
+    if (request.getRequestURI().startsWith(WebConfiguration.CONTEXT_PATH)) {
       String authHeader = request.getHeader("Authorization");
       if (!authHeader.equals(securityUUID.getAuthKey())) throw new FilterException("Access Denied");
     }
 
     String token = AuthUtils.extractToken(request);
+
     if (token != null) {
+
       /** If you are using Supabase, then uncomment this line; * */
       //      User user = userSecurityService.loadUserByUsername(token);
 
