@@ -43,6 +43,12 @@ Generative AI, OpenAI and LLMs need you to write your prompt in very specific wa
 ### *Prompt Explosion* - Too many Prompts for too many LLMs
 Moreover, these prompt techniques work on one kind of LLMs, but dont work on other LLMs. For e.g. prompts & chains that are written in a specific way for GPT-3.5 will need to be rewritten for Llama2 **to achieve the same goal**. This causes prompts to explode in number, making them challenging to version and manage.
 
+### Prompt ***Drift***
+Prompts change over time. This is called Prompt Drift. There is enough published research to show how chatGPT's behavior changes. Your infrastructure needs to be capable enough to version/change with this drift. If you use libraries, where prompts are hidden under many layers, then you will find it IMPOSSIBLE to do this.
+Your production code will rot over time, even if you did nothing.
+
+-[How is ChatGPT's behavior changing over time?](https://arxiv.org/abs/2307.09009)
+
 ### Testability in Production
 One of the big challenge in production is how to keep testing your prompts & chains and iterate on them quickly. If your prompts sit beneath many layers of libraries and abstractions, this is impossible. But if your prompts ***live outside the code*** and are declarative, this is easy to do. In fact, in EdgeChains, you can have your entire prompt & chain logic sit in s3 or an API.
 
