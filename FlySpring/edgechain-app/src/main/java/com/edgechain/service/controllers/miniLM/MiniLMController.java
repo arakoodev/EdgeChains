@@ -7,6 +7,7 @@ import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
 import com.edgechain.lib.logger.entities.EmbeddingLog;
 import com.edgechain.lib.logger.services.EmbeddingLogService;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -32,10 +33,10 @@ public class MiniLMController {
   @PostMapping
   public Single<MiniLMResponse> embeddings(@RequestBody MiniLMEndpoint miniLMEndpoint) {
 
-    miniLMClient.setEndpoint(miniLMEndpoint);
+    this.miniLMClient.setEndpoint(miniLMEndpoint);
 
     EdgeChain<MiniLMResponse> edgeChain =
-        miniLMClient.createEmbeddings(miniLMEndpoint.getInput(), miniLMEndpoint.getMiniLMModel());
+        this.miniLMClient.createEmbeddings(miniLMEndpoint.getInput());
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 

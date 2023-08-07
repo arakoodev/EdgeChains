@@ -8,9 +8,14 @@ import com.edgechain.lib.retrofit.MiniLMService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import retrofit2.Retrofit;
 
 public class MiniLMEndpoint extends Endpoint {
+
+  private Logger logger = LoggerFactory.getLogger(MiniLMEndpoint.class);
 
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
   private final MiniLMService miniLMService = retrofit.create(MiniLMService.class);
@@ -35,9 +40,6 @@ public class MiniLMEndpoint extends Endpoint {
     return miniLMModel;
   }
 
-  public void setMiniLMModel(MiniLMModel miniLMModel) {
-    this.miniLMModel = miniLMModel;
-  }
 
   public String getCallIdentifier() {
     return callIdentifier;
@@ -47,6 +49,7 @@ public class MiniLMEndpoint extends Endpoint {
     super(retryPolicy);
     this.miniLMModel = miniLMModel;
   }
+
 
   public WordEmbeddings embeddings(String input, ArkRequest arkRequest) {
 
