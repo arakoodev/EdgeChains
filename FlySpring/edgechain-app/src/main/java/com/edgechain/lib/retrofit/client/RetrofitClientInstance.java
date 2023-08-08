@@ -44,7 +44,6 @@ public class RetrofitClientInstance {
                   BASE_URL
                       + ":"
                       + System.getProperty("server.port")
-                      + ""
                       + WebConfiguration.CONTEXT_PATH
                       + "/")
               .addConverterFactory(JacksonBuilder())

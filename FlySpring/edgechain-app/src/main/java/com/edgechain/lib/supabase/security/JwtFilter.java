@@ -12,6 +12,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
@@ -40,7 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     if (request.getRequestURI().startsWith(WebConfiguration.CONTEXT_PATH)) {
       String authHeader = request.getHeader("Authorization");
-      if (!authHeader.equals(securityUUID.getAuthKey())) throw new FilterException("Access Denied");
+      if ( Objects.isNull(authHeader) || !authHeader.equals(securityUUID.getAuthKey())) throw new FilterException("Access Denied");
     }
 
     String token = AuthUtils.extractToken(request);
