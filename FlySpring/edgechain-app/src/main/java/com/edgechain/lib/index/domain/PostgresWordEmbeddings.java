@@ -19,7 +19,7 @@ public class PostgresWordEmbeddings {
 
   private LocalDateTime timestamp;
 
-  private String score; // will be added
+  private Double score; // will be added
 
   public Long getEmbedding_id() {
     return embedding_id;
@@ -61,12 +61,12 @@ public class PostgresWordEmbeddings {
     this.timestamp = timestamp;
   }
 
-  public String getScore() {
-    return score;
+  public void setScore(Double score) {
+    this.score = score;
   }
 
-  public void setScore(String score) {
-    this.score = score;
+  public Double getScore() {
+    return score;
   }
 
   public String getNamespace() {

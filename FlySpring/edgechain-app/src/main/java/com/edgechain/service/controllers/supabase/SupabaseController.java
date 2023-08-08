@@ -8,6 +8,7 @@ import com.edgechain.lib.supabase.security.JwtHelper;
 import com.edgechain.lib.supabase.services.UserService;
 import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController("Service SupabaseController")
@@ -34,9 +35,10 @@ public class SupabaseController {
   }
 
   @PostMapping("/signout")
+  @PreAuthorize("hasAnyAuthority('authenticated')")
   public void signOut(@RequestBody HashMap<String, String> mapper) {
     String token = mapper.get("token");
-    if (token != null && jwtHelper.validate(token)) {
+    if (token != null) {
       this.userService.signOut(token);
     }
   }
