@@ -1,5 +1,8 @@
 package com.edgechain.lib.flyfly.commands.jbang;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class JbangSource {
   public String originalResource;
   public String backingResource;
