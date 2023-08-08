@@ -11,133 +11,152 @@ import picocli.CommandLine.Parameters;
 
 @Component
 @Command(
-    name = "jbang",
-    description = "Activate jbang i.e., java -jar edgechain.jar jbang Hello.java")
+        name = "jbang",
+        description = "Activate jbang i.e., java -jar edgechain.jar jbang Hello.java")
 public class JbangCommand implements Runnable {
 
-  @Parameters(description = "Java file to be executed with jbang;")
-  private String javaFile;
+    @Parameters(description = "Java file to be executed with jbang;")
+    private String javaFile;
 
-  @Override
-  public void run() {
 
-    InputStream inputStream = this.getClass().getResourceAsStream("/jbang.jar");
+    @Override
+    public void run() {
 
-    if (Objects.isNull(inputStream))
-      throw new RuntimeException("Unable to find jbang.jar in resource directory");
+        InputStream inputStream = this.getClass().getResourceAsStream("/jbang.jar");
 
-    File jbangJar = new File(System.getProperty("java.io.tmpdir") + File.separator + "jbang.jar");
+        if (Objects.isNull(inputStream))
+            throw new RuntimeException("Unable to find jbang.jar in resource directory");
 
-    try {
-      FileUtils.copyInputStreamToFile(inputStream, jbangJar);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+        File jbangJar = new File(System.getProperty("java.io.tmpdir") + File.separator + "jbang.jar");
+
+        try {
+            FileUtils.copyInputStreamToFile(inputStream, jbangJar);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        jbangJar.deleteOnExit();
+
+        // Clear Jbang Cache
+        clearCache(jbangJar);
+
+        // Build Jar using Jbang
+        buildJar(jbangJar, this.javaFile);
+
+        // Get Information
+        JbangResponse jbangResponse = info(jbangJar, this.javaFile);
+
+        String classPath;
+        if (jbangResponse.getResolvedDependencies().isEmpty()) {
+            classPath = jbangResponse
+                    .getApplicationJar()
+                    .concat(File.pathSeparator)
+                    .concat(System.getProperty("jar.name"));
+        } else {
+            classPath = jbangResponse
+                    .getApplicationJar()
+                    .concat(File.pathSeparator)
+                    .concat(String.join(File.pathSeparator, jbangResponse.getResolvedDependencies()))
+                    .concat(File.pathSeparator)
+                    .concat(System.getProperty("jar.name"));
+        }
+
+        String mainClass;
+        if (Objects.isNull(jbangResponse.getMainClass())) {
+            mainClass = "com.edgechain." + jbangResponse.getOriginalResource();
+        } else {
+            mainClass = jbangResponse.getMainClass();
+        }
+
+//        System.out.println("Classpath ==========: "+classPath);
+//        System.out.println("Main Class =========: "+mainClass);
+
+        // Execute
+        execute(classPath, mainClass);
     }
 
-    jbangJar.deleteOnExit();
+    private void clearCache(File jbangJar) {
 
-    // Clear Jbang Cache
-    clearCache(jbangJar);
+        try {
+            ProcessBuilder pb =
+                    new ProcessBuilder("java", "-jar", jbangJar.getAbsolutePath(), "cache", "clear")
+                            .inheritIO();
 
-    // Build Jar using Jbang
-    buildJar(jbangJar, this.javaFile);
+            Process process = pb.start();
+            process.waitFor();
 
-    // Get Information
-    JbangResponse jbangResponse = info(jbangJar, this.javaFile);
-
-    String classPath =
-        jbangResponse
-            .getApplicationJar()
-            .concat(File.pathSeparator)
-            .concat(System.getProperty("jar.name"));
-
-    // Execute
-    execute(classPath, jbangResponse.getMainClass());
-  }
-
-  private void clearCache(File jbangJar) {
-
-    try {
-      ProcessBuilder pb =
-          new ProcessBuilder("java", "-jar", jbangJar.getAbsolutePath(), "cache", "clear")
-              .inheritIO();
-
-      Process process = pb.start();
-      process.waitFor();
-
-    } catch (IOException | InterruptedException e) {
-      throw new RuntimeException(e);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
 
-  private void buildJar(File jbangJar, String javaFile) {
+    private void buildJar(File jbangJar, String javaFile) {
 
-    try {
-      ProcessBuilder pb =
-          new ProcessBuilder(
-                  "java",
-                  "-jar",
-                  jbangJar.getAbsolutePath(),
-                  "--cp",
-                  System.getProperty("jar.name"),
-                  javaFile)
-              .inheritIO()
-              .redirectErrorStream(true);
-      Process process = pb.start();
-      process.waitFor();
-    } catch (InterruptedException | IOException e) {
-      throw new RuntimeException(e);
+        try {
+            ProcessBuilder pb =
+                    new ProcessBuilder(
+                            "java",
+                            "-jar",
+                            jbangJar.getAbsolutePath(),
+                            "--cp",
+                            System.getProperty("jar.name"),
+                            javaFile).inheritIO().redirectErrorStream(true);
+            Process process = pb.start();
+            process.waitFor();
+        } catch (InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
 
-  private JbangResponse info(File jbangJar, String javaFile) {
+    private JbangResponse info(File jbangJar, String javaFile) {
 
-    try {
-      ProcessBuilder pb =
-          new ProcessBuilder(
-              "java",
-              "-jar",
-              jbangJar.getAbsolutePath(),
-              "info",
-              "tools",
-              "--cp",
-              System.getProperty("jar.name"),
-              javaFile);
+        try {
+            ProcessBuilder pb =
+                    new ProcessBuilder(
+                            "java",
+                            "-jar",
+                            jbangJar.getAbsolutePath(),
+                            "info",
+                            "tools",
+                            javaFile);
 
-      Process process = pb.start();
 
-      BufferedReader bufferedReader =
-          new BufferedReader(new InputStreamReader(process.getInputStream()));
+            Process process = pb.start();
 
-      StringBuilder appender = new StringBuilder();
+            BufferedReader bufferedReader =
+                    new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-      String line;
-      while ((line = bufferedReader.readLine()) != null) {
-        appender.append(line);
-      }
+            StringBuilder appender = new StringBuilder();
 
-      process.waitFor();
-      bufferedReader.close();
-      return JsonUtils.convertToObject(appender.toString(), JbangResponse.class);
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                appender.append(line);
+            }
 
-    } catch (IOException | InterruptedException e) {
-      throw new RuntimeException(e);
+            process.waitFor();
+            bufferedReader.close();
+
+            return JsonUtils.convertToObject(appender.toString(), JbangResponse.class);
+
+
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
 
-  private void execute(String classPath, String mainClass) {
+    private void execute(String classPath, String mainClass) {
 
-    try {
+        try {
 
-      ProcessBuilder pb =
-          new ProcessBuilder("java", "-classpath", classPath, mainClass).inheritIO();
+            ProcessBuilder pb =
+                    new ProcessBuilder("java", "-classpath", classPath, mainClass).inheritIO();
 
-      Process process = pb.start();
+            Process process = pb.start();
 
-      process.waitFor();
+            process.waitFor();
 
-    } catch (IOException | InterruptedException e) {
-      throw new RuntimeException(e);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
 }
