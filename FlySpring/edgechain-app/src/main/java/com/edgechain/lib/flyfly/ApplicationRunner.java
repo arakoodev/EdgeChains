@@ -2,14 +2,11 @@ package com.edgechain.lib.flyfly;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
-
 import java.util.Map;
-import java.util.UUID;
 
 @Component
 public class ApplicationRunner implements CommandLineRunner {
@@ -27,9 +24,9 @@ public class ApplicationRunner implements CommandLineRunner {
 
   public String getBootLoaderClass() {
     Map<String, Object> annotatedBeans =
-        context.getBeansWithAnnotation(SpringBootApplication.class);
+            context.getBeansWithAnnotation(SpringBootApplication.class);
     return annotatedBeans.isEmpty()
-        ? null
-        : annotatedBeans.values().toArray()[0].getClass().getName();
+            ? null
+            : annotatedBeans.values().toArray()[0].getClass().getName();
   }
 }
