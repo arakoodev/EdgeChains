@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import com.edgechain.lib.utils.JsonUtils;
+import org.apache.commons.exec.OS;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -46,8 +48,20 @@ public class JbangCommand implements Runnable {
     // Get Information
     JbangResponse jbangResponse = info(jbangJar, this.javaFile);
 
-    String classPath =
-        jbangResponse.getApplicationJar().concat(";") + System.getProperty("jar.name");
+    String classPath;
+    if (OS.isFamilyWindows()) {
+      classPath = jbangResponse.getApplicationJar().concat(";") + System.getProperty("jar.name");
+    }
+    else if(OS.isFamilyUnix()){
+      classPath = jbangResponse.getApplicationJar().concat(":") + System.getProperty("jar.name");
+    }
+    else if(OS.isFamilyMac()) {
+      classPath = jbangResponse.getApplicationJar().concat(":") + System.getProperty("jar.name");
+    }
+    else {
+      classPath = jbangResponse.getApplicationJar().concat(":") + System.getProperty("jar.name");
+    }
+
 
     // Execute
     execute(classPath, jbangResponse.getMainClass());
