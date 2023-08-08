@@ -17,7 +17,7 @@ import java.util.UUID;
 @Import(EdgeChainAutoConfiguration.class)
 public class WebConfiguration {
 
-  public static final String CONTEXT_PATH = "/v2";
+  public static final String CONTEXT_PATH = "/edgechains";
 
   @Bean
   public ModelMapper modelMapper() {

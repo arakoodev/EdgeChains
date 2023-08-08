@@ -14,8 +14,7 @@ import picocli.CommandLine.Parameters;
 @Command(
     name = "run",
     description =
-        "Run a JAR or Gradle Spring Boot Application. Ignore if your application is executed.",
-    hidden = true)
+        "Run a JAR or Gradle Spring Boot Application. Ignore if your application is executed.", hidden = true)
 public class RunCommand implements Runnable {
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());

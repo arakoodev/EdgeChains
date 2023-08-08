@@ -106,6 +106,7 @@ public class PostgresClient {
                   val.setFilename((String) row.get("filename"));
                   val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
                   val.setNamespace((String) row.get("namespace"));
+                  val.setScore((Double) row.get("score"));
 
                   wordEmbeddingsList.add(val);
                 }

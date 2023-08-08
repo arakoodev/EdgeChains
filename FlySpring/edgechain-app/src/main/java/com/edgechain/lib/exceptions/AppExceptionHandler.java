@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.edgechain.lib.exceptions.response.ErrorResponse;
 import com.edgechain.lib.supabase.exceptions.SupabaseAuthException;
 import com.edgechain.lib.supabase.exceptions.SupabaseUserExistException;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -34,11 +35,6 @@ public class AppExceptionHandler {
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(value = {JwtException.class})
-  public ResponseEntity<Object> handleJwtException(Exception ex) {
-    ErrorResponse response = new ErrorResponse(ex.getMessage());
-    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-  }
 
   @ExceptionHandler(value = {DataIntegrityViolationException.class})
   public ResponseEntity<Object> handleDataIntegrityViolationException(

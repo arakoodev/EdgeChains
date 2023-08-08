@@ -48,6 +48,7 @@ public abstract class JsonnetLoader {
       printWriter.write(text);
       printWriter.flush();
       printWriter.close();
+      br.close();
 
       // Transform Jsonnet Args
       for (Map.Entry<String, JsonnetArgs> entry : this.args.entrySet()) {
