@@ -6,85 +6,95 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JbangResponse {
-  private String originalResource;
-  private String backingResource;
-  private String applicationJar;
-  private String mainClass;
-  private List<String> dependencies;
-  private List<String> resolvedDependencies;
-  private String availableJdkPath;
-  private List<String> compileOptions;
-  private List<JbangSource> sources;
 
-  public String getOriginalResource() {
-    return originalResource;
-  }
+    private String originalResource;
+    private String backingResource;
+    private String applicationJar;
+    private String mainClass;
+    private List<String> dependencies;
+    private List<String> resolvedDependencies;
+    private String availableJdkPath;
+    private List<String> compileOptions;
+    private List<JbangFile> jbangFiles;
+    private List<JbangSource> sources;
 
-  public void setOriginalResource(String originalResource) {
-    this.originalResource = originalResource;
-  }
+    public String getOriginalResource() {
+        return originalResource;
+    }
 
-  public String getBackingResource() {
-    return backingResource;
-  }
+    public void setOriginalResource(String originalResource) {
+        this.originalResource = originalResource;
+    }
 
-  public void setBackingResource(String backingResource) {
-    this.backingResource = backingResource;
-  }
+    public String getBackingResource() {
+        return backingResource;
+    }
 
-  public String getApplicationJar() {
-    return applicationJar;
-  }
+    public void setBackingResource(String backingResource) {
+        this.backingResource = backingResource;
+    }
 
-  public void setApplicationJar(String applicationJar) {
-    this.applicationJar = applicationJar;
-  }
+    public String getApplicationJar() {
+        return applicationJar;
+    }
 
-  public String getMainClass() {
-    return mainClass;
-  }
+    public void setApplicationJar(String applicationJar) {
+        this.applicationJar = applicationJar;
+    }
 
-  public List<String> getResolvedDependencies() {
-    return resolvedDependencies;
-  }
+    public String getMainClass() {
+        return mainClass;
+    }
 
-  public void setResolvedDependencies(List<String> resolvedDependencies) {
-    this.resolvedDependencies = resolvedDependencies;
-  }
+    public void setMainClass(String mainClass) {
+        this.mainClass = mainClass;
+    }
 
-  public String getAvailableJdkPath() {
-    return availableJdkPath;
-  }
+    public List<String> getDependencies() {
+        return dependencies;
+    }
 
-  public void setAvailableJdkPath(String availableJdkPath) {
-    this.availableJdkPath = availableJdkPath;
-  }
+    public void setDependencies(List<String> dependencies) {
+        this.dependencies = dependencies;
+    }
 
-  public List<String> getCompileOptions() {
-    return compileOptions;
-  }
+    public List<String> getResolvedDependencies() {
+        return resolvedDependencies;
+    }
 
-  public void setCompileOptions(List<String> compileOptions) {
-    this.compileOptions = compileOptions;
-  }
+    public void setResolvedDependencies(List<String> resolvedDependencies) {
+        this.resolvedDependencies = resolvedDependencies;
+    }
 
-  public List<JbangSource> getSources() {
-    return sources;
-  }
+    public String getAvailableJdkPath() {
+        return availableJdkPath;
+    }
 
-  public void setSources(List<JbangSource> sources) {
-    this.sources = sources;
-  }
+    public void setAvailableJdkPath(String availableJdkPath) {
+        this.availableJdkPath = availableJdkPath;
+    }
 
-  public void setMainClass(String mainClass) {
-    this.mainClass = mainClass;
-  }
+    public List<String> getCompileOptions() {
+        return compileOptions;
+    }
 
-  public List<String> getDependencies() {
-    return dependencies;
-  }
+    public void setCompileOptions(List<String> compileOptions) {
+        this.compileOptions = compileOptions;
+    }
 
-  public void setDependencies(List<String> dependencies) {
-    this.dependencies = dependencies;
-  }
+    public List<JbangFile> getJbangFiles() {
+        return jbangFiles;
+    }
+
+    public void setJbangFiles(List<JbangFile> jbangFiles) {
+        this.jbangFiles = jbangFiles;
+    }
+
+    public List<JbangSource> getSources() {
+        return sources;
+    }
+
+    public void setSources(List<JbangSource> sources) {
+        this.sources = sources;
+    }
 }
