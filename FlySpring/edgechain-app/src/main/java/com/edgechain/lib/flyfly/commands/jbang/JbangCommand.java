@@ -48,20 +48,7 @@ public class JbangCommand implements Runnable {
     // Get Information
     JbangResponse jbangResponse = info(jbangJar, this.javaFile);
 
-    String classPath;
-    if (OS.isFamilyWindows()) {
-      classPath = jbangResponse.getApplicationJar().concat(";").concat(System.getProperty("jar.name"));
-    }
-    else if(OS.isFamilyUnix()){
-      classPath = jbangResponse.getApplicationJar().concat(":").concat(System.getProperty("jar.name"));
-    }
-    else if(OS.isFamilyMac()) {
-      classPath = jbangResponse.getApplicationJar().concat(":").concat(System.getProperty("jar.name"));
-    }
-    else {
-      classPath = jbangResponse.getApplicationJar().concat(":").concat(System.getProperty("jar.name"));
-    }
-
+    String classPath = jbangResponse.getApplicationJar().concat(File.pathSeparator).concat(System.getProperty("jar.name"));
 
     // Execute
     execute(classPath, jbangResponse.getMainClass());
