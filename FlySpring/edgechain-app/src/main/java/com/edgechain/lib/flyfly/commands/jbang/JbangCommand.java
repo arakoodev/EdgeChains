@@ -1,148 +1,139 @@
 package com.edgechain.lib.flyfly.commands.jbang;
 
 import java.io.*;
-import java.util.HashMap;
+import java.util.Objects;
 
+import com.edgechain.lib.utils.JsonUtils;
+import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
 @Component
-@Command(name = "jbang", description = "Activate jbang through the jar placed in resources.")
+@Command(
+    name = "jbang",
+    description = "Activate jbang i.e., java -jar edgechain.jar jbang Hello.java")
 public class JbangCommand implements Runnable {
 
   @Parameters(description = "Java file to be executed with jbang;")
   private String javaFile;
 
-  //  @Parameters(description = "ClassPath Jar to be used")
-  //  private String classPathJar;
-
   @Override
   public void run() {
-    String resourcePath = "/jbang.jar";
+
+    InputStream inputStream = this.getClass().getResourceAsStream("/jbang.jar");
+
+    if (Objects.isNull(inputStream))
+      throw new RuntimeException("Unable to find jbang.jar in resource directory");
+
+    File jbangJar = new File(System.getProperty("java.io.tmpdir") + File.separator + "jbang.jar");
+
     try {
-      File jarFile = extractFileFromResources(resourcePath);
-      if (jarFile != null) {
-        runJbang(jarFile, javaFile, System.getProperty("jar.name"));
-      } else {
-        System.out.println("Could not find jbang.jar in resources.");
-      }
+      FileUtils.copyInputStreamToFile(inputStream, jbangJar);
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
+
+    jbangJar.deleteOnExit();
+
+    // Clear Jbang Cache
+    clearCache(jbangJar);
+
+    // Build Jar using Jbang
+    buildJar(jbangJar, this.javaFile);
+
+    // Get Information
+    JbangResponse jbangResponse = info(jbangJar, this.javaFile);
+
+    String classPath =
+        jbangResponse
+            .getApplicationJar()
+            .concat(File.pathSeparator)
+            .concat(System.getProperty("jar.name"));
+
+    // Execute
+    execute(classPath, jbangResponse.getMainClass());
   }
 
-  private File extractFileFromResources(String resourcePath) throws IOException {
-    InputStream inputStream = getClass().getResourceAsStream(resourcePath);
-    if (inputStream == null) {
-      return null;
-    }
-    File jarFile = File.createTempFile("jbang", ".jar");
-    jarFile.deleteOnExit();
-    try (FileOutputStream outputStream = new FileOutputStream(jarFile)) {
-      inputStream.transferTo(outputStream);
-    }
-    return jarFile;
-  }
-
-  private void runJbang(File jarFile, String javaFile, String classPathJar) {
+  private void clearCache(File jbangJar) {
 
     try {
-      // Step One: Execute the initial command to get the classpath
+      ProcessBuilder pb =
+          new ProcessBuilder("java", "-jar", jbangJar.getAbsolutePath(), "cache", "clear")
+              .inheritIO();
+
+      Process process = pb.start();
+      process.waitFor();
+
+    } catch (IOException | InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void buildJar(File jbangJar, String javaFile) {
+
+    try {
+      ProcessBuilder pb =
+          new ProcessBuilder(
+                  "java",
+                  "-jar",
+                  jbangJar.getAbsolutePath(),
+                  "--cp",
+                  System.getProperty("jar.name"),
+                  javaFile)
+              .inheritIO()
+              .redirectErrorStream(true);
+      Process process = pb.start();
+      process.waitFor();
+    } catch (InterruptedException | IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private JbangResponse info(File jbangJar, String javaFile) {
+
+    try {
       ProcessBuilder pb =
           new ProcessBuilder(
               "java",
-              "-cp",
-              jarFile.getAbsolutePath(),
-              "dev.jbang.Main",
+              "-jar",
+              jbangJar.getAbsolutePath(),
+              "info",
+              "tools",
               "--cp",
-              classPathJar,
+              System.getProperty("jar.name"),
               javaFile);
-      pb.redirectErrorStream(true);
+
       Process process = pb.start();
 
-      InputStreamReader inputStreamReader = new InputStreamReader(process.getInputStream());
+      BufferedReader bufferedReader =
+          new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-      BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+      StringBuilder appender = new StringBuilder();
 
-      String classPath = extractClassPathFromOutput(bufferedReader);
-      String mainClass;
-
-      String[] filePath;
-
-      String platformName = System.getProperty("os.name");
-      if (platformName.contains("Windows")) {
-        filePath = classPath.split(";");
-      } else {
-        filePath = classPath.split(":");
+      String line;
+      while ((line = bufferedReader.readLine()) != null) {
+        appender.append(line);
       }
-
-      File file = new File(filePath[0]);
-      String filename = file.getName().split("\\.")[0];
-      mainClass = String.format("com.edgechain.%s", filename);
-
-      System.out.println("Extracted Filename: " + filename);
-      System.out.println("Main Class: " + mainClass);
 
       process.waitFor();
-
-      // Step Two: Execute the final command with the extracted classpath
-      if (!classPath.isEmpty() && mainClass != null && !mainClass.isEmpty()) {
-        runJavaWithClassPath(classPath, mainClass);
-      } else {
-        System.out.println("Could not extract classpath or main class from the output.");
-      }
+      bufferedReader.close();
+      return JsonUtils.convertToObject(appender.toString(), JbangResponse.class);
 
     } catch (IOException | InterruptedException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 
-  private String extractClassPathFromOutput(BufferedReader bufferedReader) throws IOException {
-    String line;
-    HashMap<String, String> sepMap = new HashMap<String, String>();
-    HashMap<String, String> cpPatternMap = new HashMap<String, String>();
-    HashMap<String, String> cpEndPatternMap = new HashMap<String, String>();
+  private void execute(String classPath, String mainClass) {
 
-    sepMap.put("Linux", "/");
-    sepMap.put("Windows", "\\");
-
-    cpPatternMap.put("Linux", "-classpath ");
-    cpPatternMap.put("Windows", "-classpath '");
-
-    cpEndPatternMap.put("Linux", " ");
-    cpEndPatternMap.put("Windows", "\'");
-
-    String classPath = null;
-    String platformName = System.getProperty("os.name");
-    if (platformName.contains("Windows")) {
-      platformName = "Windows";
-    } else {
-      // Mac and Linux have the same representations.
-      platformName = "Linux";
-    }
-    final String pattern = cpPatternMap.get(platformName);
-    while ((line = bufferedReader.readLine()) != null) {
-      int startIndex = line.indexOf(pattern);
-      if (startIndex > -1) {
-        startIndex += pattern.length();
-        int endIndex = line.indexOf(cpEndPatternMap.get(platformName).charAt(0), startIndex);
-        if (endIndex > startIndex) {
-          classPath = line.substring(startIndex, endIndex);
-          break;
-        }
-      }
-    }
-
-    System.out.println("Extracted ClassPath = " + classPath);
-    return classPath;
-  }
-
-  private void runJavaWithClassPath(String classPath, String mainClass) {
     try {
-      ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, mainClass);
-      pb.inheritIO();
+
+      ProcessBuilder pb =
+          new ProcessBuilder("java", "-classpath", classPath, mainClass).inheritIO();
+
       Process process = pb.start();
+
       process.waitFor();
 
     } catch (IOException | InterruptedException e) {
