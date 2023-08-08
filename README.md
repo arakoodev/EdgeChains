@@ -209,6 +209,8 @@ We would like to express our sincere gratitude to the following individuals and 
 ## ✍️ Authors and Contributors
 
 - Sandeep Srinivasa ([@sandys](https://twitter.com/sandeepssrin))
+- Arth Srivastava [@ArthSrivastava](https://github.com/ArthSrivastava)
+- Harsh Parmar [@Harsh4902](https://github.com/Harsh4902)
 - Rohan Guha ([@pizzaboi21](https://github.com/pizzaboi21))
 - Anuran Roy ([@anuran-roy](https://github.com/anuran-roy))
 
