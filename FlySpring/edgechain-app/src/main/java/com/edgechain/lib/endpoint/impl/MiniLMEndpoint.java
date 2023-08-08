@@ -40,7 +40,6 @@ public class MiniLMEndpoint extends Endpoint {
     return miniLMModel;
   }
 
-
   public String getCallIdentifier() {
     return callIdentifier;
   }
@@ -49,7 +48,6 @@ public class MiniLMEndpoint extends Endpoint {
     super(retryPolicy);
     this.miniLMModel = miniLMModel;
   }
-
 
   public WordEmbeddings embeddings(String input, ArkRequest arkRequest) {
 
