@@ -3,7 +3,6 @@ package com.edgechain.lib.retrofit;
 import com.edgechain.lib.embeddings.miniLLM.response.MiniLMResponse;
 
 import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
-import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.Body;
 import retrofit2.http.POST;

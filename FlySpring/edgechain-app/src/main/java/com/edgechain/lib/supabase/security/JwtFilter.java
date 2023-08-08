@@ -41,7 +41,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
     if (request.getRequestURI().startsWith(WebConfiguration.CONTEXT_PATH)) {
       String authHeader = request.getHeader("Authorization");
-      if ( Objects.isNull(authHeader) || !authHeader.equals(securityUUID.getAuthKey())) throw new FilterException("Access Denied");
+      if (Objects.isNull(authHeader) || !authHeader.equals(securityUUID.getAuthKey()))
+        throw new FilterException("Access Denied");
     }
 
     String token = AuthUtils.extractToken(request);
