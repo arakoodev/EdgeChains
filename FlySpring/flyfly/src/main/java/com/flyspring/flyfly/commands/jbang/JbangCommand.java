@@ -32,7 +32,7 @@ public class JbangCommand implements Runnable {
     }
   }
 
-  private File extractFileFromResources(String resourcePath) throws IOException {
+  public File extractFileFromResources(String resourcePath) throws IOException {
     InputStream inputStream = getClass().getResourceAsStream(resourcePath);
     if (inputStream == null) {
       return null;
@@ -45,7 +45,7 @@ public class JbangCommand implements Runnable {
     return jarFile;
   }
 
-  private void runJbang(File jarFile, String javaFile, String classPathJar) {
+  public void runJbang(File jarFile, String javaFile, String classPathJar) {
     try {
       // Step One: Execute the initial command to get the classpath
       ProcessBuilder pb =
@@ -94,7 +94,7 @@ public class JbangCommand implements Runnable {
     }
   }
 
-  private String extractClassPathFromOutput(BufferedReader bufferedReader) throws IOException {
+  public String extractClassPathFromOutput(BufferedReader bufferedReader) throws IOException {
     String line;
     HashMap<String, String> sepMap = new HashMap<String, String>();
     HashMap<String, String> cpPatternMap = new HashMap<String, String>();
@@ -134,7 +134,7 @@ public class JbangCommand implements Runnable {
     return classPath;
   }
 
-  private void runJavaWithClassPath(String classPath, String mainClass) {
+  public void runJavaWithClassPath(String classPath, String mainClass) {
     try {
       ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, mainClass);
       pb.inheritIO();
