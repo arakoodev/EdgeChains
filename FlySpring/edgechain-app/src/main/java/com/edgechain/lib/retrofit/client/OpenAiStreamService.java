@@ -34,7 +34,6 @@ public class OpenAiStreamService {
                 "http://0.0.0.0"
                     + ":"
                     + System.getProperty("server.port")
-                    + ""
                     + WebConfiguration.CONTEXT_PATH
                     + "/openai/chat-completion-stream")
             .headers(

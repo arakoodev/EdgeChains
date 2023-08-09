@@ -38,17 +38,17 @@ public class MiniLMClient {
     this.endpoint = endpoint;
   }
 
-  public EdgeChain<MiniLMResponse> createEmbeddings(String input, MiniLMModel miniLMModel) {
+  public EdgeChain<MiniLMResponse> createEmbeddings(String input) {
 
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
 
-                if (miniLMModel.equals(MiniLMModel.ALL_MINILM_L6_V2)) {
+                if (this.endpoint.getMiniLMModel().equals(MiniLMModel.ALL_MINILM_L6_V2)) {
 
                   Predictor<String, float[]> predictor =
-                      loadAllMiniL6V2(miniLMModel).newPredictor();
+                      loadAllMiniL6V2(this.endpoint.getMiniLMModel()).newPredictor();
 
                   float[] predict = predictor.predict(input);
 
@@ -59,10 +59,10 @@ public class MiniLMClient {
 
                   emitter.onNext(new MiniLMResponse(floatList));
                   emitter.onComplete();
-                } else if (miniLMModel.equals(MiniLMModel.ALL_MINILM_L12_V2)) {
+                } else if (this.endpoint.getMiniLMModel().equals(MiniLMModel.ALL_MINILM_L12_V2)) {
 
                   Predictor<String, float[]> predictor =
-                      loadAllMiniL12V2(miniLMModel).newPredictor();
+                      loadAllMiniL12V2(this.endpoint.getMiniLMModel()).newPredictor();
 
                   float[] predict = predictor.predict(input);
 
@@ -73,10 +73,11 @@ public class MiniLMClient {
 
                   emitter.onNext(new MiniLMResponse(floatList));
                   emitter.onComplete();
-                } else if (miniLMModel.equals(MiniLMModel.PARAPHRASE_MINILM_L3_V2)) {
-
+                } else if (this.endpoint
+                    .getMiniLMModel()
+                    .equals(MiniLMModel.PARAPHRASE_MINILM_L3_V2)) {
                   Predictor<String, float[]> predictor =
-                      loadParaphraseMiniLML3v2(miniLMModel).newPredictor();
+                      loadParaphraseMiniLML3v2(this.endpoint.getMiniLMModel()).newPredictor();
 
                   float[] predict = predictor.predict(input);
 
@@ -89,7 +90,9 @@ public class MiniLMClient {
                   emitter.onComplete();
                 } else {
 
-                  ZooModel<String, float[]> zooModel = loadMultiQAMiniLML6CosV1(miniLMModel);
+                  System.out.println("d");
+                  ZooModel<String, float[]> zooModel =
+                      loadMultiQAMiniLML6CosV1(this.endpoint.getMiniLMModel());
 
                   Predictor<String, float[]> predictor = zooModel.newPredictor();
 

@@ -32,10 +32,10 @@ public class MiniLMController {
   @PostMapping
   public Single<MiniLMResponse> embeddings(@RequestBody MiniLMEndpoint miniLMEndpoint) {
 
-    miniLMClient.setEndpoint(miniLMEndpoint);
+    this.miniLMClient.setEndpoint(miniLMEndpoint);
 
     EdgeChain<MiniLMResponse> edgeChain =
-        miniLMClient.createEmbeddings(miniLMEndpoint.getInput(), miniLMEndpoint.getMiniLMModel());
+        this.miniLMClient.createEmbeddings(miniLMEndpoint.getInput());
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 

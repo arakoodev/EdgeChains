@@ -62,15 +62,30 @@ public class PostgresClientRepository {
       WordEmbeddings wordEmbeddings,
       int topK) {
 
-    return jdbcTemplate.queryForList(
-        String.format(
-            "SELECT id, raw_text, namespace, filename, timestamp FROM %s WHERE namespace='%s' ORDER"
-                + " BY embedding %s '%s' LIMIT %s;",
-            tableName,
-            namespace,
-            PostgresDistanceMetric.getDistanceMetric(metric),
-            Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
-            topK));
+    String embeddings = Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues()));
+
+    if (metric.equals(PostgresDistanceMetric.IP)) {
+
+      return jdbcTemplate.queryForList(
+          String.format(
+              "SELECT id, raw_text, namespace, filename, timestamp, (embedding <#> '%s') * -1 AS"
+                  + " score FROM %s WHERE namespace='%s' ORDER BY score DESC LIMIT %s;",
+              embeddings, tableName, namespace, topK));
+
+    } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
+
+      return jdbcTemplate.queryForList(
+          String.format(
+              "SELECT id, raw_text, namespace, filename, timestamp, 1 - ( embedding <=> '%s') AS"
+                  + " score FROM %s WHERE namespace='%s' ORDER BY score DESC LIMIT %s;",
+              embeddings, tableName, namespace, topK));
+    } else {
+      return jdbcTemplate.queryForList(
+          String.format(
+              "SELECT id, raw_text, namespace, filename, timestamp, (embedding <-> '%s') AS score"
+                  + " FROM %s WHERE namespace='%s' ORDER BY score ASC LIMIT %s;",
+              embeddings, tableName, namespace, topK));
+    }
   }
 
   @Transactional
