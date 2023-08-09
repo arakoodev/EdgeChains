@@ -1,50 +1,51 @@
 package com.edgechain.lib.jsonFormat.request;
 
 public class FunctionRequest {
-    
-    private String name;
-    private String description;
-    private Object parameters;
 
-    public FunctionRequest() {
-    }
+  private String name;
+  private String description;
+  private Object parameters;
 
-    public FunctionRequest(String name, String description, Object parameters) {
-        this.name = name;
-        this.description = description;
-        this.parameters = parameters;
-    }
+  public FunctionRequest() {}
 
-    public String getName() {
-        return name;
-    }
+  public FunctionRequest(String name, String description, Object parameters) {
+    this.name = name;
+    this.description = description;
+    this.parameters = parameters;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public Object getParameters() {
-        return parameters;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setParameters(Parameters parameters) {
-        this.parameters = parameters;
-    }
+  public Object getParameters() {
+    return parameters;
+  }
 
-    @Override
-    public String toString() {
-        return "FunctionRequest [name=" + name + ", description=" + description + ", parameters=" + parameters + "]";
-    }
+  public void setParameters(Parameters parameters) {
+    this.parameters = parameters;
+  }
 
-    
-    
-
+  @Override
+  public String toString() {
+    return "FunctionRequest [name="
+        + name
+        + ", description="
+        + description
+        + ", parameters="
+        + parameters
+        + "]";
+  }
 }
