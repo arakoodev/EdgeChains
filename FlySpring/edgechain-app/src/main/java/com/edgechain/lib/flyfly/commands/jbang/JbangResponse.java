@@ -6,6 +6,7 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JbangResponse {
+
   private String originalResource;
   private String backingResource;
   private String applicationJar;
@@ -14,6 +15,7 @@ public class JbangResponse {
   private List<String> resolvedDependencies;
   private String availableJdkPath;
   private List<String> compileOptions;
+  private List<JbangFile> jbangFiles;
   private List<JbangSource> sources;
 
   public String getOriginalResource() {
@@ -44,6 +46,18 @@ public class JbangResponse {
     return mainClass;
   }
 
+  public void setMainClass(String mainClass) {
+    this.mainClass = mainClass;
+  }
+
+  public List<String> getDependencies() {
+    return dependencies;
+  }
+
+  public void setDependencies(List<String> dependencies) {
+    this.dependencies = dependencies;
+  }
+
   public List<String> getResolvedDependencies() {
     return resolvedDependencies;
   }
@@ -68,23 +82,19 @@ public class JbangResponse {
     this.compileOptions = compileOptions;
   }
 
+  public List<JbangFile> getJbangFiles() {
+    return jbangFiles;
+  }
+
+  public void setJbangFiles(List<JbangFile> jbangFiles) {
+    this.jbangFiles = jbangFiles;
+  }
+
   public List<JbangSource> getSources() {
     return sources;
   }
 
   public void setSources(List<JbangSource> sources) {
     this.sources = sources;
-  }
-
-  public void setMainClass(String mainClass) {
-    this.mainClass = mainClass;
-  }
-
-  public List<String> getDependencies() {
-    return dependencies;
-  }
-
-  public void setDependencies(List<String> dependencies) {
-    this.dependencies = dependencies;
   }
 }

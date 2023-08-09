@@ -45,14 +45,35 @@ public class JbangCommand implements Runnable {
     // Get Information
     JbangResponse jbangResponse = info(jbangJar, this.javaFile);
 
-    String classPath =
-        jbangResponse
-            .getApplicationJar()
-            .concat(File.pathSeparator)
-            .concat(System.getProperty("jar.name"));
+    String classPath;
+    if (jbangResponse.getResolvedDependencies().isEmpty()) {
+      classPath =
+          jbangResponse
+              .getApplicationJar()
+              .concat(File.pathSeparator)
+              .concat(System.getProperty("jar.name"));
+    } else {
+      classPath =
+          jbangResponse
+              .getApplicationJar()
+              .concat(File.pathSeparator)
+              .concat(String.join(File.pathSeparator, jbangResponse.getResolvedDependencies()))
+              .concat(File.pathSeparator)
+              .concat(System.getProperty("jar.name"));
+    }
+
+    String mainClass;
+    if (Objects.isNull(jbangResponse.getMainClass())) {
+      mainClass = "com.edgechain." + jbangResponse.getOriginalResource();
+    } else {
+      mainClass = jbangResponse.getMainClass();
+    }
+
+    //        System.out.println("Classpath ==========: "+classPath);
+    //        System.out.println("Main Class =========: "+mainClass);
 
     // Execute
-    execute(classPath, jbangResponse.getMainClass());
+    execute(classPath, mainClass);
   }
 
   private void clearCache(File jbangJar) {
@@ -94,15 +115,7 @@ public class JbangCommand implements Runnable {
 
     try {
       ProcessBuilder pb =
-          new ProcessBuilder(
-              "java",
-              "-jar",
-              jbangJar.getAbsolutePath(),
-              "info",
-              "tools",
-              "--cp",
-              System.getProperty("jar.name"),
-              javaFile);
+          new ProcessBuilder("java", "-jar", jbangJar.getAbsolutePath(), "info", "tools", javaFile);
 
       Process process = pb.start();
 
@@ -118,6 +131,7 @@ public class JbangCommand implements Runnable {
 
       process.waitFor();
       bufferedReader.close();
+
       return JsonUtils.convertToObject(appender.toString(), JbangResponse.class);
 
     } catch (IOException | InterruptedException e) {
