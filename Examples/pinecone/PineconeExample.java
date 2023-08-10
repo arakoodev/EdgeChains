@@ -180,8 +180,7 @@ public class PineconeExample {
     }
 
     @PostMapping(
-            value = "/pinecone/query",
-            produces = {MediaType.APPLICATION_JSON_VALUE})
+            value = "/pinecone/query")
     public ArkResponse query(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -214,8 +213,7 @@ public class PineconeExample {
      * @return
      */
     @PostMapping(
-            value = "/pinecone/chat",
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+            value = "/pinecone/chat")
     public ArkResponse chatWithPinecone(ArkRequest arkRequest) {
 
       String contextId = arkRequest.getQueryParam("id");

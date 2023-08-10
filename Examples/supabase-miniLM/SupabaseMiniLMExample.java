@@ -169,8 +169,7 @@ public class SupabaseMiniLMExample {
     }
 
     @PostMapping(
-        value = "/miniLM/query",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
+        value = "/miniLM/query")
     @PreAuthorize("hasAnyAuthority('authenticated')")
     public ArkResponse queryPostgres(ArkRequest arkRequest) {
 
@@ -198,8 +197,7 @@ public class SupabaseMiniLMExample {
     }
 
     @PostMapping(
-        value = "/miniLM/chat",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+        value = "/miniLM/chat")
     @PreAuthorize("hasAnyAuthority('authenticated')")
     public ArkResponse chatWithPostgres(ArkRequest arkRequest) {
 

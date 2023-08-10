@@ -167,8 +167,7 @@ public class RedisExample {
      * @return
      */
     @PostMapping(
-        value = "/redis/similarity-search",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
+        value = "/redis/similarity-search")
     public ArkResponse similaritySearch(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -187,8 +186,7 @@ public class RedisExample {
     }
 
     @PostMapping(
-        value = "/redis/query",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
+        value = "/redis/query")
     public ArkResponse queryRedis(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -214,8 +212,7 @@ public class RedisExample {
     }
 
     @PostMapping(
-        value = "/redis/chat",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+        value = "/redis/chat")
     public ArkResponse chatWithRedis(ArkRequest arkRequest) {
 
       String contextId = arkRequest.getQueryParam("id");
