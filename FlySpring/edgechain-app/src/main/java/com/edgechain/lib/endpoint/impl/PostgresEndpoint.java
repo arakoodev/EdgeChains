@@ -8,6 +8,7 @@ import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.retrofit.PostgresService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
+import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
 import java.util.List;
@@ -87,15 +88,15 @@ public class PostgresEndpoint extends Endpoint {
     this.wordEmbeddings = wordEmbeddings;
     this.dimensions = dimension;
     this.filename = filename;
-    return postgresService.upsert(this).blockingGet();
+    return this.postgresService.upsert(this).blockingGet();
   }
 
-  public List<PostgresWordEmbeddings> query(
+  public Observable<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
     this.wordEmbeddings = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;
-    return this.postgresService.query(this).blockingGet();
+    return Observable.fromSingle(this.postgresService.query(this));
   }
 
   public StringResponse deleteAll() {

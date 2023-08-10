@@ -1,6 +1,7 @@
 package com.edgechain.wiki;
 
 import com.edgechain.lib.endpoint.impl.WikiEndpoint;
+import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +35,11 @@ public class WikiClientTest {
 
           // Prepare test data
           WikiEndpoint wikiEndpoint = new WikiEndpoint();
-          WikiResponse wikiResponse = wikiEndpoint.getPageContent("Barack Obama");
+          TestObserver<WikiResponse> test = wikiEndpoint.getPageContent("Barack Obama").test();
 
-          logger.info(wikiResponse.getText());
+          test.await();
+
+          logger.info(test.values().toString());
         });
   }
 }

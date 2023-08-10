@@ -1,6 +1,9 @@
 package com.edgechain.lib.wiki.response;
 
-public class WikiResponse {
+import com.edgechain.lib.response.ArkObject;
+import org.json.JSONObject;
+
+public class WikiResponse implements ArkObject {
 
   private String text;
 
@@ -24,5 +27,12 @@ public class WikiResponse {
     sb.append("text='").append(text).append('\'');
     sb.append('}');
     return sb.toString();
+  }
+
+  @Override
+  public JSONObject toJson() {
+    JSONObject json = new JSONObject();
+    json.put("text", text);
+    return json;
   }
 }

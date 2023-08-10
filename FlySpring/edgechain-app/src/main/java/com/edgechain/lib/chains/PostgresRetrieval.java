@@ -6,6 +6,8 @@ import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.request.ArkRequest;
+import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,10 +46,11 @@ public class PostgresRetrieval extends Retrieval {
   public void upsert(String input) {
 
     if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
-      WordEmbeddings embeddings = openAiEndpoint.embeddings(input, arkRequest);
+      WordEmbeddings embeddings =
+          openAiEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
       this.postgresEndpoint.upsert(embeddings, this.filename, this.dimensions);
     } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
-      WordEmbeddings embeddings = miniLMEndpoint.embeddings(input, arkRequest);
+      WordEmbeddings embeddings = miniLMEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
       this.postgresEndpoint.upsert(embeddings, this.filename, this.dimensions);
     } else
       throw new RuntimeException(
