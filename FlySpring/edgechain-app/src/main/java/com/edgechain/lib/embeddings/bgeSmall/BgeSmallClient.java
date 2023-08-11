@@ -48,16 +48,15 @@ public class BgeSmallClient {
         Observable.create(
             emitter -> {
               try {
-                Predictor<String, float[]> predictor =
-                          loadSmallBgeEn().newPredictor();
-                  float[] predict = predictor.predict(input);
-                  List<Float> floatList = new LinkedList<>();
-                  for (float v : predict) {
-                    floatList.add(v);
-                  }
+                Predictor<String, float[]> predictor = loadSmallBgeEn().newPredictor();
+                float[] predict = predictor.predict(input);
+                List<Float> floatList = new LinkedList<>();
+                for (float v : predict) {
+                  floatList.add(v);
+                }
 
-                  emitter.onNext(new BgeSmallResponse(floatList));
-                  emitter.onComplete();
+                emitter.onNext(new BgeSmallResponse(floatList));
+                emitter.onComplete();
               } catch (final Exception e) {
                 emitter.onError(e);
               }
@@ -75,22 +74,22 @@ public class BgeSmallClient {
         if (r == null) {
           Path path = Paths.get("./model");
           HuggingFaceTokenizer tokenizer =
-                  HuggingFaceTokenizer.builder()
-                          .optTokenizerPath(path)
-                          .optManager(NDManager.newBaseManager("PyTorch"))
-                          .build();
+              HuggingFaceTokenizer.builder()
+                  .optTokenizerPath(path)
+                  .optManager(NDManager.newBaseManager("PyTorch"))
+                  .build();
 
           MyTextEmbeddingTranslator translator =
-                  new MyTextEmbeddingTranslator(tokenizer, Batchifier.STACK, "mean", true, true);
+              new MyTextEmbeddingTranslator(tokenizer, Batchifier.STACK, "mean", true, true);
 
           Criteria<String, float[]> criteria =
-                  Criteria.builder()
-                          .setTypes(String.class, float[].class)
-                          .optModelPath(path)
-                          .optEngine("OnnxRuntime")
-                          .optTranslator(translator)
-                          .optProgress(new ProgressBar())
-                          .build();
+              Criteria.builder()
+                  .setTypes(String.class, float[].class)
+                  .optModelPath(path)
+                  .optEngine("OnnxRuntime")
+                  .optTranslator(translator)
+                  .optProgress(new ProgressBar())
+                  .build();
           try {
             r = criteria.loadModel();
             bgeSmallEn = r;
@@ -104,9 +103,7 @@ public class BgeSmallClient {
     return r;
   }
 
-
-
-  //Custom TextEmbeddingTranslator for BGE-Small Onnx Model
+  // Custom TextEmbeddingTranslator for BGE-Small Onnx Model
   static final class MyTextEmbeddingTranslator implements Translator<String, float[]> {
 
     private static final int[] AXIS = {0};
@@ -118,11 +115,11 @@ public class BgeSmallClient {
     private boolean includeTokenTypes;
 
     MyTextEmbeddingTranslator(
-            HuggingFaceTokenizer tokenizer,
-            Batchifier batchifier,
-            String pooling,
-            boolean normalize,
-            boolean includeTokenTypes) {
+        HuggingFaceTokenizer tokenizer,
+        Batchifier batchifier,
+        String pooling,
+        boolean normalize,
+        boolean includeTokenTypes) {
       this.tokenizer = tokenizer;
       this.batchifier = batchifier;
       this.pooling = pooling;
@@ -158,7 +155,7 @@ public class BgeSmallClient {
     }
 
     static NDArray processEmbedding(
-            NDManager manager, NDList list, Encoding encoding, String pooling) {
+        NDManager manager, NDList list, Encoding encoding, String pooling) {
       NDArray embedding = list.get("last_hidden_state");
       if (embedding == null) {
         // For Onnx model, NDArray name is not present
@@ -219,4 +216,3 @@ public class BgeSmallClient {
     }
   }
 }
-

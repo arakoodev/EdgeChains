@@ -45,9 +45,9 @@ public class BgeSmallEndpoint extends Endpoint {
     File modelFile = new File(MODEL_PATH);
     File tokenizerFile = new File(TOKENIZER_PATH);
 
-    //check if the file already exists
-    if(!modelFile.exists()) downloadFile(modelUrl, MODEL_PATH);
-    if(!tokenizerFile.exists()) downloadFile(tokenizerUrl, TOKENIZER_PATH);
+    // check if the file already exists
+    if (!modelFile.exists()) downloadFile(modelUrl, MODEL_PATH);
+    if (!tokenizerFile.exists()) downloadFile(tokenizerUrl, TOKENIZER_PATH);
     logger.info("Model downloaded successfully!");
   }
 
@@ -62,7 +62,6 @@ public class BgeSmallEndpoint extends Endpoint {
   public String getInput() {
     return input;
   }
-
 
   public String getCallIdentifier() {
     return callIdentifier;
@@ -87,6 +86,7 @@ public class BgeSmallEndpoint extends Endpoint {
         .map(m -> new WordEmbeddings(input, m.getEmbedding()))
         .blockingGet();
   }
+
   private void downloadFile(String urlStr, String path) {
 
     File modelFolderFile = new File(MODEL_FOLDER);
@@ -94,7 +94,6 @@ public class BgeSmallEndpoint extends Endpoint {
     if (!modelFolderFile.exists()) {
       modelFolderFile.mkdir();
     }
-
 
     ReadableByteChannel rbc = null;
     FileOutputStream fos = null;

@@ -23,40 +23,39 @@ import java.util.Objects;
 @RequestMapping(WebConfiguration.CONTEXT_PATH + "/bgeSmall")
 public class BgeSmallController {
 
-    @Autowired
-    private BgeSmallClient bgeSmallClient;
+  @Autowired private BgeSmallClient bgeSmallClient;
 
-    @Autowired private EmbeddingLogService embeddingLogService;
+  @Autowired private EmbeddingLogService embeddingLogService;
 
-    @Autowired private Environment env;
+  @Autowired private Environment env;
 
-    @PostMapping
-    public Single<BgeSmallResponse> embeddings(@RequestBody BgeSmallEndpoint bgeSmallEndpoint) {
+  @PostMapping
+  public Single<BgeSmallResponse> embeddings(@RequestBody BgeSmallEndpoint bgeSmallEndpoint) {
 
-        this.bgeSmallClient.setEndpoint(bgeSmallEndpoint);
+    this.bgeSmallClient.setEndpoint(bgeSmallEndpoint);
 
-        EdgeChain<BgeSmallResponse> edgeChain =
-                this.bgeSmallClient.createEmbeddings(bgeSmallEndpoint.getInput());
+    EdgeChain<BgeSmallResponse> edgeChain =
+        this.bgeSmallClient.createEmbeddings(bgeSmallEndpoint.getInput());
 
-        if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
+    if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
-            EmbeddingLog embeddingLog = new EmbeddingLog();
-            embeddingLog.setCreatedAt(LocalDateTime.now());
-            embeddingLog.setCallIdentifier(bgeSmallEndpoint.getCallIdentifier());
-            embeddingLog.setModel("bge-small-en");
+      EmbeddingLog embeddingLog = new EmbeddingLog();
+      embeddingLog.setCreatedAt(LocalDateTime.now());
+      embeddingLog.setCallIdentifier(bgeSmallEndpoint.getCallIdentifier());
+      embeddingLog.setModel("bge-small-en");
 
-            return edgeChain
-                    .doOnNext(
-                            c -> {
-                                embeddingLog.setCompletedAt(LocalDateTime.now());
-                                Duration duration =
-                                        Duration.between(embeddingLog.getCreatedAt(), embeddingLog.getCompletedAt());
-                                embeddingLog.setLatency(duration.toMillis());
-                                embeddingLogService.saveOrUpdate(embeddingLog);
-                            })
-                    .toSingle();
-        }
-
-        return edgeChain.toSingle();
+      return edgeChain
+          .doOnNext(
+              c -> {
+                embeddingLog.setCompletedAt(LocalDateTime.now());
+                Duration duration =
+                    Duration.between(embeddingLog.getCreatedAt(), embeddingLog.getCompletedAt());
+                embeddingLog.setLatency(duration.toMillis());
+                embeddingLogService.saveOrUpdate(embeddingLog);
+              })
+          .toSingle();
     }
+
+    return edgeChain.toSingle();
+  }
 }

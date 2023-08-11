@@ -50,7 +50,7 @@ public class PostgresRetrieval extends Retrieval {
     } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
       WordEmbeddings embeddings = miniLMEndpoint.embeddings(input, arkRequest);
       this.postgresEndpoint.upsert(embeddings, this.filename, this.dimensions);
-    } else if(endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint) {
+    } else if (endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint) {
       WordEmbeddings embeddings = bgeSmallEndpoint.embeddings(input, arkRequest);
       this.postgresEndpoint.upsert(embeddings, this.filename, this.dimensions);
     } else
