@@ -7,6 +7,6 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 public interface BgeSmallService {
-    @POST(value = "bgeSmall")
-    Single<BgeSmallResponse> embeddings(@Body BgeSmallEndpoint bgeSmallEndpoint);
+  @POST(value = "bgeSmall")
+  Single<BgeSmallResponse> embeddings(@Body BgeSmallEndpoint bgeSmallEndpoint);
 }
