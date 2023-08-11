@@ -3,7 +3,6 @@ package com.edgechain.lib.embeddings.bgeSmall;
 import ai.djl.MalformedModelException;
 import ai.djl.huggingface.tokenizers.Encoding;
 import ai.djl.huggingface.tokenizers.HuggingFaceTokenizer;
-import ai.djl.huggingface.translator.TextEmbeddingTranslatorFactory;
 import ai.djl.inference.Predictor;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
@@ -50,7 +49,7 @@ public class BgeSmallClient {
             emitter -> {
               try {
                 Predictor<String, float[]> predictor =
-                          loadSmallBgeEn(endpoint.getModelPath()).newPredictor();
+                          loadSmallBgeEn().newPredictor();
                   float[] predict = predictor.predict(input);
                   List<Float> floatList = new LinkedList<>();
                   for (float v : predict) {
@@ -66,7 +65,7 @@ public class BgeSmallClient {
         endpoint);
   }
 
-  private ZooModel<String, float[]> loadSmallBgeEn(String modelPath) throws IOException {
+  private ZooModel<String, float[]> loadSmallBgeEn() throws IOException {
 
     ZooModel<String, float[]> r = bgeSmallEn;
 
@@ -74,7 +73,7 @@ public class BgeSmallClient {
       synchronized (this) {
         r = bgeSmallEn;
         if (r == null) {
-          Path path = Paths.get(modelPath);
+          Path path = Paths.get("./model");
           HuggingFaceTokenizer tokenizer =
                   HuggingFaceTokenizer.builder()
                           .optTokenizerPath(path)
@@ -104,6 +103,8 @@ public class BgeSmallClient {
     }
     return r;
   }
+
+
 
   //Custom TextEmbeddingTranslator for BGE-Small Onnx Model
   static final class MyTextEmbeddingTranslator implements Translator<String, float[]> {
