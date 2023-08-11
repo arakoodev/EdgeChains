@@ -237,6 +237,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>ai.djl.onnxruntime</groupId>
+            <artifactId>onnxruntime-engine</artifactId>
+            <version>0.23.0</version>
+            <scope>runtime</scope>
+        </dependency>
 
     </dependencies>
 
