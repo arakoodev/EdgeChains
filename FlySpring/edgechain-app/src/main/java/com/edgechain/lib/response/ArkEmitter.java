@@ -5,19 +5,15 @@ import io.reactivex.rxjava3.core.Observable;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-public class ArkEmitter<T> extends SseEmitter {
-
+public class ArkEmitter<T> extends SseEmitter implements ArkResponse {
   private final ArkEmitterObserver<T> observer;
 
   public ArkEmitter(EdgeChain<T> edgeChain) {
-    this(null, edgeChain.getScheduledObservable());
+    this(edgeChain.getScheduledObservable());
   }
 
   public ArkEmitter(Observable<T> observable) {
-    this(null, observable);
+    this.observer = new ArkEmitterObserver<T>(observable, this);
   }
 
-  public ArkEmitter(MediaType mediaType, Observable<T> observable) {
-    this.observer = new ArkEmitterObserver<T>(mediaType, observable, this);
-  }
 }
