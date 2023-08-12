@@ -80,7 +80,7 @@ public class BgeSmallClient {
                   .build();
 
           MyTextEmbeddingTranslator translator =
-              new MyTextEmbeddingTranslator(tokenizer, Batchifier.STACK, "mean", true, true);
+              new MyTextEmbeddingTranslator(tokenizer, Batchifier.STACK, "cls", true, true);
 
           Criteria<String, float[]> criteria =
               Criteria.builder()
