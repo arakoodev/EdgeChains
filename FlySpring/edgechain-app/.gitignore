@@ -41,5 +41,5 @@ build/
 
 ### VS Code ###
 .vscode/
-
+/model/
 

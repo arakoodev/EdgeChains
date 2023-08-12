@@ -8,6 +8,7 @@ import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Single;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,6 @@ public class PostgresController {
   public Single<StringResponse> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
 
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-
     EdgeChain<StringResponse> edgeChain =
         this.postgresClient.upsert(postgresEndpoint.getWordEmbeddings());
 
@@ -54,4 +54,6 @@ public class PostgresController {
     EdgeChain<StringResponse> edgeChain = this.postgresClient.deleteAll();
     return edgeChain.toSingle();
   }
+
+
 }

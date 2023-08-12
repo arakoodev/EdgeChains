@@ -44,7 +44,7 @@ public class PostgreSQLExample {
   private static PostgresEndpoint postgresEndpoint;
   private static PostgreSQLHistoryContextEndpoint contextEndpoint;
 
-  private JsonnetLoader queryLoader = new FileJsonnetLoader("./postgres/postgres-query.jsonnet");
+  private JsonnetLoader queryLoader = new FileJsonnetLoader("R:Github//postgres-query.jsonnet");
   private JsonnetLoader chatLoader = new FileJsonnetLoader("./postgres/postgres-chat.jsonnet");
 
   public static void main(String[] args) {
@@ -146,9 +146,7 @@ public class PostgreSQLExample {
       postgresEndpoint.setNamespace(namespace);
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
-
-      System.out.println("Length: " + arr.length);
-
+      
       final Retrieval retrieval =
           new PostgresRetrieval(postgresEndpoint, filename, 1536, ada002Embedding, arkRequest);
 
