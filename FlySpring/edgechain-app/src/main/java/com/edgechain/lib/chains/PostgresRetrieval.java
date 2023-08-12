@@ -2,6 +2,7 @@ package com.edgechain.lib.chains;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.impl.BgeSmallEndpoint;
 import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
@@ -49,8 +50,11 @@ public class PostgresRetrieval extends Retrieval {
     } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
       WordEmbeddings embeddings = miniLMEndpoint.embeddings(input, arkRequest);
       this.postgresEndpoint.upsert(embeddings, this.filename, this.dimensions);
+    } else if (endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint) {
+      WordEmbeddings embeddings = bgeSmallEndpoint.embeddings(input, arkRequest);
+      this.postgresEndpoint.upsert(embeddings, this.filename, this.dimensions);
     } else
       throw new RuntimeException(
-          "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
+          "Invalid Endpoint; Only OpenAIEndpoint, MiniLMEndpoint & BgeSmallEndpoint are supported");
   }
 }
