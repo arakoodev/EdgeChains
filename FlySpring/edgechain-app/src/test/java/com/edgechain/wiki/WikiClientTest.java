@@ -1,6 +1,7 @@
 package com.edgechain.wiki;
 
 import com.edgechain.lib.endpoint.impl.WikiEndpoint;
+import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,17 +27,18 @@ public class WikiClientTest {
   @Test
   @DisplayName("Test WikiContent Method Returns WikiResponse")
   @Order(1)
-  public void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo) {
+  public void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo) throws InterruptedException {
 
-    assertDoesNotThrow(
-        () -> {
-          logger.info("======== " + testInfo.getDisplayName() + " ========");
+      logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-          // Prepare test data
-          WikiEndpoint wikiEndpoint = new WikiEndpoint();
-          WikiResponse wikiResponse = wikiEndpoint.getPageContent("Barack Obama");
+      // Prepare test data
+      WikiEndpoint wikiEndpoint = new WikiEndpoint();
+      TestObserver<WikiResponse> test = wikiEndpoint.getPageContent("Barack Obama").test();
 
-          logger.info(wikiResponse.getText());
-        });
+      test.await();
+
+      logger.info(test.values().toString());
+
+test.assertNoErrors();
   }
 }
