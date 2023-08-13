@@ -1,0 +1,78 @@
+name: Generate attachments
+
+on:
+  # This workflow is started only on PRs
+    pull_request_target:
+     types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  # Main job
+  build:
+    permissions:
+      # Required to upload/save artifact, otherwise you'll get
+      # "Error: Resource not accessible by integration"
+      contents: write
+      # Required to post comment, otherwise you'll get
+      # "Error: Resource not accessible by integration"
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+    outputs:
+      VALUE: ${{ steps.short_hash.outputs.VALUE }}
+    steps:
+      # Put your steps here to generate the files to upload.
+      # Usually configure Node.js, build, etc.
+      # Finally, upload the artifacts and post comment:
+      - name: Checkout PR
+        if: ${{ github.event_name == 'pull_request_target' }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+          # Token for current repo (used to post PR comment)
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set SHORT_HASH
+        run: |
+          echo "::set-output name=VALUE::${LONG_HASH:0:8}"
+          echo "RELEASE_TAG=${LONG_HASH:0:8}-$(TZ=UTC-8 date +"%Y.%m.%d")" >> $GITHUB_ENV
+        id: short_hash
+        env:
+          LONG_HASH: ${{ github.sha }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.9.3
+
+      - name: Create output folder
+        run: mkdir BuildOutput
+
+      - name: Build edgechain-app project
+        working-directory: ./FlySpring/edgechain-app
+        run: mvn  clean package -DskipTests
+
+      - name: Run edgechain testcases
+        working-directory: ./FlySpring/edgechain-app
+        run: mvn test
+
+      - name: Copy edgechain-app JAR to Examples folder
+        run: cp ./FlySpring/edgechain-app/target/edgechain.jar ./BuildOutput/
+
+      - name: Upload Examples folder as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Output
+          path: ./BuildOutput/
+
+    
