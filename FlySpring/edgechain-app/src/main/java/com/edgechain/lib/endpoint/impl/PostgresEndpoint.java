@@ -33,6 +33,8 @@ public class PostgresEndpoint extends Endpoint {
   private int dimensions;
   private int topK;
 
+  private int probes;
+
   public PostgresEndpoint() {}
 
   public PostgresEndpoint(RetryPolicy retryPolicy) {
@@ -90,6 +92,10 @@ public class PostgresEndpoint extends Endpoint {
     return lists;
   }
 
+  public int getProbes() {
+    return probes;
+  }
+
   // Convenience Methods
 
   public StringResponse upsert(WordEmbeddings wordEmbeddings, String filename, int dimension, PostgresDistanceMetric metric, int lists) {
@@ -106,6 +112,16 @@ public class PostgresEndpoint extends Endpoint {
     this.wordEmbeddings = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;
+    this.probes = 1;
+    return Observable.fromSingle(this.postgresService.query(this));
+  }
+
+  public Observable<List<PostgresWordEmbeddings>> query(
+          WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric,int topK, int probes) {
+    this.wordEmbeddings = wordEmbeddings;
+    this.topK = topK;
+    this.metric = metric;
+    this.probes = probes;
     return Observable.fromSingle(this.postgresService.query(this));
   }
 

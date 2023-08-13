@@ -41,7 +41,8 @@ public class PostgresController {
         this.postgresClient.query(
             postgresEndpoint.getWordEmbeddings(),
             postgresEndpoint.getMetric(),
-            postgresEndpoint.getTopK());
+            postgresEndpoint.getTopK(),
+                postgresEndpoint.getProbes());
 
     return edgeChain.toSingle();
   }
