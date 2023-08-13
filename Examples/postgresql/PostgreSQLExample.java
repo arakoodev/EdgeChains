@@ -173,7 +173,7 @@ public class PostgreSQLExample {
       // Step 2: Chain ==> Query Embeddings from PostgreSQL
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
           new EdgeChain<>(
-              postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK));
+              postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK, 10));
 
       // Step 3: Create Function which create prompt for each query & pass it to ChatCompletion
       return queryChain
