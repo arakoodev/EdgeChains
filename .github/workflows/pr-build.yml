@@ -27,7 +27,7 @@ jobs:
       # Usually configure Node.js, build, etc.
       # Finally, upload the artifacts and post comment:
       - name: Checkout PR
-        if: $\{{ github.event_name == 'pull_request_target' }}
+        if: ${{ github.event_name == 'pull_request_target' }}
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
