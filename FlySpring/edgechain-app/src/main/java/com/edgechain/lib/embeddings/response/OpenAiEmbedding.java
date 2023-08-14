@@ -47,6 +47,7 @@ public class OpenAiEmbedding implements ArkObject {
         + index
         + '}';
   }
+
   @Override
   public JSONObject toJson() {
     JSONObject jsonObject = new JSONObject();

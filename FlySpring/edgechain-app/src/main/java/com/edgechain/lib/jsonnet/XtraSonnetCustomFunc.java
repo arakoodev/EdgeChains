@@ -31,7 +31,8 @@ public class XtraSonnetCustomFunc extends Library {
               }
               WikiEndpoint wikiEndpoint = new WikiEndpoint();
 
-              String response = new EdgeChain<>(wikiEndpoint.getPageContent(prompt)).get().getText();
+              String response =
+                  new EdgeChain<>(wikiEndpoint.getPageContent(prompt)).get().getText();
               return new Val.Str(dummyPosition(), response);
             }));
     return res;

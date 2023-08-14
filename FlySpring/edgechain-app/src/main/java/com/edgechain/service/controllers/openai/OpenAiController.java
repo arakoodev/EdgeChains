@@ -133,15 +133,15 @@ public class OpenAiController {
               StringBuilder stringBuilder = new StringBuilder();
               stringBuilder.append("<|im_start|>");
 
-              for(ChatMessage chatMessage: openAiEndpoint.getChatMessages()) {
-                    stringBuilder.append(chatMessage.getContent());
+              for (ChatMessage chatMessage : openAiEndpoint.getChatMessages()) {
+                stringBuilder.append(chatMessage.getContent());
               }
               EncodingRegistry registry = Encodings.newDefaultEncodingRegistry();
               Encoding enc = registry.getEncoding(EncodingType.CL100K_BASE);
 
               List<String> strings = new ArrayList<>();
-              for(ChatMessage chatMessage: openAiEndpoint.getChatMessages()){
-                  strings.add(chatMessage.getContent());
+              for (ChatMessage chatMessage : openAiEndpoint.getChatMessages()) {
+                strings.add(chatMessage.getContent());
               }
 
               chatCompletionLog.setPromptTokens((long) enc.countTokens(stringBuilder.toString()));

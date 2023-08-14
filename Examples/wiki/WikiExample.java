@@ -6,7 +6,6 @@ import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
-import com.edgechain.lib.openai.request.ChatMessage;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.ArkResponse;
@@ -17,12 +16,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.edgechain.lib.wiki.response.WikiResponse;
-import com.knuddels.jtokkit.Encodings;
-import com.knuddels.jtokkit.api.Encoding;
-import com.knuddels.jtokkit.api.EncodingRegistry;
-import com.knuddels.jtokkit.api.EncodingType;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -54,8 +47,7 @@ public class WikiExample {
     properties.setProperty("spring.jpa.show-sql", "true");
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
-    properties.setProperty(
-        "postgres.db.host", "");
+    properties.setProperty("postgres.db.host", "");
     properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
 
@@ -64,15 +56,15 @@ public class WikiExample {
     wikiEndpoint = new WikiEndpoint();
 
     gpt4Endpoint =
-            new OpenAiEndpoint(
-                    OPENAI_CHAT_COMPLETION_API,
-                    OPENAI_AUTH_KEY,
-                    "gpt-4",
-                    "user",
-                    0.7,
-                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            "gpt-4",
+            "user",
+            0.7,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
   }
-  
+
   @RestController
   public class WikiController {
 
@@ -103,14 +95,14 @@ public class WikiExample {
 
       /**
        * The best part is flexibility with just one method EdgeChainsSDK will return response either
-       * in json or stream; The real magic happens here. Streaming happens only if your logic allows otherwise;
-       * it will return text/eventstream
+       * in json or stream; The real magic happens here. Streaming happens only if your logic allows
+       * otherwise; it will return text/eventstream
        */
 
-      // Note: When you call getArkResponse() or getArkStreamResponse() ==> Only then your streams are executed...
-      if(stream) return openAiChain.getArkStreamResponse();
+      // Note: When you call getArkResponse() or getArkStreamResponse() ==> Only then your streams
+      // are executed...
+      if (stream) return openAiChain.getArkStreamResponse();
       else return openAiChain.getArkResponse();
-
     }
 
     private String fn(WikiResponse wiki) {

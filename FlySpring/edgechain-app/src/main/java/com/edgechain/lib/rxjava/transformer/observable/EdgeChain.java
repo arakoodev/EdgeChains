@@ -223,8 +223,7 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
     return new ArkObservable<>(this.observable.subscribeOn(Schedulers.io()));
   }
 
-  public ArkResponse getArkStreamResponse(){
+  public ArkResponse getArkStreamResponse() {
     return new ArkEmitter<>(this.observable.subscribeOn(Schedulers.io()));
   }
-
 }

@@ -27,18 +27,19 @@ public class WikiClientTest {
   @Test
   @DisplayName("Test WikiContent Method Returns WikiResponse")
   @Order(1)
-  public void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo) throws InterruptedException {
+  public void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo)
+      throws InterruptedException {
 
-      logger.info("======== " + testInfo.getDisplayName() + " ========");
+    logger.info("======== " + testInfo.getDisplayName() + " ========");
 
-      // Prepare test data
-      WikiEndpoint wikiEndpoint = new WikiEndpoint();
-      TestObserver<WikiResponse> test = wikiEndpoint.getPageContent("Barack Obama").test();
+    // Prepare test data
+    WikiEndpoint wikiEndpoint = new WikiEndpoint();
+    TestObserver<WikiResponse> test = wikiEndpoint.getPageContent("Barack Obama").test();
 
-      test.await();
+    test.await();
 
-      logger.info(test.values().toString());
+    logger.info(test.values().toString());
 
-test.assertNoErrors();
+    test.assertNoErrors();
   }
 }

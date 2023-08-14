@@ -12,7 +12,6 @@ import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
 import java.util.List;
-import java.util.Objects;
 
 public class PostgresEndpoint extends Endpoint {
 
@@ -98,7 +97,12 @@ public class PostgresEndpoint extends Endpoint {
 
   // Convenience Methods
 
-  public StringResponse upsert(WordEmbeddings wordEmbeddings, String filename, int dimension, PostgresDistanceMetric metric, int lists) {
+  public StringResponse upsert(
+      WordEmbeddings wordEmbeddings,
+      String filename,
+      int dimension,
+      PostgresDistanceMetric metric,
+      int lists) {
     this.wordEmbeddings = wordEmbeddings;
     this.dimensions = dimension;
     this.filename = filename;
@@ -117,7 +121,7 @@ public class PostgresEndpoint extends Endpoint {
   }
 
   public Observable<List<PostgresWordEmbeddings>> query(
-          WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric,int topK, int probes) {
+      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK, int probes) {
     this.wordEmbeddings = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;

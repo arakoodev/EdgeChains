@@ -3,7 +3,6 @@ package com.edgechain.lib.response;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.observers.DisposableObserver;
-import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.io.IOException;
@@ -21,10 +20,9 @@ class ArkEmitterObserver<T> extends DisposableObserver<T> implements Runnable {
     observable.subscribe(this);
   }
 
-
   @Override
   public void onNext(@NonNull T value) {
-    
+
     try {
       if (!completed) {
         responseBodyEmitter.send(value);

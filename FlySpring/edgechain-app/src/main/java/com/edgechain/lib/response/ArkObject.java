@@ -4,6 +4,5 @@ import org.json.JSONObject;
 
 public interface ArkObject {
 
-    JSONObject toJson();
-
+  JSONObject toJson();
 }

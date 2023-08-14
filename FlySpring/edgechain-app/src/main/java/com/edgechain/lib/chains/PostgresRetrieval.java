@@ -8,8 +8,6 @@ import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.request.ArkRequest;
-import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,13 +48,13 @@ public class PostgresRetrieval extends Retrieval {
   }
 
   public PostgresRetrieval(
-          PostgresEndpoint postgresEndpoint,
-          String filename,
-          int dimensions,
-          Endpoint endpoint,
-          ArkRequest arkRequest,
-          PostgresDistanceMetric metric,
-          int lists) {
+      PostgresEndpoint postgresEndpoint,
+      String filename,
+      int dimensions,
+      Endpoint endpoint,
+      ArkRequest arkRequest,
+      PostgresDistanceMetric metric,
+      int lists) {
     this.postgresEndpoint = postgresEndpoint;
     this.dimensions = dimensions;
     this.filename = filename;
@@ -77,13 +75,17 @@ public class PostgresRetrieval extends Retrieval {
     if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
       WordEmbeddings embeddings =
           openAiEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
-      this.postgresEndpoint.upsert(embeddings, this.filename, this.dimensions, this.metric, this.lists);
+      this.postgresEndpoint.upsert(
+          embeddings, this.filename, this.dimensions, this.metric, this.lists);
     } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
-      WordEmbeddings embeddings = miniLMEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
-      this.postgresEndpoint.upsert(embeddings, this.filename, this.dimensions, this.metric, this.lists);
+      WordEmbeddings embeddings =
+          miniLMEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
+      this.postgresEndpoint.upsert(
+          embeddings, this.filename, this.dimensions, this.metric, this.lists);
     } else if (endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint) {
       WordEmbeddings embeddings = bgeSmallEndpoint.embeddings(input, arkRequest);
-      this.postgresEndpoint.upsert(embeddings, this.filename, this.dimensions, this.metric, this.lists);
+      this.postgresEndpoint.upsert(
+          embeddings, this.filename, this.dimensions, this.metric, this.lists);
     } else
       throw new RuntimeException(
           "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");

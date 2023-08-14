@@ -31,7 +31,6 @@ import java.util.stream.IntStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication
@@ -62,8 +61,7 @@ public class PostgreSQLExample {
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
-    properties.setProperty(
-        "postgres.db.host", "");
+    properties.setProperty("postgres.db.host", "");
     properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
 
@@ -146,7 +144,7 @@ public class PostgreSQLExample {
       postgresEndpoint.setNamespace(namespace);
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
-      
+
       final Retrieval retrieval =
           new PostgresRetrieval(postgresEndpoint, filename, 1536, ada002Embedding, arkRequest);
 
@@ -168,8 +166,9 @@ public class PostgreSQLExample {
 
       //  Chain 2 ==> Query Embeddings from PostgreSQL
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
-              new EdgeChain<>(
-                      postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.IP, topK, 10)); // defining probes
+          new EdgeChain<>(
+              postgresEndpoint.query(
+                  embeddingsChain.get(), PostgresDistanceMetric.IP, topK, 10)); // defining probes
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI
