@@ -2,6 +2,8 @@ package com.edgechain.lib.rxjava.transformer.observable;
 
 import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.response.ArkResponse;
+import com.edgechain.lib.response.ArkEmitter;
+import com.edgechain.lib.response.ArkObservable;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import com.edgechain.lib.utils.RetryUtils;
 import io.reactivex.rxjava3.annotations.NonNull;
@@ -217,7 +219,11 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
         .subscribe(onComplete, onError);
   }
 
-  public ArkResponse<T> getArkResponse() {
-    return new ArkResponse<>(this.observable.subscribeOn(Schedulers.io()));
+  public ArkResponse getArkResponse() {
+    return new ArkObservable<>(this.observable.subscribeOn(Schedulers.io()));
+  }
+
+  public ArkResponse getArkStreamResponse() {
+    return new ArkEmitter<>(this.observable.subscribeOn(Schedulers.io()));
   }
 }

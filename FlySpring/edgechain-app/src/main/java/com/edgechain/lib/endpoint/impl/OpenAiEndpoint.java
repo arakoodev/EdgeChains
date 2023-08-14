@@ -2,6 +2,7 @@ package com.edgechain.lib.endpoint.impl;
 
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
+import com.edgechain.lib.openai.request.ChatMessage;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.retrofit.client.OpenAiStreamService;
 import com.edgechain.lib.retrofit.OpenAiService;
@@ -12,6 +13,7 @@ import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
+import java.util.List;
 import java.util.Objects;
 
 public class OpenAiEndpoint extends Endpoint {
@@ -30,6 +32,8 @@ public class OpenAiEndpoint extends Endpoint {
   private Boolean stream;
 
   /** Getter Fields ** */
+  private List<ChatMessage> chatMessages;
+
   private String input;
 
   /** Log fields * */
@@ -166,6 +170,10 @@ public class OpenAiEndpoint extends Endpoint {
     this.stream = stream;
   }
 
+  public List<ChatMessage> getChatMessages() {
+    return chatMessages;
+  }
+
   public String getInput() {
     return input;
   }
@@ -184,7 +192,8 @@ public class OpenAiEndpoint extends Endpoint {
 
   public Observable<ChatCompletionResponse> chatCompletion(
       String input, String chainName, ArkRequest arkRequest) {
-    this.input = input; // set Input/Prompt
+
+    this.chatMessages = List.of(new ChatMessage(this.role, input));
     this.chainName = chainName;
 
     if (Objects.nonNull(arkRequest)) {
@@ -204,18 +213,43 @@ public class OpenAiEndpoint extends Endpoint {
     else return Observable.fromSingle(this.openAiService.chatCompletion(this));
   }
 
-  public WordEmbeddings embeddings(String input, ArkRequest arkRequest) {
+  public Observable<ChatCompletionResponse> chatCompletion(
+      List<ChatMessage> chatMessages, String chainName, ArkRequest arkRequest) {
+
+    this.chainName = chainName;
+    this.chatMessages = chatMessages;
+
+    if (Objects.nonNull(arkRequest)) {
+      this.callIdentifier = arkRequest.getRequestURI();
+    } else {
+      this.callIdentifier = "URI wasn't provided";
+    }
+
+    if (Objects.nonNull(this.getStream()) && this.getStream())
+      return this.openAiStreamService
+          .chatCompletion(this)
+          .map(
+              chatResponse -> {
+                if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
+                  chatResponse.getChoices().get(0).getMessage().setContent("");
+                  return chatResponse;
+                } else return chatResponse;
+              });
+    else return Observable.fromSingle(this.openAiService.chatCompletion(this));
+  }
+
+  public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
     this.input = input; // set Input
 
     if (Objects.nonNull(arkRequest)) {
       this.callIdentifier = arkRequest.getRequestURI();
     }
 
-    return openAiService
-        .embeddings(this)
-        .map(
-            embeddingResponse ->
-                new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding()))
-        .blockingGet();
+    return Observable.fromSingle(
+        openAiService
+            .embeddings(this)
+            .map(
+                embeddingResponse ->
+                    new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
   }
 }

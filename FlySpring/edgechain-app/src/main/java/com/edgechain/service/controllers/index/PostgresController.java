@@ -24,7 +24,6 @@ public class PostgresController {
   public Single<StringResponse> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
 
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-
     EdgeChain<StringResponse> edgeChain =
         this.postgresClient.upsert(postgresEndpoint.getWordEmbeddings());
 
@@ -41,7 +40,8 @@ public class PostgresController {
         this.postgresClient.query(
             postgresEndpoint.getWordEmbeddings(),
             postgresEndpoint.getMetric(),
-            postgresEndpoint.getTopK());
+            postgresEndpoint.getTopK(),
+            postgresEndpoint.getProbes());
 
     return edgeChain.toSingle();
   }

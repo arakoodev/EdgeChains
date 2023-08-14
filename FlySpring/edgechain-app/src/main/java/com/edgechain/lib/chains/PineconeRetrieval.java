@@ -33,10 +33,12 @@ public class PineconeRetrieval extends Retrieval {
   @Override
   public void upsert(String input) {
     if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
-      WordEmbeddings embeddings = openAiEndpoint.embeddings(input, arkRequest);
+      WordEmbeddings embeddings =
+          openAiEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
       this.pineconeEndpoint.upsert(embeddings);
     } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
-      WordEmbeddings embeddings = miniLMEndpoint.embeddings(input, arkRequest);
+      WordEmbeddings embeddings =
+          miniLMEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
       this.pineconeEndpoint.upsert(embeddings);
     } else
       throw new RuntimeException(

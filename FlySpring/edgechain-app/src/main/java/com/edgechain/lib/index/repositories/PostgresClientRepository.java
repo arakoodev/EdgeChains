@@ -8,12 +8,11 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class PostgresClientRepository {
@@ -30,6 +29,32 @@ public class PostgresClientRepository {
                 + " NULL UNIQUE, raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
                 + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255));",
             postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
+
+    if (PostgresDistanceMetric.L2.equals(postgresEndpoint.getMetric())) {
+      jdbcTemplate.execute(
+          String.format(
+              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_l2_ops) WITH"
+                  + " (lists = %s);",
+              postgresEndpoint.getTableName().concat("_").concat("l2_idx"),
+              postgresEndpoint.getTableName(),
+              postgresEndpoint.getLists()));
+    } else if (PostgresDistanceMetric.COSINE.equals(postgresEndpoint.getMetric())) {
+      jdbcTemplate.execute(
+          String.format(
+              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_cosine_ops) WITH"
+                  + " (lists = %s);",
+              postgresEndpoint.getTableName().concat("_").concat("cosine_idx"),
+              postgresEndpoint.getTableName(),
+              postgresEndpoint.getLists()));
+    } else {
+      jdbcTemplate.execute(
+          String.format(
+              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_ip_ops) WITH"
+                  + " (lists = %s);",
+              postgresEndpoint.getTableName().concat("_").concat("ip_idx"),
+              postgresEndpoint.getTableName(),
+              postgresEndpoint.getLists()));
+    }
   }
 
   @Transactional
@@ -54,37 +79,54 @@ public class PostgresClientRepository {
             filename));
   }
 
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
   public List<Map<String, Object>> query(
       String tableName,
       String namespace,
+      int probes,
       PostgresDistanceMetric metric,
       WordEmbeddings wordEmbeddings,
       int topK) {
 
     String embeddings = Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues()));
 
+    jdbcTemplate.execute(String.format("SET LOCAL ivfflat.probes = %s;", probes));
     if (metric.equals(PostgresDistanceMetric.IP)) {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, raw_text, namespace, filename, timestamp, (embedding <#> '%s') * -1 AS"
-                  + " score FROM %s WHERE namespace='%s' ORDER BY score DESC LIMIT %s;",
-              embeddings, tableName, namespace, topK));
+              "SELECT id, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
+                  + " score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+              embeddings,
+              tableName,
+              namespace,
+              PostgresDistanceMetric.getDistanceMetric(metric),
+              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              topK));
 
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
 
       return jdbcTemplate.queryForList(
           String.format(
               "SELECT id, raw_text, namespace, filename, timestamp, 1 - ( embedding <=> '%s') AS"
-                  + " score FROM %s WHERE namespace='%s' ORDER BY score DESC LIMIT %s;",
-              embeddings, tableName, namespace, topK));
+                  + " score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+              embeddings,
+              tableName,
+              namespace,
+              PostgresDistanceMetric.getDistanceMetric(metric),
+              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              topK));
     } else {
       return jdbcTemplate.queryForList(
           String.format(
               "SELECT id, raw_text, namespace, filename, timestamp, (embedding <-> '%s') AS score"
-                  + " FROM %s WHERE namespace='%s' ORDER BY score ASC LIMIT %s;",
-              embeddings, tableName, namespace, topK));
+                  + " FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
+              embeddings,
+              tableName,
+              namespace,
+              PostgresDistanceMetric.getDistanceMetric(metric),
+              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              topK));
     }
   }
 

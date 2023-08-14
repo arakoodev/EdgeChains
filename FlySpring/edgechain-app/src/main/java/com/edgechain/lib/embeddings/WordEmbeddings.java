@@ -1,9 +1,13 @@
 package com.edgechain.lib.embeddings;
 
+import com.edgechain.lib.response.ArkObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.List;
 
-public class WordEmbeddings implements Serializable {
+public class WordEmbeddings implements ArkObject, Serializable {
 
   private static final long serialVersionUID = 2210956496609994219L;
   private String id;
@@ -60,5 +64,14 @@ public class WordEmbeddings implements Serializable {
   @Override
   public String toString() {
     return "Vector{" + "id='" + id + '\'' + ", values=" + values + ", score='" + score + '\'' + '}';
+  }
+
+  @Override
+  public JSONObject toJson() {
+    JSONObject json = new JSONObject();
+    json.put("id", id);
+    json.put("values", new JSONArray(values));
+    json.put("score", score);
+    return json;
   }
 }

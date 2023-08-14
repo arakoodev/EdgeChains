@@ -1,5 +1,6 @@
 package com.edgechain.lib.context.domain;
 
+import com.edgechain.lib.response.ArkObject;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -8,13 +9,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity(name = "HistoryContext")
 @Table(name = "history_context")
-public class HistoryContext implements Serializable {
+public class HistoryContext implements ArkObject, Serializable {
 
   @Transient private static final long serialVersionUID = 2819947915596690671L;
 
@@ -70,5 +72,14 @@ public class HistoryContext implements Serializable {
     sb.append(", createdAt=").append(createdAt);
     sb.append('}');
     return sb.toString();
+  }
+
+  @Override
+  public JSONObject toJson() {
+    JSONObject json = new JSONObject();
+    json.put("id", id);
+    json.put("response", response);
+    json.put("createdAt", createdAt.toString());
+    return json;
   }
 }

@@ -30,7 +30,6 @@ import java.util.stream.IntStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication
@@ -59,7 +58,7 @@ public class RedisExample {
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
     properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "");
+    properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
 
     // Redis Configuration
@@ -117,7 +116,6 @@ public class RedisExample {
   //  }
 
   @RestController
-  @RequestMapping("/v1/examples/redis/openai")
   public class RedisController {
 
     @Autowired private PdfReader pdfReader;
@@ -125,8 +123,8 @@ public class RedisExample {
     /********************** REDIS WITH OPENAI ****************************/
 
     // Namespace is optional (if not provided, it will be using namespace will be "knowledge")
-    @PostMapping("/upsert") // /v1/examples/openai/upsert?namespace=machine-learning
-    public void upsertRedis(ArkRequest arkRequest) throws IOException {
+    @PostMapping("/redis/upsert") // /v1/examples/openai/upsert?namespace=machine-learning
+    public void upsert(ArkRequest arkRequest) throws IOException {
 
       String namespace = arkRequest.getQueryParam("namespace");
       InputStream file = arkRequest.getMultiPart("file").getInputStream();
@@ -165,10 +163,8 @@ public class RedisExample {
      * @param arkRequest
      * @return
      */
-    @PostMapping(
-        value = "/similarity-search",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ArkResponse redisSimilaritySearch(ArkRequest arkRequest) {
+    @PostMapping(value = "/redis/similarity-search")
+    public ArkResponse similaritySearch(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
       String query = arkRequest.getBody().getString("query");
@@ -176,14 +172,18 @@ public class RedisExample {
 
       redisEndpoint.setNamespace(namespace);
 
-      return new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest))
-          .transform(embeddings -> redisEndpoint.query(embeddings, topK))
-          .getArkResponse();
+      // Chain 1 ==> Generate Embeddings Using Ada002
+      EdgeChain<WordEmbeddings> ada002Chain =
+          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
+
+      // Chain 2 ==> Pass those embeddings to Redis & Return Score/values (Similarity search)
+      EdgeChain<List<WordEmbeddings>> redisQueries =
+          new EdgeChain<>(redisEndpoint.query(ada002Chain.get(), topK));
+
+      return redisQueries.getArkResponse();
     }
 
-    @PostMapping(
-        value = "/query",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/redis/query")
     public ArkResponse queryRedis(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -192,23 +192,23 @@ public class RedisExample {
 
       redisEndpoint.setNamespace(namespace);
 
-      // Step 1: Chain ==> Get Embeddings  From Input & Then Query To Redis
+      // Chain 1==> Get Embeddings  From Input & Then Query To Redis
       EdgeChain<WordEmbeddings> embeddingsChain =
           new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
 
-      // Step 2: Chain ==> Query Embeddings from Redis
+      //  Chain 2 ==> Query Embeddings from Redis
       EdgeChain<List<WordEmbeddings>> queryChain =
           new EdgeChain<>(redisEndpoint.query(embeddingsChain.get(), topK));
 
-      // Step 3: Create Function which create prompt for each query & pass it to ChatCompletion
-      return queryChain
-          .transform(wordEmbeddings -> queryFn(wordEmbeddings, arkRequest))
-          .getArkResponse();
+      //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
+      // OpenAI
+      EdgeChain<List<ChatCompletionResponse>> gpt3Chain =
+          queryChain.transform(wordEmbeddings -> queryFn(wordEmbeddings, arkRequest));
+
+      return gpt3Chain.getArkResponse();
     }
 
-    @PostMapping(
-        value = "/chat",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+    @PostMapping(value = "/redis/chat")
     public ArkResponse chatWithRedis(ArkRequest arkRequest) {
 
       String contextId = arkRequest.getQueryParam("id");
@@ -235,71 +235,80 @@ public class RedisExample {
       // Extract topK value from JsonnetLoader;
       int topK = chatLoader.getInt("topK");
 
-      // Step 1: Chain ==> Get Embeddings From Input
+      // Chain 1 ==> Get Embeddings From Input
       EdgeChain<WordEmbeddings> embeddingsChain =
           new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
 
-      // Step 2: Chain ==> Query Embeddings from Redis & Then concatenate it (preparing for
-      // prompt)
-      // let's say topK=5; then we concatenate List into a string
+      // Chain 2 ==> Query Embeddings from Redis & Then concatenate it (preparing for prompt)
+      // let's say topK=5; then we concatenate List into a string using String.join method
+      EdgeChain<List<WordEmbeddings>> redisChain =
+          new EdgeChain<>(redisEndpoint.query(embeddingsChain.get(), topK));
+
+      // Chain 3 ===> Transform String of Queries into List<Queries>
       EdgeChain<String> queryChain =
-          new EdgeChain<>(redisEndpoint.query(embeddingsChain.get(), topK))
+          new EdgeChain<>(redisChain)
               .transform(
-                  queries -> {
+                  redisResponse -> {
                     List<String> queryList = new ArrayList<>();
-                    queries.forEach(q -> queryList.add(q.getId()));
+                    redisResponse.get().forEach(q -> queryList.add(q.getId()));
                     return String.join("\n", queryList);
                   });
 
-      // Step 3: Create fn() to prepare your chat prompt
+      // Chain 4 ===> Create fn() to prepare your chat prompt
       EdgeChain<String> promptChain =
           queryChain.transform(queries -> chatFn(historyContext.getResponse(), queries));
 
-      /**
-       * Step 4: Here is the interesting part; So, with ChatCompletion Stream we will have streaming
-       * response Therefore, we create a StringBuilder to append the response as we need to save
-       * response in Postgres Database
-       */
-      StringBuilder stringBuilder = new StringBuilder();
+      // Chain 5 ==> Pass the Prompt To Gpt3
+      EdgeChain<ChatCompletionResponse> gpt3Chain =
+          new EdgeChain<>(
+              gpt3Endpoint.chatCompletion(promptChain.get(), "RedisChatChain", arkRequest));
 
-      return promptChain
-          .transform(
-              prompt ->
-                  gpt3Endpoint
-                      .chatCompletion(prompt, "PostgresChatChain", arkRequest)
-                      .doOnNext(
-                          chatResponse -> {
-                            // If ChatCompletion (stream = true);
-                            if (chatResponse.getObject().equals("chat.completion.chunk")) {
-                              // Append the ChatCompletion Response until, we have FinishReason;
-                              // otherwise, we update the history
-                              if (Objects.isNull(
-                                  chatResponse.getChoices().get(0).getFinishReason())) {
-                                stringBuilder.append(
-                                    chatResponse.getChoices().get(0).getMessage().getContent());
-                              }
+      //  (FOR NON STREAMING)
+      // If it's not stream ==>
+      // Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
+      if (!stream) {
 
-                              // When response is finished, then update it to Database
-                              // Query(What is the collect stage for data maturity) + OpenAiResponse
-                              // + Prev. ChatHistory
-                              else {
-                                contextEndpoint.put(
-                                    historyContext.getId(),
-                                    query + stringBuilder + historyContext.getResponse());
-                              }
+        // Chain 6
+        EdgeChain<ChatCompletionResponse> historyUpdatedChain =
+            gpt3Chain.doOnNext(
+                chatResponse ->
+                    contextEndpoint.put(
+                        historyContext.getId(),
+                        query
+                            + chatResponse.getChoices().get(0).getMessage().getContent()
+                            + historyContext.getResponse()));
 
-                            }
-                            // if ChatCompletion (stream = false) -->
-                            // Query(What is the collect stage for data maturity) + OpenAiResponse +
-                            // Prev. ChatHistory
-                            else
-                              contextEndpoint.put(
-                                  historyContext.getId(),
-                                  query
-                                      + chatResponse.getChoices().get(0).getMessage().getContent()
-                                      + historyContext.getResponse());
-                          }))
-          .getArkResponse();
+        return historyUpdatedChain.getArkResponse();
+      }
+
+      // For STREAMING Version
+      else {
+
+        /* As the response is in stream, so we will use StringBuilder to append the response
+        and once GPT chain indicates that it is finished, we will save the following into Redis
+         Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
+         */
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        // Chain 7
+        EdgeChain<ChatCompletionResponse> streamingOutputChain =
+            gpt3Chain.doOnNext(
+                chatResponse -> {
+                  if (Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
+                    stringBuilder.append(
+                        chatResponse.getChoices().get(0).getMessage().getContent());
+                  }
+                  // Now the streaming response is ended. Save it to DB i.e. HistoryContext
+                  else {
+                    contextEndpoint.put(
+                        historyContext.getId(),
+                        query + stringBuilder + historyContext.getResponse());
+                  }
+                });
+
+        return streamingOutputChain.getArkStreamResponse();
+      }
     }
 
     public List<ChatCompletionResponse> queryFn(
@@ -307,7 +316,7 @@ public class RedisExample {
 
       List<ChatCompletionResponse> resp = new ArrayList<>();
 
-      // Iterate over each Query result; returned from Postgres
+      // Iterate over each Query result; returned from Redis
       for (WordEmbeddings wordEmbedding : wordEmbeddings) {
 
         String query = wordEmbedding.getId();
@@ -320,7 +329,7 @@ public class RedisExample {
                 "context",
                 new JsonnetArgs(
                     DataType.STRING,
-                    query)) // Step 3: Concatenate the Prompt: ${Base Prompt} - ${Postgres
+                    query)) // Step 3: Concatenate the Prompt: ${Base Prompt} - ${Redis
             // Output}
             .loadOrReload();
         // Step 4: Now, pass the prompt to OpenAI ChatCompletion & Add it to the list which will be
@@ -328,7 +337,7 @@ public class RedisExample {
         resp.add(
             new EdgeChain<>(
                     gpt3Endpoint.chatCompletion(
-                        queryLoader.get("prompt"), "PostgresQueryChain", arkRequest))
+                        queryLoader.get("prompt"), "RedisQueryChain", arkRequest))
                 .get());
       }
 

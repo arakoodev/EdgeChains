@@ -1,8 +1,12 @@
 package com.edgechain.lib.embeddings.response;
 
-import java.util.List;
+import com.edgechain.lib.response.ArkObject;
+import org.json.JSONObject;
 
-public class OpenAiEmbeddingResponse {
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class OpenAiEmbeddingResponse implements ArkObject {
 
   private String model;
   private String object;
@@ -55,5 +59,15 @@ public class OpenAiEmbeddingResponse {
         + ", usage="
         + usage
         + '}';
+  }
+
+  @Override
+  public JSONObject toJson() {
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("model", model);
+    jsonObject.put("object", object);
+    jsonObject.put("data", data.stream().map(OpenAiEmbedding::toJson).collect(Collectors.toList()));
+    jsonObject.put("usage", usage.toJson());
+    return jsonObject;
   }
 }

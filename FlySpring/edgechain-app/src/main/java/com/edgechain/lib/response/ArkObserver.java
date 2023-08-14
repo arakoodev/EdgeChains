@@ -5,7 +5,7 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.observers.DisposableObserver;
 import org.springframework.web.context.request.async.DeferredResult;
 
-class ArkObserver<T> extends DisposableObserver<T> implements Runnable {
+public class ArkObserver<T> extends DisposableObserver<T> implements Runnable {
 
   private final DeferredResult<T> deferredResult;
 

@@ -1,6 +1,7 @@
 package com.edgechain.lib.jsonnet;
 
 import com.edgechain.lib.endpoint.impl.WikiEndpoint;
+import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.github.jam01.xtrasonnet.DataFormatService;
 import io.github.jam01.xtrasonnet.header.Header;
 import io.github.jam01.xtrasonnet.spi.Library;
@@ -30,7 +31,8 @@ public class XtraSonnetCustomFunc extends Library {
               }
               WikiEndpoint wikiEndpoint = new WikiEndpoint();
 
-              String response = wikiEndpoint.getPageContent(prompt).getText();
+              String response =
+                  new EdgeChain<>(wikiEndpoint.getPageContent(prompt)).get().getText();
               return new Val.Str(dummyPosition(), response);
             }));
     return res;
