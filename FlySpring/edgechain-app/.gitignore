@@ -43,3 +43,5 @@ build/
 .vscode/
 
 
+/src/main/java/com/edgechain/HydeExample.java
+/model/

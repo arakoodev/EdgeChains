@@ -111,7 +111,7 @@ public class JsonFormat {
       if (gptResponse == null || gptResponse.isEmpty()) {
         System.out.println("ChatGptResponse is null. There was an error processing the request.");
         return ("ChatGptResponse is empty. There was an error processing the request. Please try"
-            + " again.");
+                    + " again.");
       }
 
       try {
@@ -255,7 +255,7 @@ public class JsonFormat {
         System.out.println(
             "ChatGptResponse is null or empty. There was an error processing the request.");
         return "ChatGptResponse is empty. There was an error processing the request. Please try"
-            + " again.";
+                   + " again.";
       } else {
         try {
           JsonNode jsonNode =

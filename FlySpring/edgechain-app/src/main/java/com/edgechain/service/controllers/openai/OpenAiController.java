@@ -22,6 +22,7 @@ import com.knuddels.jtokkit.api.EncodingRegistry;
 import com.knuddels.jtokkit.api.EncodingType;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
@@ -31,6 +32,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -53,7 +55,7 @@ public class OpenAiController {
         ChatCompletionRequest.builder()
             .model(openAiEndpoint.getModel())
             .temperature(openAiEndpoint.getTemperature())
-            .messages(List.of(new ChatMessage(openAiEndpoint.getRole(), openAiEndpoint.getInput())))
+            .messages(openAiEndpoint.getChatMessages())
             .stream(false)
             .build();
 
@@ -68,7 +70,7 @@ public class OpenAiController {
       chatCompletionLog.setName(openAiEndpoint.getChainName());
       chatCompletionLog.setCreatedAt(LocalDateTime.now());
       chatCompletionLog.setCallIdentifier(openAiEndpoint.getCallIdentifier());
-      chatCompletionLog.setInput(openAiEndpoint.getInput());
+      chatCompletionLog.setInput(StringUtils.join(openAiEndpoint.getChatMessages()));
       chatCompletionLog.setModel(openAiEndpoint.getModel());
 
       return edgeChain
@@ -102,7 +104,7 @@ public class OpenAiController {
         ChatCompletionRequest.builder()
             .model(openAiEndpoint.getModel())
             .temperature(openAiEndpoint.getTemperature())
-            .messages(List.of(new ChatMessage(openAiEndpoint.getRole(), openAiEndpoint.getInput())))
+            .messages(openAiEndpoint.getChatMessages())
             .stream(true)
             .build();
 
@@ -124,16 +126,25 @@ public class OpenAiController {
               ChatCompletionLog chatCompletionLog = new ChatCompletionLog();
               chatCompletionLog.setName(openAiEndpoint.getChainName());
               chatCompletionLog.setCallIdentifier(openAiEndpoint.getCallIdentifier());
-              chatCompletionLog.setInput(openAiEndpoint.getInput());
+              chatCompletionLog.setInput(StringUtils.join(openAiEndpoint.getChatMessages()));
               chatCompletionLog.setModel(openAiEndpoint.getModel());
               chatCompletionLog.setCreatedAt(LocalDateTime.now());
 
-              String prompt =
-                  "<|im_start|>".concat(openAiEndpoint.getRole()).concat(openAiEndpoint.getInput());
+              StringBuilder stringBuilder = new StringBuilder();
+              stringBuilder.append("<|im_start|>");
+
+              for(ChatMessage chatMessage: openAiEndpoint.getChatMessages()) {
+                    stringBuilder.append(chatMessage.getContent());
+              }
               EncodingRegistry registry = Encodings.newDefaultEncodingRegistry();
               Encoding enc = registry.getEncoding(EncodingType.CL100K_BASE);
 
-              chatCompletionLog.setPromptTokens((long) enc.countTokens(prompt));
+              List<String> strings = new ArrayList<>();
+              for(ChatMessage chatMessage: openAiEndpoint.getChatMessages()){
+                  strings.add(chatMessage.getContent());
+              }
+
+              chatCompletionLog.setPromptTokens((long) enc.countTokens(stringBuilder.toString()));
 
               StringBuilder content = new StringBuilder();
 

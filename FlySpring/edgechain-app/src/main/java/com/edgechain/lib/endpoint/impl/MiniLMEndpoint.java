@@ -9,6 +9,7 @@ import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import java.util.Objects;
 
+import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import retrofit2.Retrofit;
@@ -49,7 +50,7 @@ public class MiniLMEndpoint extends Endpoint {
     this.miniLMModel = miniLMModel;
   }
 
-  public WordEmbeddings embeddings(String input, ArkRequest arkRequest) {
+  public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
 
     this.input = input; // set Input
 
@@ -57,9 +58,7 @@ public class MiniLMEndpoint extends Endpoint {
       this.callIdentifier = arkRequest.getRequestURI();
     }
 
-    return miniLMService
-        .embeddings(this)
-        .map(m -> new WordEmbeddings(input, m.getEmbedding()))
-        .blockingGet();
+    return Observable.fromSingle(
+        miniLMService.embeddings(this).map(m -> new WordEmbeddings(input, m.getEmbedding())));
   }
 }

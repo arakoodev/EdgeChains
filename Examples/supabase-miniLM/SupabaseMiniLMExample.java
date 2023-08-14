@@ -71,8 +71,9 @@ public class SupabaseMiniLMExample {
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
     // For DB config
-    properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "");
+    properties.setProperty(
+            "postgres.db.host", "");
+    properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
 
     // For JWT decode
@@ -127,7 +128,6 @@ public class SupabaseMiniLMExample {
   //  }
 
   @RestController
-  @RequestMapping("/v1/examples/postgres/miniLM")
   public class SupabaseController {
 
     @Autowired private PdfReader pdfReader;
@@ -150,7 +150,7 @@ public class SupabaseMiniLMExample {
      * If namespace is empty string or null, then the default namespace is 'knowledge'==> The
      * concept of namespace is defined above *
      */
-    @PostMapping("/upsert")
+    @PostMapping("/miniLM/upsert")
     @PreAuthorize("hasAnyAuthority('authenticated')")
     public void upsert(ArkRequest arkRequest) throws IOException {
 
@@ -169,8 +169,7 @@ public class SupabaseMiniLMExample {
     }
 
     @PostMapping(
-        value = "/query",
-        produces = {MediaType.APPLICATION_JSON_VALUE})
+        value = "/miniLM/query")
     @PreAuthorize("hasAnyAuthority('authenticated')")
     public ArkResponse queryPostgres(ArkRequest arkRequest) {
 
@@ -180,24 +179,25 @@ public class SupabaseMiniLMExample {
 
       postgresEndpoint.setNamespace(namespace);
 
-      // Step 1: Chain ==> Get Embeddings  From Input & Then Query To PostgreSQL
+      // Chain 1==> Get Embeddings From Input using MiniLM & Then Query To PostgreSQL
       EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(miniLMEndpoint.embeddings(query, arkRequest));
+              new EdgeChain<>(miniLMEndpoint.embeddings(query, arkRequest));
 
-      // Step 2: Chain ==> Query Embeddings from PostgreSQL
+      //  Chain 2 ==> Query Embeddings from PostgreSQL
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
-          new EdgeChain<>(
-              postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK));
+              new EdgeChain<>(
+                      postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK));
 
-      // Step 3: Create Function which create prompt for each query & pass it to ChatCompletion
-      return queryChain
-          .transform(wordEmbeddings -> queryFn(wordEmbeddings, arkRequest))
-          .getArkResponse();
+      //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
+      // OpenAI
+      EdgeChain<List<ChatCompletionResponse>> gpt3Chain =
+              queryChain.transform(wordEmbeddings -> queryFn(wordEmbeddings, arkRequest));
+
+      return gpt3Chain.getArkResponse();
     }
 
     @PostMapping(
-        value = "/chat",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+        value = "/miniLM/chat")
     @PreAuthorize("hasAnyAuthority('authenticated')")
     public ArkResponse chatWithPostgres(ArkRequest arkRequest) {
 
@@ -208,91 +208,100 @@ public class SupabaseMiniLMExample {
 
       boolean stream = arkRequest.getBooleanHeader("stream");
 
-      // Configure Stream for Gpt3Endpoint
-      gpt3Endpoint.setStream(stream);
-
+      // Configure PostgresEndpoint
       postgresEndpoint.setNamespace(namespace);
+
+      gpt3Endpoint.setStream(stream);
 
       // Get HistoryContext
       HistoryContext historyContext = contextEndpoint.get(contextId);
 
       // Load Jsonnet To extract topK query dynamically
       chatLoader
-          .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
-          .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
-          .put("query", new JsonnetArgs(DataType.STRING, query))
-          .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "false"))
-          .loadOrReload();
+              .put("keepMaxTokens", new JsonnetArgs(DataType.BOOLEAN, "true"))
+              .put("maxTokens", new JsonnetArgs(DataType.INTEGER, "4096"))
+              .put("query", new JsonnetArgs(DataType.STRING, query))
+              .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "false"))
+              .loadOrReload();
 
       // Extract topK value from JsonnetLoader;
       int topK = chatLoader.getInt("topK");
 
-      // Step 1: Chain ==> Get Embeddings From Input
+      // Chain 1 ==> Get Embeddings From Input using MiniLM
       EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(miniLMEndpoint.embeddings(query, arkRequest));
+              new EdgeChain<>(miniLMEndpoint.embeddings(query, arkRequest));
 
-      // Step 2: Chain ==> Query Embeddings from PostgreSQL & Then concatenate it (preparing for
-      // prompt)
-      // let's say topK=5; then we concatenate List into a string
+      // Chain 2 ==> Query Embeddings from PostgreSQL & Then concatenate it (preparing for prompt)
+      // let's say topK=5; then we concatenate List into a string using String.join method
+      EdgeChain<List<PostgresWordEmbeddings>> postgresChain =
+              new EdgeChain<>(
+                      postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK));
+
+      // Chain 3 ===> Transform String of Queries into List<Queries>
       EdgeChain<String> queryChain =
-          new EdgeChain<>(
-                  postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK))
-              .transform(
-                  queries -> {
-                    List<String> queryList = new ArrayList<>();
-                    queries.forEach(q -> queryList.add(q.getRawText()));
-                    return String.join("\n", queryList);
-                  });
+              new EdgeChain<>(postgresChain)
+                      .transform(
+                              postgresResponse -> {
+                                List<String> queryList = new ArrayList<>();
+                                postgresResponse.get().forEach(q -> queryList.add(q.getRawText()));
+                                return String.join("\n", queryList);
+                              });
 
-      // Step 3: Create fn() to prepare your chat prompt
+      // Chain 4 ===> Create fn() to prepare your chat prompt
       EdgeChain<String> promptChain =
-          queryChain.transform(queries -> chatFn(historyContext.getResponse(), queries));
+              queryChain.transform(queries -> chatFn(historyContext.getResponse(), queries));
 
-      /**
-       * Step 4: Here is the interesting part; So, with ChatCompletion Stream we will have streaming
-       * response Therefore, we create a StringBuilder to append the response as we need to save
-       * response in Postgres Database
-       */
-      StringBuilder stringBuilder = new StringBuilder();
+      // Chain 5 ==> Pass the Prompt To Gpt3
+      EdgeChain<ChatCompletionResponse> gpt3Chain =
+              new EdgeChain<>(
+                      gpt3Endpoint.chatCompletion(promptChain.get(), "MiniLMPostgresChatChain", arkRequest));
 
-      return promptChain
-          .transform(
-              prompt ->
-                  gpt3Endpoint
-                      .chatCompletion(prompt, "MiniLLMPostgresChatChain", arkRequest)
-                      .doOnNext(
-                          chatResponse -> {
-                            // If ChatCompletion (stream = true);
-                            if (chatResponse.getObject().equals("chat.completion.chunk")) {
-                              // Append the ChatCompletion Response until, we have FinishReason;
-                              // otherwise, we update the history
-                              if (Objects.isNull(
-                                  chatResponse.getChoices().get(0).getFinishReason())) {
-                                stringBuilder.append(
-                                    chatResponse.getChoices().get(0).getMessage().getContent());
-                              }
+      //  (FOR NON STREAMING)
+      // If it's not stream ==>
+      // Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
+      if (!stream) {
 
-                              // When response is finished, then update it to Database
-                              // Query(What is the collect stage for data maturity) + OpenAiResponse
-                              // + Prev. ChatHistory
-                              else {
+        // Chain 6
+        EdgeChain<ChatCompletionResponse> historyUpdatedChain =
+                gpt3Chain.doOnNext(
+                        chatResponse ->
                                 contextEndpoint.put(
+                                        historyContext.getId(),
+                                        query
+                                                + chatResponse.getChoices().get(0).getMessage().getContent()
+                                                + historyContext.getResponse()));
+
+        return historyUpdatedChain.getArkResponse();
+      }
+
+      // For STREAMING Version
+      else {
+
+        /* As the response is in stream, so we will use StringBuilder to append the response
+        and once GPT chain indicates that it is finished, we will save the following into Postgres
+         Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
+         */
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        // Chain 7
+        EdgeChain<ChatCompletionResponse> streamingOutputChain =
+                gpt3Chain.doOnNext(
+                        chatResponse -> {
+                          if (Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
+                            stringBuilder.append(
+                                    chatResponse.getChoices().get(0).getMessage().getContent());
+                          }
+                          // Now the streaming response is ended. Save it to DB i.e. HistoryContext
+                          else {
+                            contextEndpoint.put(
                                     historyContext.getId(),
                                     query + stringBuilder + historyContext.getResponse());
-                              }
+                          }
+                        });
 
-                            }
-                            // if ChatCompletion (stream = false) -->
-                            // Query(What is the collect stage for data maturity) + OpenAiResponse +
-                            // Prev. ChatHistory
-                            else
-                              contextEndpoint.put(
-                                  historyContext.getId(),
-                                  query
-                                      + chatResponse.getChoices().get(0).getMessage().getContent()
-                                      + historyContext.getResponse());
-                          }))
-          .getArkResponse();
+        return streamingOutputChain.getArkStreamResponse();
+      }
     }
 
     public List<ChatCompletionResponse> queryFn(
@@ -321,7 +330,7 @@ public class SupabaseMiniLMExample {
         resp.add(
             new EdgeChain<>(
                     gpt3Endpoint.chatCompletion(
-                        queryLoader.get("prompt"), "MiniLLMPostgresQueryChain", arkRequest))
+                        queryLoader.get("prompt"), "MiniLMPostgresQueryChain", arkRequest))
                 .get());
       }
 

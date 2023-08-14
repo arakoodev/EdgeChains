@@ -1,6 +1,9 @@
 package com.edgechain.lib.embeddings.response;
 
-public class Usage {
+import com.edgechain.lib.response.ArkObject;
+import org.json.JSONObject;
+
+public class Usage implements ArkObject {
 
   long prompt_tokens;
   long total_tokens;
@@ -28,5 +31,13 @@ public class Usage {
     sb.append(", total_tokens=").append(total_tokens);
     sb.append('}');
     return sb.toString();
+  }
+
+  @Override
+  public JSONObject toJson() {
+    JSONObject json = new JSONObject();
+    json.put("prompt_tokens", prompt_tokens);
+    json.put("total_tokens", total_tokens);
+    return json;
   }
 }

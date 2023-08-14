@@ -6,6 +6,8 @@ import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
+import com.edgechain.lib.openai.request.ChatMessage;
+import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
@@ -15,12 +17,16 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.edgechain.lib.wiki.response.WikiResponse;
+import com.knuddels.jtokkit.Encodings;
+import com.knuddels.jtokkit.api.Encoding;
+import com.knuddels.jtokkit.api.EncodingRegistry;
+import com.knuddels.jtokkit.api.EncodingType;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
@@ -48,8 +54,9 @@ public class WikiExample {
     properties.setProperty("spring.jpa.show-sql", "true");
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
-    properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "");
+    properties.setProperty(
+        "postgres.db.host", "");
+    properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
 
     new SpringApplicationBuilder(WikiExample.class).properties(properties).run(args);
@@ -57,28 +64,25 @@ public class WikiExample {
     wikiEndpoint = new WikiEndpoint();
 
     gpt4Endpoint =
-        new OpenAiEndpoint(
-            OPENAI_CHAT_COMPLETION_API,
-            OPENAI_AUTH_KEY,
-            "gpt-4",
-            "user",
-            0.7,
-            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+            new OpenAiEndpoint(
+                    OPENAI_CHAT_COMPLETION_API,
+                    OPENAI_AUTH_KEY,
+                    "gpt-4",
+                    "user",
+                    0.7,
+                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
   }
-
+  
   @RestController
-  @RequestMapping("/v1/examples")
   public class WikiController {
 
     /**
      * Objective: Get the Content From Wikipedia & then pass the prompt: {Create 5-bullet point
      * summary of: } + {wikiContent} to OpenAiChatCompletion API.
      *
-     * @return ArkResponse
+     * @return ArkResponseObservable
      */
-    @GetMapping(
-        value = "/wiki-summary",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
+    @GetMapping(value = "/wiki-summary")
     public ArkResponse wikiSummary(ArkRequest arkRequest) {
 
       String query = arkRequest.getQueryParam("query");
@@ -87,13 +91,26 @@ public class WikiExample {
       // Configure GPT4Endpoint
       gpt4Endpoint.setStream(stream);
 
-      // Create Wiki Chain
+      //  Chain 1 ==> WikiChain
       EdgeChain<WikiResponse> wikiChain = new EdgeChain<>(wikiEndpoint.getPageContent(query));
 
-      return wikiChain
-          .transform(this::fn) // create prompt using JsonnetLoader ${basePrompt} +  ${wikiContent}
-          .transform(prompt -> gpt4Endpoint.chatCompletion(prompt, "WikiChain", arkRequest))
-          .getArkResponse();
+      //   Chain 2 ===> Creating Prompt Chain & Return ChatCompletion
+      EdgeChain<String> promptChain = wikiChain.transform(this::fn);
+
+      // Chain 3 ==> Pass Prompt to ChatCompletion API & Return ArkResponseObservable
+      EdgeChain<ChatCompletionResponse> openAiChain =
+          new EdgeChain<>(gpt4Endpoint.chatCompletion(promptChain.get(), "WikiChain", arkRequest));
+
+      /**
+       * The best part is flexibility with just one method EdgeChainsSDK will return response either
+       * in json or stream; The real magic happens here. Streaming happens only if your logic allows otherwise;
+       * it will return text/eventstream
+       */
+
+      // Note: When you call getArkResponse() or getArkStreamResponse() ==> Only then your streams are executed...
+      if(stream) return openAiChain.getArkStreamResponse();
+      else return openAiChain.getArkResponse();
+
     }
 
     private String fn(WikiResponse wiki) {
