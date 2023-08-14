@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +24,6 @@ public class PostgresController {
           new PostgresEndpoint(new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
     else return postgresEndpoint;
   }
-
 
   @DeleteMapping("/deleteAll")
   public StringResponse deletePostgres(ArkRequest arkRequest) {

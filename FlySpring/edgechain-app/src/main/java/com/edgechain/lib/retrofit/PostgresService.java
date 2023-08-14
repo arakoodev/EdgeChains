@@ -6,8 +6,6 @@ import com.edgechain.lib.response.StringResponse;
 import io.reactivex.rxjava3.core.Single;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import retrofit2.http.Body;
 import retrofit2.http.HTTP;
 import retrofit2.http.POST;
@@ -26,6 +24,4 @@ public interface PostgresService {
 
   @HTTP(method = "DELETE", path = "index/postgres/deleteAll", hasBody = true)
   Single<StringResponse> deleteAll(@Body PostgresEndpoint postgresEndpoint);
-
-
 }

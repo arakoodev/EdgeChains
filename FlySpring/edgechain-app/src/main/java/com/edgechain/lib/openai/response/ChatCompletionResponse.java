@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ChatCompletionResponse implements ArkObject,Serializable {
+public class ChatCompletionResponse implements ArkObject, Serializable {
 
   private static final long serialVersionUID = 463938151412139368L;
   private String id;
@@ -90,10 +90,9 @@ public class ChatCompletionResponse implements ArkObject,Serializable {
     json.put("object", object);
     json.put("created", created);
     json.put("model", model);
-    json.put("choices", choices.stream().map(ChatCompletionChoice::toJson).collect(Collectors.toList()));
+    json.put(
+        "choices", choices.stream().map(ChatCompletionChoice::toJson).collect(Collectors.toList()));
     json.put("usage", usage.toJson());
     return json;
   }
-
-
 }

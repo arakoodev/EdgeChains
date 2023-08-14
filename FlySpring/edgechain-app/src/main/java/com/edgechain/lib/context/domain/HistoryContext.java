@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 
 @Entity(name = "HistoryContext")
 @Table(name = "history_context")
-public class HistoryContext implements ArkObject,Serializable {
+public class HistoryContext implements ArkObject, Serializable {
 
   @Transient private static final long serialVersionUID = 2819947915596690671L;
 
@@ -73,7 +73,6 @@ public class HistoryContext implements ArkObject,Serializable {
     sb.append('}');
     return sb.toString();
   }
-
 
   @Override
   public JSONObject toJson() {

@@ -33,6 +33,7 @@ public class OpenAiEndpoint extends Endpoint {
 
   /** Getter Fields ** */
   private List<ChatMessage> chatMessages;
+
   private String input;
 
   /** Log fields * */
@@ -213,27 +214,27 @@ public class OpenAiEndpoint extends Endpoint {
   }
 
   public Observable<ChatCompletionResponse> chatCompletion(
-          List<ChatMessage> chatMessages, String chainName, ArkRequest arkRequest) {
+      List<ChatMessage> chatMessages, String chainName, ArkRequest arkRequest) {
 
     this.chainName = chainName;
     this.chatMessages = chatMessages;
 
     if (Objects.nonNull(arkRequest)) {
       this.callIdentifier = arkRequest.getRequestURI();
-    }else{
+    } else {
       this.callIdentifier = "URI wasn't provided";
     }
 
     if (Objects.nonNull(this.getStream()) && this.getStream())
       return this.openAiStreamService
-              .chatCompletion(this)
-              .map(
-                      chatResponse -> {
-                        if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
-                          chatResponse.getChoices().get(0).getMessage().setContent("");
-                          return chatResponse;
-                        } else return chatResponse;
-                      });
+          .chatCompletion(this)
+          .map(
+              chatResponse -> {
+                if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
+                  chatResponse.getChoices().get(0).getMessage().setContent("");
+                  return chatResponse;
+                } else return chatResponse;
+              });
     else return Observable.fromSingle(this.openAiService.chatCompletion(this));
   }
 

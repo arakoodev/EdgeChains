@@ -27,11 +27,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-import io.reactivex.rxjava3.core.Observable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication
@@ -59,8 +57,7 @@ public class RedisExample {
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
-    properties.setProperty(
-        "postgres.db.host", "");
+    properties.setProperty("postgres.db.host", "");
     properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
 
@@ -166,8 +163,7 @@ public class RedisExample {
      * @param arkRequest
      * @return
      */
-    @PostMapping(
-        value = "/redis/similarity-search")
+    @PostMapping(value = "/redis/similarity-search")
     public ArkResponse similaritySearch(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -177,16 +173,17 @@ public class RedisExample {
       redisEndpoint.setNamespace(namespace);
 
       // Chain 1 ==> Generate Embeddings Using Ada002
-      EdgeChain<WordEmbeddings> ada002Chain = new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
+      EdgeChain<WordEmbeddings> ada002Chain =
+          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
 
       // Chain 2 ==> Pass those embeddings to Redis & Return Score/values (Similarity search)
-      EdgeChain<List<WordEmbeddings>> redisQueries = new EdgeChain<>(redisEndpoint.query(ada002Chain.get(), topK));
+      EdgeChain<List<WordEmbeddings>> redisQueries =
+          new EdgeChain<>(redisEndpoint.query(ada002Chain.get(), topK));
 
       return redisQueries.getArkResponse();
     }
 
-    @PostMapping(
-        value = "/redis/query")
+    @PostMapping(value = "/redis/query")
     public ArkResponse queryRedis(ArkRequest arkRequest) {
 
       String namespace = arkRequest.getQueryParam("namespace");
@@ -211,8 +208,7 @@ public class RedisExample {
       return gpt3Chain.getArkResponse();
     }
 
-    @PostMapping(
-        value = "/redis/chat")
+    @PostMapping(value = "/redis/chat")
     public ArkResponse chatWithRedis(ArkRequest arkRequest) {
 
       String contextId = arkRequest.getQueryParam("id");

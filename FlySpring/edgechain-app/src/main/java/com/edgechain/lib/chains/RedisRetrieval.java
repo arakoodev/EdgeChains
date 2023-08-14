@@ -41,10 +41,12 @@ public class RedisRetrieval extends Retrieval {
   public void upsert(String input) {
 
     if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
-      WordEmbeddings embeddings = openAiEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
+      WordEmbeddings embeddings =
+          openAiEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
       this.redisEndpoint.upsert(embeddings, dimension, metric);
     } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
-      WordEmbeddings embeddings = miniLMEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
+      WordEmbeddings embeddings =
+          miniLMEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
       this.redisEndpoint.upsert(embeddings, dimension, metric);
     } else
       throw new RuntimeException(

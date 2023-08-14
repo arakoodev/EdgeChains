@@ -101,6 +101,4 @@ public class PostgresWordEmbeddings implements ArkObject {
     json.put("score", score);
     return json;
   }
-
-
 }

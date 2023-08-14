@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.List;
 
-public class WordEmbeddings implements ArkObject,Serializable {
+public class WordEmbeddings implements ArkObject, Serializable {
 
   private static final long serialVersionUID = 2210956496609994219L;
   private String id;
@@ -74,5 +74,4 @@ public class WordEmbeddings implements ArkObject,Serializable {
     json.put("score", score);
     return json;
   }
-
 }

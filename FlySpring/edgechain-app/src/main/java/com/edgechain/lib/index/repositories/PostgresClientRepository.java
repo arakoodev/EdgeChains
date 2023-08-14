@@ -7,13 +7,10 @@ import com.edgechain.lib.utils.FloatUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -36,21 +33,24 @@ public class PostgresClientRepository {
     if (PostgresDistanceMetric.L2.equals(postgresEndpoint.getMetric())) {
       jdbcTemplate.execute(
           String.format(
-              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_l2_ops) WITH (lists = %s);",
+              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_l2_ops) WITH"
+                  + " (lists = %s);",
               postgresEndpoint.getTableName().concat("_").concat("l2_idx"),
               postgresEndpoint.getTableName(),
               postgresEndpoint.getLists()));
     } else if (PostgresDistanceMetric.COSINE.equals(postgresEndpoint.getMetric())) {
       jdbcTemplate.execute(
           String.format(
-              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_cosine_ops) WITH (lists = %s);",
+              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_cosine_ops) WITH"
+                  + " (lists = %s);",
               postgresEndpoint.getTableName().concat("_").concat("cosine_idx"),
               postgresEndpoint.getTableName(),
               postgresEndpoint.getLists()));
     } else {
       jdbcTemplate.execute(
           String.format(
-              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_ip_ops) WITH (lists = %s);",
+              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_ip_ops) WITH"
+                  + " (lists = %s);",
               postgresEndpoint.getTableName().concat("_").concat("ip_idx"),
               postgresEndpoint.getTableName(),
               postgresEndpoint.getLists()));
@@ -94,15 +94,15 @@ public class PostgresClientRepository {
     if (metric.equals(PostgresDistanceMetric.IP)) {
 
       return jdbcTemplate.queryForList(
-              String.format(
-                      "SELECT id, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
-                              + " score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
-                      embeddings,
-                      tableName,
-                      namespace,
-                      PostgresDistanceMetric.getDistanceMetric(metric),
-                      Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
-                      topK));
+          String.format(
+              "SELECT id, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
+                  + " score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+              embeddings,
+              tableName,
+              namespace,
+              PostgresDistanceMetric.getDistanceMetric(metric),
+              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              topK));
 
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
 
