@@ -76,7 +76,7 @@ public class PostgresClient {
   }
 
   public EdgeChain<List<PostgresWordEmbeddings>> query(
-      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
+      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK, int probes) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -92,6 +92,7 @@ public class PostgresClient {
                     this.repository.query(
                         postgresEndpoint.getTableName(),
                         this.namespace,
+                        probes,
                         metric,
                         wordEmbeddings,
                         topK);

@@ -1,10 +1,12 @@
 package com.edgechain.lib.openai.response;
 
 import com.edgechain.lib.openai.request.ChatMessage;
+import com.edgechain.lib.response.ArkObject;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.json.JSONObject;
 
-public class ChatCompletionChoice {
+public class ChatCompletionChoice implements ArkObject {
 
   private Integer index;
 
@@ -46,5 +48,14 @@ public class ChatCompletionChoice {
     sb.append(", finishReason='").append(finishReason).append('\'');
     sb.append('}');
     return sb.toString();
+  }
+
+  @Override
+  public JSONObject toJson() {
+    JSONObject json = new JSONObject();
+    json.put("index", index);
+    json.put("message", message.toJson());
+    json.put("finish_reason", finishReason);
+    return json;
   }
 }

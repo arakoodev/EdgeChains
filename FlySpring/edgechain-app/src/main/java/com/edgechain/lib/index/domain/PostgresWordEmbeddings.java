@@ -1,9 +1,13 @@
 package com.edgechain.lib.index.domain;
 
+import com.edgechain.lib.response.ArkObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class PostgresWordEmbeddings {
+public class PostgresWordEmbeddings implements ArkObject {
 
   private Long embedding_id;
 
@@ -84,4 +88,19 @@ public class PostgresWordEmbeddings {
   public void setFilename(String filename) {
     this.filename = filename;
   }
+
+  @Override
+  public JSONObject toJson() {
+    JSONObject json = new JSONObject();
+    json.put("id", id);
+    json.put("rawText", rawText);
+    json.put("namespace", namespace);
+    json.put("filename", filename);
+    json.put("values", new JSONArray(values));
+    json.put("timestamp", timestamp.toString());
+    json.put("score", score);
+    return json;
+  }
+
+
 }

@@ -10,28 +10,24 @@ import java.io.IOException;
 
 class ArkEmitterObserver<T> extends DisposableObserver<T> implements Runnable {
 
-  private final MediaType mediaType;
-
   private final ResponseBodyEmitter responseBodyEmitter;
 
   private boolean completed;
 
-  public ArkEmitterObserver(
-      MediaType mediaType, Observable<T> observable, ResponseBodyEmitter responseBodyEmitter) {
-
-    this.mediaType = mediaType;
+  public ArkEmitterObserver(Observable<T> observable, ResponseBodyEmitter responseBodyEmitter) {
     this.responseBodyEmitter = responseBodyEmitter;
     this.responseBodyEmitter.onTimeout(this);
     this.responseBodyEmitter.onCompletion(this);
     observable.subscribe(this);
   }
 
+
   @Override
   public void onNext(@NonNull T value) {
-
+    
     try {
       if (!completed) {
-        responseBodyEmitter.send(value, mediaType);
+        responseBodyEmitter.send(value);
       }
     } catch (IOException e) {
       throw new RuntimeException(e.getMessage(), e);
