@@ -16,45 +16,53 @@ import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
 
 public class CodeInterpreterTest {
 
-    @Test
-    @DisplayName("Test concatStrings method in JSONnet")
-    public void test_extract_method() throws Exception {
-        String inputJsonnet = "local extract(example, prompt) =\n"
-                + "    local result = example + \" \" + prompt;\n"
-                + "    result;\n"
-                + "{ \"extract\": extract(\" You are a Reasoning + Acting (React) Chain Bot. You have to be interactive so ask the queries one by one from the user to reach to the final answer.\", \" Question:what is 10+2 ? \") }";
+  @Test
+  @DisplayName("Test concatStrings method in JSONnet")
+  public void test_extract_method() throws Exception {
+    String inputJsonnet =
+        "local extract(example, prompt) =\n"
+            + "    local result = example + \" \" + prompt;\n"
+            + "    result;\n"
+            + "{ \"extract\": extract(\" You are a Reasoning + Acting (React) Chain Bot. You have"
+            + " to be interactive so ask the queries one by one from the user to reach to the final"
+            + " answer.\", \" Question:what is 10+2 ? \") }";
 
-        InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
-        JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
-        jsonnetLoader.load(inputStream);
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    jsonnetLoader.load(inputStream);
 
-        String extractedValue = jsonnetLoader.get("extract");
-        assertNotNull(extractedValue);
+    String extractedValue = jsonnetLoader.get("extract");
+    assertNotNull(extractedValue);
 
-        // assert
-        String expectedOutput = " You are a Reasoning + Acting (React) Chain Bot. You have to be interactive so ask the queries one by one from the user to reach to the final answer.  Question:what is 10+2 ? ";
-        assertEquals(expectedOutput, extractedValue);
-        assertTrue(extractedValue.contains("You are a Reasoning"));
-        assertTrue(extractedValue.contains("Question:what is 10+2 ?"));
-    }
+    // assert
+    String expectedOutput =
+        " You are a Reasoning + Acting (React) Chain Bot. You have to be interactive so ask the"
+            + " queries one by one from the user to reach to the final answer.  Question:what is"
+            + " 10+2 ? ";
+    assertEquals(expectedOutput, extractedValue);
+    assertTrue(extractedValue.contains("You are a Reasoning"));
+    assertTrue(extractedValue.contains("Question:what is 10+2 ?"));
+  }
 
-    @Test
-    @DisplayName("Test extraction with empty questions")
-    public void test_empty_example_extraction() throws Exception {
+  @Test
+  @DisplayName("Test extraction with empty questions")
+  public void test_empty_example_extraction() throws Exception {
 
-        String prompt = "Question: What is 2 + 2?";
-        String inputJsonnet = "local extract(example, prompt) =\n"
-                + "    local result = example + \" \" + prompt;\n"
-                + "    result;\n"
-                + "{ \"extract\": extract(\" You are a Reasoning + Acting (React) Chain Bot. You have to be interactive so ask the queries one by one from the user to reach to the final answer.\", \"    \") }";
+    String prompt = "Question: What is 2 + 2?";
+    String inputJsonnet =
+        "local extract(example, prompt) =\n"
+            + "    local result = example + \" \" + prompt;\n"
+            + "    result;\n"
+            + "{ \"extract\": extract(\" You are a Reasoning + Acting (React) Chain Bot. You have"
+            + " to be interactive so ask the queries one by one from the user to reach to the final"
+            + " answer.\", \"    \") }";
 
-        InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
-        JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
-        jsonnetLoader.load(inputStream);
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    jsonnetLoader.load(inputStream);
 
-        String extractedValue = jsonnetLoader.get("extract");
-        assertNotNull(extractedValue);
-        assertFalse(extractedValue.contains(prompt));
-    }
-
+    String extractedValue = jsonnetLoader.get("extract");
+    assertNotNull(extractedValue);
+    assertFalse(extractedValue.contains(prompt));
+  }
 }
