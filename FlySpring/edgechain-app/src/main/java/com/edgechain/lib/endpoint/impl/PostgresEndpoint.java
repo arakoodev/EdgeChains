@@ -5,6 +5,7 @@ import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.response.StringResponse;
+import com.edgechain.lib.retrofit.PostgresContextChunkService;
 import com.edgechain.lib.retrofit.PostgresService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
@@ -17,9 +18,11 @@ public class PostgresEndpoint extends Endpoint {
 
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
   private final PostgresService postgresService = retrofit.create(PostgresService.class);
+  private final PostgresContextChunkService postgresContextChunkService = retrofit.create(PostgresContextChunkService.class);
 
   private String tableName;
-
+  private String contextChunkTableName; //table to store the larger chunks of text
+  private String contextChunkRawText;
   private int lists;
 
   private String namespace;
@@ -43,6 +46,10 @@ public class PostgresEndpoint extends Endpoint {
   public PostgresEndpoint(String tableName) {
     this.tableName = tableName;
   }
+  public PostgresEndpoint(String tableName, String contextChunkTableName) {
+    this.tableName = tableName;
+    this.contextChunkTableName = contextChunkTableName;
+  }
 
   public PostgresEndpoint(String tableName, RetryPolicy retryPolicy) {
     super(retryPolicy);
@@ -65,7 +72,14 @@ public class PostgresEndpoint extends Endpoint {
     this.namespace = namespace;
   }
 
-  // Getters
+  public void setContextChunkTableName(String contextChunkTableName) {
+    this.contextChunkTableName = contextChunkTableName;
+  }
+
+  public void setContextChunkRawText(String contextChunkRawText) {
+    this.contextChunkRawText = contextChunkRawText;
+  }
+// Getters
 
   public WordEmbeddings getWordEmbeddings() {
     return wordEmbeddings;
@@ -95,6 +109,13 @@ public class PostgresEndpoint extends Endpoint {
     return probes;
   }
 
+  public String getContextChunkTableName() {
+    return contextChunkTableName;
+  }
+
+  public String getContextChunkRawText() {
+    return contextChunkRawText;
+  }
   // Convenience Methods
 
   public StringResponse upsert(
@@ -109,6 +130,31 @@ public class PostgresEndpoint extends Endpoint {
     this.metric = metric;
     this.lists = lists;
     return this.postgresService.upsert(this).blockingGet();
+  }
+
+  public StringResponse upsertEmbeddingsWithContextChunk(
+      WordEmbeddings wordEmbeddings,
+      String filename,
+      int dimension,
+      PostgresDistanceMetric metric,
+      int lists,
+      String contextChunkRawText) {
+    this.wordEmbeddings = wordEmbeddings;
+    this.dimensions = dimension;
+    this.filename = filename;
+    this.metric = metric;
+    this.lists = lists;
+    this.contextChunkRawText = contextChunkRawText;
+    return this.postgresContextChunkService.upsertEmbeddings(this).blockingGet();
+  }
+
+  public Observable<List<PostgresWordEmbeddings>> queryWithContextChunk(
+      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
+    this.wordEmbeddings = wordEmbeddings;
+    this.topK = topK;
+    this.metric = metric;
+    this.probes = 1;
+    return Observable.fromSingle(this.postgresContextChunkService.query(this));
   }
 
   public Observable<List<PostgresWordEmbeddings>> query(

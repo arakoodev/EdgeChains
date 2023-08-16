@@ -90,4 +90,26 @@ public class PostgresRetrieval extends Retrieval {
       throw new RuntimeException(
           "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
   }
+
+  public void upsert(String input, String contextChunkRawText) {
+
+    if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
+      WordEmbeddings embeddings =
+              openAiEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
+      this.postgresEndpoint.upsertEmbeddingsWithContextChunk(
+              embeddings, this.filename, this.dimensions, this.metric, this.lists, contextChunkRawText);
+    } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
+      WordEmbeddings embeddings =
+              miniLMEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
+      this.postgresEndpoint.upsertEmbeddingsWithContextChunk(
+              embeddings, this.filename, this.dimensions, this.metric, this.lists, contextChunkRawText);
+    } else if (endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint) {
+      WordEmbeddings embeddings = bgeSmallEndpoint.embeddings(input, arkRequest);
+      this.postgresEndpoint.upsertEmbeddingsWithContextChunk(
+              embeddings, this.filename, this.dimensions, this.metric, this.lists, contextChunkRawText);
+    } else
+      throw new RuntimeException(
+              "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
+  }
+
 }
