@@ -26,7 +26,7 @@ public class PostgresClientContextChunkRepository {
   public void createTable(PostgresEndpoint postgresEndpoint) {
     jdbcTemplate.execute(
             String.format(
-                    "CREATE TABLE IF NOT EXISTS %s (id SERIAL PRIMARY KEY, context_chunk TEXT NOT"
+                    "CREATE TABLE IF NOT EXISTS %s (context_chunk_id SERIAL PRIMARY KEY, context_chunk TEXT NOT"
                             + " NULL UNIQUE);",
                     postgresEndpoint.getContextChunkTableName()
             )
@@ -39,7 +39,7 @@ public class PostgresClientContextChunkRepository {
             "CREATE TABLE IF NOT EXISTS %s (embedding_id SERIAL PRIMARY KEY, id VARCHAR(255) NOT"
                 + " NULL UNIQUE, raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
                 + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255), context_chunk_id INT, CONSTRAINT"
-                + " fk_context_chunk FOREIGN KEY(context_chunk_id) REFERENCES %s(id));",
+                + " fk_context_chunk FOREIGN KEY(context_chunk_id) REFERENCES %s(context_chunk_id));",
             postgresEndpoint.getTableName(), postgresEndpoint.getDimensions(), postgresEndpoint.getContextChunkTableName()));
 
     if (PostgresDistanceMetric.L2.equals(postgresEndpoint.getMetric())) {
@@ -111,7 +111,7 @@ public class PostgresClientContextChunkRepository {
       return jdbcTemplate.queryForList(
               String.format(
                       "SELECT id, context_chunk, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
-                              + " score FROM %s INNER JOIN %s ON %s.context_chunk_id = %s.id WHERE namespace='%s'"
+                              + " score FROM %s INNER JOIN %s ON %s.context_chunk_id = %s.context_chunk_id WHERE namespace='%s'"
                               + " ORDER BY embedding %s '%s' LIMIT %s;",
                       embeddings,
                       embeddingTableName,
@@ -125,11 +125,11 @@ public class PostgresClientContextChunkRepository {
 
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
 
-      //TODO: BAD SQL GRAMMAR IN THIS CASE
+      //TODO: BAD SQL GRAMMAR IN THIS CASE, I THINK ID COLUMN IS CAUSING THE CONFLICT
       return jdbcTemplate.queryForList(
               String.format(
                       "SELECT id, context_chunk, namespace, filename, timestamp, 1 - ( embedding <=> '%s') AS"
-                              + " score FROM %s INNER JOIN %s ON %s.context_chunk_id = %s.id WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+                              + " score FROM %s INNER JOIN %s ON %s.context_chunk_id = %s.context_chunk_id WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
                       embeddings,
                       embeddingTableName,
                       contextChunkTableName,
@@ -143,7 +143,7 @@ public class PostgresClientContextChunkRepository {
       return jdbcTemplate.queryForList(
               String.format(
                       "SELECT id, context_chunk, namespace, filename, timestamp, (embedding <-> '%s') AS score"
-                              + " FROM %s INNER JOIN %s ON %s.context_chunk_id = %s.id WHERE namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
+                              + " FROM %s INNER JOIN %s ON %s.context_chunk_id = %s.context_chunk_id WHERE namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
                       embeddings,
                       embeddingTableName,
                       contextChunkTableName,
@@ -179,7 +179,7 @@ public class PostgresClientContextChunkRepository {
     try {
       return jdbcTemplate.queryForObject(
               String.format(
-                      "SELECT id from %s WHERE context_chunk = '%s';",
+                      "SELECT context_chunk_id from %s WHERE context_chunk = '%s';",
                       contextChunkTableName,
                       contextChunk
               ), Integer.class
