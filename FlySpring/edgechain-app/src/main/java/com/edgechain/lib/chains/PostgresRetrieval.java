@@ -45,6 +45,8 @@ public class PostgresRetrieval extends Retrieval {
       logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
     else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint)
       logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
+    else if (endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
+      logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
   }
 
   public PostgresRetrieval(
@@ -67,6 +69,8 @@ public class PostgresRetrieval extends Retrieval {
       logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
     else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint)
       logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
+    else if (endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
+      logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
   }
 
   @Override
@@ -88,6 +92,6 @@ public class PostgresRetrieval extends Retrieval {
           embeddings, this.filename, this.dimensions, this.metric, this.lists);
     } else
       throw new RuntimeException(
-          "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
+          "Invalid Endpoint; Only OpenAIEndpoint, MiniLMEndpoint & BgeSmallEndpoint are supported");
   }
 }
