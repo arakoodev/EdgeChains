@@ -22,6 +22,10 @@ public class ChatMessage implements ArkObject {
     return content;
   }
 
+  public void setRole(String role) {
+    this.role = role;
+  }
+
   public void setContent(String content) {
     this.content = content;
   }
