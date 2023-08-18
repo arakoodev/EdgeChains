@@ -110,9 +110,10 @@ public class PostgresClientContextChunkRepository {
 
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT id, context_chunk, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
+                      "SELECT id, %s.context_chunk_id, context_chunk, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
                               + " score FROM %s INNER JOIN %s ON %s.context_chunk_id = %s.context_chunk_id WHERE namespace='%s'"
                               + " ORDER BY embedding %s '%s' LIMIT %s;",
+                      contextChunkTableName,
                       embeddings,
                       embeddingTableName,
                       contextChunkTableName,
@@ -125,11 +126,11 @@ public class PostgresClientContextChunkRepository {
 
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
 
-      //TODO: BAD SQL GRAMMAR IN THIS CASE, I THINK ID COLUMN IS CAUSING THE CONFLICT
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT id, context_chunk, namespace, filename, timestamp, 1 - ( embedding <=> '%s') AS"
+                      "SELECT id, %s.context_chunk_id, context_chunk, namespace, filename, timestamp, 1 - ( embedding <=> '%s') AS"
                               + " score FROM %s INNER JOIN %s ON %s.context_chunk_id = %s.context_chunk_id WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+                      contextChunkTableName,
                       embeddings,
                       embeddingTableName,
                       contextChunkTableName,
@@ -142,8 +143,9 @@ public class PostgresClientContextChunkRepository {
     } else {
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT id, context_chunk, namespace, filename, timestamp, (embedding <-> '%s') AS score"
+                      "SELECT id, %s.context_chunk_id, context_chunk, namespace, filename, timestamp, (embedding <-> '%s') AS score"
                               + " FROM %s INNER JOIN %s ON %s.context_chunk_id = %s.context_chunk_id WHERE namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
+                      contextChunkTableName,
                       embeddings,
                       embeddingTableName,
                       contextChunkTableName,

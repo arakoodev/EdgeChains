@@ -12,10 +12,7 @@ import io.reactivex.rxjava3.core.Observable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class PostgresContextChunkClient {
@@ -122,17 +119,23 @@ public class PostgresContextChunkClient {
 
                 List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
 
+                //To keep track of duplicate parent chunks
+                  Set<Integer> contextChunkIds = new HashSet<>();
                 for (Map row : rows) {
+                    int contextChunkId = (int) row.get("context_chunk_id");
+                    if(contextChunkIds.contains(contextChunkId)) {
+                        continue;
+                    }
+                    PostgresWordEmbeddings val = new PostgresWordEmbeddings();
+                    val.setId((String) row.get("id"));
+                    val.setRawText((String) row.get("context_chunk"));
+                    val.setFilename((String) row.get("filename"));
+                    val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
+                    val.setNamespace((String) row.get("namespace"));
+                    val.setScore((Double) row.get("score"));
 
-                  PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                  val.setId((String) row.get("id"));
-                  val.setRawText((String) row.get("context_chunk"));
-                  val.setFilename((String) row.get("filename"));
-                  val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
-                  val.setNamespace((String) row.get("namespace"));
-                  val.setScore((Double) row.get("score"));
-
-                  wordEmbeddingsList.add(val);
+                    wordEmbeddingsList.add(val);
+                    contextChunkIds.add(contextChunkId);
                 }
 
                 emitter.onNext(wordEmbeddingsList);
