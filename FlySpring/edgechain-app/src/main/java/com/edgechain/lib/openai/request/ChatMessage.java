@@ -37,8 +37,15 @@ public class ChatMessage implements ArkObject {
 
   public JSONObject toJson() {
     JSONObject json = new JSONObject();
-    json.put("role", role);
-    json.put("content", content);
+
+    if (role != null) {
+      json.put("role", role);
+    }
+
+    if (content != null) {
+      json.put("content", content);
+    }
+
     return json;
   }
 }
