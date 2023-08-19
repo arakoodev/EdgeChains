@@ -57,6 +57,13 @@ public class OpenAiController {
             .temperature(openAiEndpoint.getTemperature())
             .messages(openAiEndpoint.getChatMessages())
             .stream(false)
+            .topP(openAiEndpoint.getTopP())
+            .n(openAiEndpoint.getN())
+            .stop(openAiEndpoint.getStop())
+            .presencePenalty(openAiEndpoint.getPresencePenalty())
+            .frequencyPenalty(openAiEndpoint.getFrequencyPenalty())
+            .logitBias(openAiEndpoint.getLogitBias())
+            .user(openAiEndpoint.getUser())
             .build();
 
     this.openAiClient.setEndpoint(openAiEndpoint);
@@ -106,6 +113,13 @@ public class OpenAiController {
             .temperature(openAiEndpoint.getTemperature())
             .messages(openAiEndpoint.getChatMessages())
             .stream(true)
+            .topP(openAiEndpoint.getTopP())
+            .n(openAiEndpoint.getN())
+            .stop(openAiEndpoint.getStop())
+            .presencePenalty(openAiEndpoint.getPresencePenalty())
+            .frequencyPenalty(openAiEndpoint.getFrequencyPenalty())
+            .logitBias(openAiEndpoint.getLogitBias())
+            .user(openAiEndpoint.getUser())
             .build();
 
     this.openAiClient.setEndpoint(openAiEndpoint);

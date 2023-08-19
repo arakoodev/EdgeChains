@@ -19,6 +19,8 @@ public class ChatCompletionResponse implements ArkObject, Serializable {
 
   private String model;
 
+
+
   private List<ChatCompletionChoice> choices;
 
   private Usage usage;

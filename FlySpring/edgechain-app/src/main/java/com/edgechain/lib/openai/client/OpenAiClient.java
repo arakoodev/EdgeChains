@@ -45,6 +45,7 @@ public class OpenAiClient {
               try {
 
                 logger.info("Logging ChatCompletion....");
+//                logger.info(request.toString());
 
                 // Create headers
                 HttpHeaders headers = new HttpHeaders();
@@ -77,6 +78,9 @@ public class OpenAiClient {
       ChatCompletionRequest request) {
 
     try {
+        logger.info("Logging ChatCompletion Stream....");
+        logger.info(request.toString());
+
       return new EdgeChain<>(
           RxJava3Adapter.fluxToObservable(
               WebClient.builder()
