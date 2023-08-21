@@ -45,7 +45,6 @@ public class OpenAiClient {
               try {
 
                 logger.info("Logging ChatCompletion....");
-//                logger.info(request.toString());
 
                 // Create headers
                 HttpHeaders headers = new HttpHeaders();
