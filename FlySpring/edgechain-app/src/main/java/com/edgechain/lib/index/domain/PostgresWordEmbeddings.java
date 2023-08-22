@@ -24,6 +24,9 @@ public class PostgresWordEmbeddings implements ArkObject {
   private LocalDateTime timestamp;
 
   private Double score; // will be added
+  private String metadata;
+  private LocalDateTime metadataDate;
+  private Long metadataId;
 
   public Long getEmbedding_id() {
     return embedding_id;
@@ -89,6 +92,30 @@ public class PostgresWordEmbeddings implements ArkObject {
     this.filename = filename;
   }
 
+  public String getMetadata() {
+    return metadata;
+  }
+
+  public void setMetadata(String metadata) {
+    this.metadata = metadata;
+  }
+
+  public LocalDateTime getMetadataDate() {
+    return metadataDate;
+  }
+
+  public void setMetadataDate(LocalDateTime metadataDate) {
+    this.metadataDate = metadataDate;
+  }
+
+  public Long getMetadataId() {
+    return metadataId;
+  }
+
+  public void setMetadataId(Long metadataId) {
+    this.metadataId = metadataId;
+  }
+
   @Override
   public JSONObject toJson() {
     JSONObject json = new JSONObject();
@@ -99,6 +126,15 @@ public class PostgresWordEmbeddings implements ArkObject {
     json.put("values", new JSONArray(values));
     json.put("timestamp", timestamp.toString());
     json.put("score", score);
+
+    //If metadata table is not null, add metadata and metadataDate
+    if(metadata != null) {
+      json.put("metadata", metadata);
+      json.put("metadataDate", metadataDate.toString());
+    }
+    if(metadataId != null) {
+      json.put("metadataId", metadataId);
+    }
     return json;
   }
 }

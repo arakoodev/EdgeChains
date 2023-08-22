@@ -30,6 +30,26 @@ public class PostgresController {
     return edgeChain.toSingle();
   }
 
+  @PostMapping("/metadata/insert")
+  public Single<StringResponse> insertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
+    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
+    EdgeChain<StringResponse> edgeChain =
+            this.postgresClient.insertMetadata(postgresEndpoint.getWordEmbeddings());
+
+    return edgeChain.toSingle();
+  }
+
+  @PutMapping("/metadata/update")
+  public Single<StringResponse> updateMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
+    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
+    EdgeChain<StringResponse> edgeChain = this.postgresClient.updateMetadata(
+            postgresEndpoint.getMetadataTableName(),
+            postgresEndpoint.getMetadataId(),
+            postgresEndpoint.getEmbeddingId()
+    );
+    return edgeChain.toSingle();
+  }
+
   @PostMapping("/query")
   public Single<List<PostgresWordEmbeddings>> query(
       @RequestBody PostgresEndpoint postgresEndpoint) {
@@ -43,6 +63,24 @@ public class PostgresController {
             postgresEndpoint.getTopK(),
             postgresEndpoint.getProbes());
 
+    return edgeChain.toSingle();
+  }
+  @PostMapping("/chunks")
+  public Single<List<PostgresWordEmbeddings>> getAllChunks(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
+
+    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
+
+    EdgeChain<List<PostgresWordEmbeddings>> edgeChain = this.postgresClient.getAllChunks(postgresEndpoint);
+    return edgeChain.toSingle();
+  }
+
+  @PostMapping("/similarity-metadata")
+  public Single<List<PostgresWordEmbeddings>> similaritySearchMetadata(
+          @RequestBody PostgresEndpoint postgresEndpoint
+  ) {
+    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
+    EdgeChain<List<PostgresWordEmbeddings>> edgeChain = this.postgresClient.similaritySearchMetadata(postgresEndpoint.getWordEmbeddings(), postgresEndpoint.getMetric(), postgresEndpoint.getTopK());
     return edgeChain.toSingle();
   }
 

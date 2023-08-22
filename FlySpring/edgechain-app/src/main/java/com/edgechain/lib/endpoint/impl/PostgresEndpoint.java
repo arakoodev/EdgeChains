@@ -5,24 +5,20 @@ import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.response.StringResponse;
-import com.edgechain.lib.retrofit.PostgresContextChunkService;
 import com.edgechain.lib.retrofit.PostgresService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostgresEndpoint extends Endpoint {
 
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
   private final PostgresService postgresService = retrofit.create(PostgresService.class);
-  private final PostgresContextChunkService postgresContextChunkService = retrofit.create(PostgresContextChunkService.class);
-
   private String tableName;
-  private String contextChunkTableName; //table to store the larger chunks of text
-  private String contextChunkRawText;
   private int lists;
 
   private String namespace;
@@ -37,6 +33,13 @@ public class PostgresEndpoint extends Endpoint {
 
   private int probes;
 
+  //Fields for metadata table
+  private String metadataTableName;
+  private String metadata;
+  private LocalDateTime metadataDate;
+  private Long metadataId;
+  private Long embeddingId;
+
   public PostgresEndpoint() {}
 
   public PostgresEndpoint(RetryPolicy retryPolicy) {
@@ -46,9 +49,9 @@ public class PostgresEndpoint extends Endpoint {
   public PostgresEndpoint(String tableName) {
     this.tableName = tableName;
   }
-  public PostgresEndpoint(String tableName, String contextChunkTableName) {
+  public PostgresEndpoint(String tableName, String metadataTableName) {
     this.tableName = tableName;
-    this.contextChunkTableName = contextChunkTableName;
+    this.metadataTableName = metadataTableName;
   }
 
   public PostgresEndpoint(String tableName, RetryPolicy retryPolicy) {
@@ -72,14 +75,26 @@ public class PostgresEndpoint extends Endpoint {
     this.namespace = namespace;
   }
 
-  public void setContextChunkTableName(String contextChunkTableName) {
-    this.contextChunkTableName = contextChunkTableName;
+  public void setMetadataTableName(String metadataTableName) {
+    this.metadataTableName = metadataTableName;
   }
 
-  public void setContextChunkRawText(String contextChunkRawText) {
-    this.contextChunkRawText = contextChunkRawText;
+  public void setMetadata(String metadata) {
+    this.metadata = metadata;
   }
-// Getters
+
+  public void setEmbeddingId(Long embeddingId) {
+    this.embeddingId = embeddingId;
+  }
+
+  public void setMetadataDate(LocalDateTime metadataDate) {
+    this.metadataDate = metadataDate;
+  }
+
+  public void setMetadataId(Long metadataId) {
+    this.metadataId = metadataId;
+  }
+  // Getters
 
   public WordEmbeddings getWordEmbeddings() {
     return wordEmbeddings;
@@ -109,12 +124,24 @@ public class PostgresEndpoint extends Endpoint {
     return probes;
   }
 
-  public String getContextChunkTableName() {
-    return contextChunkTableName;
+  public String getMetadataTableName() {
+    return metadataTableName;
   }
 
-  public String getContextChunkRawText() {
-    return contextChunkRawText;
+  public String getMetadata() {
+    return metadata;
+  }
+
+  public Long getEmbeddingId() {
+    return embeddingId;
+  }
+
+  public LocalDateTime getMetadataDate() {
+    return metadataDate;
+  }
+
+  public Long getMetadataId() {
+    return metadataId;
   }
   // Convenience Methods
 
@@ -132,31 +159,24 @@ public class PostgresEndpoint extends Endpoint {
     return this.postgresService.upsert(this).blockingGet();
   }
 
-  public StringResponse upsertEmbeddingsWithContextChunk(
-      WordEmbeddings wordEmbeddings,
-      String filename,
-      int dimension,
-      PostgresDistanceMetric metric,
-      int lists,
-      String contextChunkRawText) {
+  public StringResponse insertMetadata(
+          WordEmbeddings wordEmbeddings,
+          int dimensions,
+          PostgresDistanceMetric metric) {
+    this.dimensions = dimensions;
     this.wordEmbeddings = wordEmbeddings;
-    this.dimensions = dimension;
-    this.filename = filename;
     this.metric = metric;
-    this.lists = lists;
-    this.contextChunkRawText = contextChunkRawText;
-    return this.postgresContextChunkService.upsertEmbeddings(this).blockingGet();
+    return this.postgresService.insertMetadata(this).blockingGet();
   }
 
-  public Observable<List<PostgresWordEmbeddings>> queryWithContextChunk(
-      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
-    this.wordEmbeddings = wordEmbeddings;
-    this.topK = topK;
-    this.metric = metric;
-    this.probes = 1;
-    return Observable.fromSingle(this.postgresContextChunkService.query(this));
+  public StringResponse updateMetadata(
+          Long metadataId,
+          Long embeddingId
+  ) {
+    this.metadataId = metadataId;
+    this.embeddingId = embeddingId;
+    return this.postgresService.updateMetadata(this).blockingGet();
   }
-
   public Observable<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
     this.wordEmbeddings = wordEmbeddings;
@@ -173,6 +193,20 @@ public class PostgresEndpoint extends Endpoint {
     this.metric = metric;
     this.probes = probes;
     return Observable.fromSingle(this.postgresService.query(this));
+  }
+
+  public Observable<List<PostgresWordEmbeddings>> similaritySearchMetadata(
+          WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK
+  ) {
+    this.wordEmbeddings = wordEmbeddings;
+    this.topK = topK;
+    this.metric = metric;
+    return Observable.fromSingle(this.postgresService.similaritySearchMetadata(this));
+  }
+  public Observable<List<PostgresWordEmbeddings>> getAllChunks(String tableName, String filename) {
+    this.tableName = tableName;
+    this.filename = filename;
+    return Observable.fromSingle(this.postgresService.getAllChunks(this));
   }
 
   public StringResponse deleteAll() {

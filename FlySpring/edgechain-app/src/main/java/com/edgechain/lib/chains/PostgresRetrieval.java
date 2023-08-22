@@ -91,25 +91,26 @@ public class PostgresRetrieval extends Retrieval {
           "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
   }
 
-  public void upsert(String input, String contextChunkRawText) {
-
+  public void insertMetadata(String metadata) {
     if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
       WordEmbeddings embeddings =
-              openAiEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
-      this.postgresEndpoint.upsertEmbeddingsWithContextChunk(
-              embeddings, this.filename, this.dimensions, this.metric, this.lists, contextChunkRawText);
+              openAiEndpoint.embeddings(metadata, arkRequest).firstOrError().blockingGet();
+      this.postgresEndpoint.insertMetadata(embeddings, this.dimensions, this.metric);
     } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
       WordEmbeddings embeddings =
-              miniLMEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
-      this.postgresEndpoint.upsertEmbeddingsWithContextChunk(
-              embeddings, this.filename, this.dimensions, this.metric, this.lists, contextChunkRawText);
+              miniLMEndpoint.embeddings(metadata, arkRequest).firstOrError().blockingGet();
+      this.postgresEndpoint.insertMetadata(embeddings, this.dimensions, this.metric);
     } else if (endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint) {
-      WordEmbeddings embeddings = bgeSmallEndpoint.embeddings(input, arkRequest);
-      this.postgresEndpoint.upsertEmbeddingsWithContextChunk(
-              embeddings, this.filename, this.dimensions, this.metric, this.lists, contextChunkRawText);
-    } else
+      WordEmbeddings embeddings = bgeSmallEndpoint.embeddings(metadata, arkRequest);
+      this.postgresEndpoint.insertMetadata(embeddings, this.dimensions, this.metric);
+    } else {
       throw new RuntimeException(
               "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
+    }
+  }
+
+  public void updateMetadata(Long metadataId, Long embeddingId) {
+    this.postgresEndpoint.updateMetadata(metadataId, embeddingId);
   }
 
 }

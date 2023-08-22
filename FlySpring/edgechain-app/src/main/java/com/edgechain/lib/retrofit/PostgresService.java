@@ -9,15 +9,26 @@ import java.util.List;
 import retrofit2.http.Body;
 import retrofit2.http.HTTP;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 
 public interface PostgresService {
 
   @POST(value = "index/postgres/upsert")
   Single<StringResponse> upsert(@Body PostgresEndpoint postgresEndpoint);
 
-  //
+  @POST(value = "index/postgres/metadata/insert")
+  Single<StringResponse> insertMetadata(@Body PostgresEndpoint postgresEndpoint);
+  @PUT(value = "index/postgres/metadata/update")
+  Single<StringResponse> updateMetadata(@Body PostgresEndpoint postgresEndpoint);
+
   @POST(value = "index/postgres/query")
   Single<List<PostgresWordEmbeddings>> query(@Body PostgresEndpoint postgresEndpoint);
+
+  @POST(value = "index/postgres/chunks")
+  Single<List<PostgresWordEmbeddings>> getAllChunks(@Body PostgresEndpoint postgresEndpoint);
+
+  @POST(value = "index/postgres/similarity-metadata")
+  Single<List<PostgresWordEmbeddings>> similaritySearchMetadata(@Body PostgresEndpoint postgresEndpoint);
 
   @POST("index/postgres/probes")
   Single<StringResponse> probes(@Body PostgresEndpoint postgresEndpoint);

@@ -5,6 +5,7 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.repositories.PostgresClientMetadataRepository;
 import com.edgechain.lib.index.repositories.PostgresClientRepository;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
@@ -22,6 +23,8 @@ public class PostgresClient {
 
   private final PostgresClientRepository repository =
       ApplicationContextHolder.getContext().getBean(PostgresClientRepository.class);
+  private final PostgresClientMetadataRepository metadataRepository =
+      ApplicationContextHolder.getContext().getBean(PostgresClientMetadataRepository.class);
 
   public PostgresEndpoint getPostgresEndpoint() {
     return postgresEndpoint;
@@ -74,6 +77,52 @@ public class PostgresClient {
             }),
         postgresEndpoint);
   }
+  public EdgeChain<StringResponse> insertMetadata(WordEmbeddings wordEmbeddings) {
+
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
+
+                // Create Table
+                this.metadataRepository.createTable(postgresEndpoint);
+
+                String input = wordEmbeddings.getId().replaceAll("'", "");
+
+                // Upsert Embeddings
+                  this.metadataRepository.insertMetadata(
+                          postgresEndpoint.getMetadataTableName(),
+                          input,
+                          wordEmbeddings,
+                          postgresEndpoint.getMetadataDate());
+
+                emitter.onNext(new StringResponse("Upserted"));
+                emitter.onComplete();
+
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        postgresEndpoint);
+  }
+
+  public EdgeChain<StringResponse> updateMetadata(String metadataTableName, Long metadataId, Long embeddingId) {
+      return new EdgeChain<>(
+              Observable.create(
+                      emitter -> {
+                          try {
+
+                              this.metadataRepository.updateMetadata(metadataTableName, metadataId, embeddingId);
+
+                              emitter.onNext(new StringResponse("Updated"));
+                              emitter.onComplete();
+
+                          } catch (final Exception e) {
+                              emitter.onError(e);
+                          }
+                      }),
+              postgresEndpoint);
+  }
 
   public EdgeChain<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK, int probes) {
@@ -88,29 +137,57 @@ public class PostgresClient {
                         ? "knowledge"
                         : postgresEndpoint.getNamespace();
 
-                List<Map<String, Object>> rows =
-                    this.repository.query(
-                        postgresEndpoint.getTableName(),
-                        this.namespace,
-                        probes,
-                        metric,
-                        wordEmbeddings,
-                        topK);
+                  List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
+                  if(postgresEndpoint.getMetadataTableName() == null) {
+                    List<Map<String, Object>> rows =
+                            this.repository.query(
+                                    postgresEndpoint.getTableName(),
+                                    this.namespace,
+                                    probes,
+                                    metric,
+                                    wordEmbeddings,
+                                    topK);
 
-                List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
 
-                for (Map row : rows) {
+                    for (Map row : rows) {
 
-                  PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                  val.setId((String) row.get("id"));
-                  val.setRawText((String) row.get("raw_text"));
-                  val.setFilename((String) row.get("filename"));
-                  val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
-                  val.setNamespace((String) row.get("namespace"));
-                  val.setScore((Double) row.get("score"));
+                        PostgresWordEmbeddings val = new PostgresWordEmbeddings();
+                        val.setId((String) row.get("id"));
+                        val.setRawText((String) row.get("raw_text"));
+                        val.setFilename((String) row.get("filename"));
+                        val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
+                        val.setNamespace((String) row.get("namespace"));
+                        val.setScore((Double) row.get("score"));
 
-                  wordEmbeddingsList.add(val);
-                }
+                        wordEmbeddingsList.add(val);
+                    }
+                } else { //If the metadata table is not null, then we need to query with metadata
+                      List<Map<String, Object>> rows = this.metadataRepository.queryWithMetadata(
+                              postgresEndpoint.getTableName(),
+                              postgresEndpoint.getMetadataTableName(),
+                              this.namespace,
+                              probes,
+                              metric,
+                              wordEmbeddings,
+                              topK
+                      );
+                      for (Map row : rows) {
+
+                          PostgresWordEmbeddings val = new PostgresWordEmbeddings();
+                          val.setId((String) row.get("id"));
+                          val.setRawText((String) row.get("raw_text"));
+                          val.setFilename((String) row.get("filename"));
+                          val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
+                          val.setNamespace((String) row.get("namespace"));
+                          val.setScore((Double) row.get("score"));
+
+                          //Add metadata fields in response
+                          val.setMetadata((String) row.get("metadata"));
+                          val.setMetadataDate(((Timestamp) row.get("document_date")).toLocalDateTime());
+
+                          wordEmbeddingsList.add(val);
+                      }
+                  }
 
                 emitter.onNext(wordEmbeddingsList);
                 emitter.onComplete();
@@ -121,6 +198,65 @@ public class PostgresClient {
             }),
         postgresEndpoint);
   }
+
+  public EdgeChain<List<PostgresWordEmbeddings>> getAllChunks(PostgresEndpoint postgresEndpoint) {
+      return new EdgeChain<>(
+              Observable.create(
+                      emitter -> {
+                          try {
+                              List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
+                              List<Map<String, Object>> rows = this.repository.getAllChunks(postgresEndpoint);
+                              for(Map<String, Object> row: rows) {
+                                  PostgresWordEmbeddings val = new PostgresWordEmbeddings();
+                                  val.setEmbedding_id((Long) row.get("embedding_id"));
+                                  val.setRawText((String) row.get("raw_text"));
+                                  val.setValues((List<Float>) row.get("embedding"));
+                                  wordEmbeddingsList.add(val);
+                              }
+                              emitter.onNext(wordEmbeddingsList);
+                              emitter.onComplete();
+                          } catch (final Exception e) {
+                              emitter.onError(e);
+                          }
+                      }
+              ),
+              postgresEndpoint
+      );
+  }
+
+    public EdgeChain<List<PostgresWordEmbeddings>> similaritySearchMetadata(
+            WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
+
+        return new EdgeChain<>(
+                Observable.create(
+                        emitter -> {
+                            try {
+                                List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
+                                List<Map<String, Object>> rows = this.metadataRepository.similaritySearchMetadata(
+                                        postgresEndpoint.getMetadataTableName(),
+                                        metric,
+                                        wordEmbeddings,
+                                        topK
+                                );
+                                    for (Map row : rows) {
+
+                                        PostgresWordEmbeddings val = new PostgresWordEmbeddings();
+                                        val.setMetadataId((Long) row.get("metadata_id"));
+                                        val.setRawText((String) row.get("metadata"));
+                                        val.setScore((Double) row.get("score"));
+
+                                        wordEmbeddingsList.add(val);
+                                    }
+
+                                emitter.onNext(wordEmbeddingsList);
+                                emitter.onComplete();
+
+                            } catch (final Exception e) {
+                                emitter.onError(e);
+                            }
+                        }),
+                postgresEndpoint);
+    }
 
   public EdgeChain<StringResponse> deleteAll() {
 
