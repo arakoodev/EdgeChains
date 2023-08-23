@@ -109,8 +109,4 @@ public class PostgresRetrieval extends Retrieval {
     }
   }
 
-  public void updateMetadata(Long metadataId, Long embeddingId) {
-    this.postgresEndpoint.updateMetadata(metadataId, embeddingId);
-  }
-
 }

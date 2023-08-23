@@ -25,10 +25,23 @@ public class PostgresClientMetadataRepository {
   public void createTable(PostgresEndpoint postgresEndpoint) {
     jdbcTemplate.execute(
             String.format(
-                    "CREATE TABLE IF NOT EXISTS %s (metadata_id SERIAL PRIMARY KEY, embedding_id INT, metadata TEXT, "
+                    "CREATE TABLE IF NOT EXISTS %s (metadata_id SERIAL PRIMARY KEY, metadata TEXT, "
                     + "metadata_embedding vector(%s), document_date DATE);",
                     postgresEndpoint.getMetadataTableName(),
                     postgresEndpoint.getDimensions()
+            )
+    );
+
+    //Create a JOIN table
+    jdbcTemplate.execute(
+            String.format(
+                    "CREATE TABLE IF NOT EXISTS %s (embedding_id INT, metadata_id INT, "
+                    + "FOREIGN KEY (embedding_id) REFERENCES %s(embedding_id), "
+                    + "FOREIGN KEY (metadata_id) REFERENCES %s(metadata_id), "
+                    + "PRIMARY KEY (embedding_id, metadata_id));",
+                    postgresEndpoint.getTableName() + "_join_" + postgresEndpoint.getMetadataTableName(),
+                    postgresEndpoint.getTableName(),
+                    postgresEndpoint.getMetadataTableName()
             )
     );
   }
@@ -51,13 +64,14 @@ public class PostgresClientMetadataRepository {
   }
 
   @Transactional
-  public void updateMetadata(String metadataTableName, Long metadataId, Long embeddingId) {
+  public void insertIntoJoinTable(PostgresEndpoint postgresEndpoint) {
+    String joinTableName = postgresEndpoint.getTableName() + "_join_" + postgresEndpoint.getMetadataTableName();
     jdbcTemplate.execute(
             String.format(
-                    "UPDATE %s SET embedding_id = '%s' WHERE metadata_id = '%s';",
-                    metadataTableName,
-                    embeddingId,
-                    metadataId
+                    "INSERT INTO %s (embedding_id, metadata_id) VALUES (%s, %s);",
+                    joinTableName,
+                    postgresEndpoint.getEmbeddingId(),
+                    postgresEndpoint.getMetadataId()
             )
     );
   }
@@ -134,7 +148,8 @@ public class PostgresClientMetadataRepository {
     if (metric.equals(PostgresDistanceMetric.IP)) {
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT metadata_id, metadata, ( metadata_embedding <#> '%s') * -1 AS score FROM %s ORDER BY embedding %s '%s' LIMIT %s;",
+                      "SELECT metadata_id, metadata, ( metadata_embedding <#> '%s') * -1 AS score FROM %s ORDER BY "
+                      + "metadata_embedding %s '%s' LIMIT %s;",
                       embeddings,
                       metadataTableName,
                       PostgresDistanceMetric.getDistanceMetric(metric),
@@ -144,7 +159,8 @@ public class PostgresClientMetadataRepository {
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT metadata_id, metadata, 1 - ( embedding <=> '%s') AS score FROM %s ORDER BY embedding %s '%s' LIMIT %s;",
+                      "SELECT metadata_id, metadata, 1 - ( metadata_embedding <=> '%s') AS score FROM %s ORDER BY "
+                      + "metadata_embedding %s '%s' LIMIT %s;",
                       embeddings,
                       metadataTableName,
                       PostgresDistanceMetric.getDistanceMetric(metric),
@@ -153,7 +169,8 @@ public class PostgresClientMetadataRepository {
     } else {
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT metadata_id, metadata, (embedding <-> '%s') AS score FROM %s ORDER BY embedding %s '%s' ASC LIMIT %s;",
+                      "SELECT metadata_id, metadata, (metadata_embedding <-> '%s') AS score FROM %s ORDER BY "
+                      + "metadata_embedding %s '%s' ASC LIMIT %s;",
                       embeddings,
                       metadataTableName,
                       PostgresDistanceMetric.getDistanceMetric(metric),

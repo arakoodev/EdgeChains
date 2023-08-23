@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PostgresWordEmbeddings implements ArkObject {
 
-  private Long embedding_id;
+  private Integer embedding_id;
 
   private String id;
 
@@ -26,13 +26,13 @@ public class PostgresWordEmbeddings implements ArkObject {
   private Double score; // will be added
   private String metadata;
   private LocalDateTime metadataDate;
-  private Long metadataId;
+  private Integer metadataId;
 
-  public Long getEmbedding_id() {
+  public Integer getEmbedding_id() {
     return embedding_id;
   }
 
-  public void setEmbedding_id(Long embedding_id) {
+  public void setEmbedding_id(Integer embedding_id) {
     this.embedding_id = embedding_id;
   }
 
@@ -108,11 +108,11 @@ public class PostgresWordEmbeddings implements ArkObject {
     this.metadataDate = metadataDate;
   }
 
-  public Long getMetadataId() {
+  public Integer getMetadataId() {
     return metadataId;
   }
 
-  public void setMetadataId(Long metadataId) {
+  public void setMetadataId(Integer metadataId) {
     this.metadataId = metadataId;
   }
 

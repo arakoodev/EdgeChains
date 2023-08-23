@@ -9,7 +9,6 @@ import java.util.List;
 import retrofit2.http.Body;
 import retrofit2.http.HTTP;
 import retrofit2.http.POST;
-import retrofit2.http.PUT;
 
 public interface PostgresService {
 
@@ -18,8 +17,9 @@ public interface PostgresService {
 
   @POST(value = "index/postgres/metadata/insert")
   Single<StringResponse> insertMetadata(@Body PostgresEndpoint postgresEndpoint);
-  @PUT(value = "index/postgres/metadata/update")
-  Single<StringResponse> updateMetadata(@Body PostgresEndpoint postgresEndpoint);
+
+  @POST(value = "index/postgres/join/insert")
+  Single<StringResponse> insertIntoJoinTable(@Body PostgresEndpoint postgresEndpoint);
 
   @POST(value = "index/postgres/query")
   Single<List<PostgresWordEmbeddings>> query(@Body PostgresEndpoint postgresEndpoint);

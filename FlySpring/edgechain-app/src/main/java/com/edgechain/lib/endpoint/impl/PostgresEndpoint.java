@@ -37,8 +37,8 @@ public class PostgresEndpoint extends Endpoint {
   private String metadataTableName;
   private String metadata;
   private LocalDateTime metadataDate;
-  private Long metadataId;
-  private Long embeddingId;
+  private Integer metadataId;
+  private Integer embeddingId;
 
   public PostgresEndpoint() {}
 
@@ -83,7 +83,7 @@ public class PostgresEndpoint extends Endpoint {
     this.metadata = metadata;
   }
 
-  public void setEmbeddingId(Long embeddingId) {
+  public void setEmbeddingId(Integer embeddingId) {
     this.embeddingId = embeddingId;
   }
 
@@ -91,7 +91,7 @@ public class PostgresEndpoint extends Endpoint {
     this.metadataDate = metadataDate;
   }
 
-  public void setMetadataId(Long metadataId) {
+  public void setMetadataId(Integer metadataId) {
     this.metadataId = metadataId;
   }
   // Getters
@@ -132,7 +132,7 @@ public class PostgresEndpoint extends Endpoint {
     return metadata;
   }
 
-  public Long getEmbeddingId() {
+  public Integer getEmbeddingId() {
     return embeddingId;
   }
 
@@ -140,7 +140,7 @@ public class PostgresEndpoint extends Endpoint {
     return metadataDate;
   }
 
-  public Long getMetadataId() {
+  public Integer getMetadataId() {
     return metadataId;
   }
   // Convenience Methods
@@ -169,14 +169,12 @@ public class PostgresEndpoint extends Endpoint {
     return this.postgresService.insertMetadata(this).blockingGet();
   }
 
-  public StringResponse updateMetadata(
-          Long metadataId,
-          Long embeddingId
-  ) {
-    this.metadataId = metadataId;
+  public StringResponse insertIntoJoinTable(Integer embeddingId, Integer metadataId) {
     this.embeddingId = embeddingId;
-    return this.postgresService.updateMetadata(this).blockingGet();
+    this.metadataId = metadataId;
+    return this.postgresService.insertIntoJoinTable(this).blockingGet();
   }
+
   public Observable<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
     this.wordEmbeddings = wordEmbeddings;

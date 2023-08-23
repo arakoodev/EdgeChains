@@ -35,18 +35,13 @@ public class PostgresController {
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
     EdgeChain<StringResponse> edgeChain =
             this.postgresClient.insertMetadata(postgresEndpoint.getWordEmbeddings());
-
     return edgeChain.toSingle();
   }
 
-  @PutMapping("/metadata/update")
-  public Single<StringResponse> updateMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
+  @PostMapping("/join/insert")
+  public Single<StringResponse> insertIntoJoinTable(@RequestBody PostgresEndpoint postgresEndpoint) {
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-    EdgeChain<StringResponse> edgeChain = this.postgresClient.updateMetadata(
-            postgresEndpoint.getMetadataTableName(),
-            postgresEndpoint.getMetadataId(),
-            postgresEndpoint.getEmbeddingId()
-    );
+    EdgeChain<StringResponse> edgeChain = this.postgresClient.insertIntoJoinTable(postgresEndpoint);
     return edgeChain.toSingle();
   }
 
