@@ -12,7 +12,7 @@ local preset = |||
                     2. <POINT_2> - <DESCRIPTION_2>
                     ...
                     ```
-                    Now, given the data, create a 30-bullet point summary of:
+                    Now, given the data, create a 5-bullet point summary of:
                |||;
 local keepContext = payload.keepContext;
 local context = if keepContext == "true" then payload.context else "";

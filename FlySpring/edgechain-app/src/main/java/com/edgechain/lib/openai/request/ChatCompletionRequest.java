@@ -14,7 +14,7 @@ public class ChatCompletionRequest {
   private static final Double DEFAULT_PRESENCE_PENALTY = 0.0;
   private static final Double DEFAULT_FREQUENCY_PENALTY = 0.0;
   private static final Map<String, Integer> DEFAULT_LOGIT_BIAS = Collections.emptyMap();
-  private static final String DEFAULT_USER = null;
+  private static final String DEFAULT_USER = "";
 
 
   private String model;
@@ -85,6 +85,34 @@ public class ChatCompletionRequest {
 
   public void setStream(Boolean stream) {
     this.stream = stream;
+  }
+
+  public Double getTopP() {
+    return topP;
+  }
+
+  public Integer getN() {
+    return n;
+  }
+
+  public List<String> getStop() {
+    return stop;
+  }
+
+  public Double getPresencePenalty() {
+    return presencePenalty;
+  }
+
+  public Double getFrequencyPenalty() {
+    return frequencyPenalty;
+  }
+
+  public Map<String, Integer> getLogitBias() {
+    return logitBias;
+  }
+
+  public String getUser() {
+    return user;
   }
 
   @Override
