@@ -4,6 +4,7 @@ import com.edgechain.lib.response.ArkObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class PostgresWordEmbeddings implements ArkObject {
 
   private Double score; // will be added
   private String metadata;
-  private LocalDateTime metadataDate;
+  private Date metadataDate;
   private Integer metadataId;
 
   public Integer getEmbedding_id() {
@@ -100,11 +101,11 @@ public class PostgresWordEmbeddings implements ArkObject {
     this.metadata = metadata;
   }
 
-  public LocalDateTime getMetadataDate() {
+  public Date getMetadataDate() {
     return metadataDate;
   }
 
-  public void setMetadataDate(LocalDateTime metadataDate) {
+  public void setMetadataDate(Date metadataDate) {
     this.metadataDate = metadataDate;
   }
 

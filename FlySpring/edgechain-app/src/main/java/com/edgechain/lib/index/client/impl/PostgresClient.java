@@ -13,6 +13,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
 import org.springframework.stereotype.Service;
+
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.*;
 import org.postgresql.util.PGobject;
@@ -44,7 +46,7 @@ public class PostgresClient {
     this.namespace = namespace;
   }
 
-  public EdgeChain<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
+  public EdgeChain<Integer> upsert(WordEmbeddings wordEmbeddings) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -63,14 +65,14 @@ public class PostgresClient {
                 String input = wordEmbeddings.getId().replaceAll("'", "");
 
                 // Upsert Embeddings
-                this.repository.upsertEmbeddings(
-                    postgresEndpoint.getTableName(),
-                    input,
-                    postgresEndpoint.getFilename(),
-                    wordEmbeddings,
-                    this.namespace);
+                  Integer embeddingId = this.repository.upsertEmbeddings(
+                          postgresEndpoint.getTableName(),
+                          input,
+                          postgresEndpoint.getFilename(),
+                          wordEmbeddings,
+                          this.namespace);
 
-                emitter.onNext(new StringResponse("Upserted"));
+                  emitter.onNext(embeddingId);
                 emitter.onComplete();
 
               } catch (final Exception e) {
@@ -79,7 +81,7 @@ public class PostgresClient {
             }),
         postgresEndpoint);
   }
-  public EdgeChain<StringResponse> insertMetadata(WordEmbeddings wordEmbeddings) {
+  public EdgeChain<Integer> insertMetadata(WordEmbeddings wordEmbeddings) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -92,14 +94,14 @@ public class PostgresClient {
                 String input = wordEmbeddings.getId().replaceAll("'", "");
 
                 // Upsert Embeddings
-                  this.metadataRepository.insertMetadata(
-                          postgresEndpoint.getMetadataTableName(),
+                  Integer metadataId = this.metadataRepository.insertMetadata(
+                          postgresEndpoint.getMetadataTableNames().get(0),
                           input,
                           wordEmbeddings,
                           postgresEndpoint.getMetadataDate());
 
-                emitter.onNext(new StringResponse("Inserted"));
-                emitter.onComplete();
+                  emitter.onNext(metadataId);
+                  emitter.onComplete();
 
               } catch (final Exception e) {
                 emitter.onError(e);
@@ -140,8 +142,8 @@ public class PostgresClient {
                         : postgresEndpoint.getNamespace();
 
                   List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
-                  System.out.println("\n\n\n BEFORE IF CHECK:" + postgresEndpoint.getMetadataTableName() + "\n\n\n");
-                  if(postgresEndpoint.getMetadataTableName() == null) {
+                  System.out.println("\n\n\n BEFORE IF CHECK:" + postgresEndpoint.getMetadataTableNames() + "\n\n\n");
+                  if(postgresEndpoint.getMetadataTableNames() == null) {
                     List<Map<String, Object>> rows =
                             this.repository.query(
                                     postgresEndpoint.getTableName(),
@@ -165,31 +167,41 @@ public class PostgresClient {
                         wordEmbeddingsList.add(val);
                     }
                 } else { //If the metadata table is not null, then we need to query with metadata
+
                       System.out.println("\n\n\n INSIDE THE ELSE OF POSTGRES CLIENT \n\n\n");
-                      List<Map<String, Object>> rows = this.metadataRepository.queryWithMetadata(
-                              postgresEndpoint.getTableName(),
-                              postgresEndpoint.getMetadataTableName(),
-                              this.namespace,
-                              probes,
-                              metric,
-                              wordEmbeddings,
-                              topK
-                      );
-                      for (Map row : rows) {
+                      List<String> metadataTableNames = postgresEndpoint.getMetadataTableNames();
+                      int numberOfMetadataTables = metadataTableNames.size();
+                      for(int i = 0; i < numberOfMetadataTables; i++) {
+                          List<Map<String, Object>> rows = this.metadataRepository.queryWithMetadata(
+                                  postgresEndpoint.getTableName(),
+                                  metadataTableNames.get(i),
+                                  this.namespace,
+                                  probes,
+                                  metric,
+                                  wordEmbeddings,
+                                  topK
+                          );
+                          //To filter out duplicate context chunks
+//                          Set<Integer> contextChunkIds = new HashSet<>();
+                          for (Map row : rows) {
+                              Integer metadataId = (Integer) row.get("metadata_id");
+//                              if (contextChunkIds.contains(metadataId)) continue;
 
-                          PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                          val.setId((String) row.get("id"));
-                          val.setRawText((String) row.get("raw_text"));
-                          val.setFilename((String) row.get("filename"));
-                          val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
-                          val.setNamespace((String) row.get("namespace"));
-                          val.setScore((Double) row.get("score"));
+                              PostgresWordEmbeddings val = new PostgresWordEmbeddings();
+                              val.setId((String) row.get("id"));
+                              val.setRawText((String) row.get("raw_text"));
+                              val.setFilename((String) row.get("filename"));
+                              val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
+                              val.setNamespace((String) row.get("namespace"));
+                              val.setScore((Double) row.get("score"));
 
-                          //Add metadata fields in response
-                          val.setMetadata((String) row.get("metadata"));
-                          val.setMetadataDate(((Timestamp) row.get("document_date")).toLocalDateTime());
+                              //Add metadata fields in response
+                              val.setMetadata((String) row.get("metadata"));
+                              val.setMetadataDate(((Date) row.get("document_date")));
 
-                          wordEmbeddingsList.add(val);
+//                              contextChunkIds.add(metadataId);
+                              wordEmbeddingsList.add(val);
+                          }
                       }
                   }
 
@@ -212,14 +224,13 @@ public class PostgresClient {
                               List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
                               List<Map<String, Object>> rows = this.repository.getAllChunks(postgresEndpoint);
                               for(Map<String, Object> row: rows) {
-//                                  System.out.println("\n\n\n Get all chunks: row:" + row + "\n\n\n");
                                   PostgresWordEmbeddings val = new PostgresWordEmbeddings();
                                   val.setEmbedding_id((Integer) row.get("embedding_id"));
                                   val.setRawText((String) row.get("raw_text"));
+                                  val.setFilename((String) row.get("filename"));
                                   PGobject pgObject = (PGobject) row.get("embedding");
                                   String jsonString = pgObject.getValue();
-                                  List<Float> values = objectMapper.readValue(jsonString, new TypeReference<>() {
-                                  });
+                                  List<Float> values = objectMapper.readValue(jsonString, new TypeReference<>() {});
                                   val.setValues(values);
                                   wordEmbeddingsList.add(val);
                               }
@@ -243,7 +254,7 @@ public class PostgresClient {
                             try {
                                 List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
                                 List<Map<String, Object>> rows = this.metadataRepository.similaritySearchMetadata(
-                                        postgresEndpoint.getMetadataTableName(),
+                                        postgresEndpoint.getMetadataTableNames().get(0),
                                         metric,
                                         wordEmbeddings,
                                         topK

@@ -34,7 +34,7 @@ public class PostgresEndpoint extends Endpoint {
   private int probes;
 
   //Fields for metadata table
-  private String metadataTableName;
+  private List<String> metadataTableNames;
   private String metadata;
   private LocalDateTime metadataDate;
   private Integer metadataId;
@@ -49,9 +49,9 @@ public class PostgresEndpoint extends Endpoint {
   public PostgresEndpoint(String tableName) {
     this.tableName = tableName;
   }
-  public PostgresEndpoint(String tableName, String metadataTableName) {
+  public PostgresEndpoint(String tableName, List<String> metadataTableNames) {
     this.tableName = tableName;
-    this.metadataTableName = metadataTableName;
+    this.metadataTableNames = metadataTableNames;
   }
 
   public PostgresEndpoint(String tableName, RetryPolicy retryPolicy) {
@@ -75,8 +75,8 @@ public class PostgresEndpoint extends Endpoint {
     this.namespace = namespace;
   }
 
-  public void setMetadataTableName(String metadataTableName) {
-    this.metadataTableName = metadataTableName;
+  public void setMetadataTableName(List<String> metadataTableNames) {
+    this.metadataTableNames = metadataTableNames;
   }
 
   public void setMetadata(String metadata) {
@@ -124,8 +124,8 @@ public class PostgresEndpoint extends Endpoint {
     return probes;
   }
 
-  public String getMetadataTableName() {
-    return metadataTableName;
+  public List<String> getMetadataTableNames() {
+    return metadataTableNames;
   }
 
   public String getMetadata() {
@@ -145,7 +145,7 @@ public class PostgresEndpoint extends Endpoint {
   }
   // Convenience Methods
 
-  public StringResponse upsert(
+  public Integer upsert(
       WordEmbeddings wordEmbeddings,
       String filename,
       int dimension,
@@ -159,7 +159,7 @@ public class PostgresEndpoint extends Endpoint {
     return this.postgresService.upsert(this).blockingGet();
   }
 
-  public StringResponse insertMetadata(
+  public Integer insertMetadata(
           WordEmbeddings wordEmbeddings,
           int dimensions,
           PostgresDistanceMetric metric) {

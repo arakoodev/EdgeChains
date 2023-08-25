@@ -25,9 +25,9 @@ public class PostgresClientMetadataRepository {
   public void createTable(PostgresEndpoint postgresEndpoint) {
     jdbcTemplate.execute(
             String.format(
-                    "CREATE TABLE IF NOT EXISTS %s (metadata_id SERIAL PRIMARY KEY, metadata TEXT, "
+                    "CREATE TABLE IF NOT EXISTS %s (metadata_id SERIAL PRIMARY KEY, metadata TEXT UNIQUE, "
                     + "metadata_embedding vector(%s), document_date DATE);",
-                    postgresEndpoint.getMetadataTableName(),
+                    postgresEndpoint.getMetadataTableNames().get(0),
                     postgresEndpoint.getDimensions()
             )
     );
@@ -39,33 +39,34 @@ public class PostgresClientMetadataRepository {
                     + "FOREIGN KEY (embedding_id) REFERENCES %s(embedding_id), "
                     + "FOREIGN KEY (metadata_id) REFERENCES %s(metadata_id), "
                     + "PRIMARY KEY (embedding_id, metadata_id));",
-                    postgresEndpoint.getTableName() + "_join_" + postgresEndpoint.getMetadataTableName(),
+                    postgresEndpoint.getTableName() + "_join_" + postgresEndpoint.getMetadataTableNames().get(0),
                     postgresEndpoint.getTableName(),
-                    postgresEndpoint.getMetadataTableName()
+                    postgresEndpoint.getMetadataTableNames().get(0)
             )
     );
   }
 
   @Transactional
-  public void insertMetadata(
+  public Integer insertMetadata(
       String metadataTableName,
       String metadata,
       WordEmbeddings wordEmbeddings,
       LocalDateTime documentDate) {
     documentDate = LocalDateTime.now();
-    jdbcTemplate.execute(
+    return jdbcTemplate.queryForObject(
             String.format(
-                    "INSERT INTO %s (metadata, metadata_embedding, document_date) VALUES ('%s', '%s', '%s');",
+                    "INSERT INTO %s (metadata, metadata_embedding, document_date) VALUES ('%s', '%s', '%s') RETURNING "
+                            + "metadata_id;",
                     metadataTableName,
                     metadata,
                     Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
                     documentDate.toString()
-            ));
+            ), Integer.class);
   }
 
   @Transactional
   public void insertIntoJoinTable(PostgresEndpoint postgresEndpoint) {
-    String joinTableName = postgresEndpoint.getTableName() + "_join_" + postgresEndpoint.getMetadataTableName();
+    String joinTableName = postgresEndpoint.getTableName() + "_join_" + postgresEndpoint.getMetadataTableNames().get(0);
     jdbcTemplate.execute(
             String.format(
                     "INSERT INTO %s (embedding_id, metadata_id) VALUES (%s, %s);",
@@ -89,16 +90,17 @@ public class PostgresClientMetadataRepository {
     String embeddings = Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues()));
 
     jdbcTemplate.execute(String.format("SET LOCAL ivfflat.probes = %s;", probes));
+    String joinTable = tableName + "_join_" + metadataTableName;
+
     if (metric.equals(PostgresDistanceMetric.IP)) {
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT id, metadata, document_date, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
-                              + " score FROM %s INNER JOIN %s ON %s.embedding_id = %s.embedding_id WHERE namespace='%s'"
-                              + " ORDER BY embedding %s '%s' LIMIT %s;",
+                      "SELECT id, metadata, j.metadata_id, document_date, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
+                              + " score FROM %s e INNER JOIN %s j ON e.embedding_id = j.embedding_id INNER JOIN %s m ON "
+                              + "j.metadata_id = m.metadata_id WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
                       embeddings,
                       tableName,
-                      metadataTableName,
-                      tableName,
+                      joinTable,
                       metadataTableName,
                       namespace,
                       PostgresDistanceMetric.getDistanceMetric(metric),
@@ -108,12 +110,12 @@ public class PostgresClientMetadataRepository {
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT id, metadata, document_date, raw_text, namespace, filename, timestamp, 1 - ( embedding <=> '%s') AS"
-                              + " score FROM %s INNER JOIN %s ON %s.embedding_id = %s.embedding_id WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+                      "SELECT id, metadata, j.metadata_id, document_date, raw_text, namespace, filename, timestamp, 1 - ( embedding <=> '%s') "
+                              + "AS score FROM %s e INNER JOIN %s j ON e.embedding_id = j.embedding_id INNER JOIN %s m ON "
+                              + "j.metadata_id = m.metadata_id WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
                       embeddings,
                       tableName,
-                      metadataTableName,
-                      tableName,
+                      joinTable,
                       metadataTableName,
                       namespace,
                       PostgresDistanceMetric.getDistanceMetric(metric),
@@ -122,12 +124,12 @@ public class PostgresClientMetadataRepository {
     } else {
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT id, metadata, document_date, raw_text, namespace, filename, timestamp, (embedding <-> '%s') AS score"
-                              + " FROM %s INNER JOIN %s ON %s.embedding_id = %s.embedding_id WHERE namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
+                      "SELECT id, metadata, j.metadata_id, document_date, raw_text, namespace, filename, timestamp, (embedding <-> '%s') "
+                      + "AS score FROM %s e INNER JOIN %s j ON e.embedding_id = j.embedding_id INNER JOIN %s m ON "
+                      + "j.metadata_id = m.metadata_id WHERE namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
                       embeddings,
                       tableName,
-                      metadataTableName,
-                      tableName,
+                      joinTable,
                       metadataTableName,
                       namespace,
                       PostgresDistanceMetric.getDistanceMetric(metric),

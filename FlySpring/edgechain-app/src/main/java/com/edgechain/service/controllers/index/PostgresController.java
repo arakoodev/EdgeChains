@@ -21,19 +21,19 @@ public class PostgresController {
   @Autowired @Lazy private PostgresClient postgresClient;
 
   @PostMapping("/upsert")
-  public Single<StringResponse> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<Integer> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
 
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-    EdgeChain<StringResponse> edgeChain =
+    EdgeChain<Integer> edgeChain =
         this.postgresClient.upsert(postgresEndpoint.getWordEmbeddings());
 
     return edgeChain.toSingle();
   }
 
   @PostMapping("/metadata/insert")
-  public Single<StringResponse> insertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<Integer> insertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-    EdgeChain<StringResponse> edgeChain =
+    EdgeChain<Integer> edgeChain =
             this.postgresClient.insertMetadata(postgresEndpoint.getWordEmbeddings());
     return edgeChain.toSingle();
   }

@@ -58,25 +58,25 @@ public class PostgresClientRepository {
   }
 
   @Transactional
-  public void upsertEmbeddings(
+  public Integer upsertEmbeddings(
       String tableName,
       String input,
       String filename,
       WordEmbeddings wordEmbeddings,
       String namespace) {
 
-    jdbcTemplate.execute(
+    return jdbcTemplate.queryForObject(
         String.format(
             "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES ('%s',"
                 + " '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE SET embedding ="
-                + " EXCLUDED.embedding;",
+                + " EXCLUDED.embedding RETURNING embedding_id;",
             tableName,
             UuidCreator.getTimeOrderedEpoch().toString(),
             input,
             Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
             LocalDateTime.now(),
             namespace,
-            filename));
+            filename), Integer.class);
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
@@ -133,9 +133,8 @@ public class PostgresClientRepository {
   public List<Map<String, Object>> getAllChunks(PostgresEndpoint endpoint) {
     return jdbcTemplate.queryForList(
             String.format(
-                    "SELECT embedding_id, raw_text, embedding from %s where filename = '%s';",
-                    endpoint.getTableName(),
-                    endpoint.getFilename()
+                    "SELECT embedding_id, raw_text, embedding, filename from %s;",
+                    endpoint.getTableName()
             )
     );
   }
