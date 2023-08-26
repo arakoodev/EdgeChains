@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +24,8 @@ public class PostgresClientMetadataRepository {
   public void createTable(PostgresEndpoint postgresEndpoint) {
     jdbcTemplate.execute(
             String.format(
-                    "CREATE TABLE IF NOT EXISTS %s (metadata_id SERIAL PRIMARY KEY, metadata TEXT UNIQUE, "
-                    + "metadata_embedding vector(%s), document_date DATE);",
+                    "CREATE TABLE IF NOT EXISTS %s (metadata_id SERIAL PRIMARY KEY, metadata TEXT, "
+                    + "metadata_embedding vector(%s));",
                     postgresEndpoint.getMetadataTableNames().get(0),
                     postgresEndpoint.getDimensions()
             )
@@ -50,17 +49,14 @@ public class PostgresClientMetadataRepository {
   public Integer insertMetadata(
       String metadataTableName,
       String metadata,
-      WordEmbeddings wordEmbeddings,
-      LocalDateTime documentDate) {
-    documentDate = LocalDateTime.now();
+      WordEmbeddings wordEmbeddings) {
     return jdbcTemplate.queryForObject(
             String.format(
-                    "INSERT INTO %s (metadata, metadata_embedding, document_date) VALUES ('%s', '%s', '%s') RETURNING "
+                    "INSERT INTO %s (metadata, metadata_embedding) VALUES ('%s', '%s') RETURNING "
                             + "metadata_id;",
                     metadataTableName,
                     metadata,
-                    Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
-                    documentDate.toString()
+                    Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues()))
             ), Integer.class);
   }
 
@@ -95,7 +91,7 @@ public class PostgresClientMetadataRepository {
     if (metric.equals(PostgresDistanceMetric.IP)) {
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT id, metadata, j.metadata_id, document_date, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
+                      "SELECT id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
                               + " score FROM %s e INNER JOIN %s j ON e.embedding_id = j.embedding_id INNER JOIN %s m ON "
                               + "j.metadata_id = m.metadata_id WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
                       embeddings,
@@ -110,7 +106,7 @@ public class PostgresClientMetadataRepository {
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT id, metadata, j.metadata_id, document_date, raw_text, namespace, filename, timestamp, 1 - ( embedding <=> '%s') "
+                      "SELECT id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp, 1 - ( embedding <=> '%s') "
                               + "AS score FROM %s e INNER JOIN %s j ON e.embedding_id = j.embedding_id INNER JOIN %s m ON "
                               + "j.metadata_id = m.metadata_id WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
                       embeddings,
@@ -124,7 +120,7 @@ public class PostgresClientMetadataRepository {
     } else {
       return jdbcTemplate.queryForList(
               String.format(
-                      "SELECT id, metadata, j.metadata_id, document_date, raw_text, namespace, filename, timestamp, (embedding <-> '%s') "
+                      "SELECT id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp, (embedding <-> '%s') "
                       + "AS score FROM %s e INNER JOIN %s j ON e.embedding_id = j.embedding_id INNER JOIN %s m ON "
                       + "j.metadata_id = m.metadata_id WHERE namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
                       embeddings,

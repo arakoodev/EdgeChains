@@ -11,7 +11,6 @@ import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostgresEndpoint extends Endpoint {
@@ -36,7 +35,6 @@ public class PostgresEndpoint extends Endpoint {
   //Fields for metadata table
   private List<String> metadataTableNames;
   private String metadata;
-  private LocalDateTime metadataDate;
   private Integer metadataId;
   private Integer embeddingId;
 
@@ -87,10 +85,6 @@ public class PostgresEndpoint extends Endpoint {
     this.embeddingId = embeddingId;
   }
 
-  public void setMetadataDate(LocalDateTime metadataDate) {
-    this.metadataDate = metadataDate;
-  }
-
   public void setMetadataId(Integer metadataId) {
     this.metadataId = metadataId;
   }
@@ -136,9 +130,6 @@ public class PostgresEndpoint extends Endpoint {
     return embeddingId;
   }
 
-  public LocalDateTime getMetadataDate() {
-    return metadataDate;
-  }
 
   public Integer getMetadataId() {
     return metadataId;
