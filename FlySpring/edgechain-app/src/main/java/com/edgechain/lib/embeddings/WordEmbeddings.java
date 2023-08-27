@@ -69,9 +69,19 @@ public class WordEmbeddings implements ArkObject, Serializable {
   @Override
   public JSONObject toJson() {
     JSONObject json = new JSONObject();
-    json.put("id", id);
-    json.put("values", new JSONArray(values));
-    json.put("score", score);
+
+    if (id != null) {
+      json.put("id", id);
+    }
+
+    if (values != null) {
+      json.put("values", new JSONArray(values));
+    }
+
+    if (score != null) {
+      json.put("score", score);
+    }
+
     return json;
   }
 }

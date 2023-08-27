@@ -24,9 +24,6 @@ public class OpenAiStreamService {
 
   public Observable<ChatCompletionResponse> chatCompletion(OpenAiEndpoint openAiEndpoint) {
 
-    logger.info("Logging Chat Completion Stream....");
-    logger.info("Prompt: " + StringUtils.join(openAiEndpoint.getChatMessages()));
-
     return RxJava3Adapter.fluxToObservable(
         WebClient.builder()
             .build()

@@ -63,11 +63,24 @@ public class OpenAiEmbeddingResponse implements ArkObject {
 
   @Override
   public JSONObject toJson() {
-    JSONObject jsonObject = new JSONObject();
-    jsonObject.put("model", model);
-    jsonObject.put("object", object);
-    jsonObject.put("data", data.stream().map(OpenAiEmbedding::toJson).collect(Collectors.toList()));
-    jsonObject.put("usage", usage.toJson());
-    return jsonObject;
+    JSONObject json = new JSONObject();
+
+    if (model != null) {
+      json.put("model", model);
+    }
+
+    if (object != null) {
+      json.put("object", object);
+    }
+
+    if (data != null) {
+      json.put("data", data.stream().map(OpenAiEmbedding::toJson).collect(Collectors.toList()));
+    }
+
+    if (usage != null) {
+      json.put("usage", usage.toJson()); // Assuming Usage has a toJson method
+    }
+
+    return json;
   }
 }
