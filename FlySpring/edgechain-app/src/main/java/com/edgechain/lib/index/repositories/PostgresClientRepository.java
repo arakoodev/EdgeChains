@@ -76,7 +76,8 @@ public class PostgresClientRepository {
             Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
             LocalDateTime.now(),
             namespace,
-            filename), Integer.class);
+            filename),
+        Integer.class);
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
@@ -95,8 +96,9 @@ public class PostgresClientRepository {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
-                  + " score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, ( embedding <#>"
+                  + " '%s') * -1 AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s'"
+                  + " LIMIT %s;",
               embeddings,
               tableName,
               namespace,
@@ -108,8 +110,9 @@ public class PostgresClientRepository {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, 1 - ( embedding <=> '%s') AS"
-                  + " score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, 1 - ( embedding"
+                  + " <=> '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s'"
+                  + " LIMIT %s;",
               embeddings,
               tableName,
               namespace,
@@ -119,8 +122,9 @@ public class PostgresClientRepository {
     } else {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, (embedding <-> '%s') AS score"
-                  + " FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
+              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, (embedding <->"
+                  + " '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' ASC"
+                  + " LIMIT %s;",
               embeddings,
               tableName,
               namespace,
@@ -132,11 +136,9 @@ public class PostgresClientRepository {
 
   public List<Map<String, Object>> getAllChunks(PostgresEndpoint endpoint) {
     return jdbcTemplate.queryForList(
-            String.format(
-                    "SELECT embedding_id, raw_text, embedding, filename from %s;",
-                    endpoint.getTableName()
-            )
-    );
+        String.format(
+            "SELECT embedding_id, raw_text, embedding, filename from %s;",
+            endpoint.getTableName()));
   }
 
   @Transactional

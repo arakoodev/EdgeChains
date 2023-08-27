@@ -32,7 +32,7 @@ public class PostgresEndpoint extends Endpoint {
 
   private int probes;
 
-  //Fields for metadata table
+  // Fields for metadata table
   private List<String> metadataTableNames;
   private String metadata;
   private Integer metadataId;
@@ -47,6 +47,7 @@ public class PostgresEndpoint extends Endpoint {
   public PostgresEndpoint(String tableName) {
     this.tableName = tableName;
   }
+
   public PostgresEndpoint(String tableName, List<String> metadataTableNames) {
     this.tableName = tableName;
     this.metadataTableNames = metadataTableNames;
@@ -88,6 +89,7 @@ public class PostgresEndpoint extends Endpoint {
   public void setMetadataId(Integer metadataId) {
     this.metadataId = metadataId;
   }
+
   // Getters
 
   public WordEmbeddings getWordEmbeddings() {
@@ -130,10 +132,10 @@ public class PostgresEndpoint extends Endpoint {
     return embeddingId;
   }
 
-
   public Integer getMetadataId() {
     return metadataId;
   }
+
   // Convenience Methods
 
   public Integer upsert(
@@ -151,9 +153,7 @@ public class PostgresEndpoint extends Endpoint {
   }
 
   public Integer insertMetadata(
-          WordEmbeddings wordEmbeddings,
-          int dimensions,
-          PostgresDistanceMetric metric) {
+      WordEmbeddings wordEmbeddings, int dimensions, PostgresDistanceMetric metric) {
     this.dimensions = dimensions;
     this.wordEmbeddings = wordEmbeddings;
     this.metric = metric;
@@ -185,13 +185,13 @@ public class PostgresEndpoint extends Endpoint {
   }
 
   public Observable<List<PostgresWordEmbeddings>> similaritySearchMetadata(
-          WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK
-  ) {
+      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
     this.wordEmbeddings = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;
     return Observable.fromSingle(this.postgresService.similaritySearchMetadata(this));
   }
+
   public Observable<List<PostgresWordEmbeddings>> getAllChunks(String tableName, String filename) {
     this.tableName = tableName;
     this.filename = filename;

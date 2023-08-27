@@ -28,7 +28,8 @@ public interface PostgresService {
   Single<List<PostgresWordEmbeddings>> getAllChunks(@Body PostgresEndpoint postgresEndpoint);
 
   @POST(value = "index/postgres/similarity-metadata")
-  Single<List<PostgresWordEmbeddings>> similaritySearchMetadata(@Body PostgresEndpoint postgresEndpoint);
+  Single<List<PostgresWordEmbeddings>> similaritySearchMetadata(
+      @Body PostgresEndpoint postgresEndpoint);
 
   @POST("index/postgres/probes")
   Single<StringResponse> probes(@Body PostgresEndpoint postgresEndpoint);

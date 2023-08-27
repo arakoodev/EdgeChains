@@ -90,6 +90,7 @@ public class PostgresRetrieval extends Retrieval {
       throw new RuntimeException(
           "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
   }
+
   public Integer upsertAndReturnId(String input) {
 
     if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
@@ -114,19 +115,18 @@ public class PostgresRetrieval extends Retrieval {
   public Integer insertMetadata(String metadata) {
     if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
       WordEmbeddings embeddings =
-              openAiEndpoint.embeddings(metadata, arkRequest).firstOrError().blockingGet();
+          openAiEndpoint.embeddings(metadata, arkRequest).firstOrError().blockingGet();
       return this.postgresEndpoint.insertMetadata(embeddings, this.dimensions, this.metric);
     } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
       WordEmbeddings embeddings =
-              miniLMEndpoint.embeddings(metadata, arkRequest).firstOrError().blockingGet();
+          miniLMEndpoint.embeddings(metadata, arkRequest).firstOrError().blockingGet();
       return this.postgresEndpoint.insertMetadata(embeddings, this.dimensions, this.metric);
     } else if (endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint) {
       WordEmbeddings embeddings = bgeSmallEndpoint.embeddings(metadata, arkRequest);
       return this.postgresEndpoint.insertMetadata(embeddings, this.dimensions, this.metric);
     } else {
       throw new RuntimeException(
-              "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
+          "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
     }
   }
-
 }
