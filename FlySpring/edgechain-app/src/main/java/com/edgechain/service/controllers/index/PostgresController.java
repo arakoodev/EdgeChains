@@ -21,12 +21,27 @@ public class PostgresController {
   @Autowired @Lazy private PostgresClient postgresClient;
 
   @PostMapping("/upsert")
-  public Single<StringResponse> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<Integer> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
 
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-    EdgeChain<StringResponse> edgeChain =
+    EdgeChain<Integer> edgeChain =
         this.postgresClient.upsert(postgresEndpoint.getWordEmbeddings());
 
+    return edgeChain.toSingle();
+  }
+
+  @PostMapping("/metadata/insert")
+  public Single<Integer> insertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
+    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
+    EdgeChain<Integer> edgeChain =
+            this.postgresClient.insertMetadata(postgresEndpoint.getWordEmbeddings());
+    return edgeChain.toSingle();
+  }
+
+  @PostMapping("/join/insert")
+  public Single<StringResponse> insertIntoJoinTable(@RequestBody PostgresEndpoint postgresEndpoint) {
+    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
+    EdgeChain<StringResponse> edgeChain = this.postgresClient.insertIntoJoinTable(postgresEndpoint);
     return edgeChain.toSingle();
   }
 
@@ -43,6 +58,24 @@ public class PostgresController {
             postgresEndpoint.getTopK(),
             postgresEndpoint.getProbes());
 
+    return edgeChain.toSingle();
+  }
+  @PostMapping("/chunks")
+  public Single<List<PostgresWordEmbeddings>> getAllChunks(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
+
+    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
+
+    EdgeChain<List<PostgresWordEmbeddings>> edgeChain = this.postgresClient.getAllChunks(postgresEndpoint);
+    return edgeChain.toSingle();
+  }
+
+  @PostMapping("/similarity-metadata")
+  public Single<List<PostgresWordEmbeddings>> similaritySearchMetadata(
+          @RequestBody PostgresEndpoint postgresEndpoint
+  ) {
+    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
+    EdgeChain<List<PostgresWordEmbeddings>> edgeChain = this.postgresClient.similaritySearchMetadata(postgresEndpoint.getWordEmbeddings(), postgresEndpoint.getMetric(), postgresEndpoint.getTopK());
     return edgeChain.toSingle();
   }
 

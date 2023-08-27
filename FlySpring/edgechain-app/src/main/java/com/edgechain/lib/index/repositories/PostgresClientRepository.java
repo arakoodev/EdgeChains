@@ -58,25 +58,25 @@ public class PostgresClientRepository {
   }
 
   @Transactional
-  public void upsertEmbeddings(
+  public Integer upsertEmbeddings(
       String tableName,
       String input,
       String filename,
       WordEmbeddings wordEmbeddings,
       String namespace) {
 
-    jdbcTemplate.execute(
+    return jdbcTemplate.queryForObject(
         String.format(
             "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES ('%s',"
                 + " '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE SET embedding ="
-                + " EXCLUDED.embedding;",
+                + " EXCLUDED.embedding RETURNING embedding_id;",
             tableName,
             UuidCreator.getTimeOrderedEpoch().toString(),
             input,
             Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
             LocalDateTime.now(),
             namespace,
-            filename));
+            filename), Integer.class);
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
@@ -95,7 +95,7 @@ public class PostgresClientRepository {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
+              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
                   + " score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
               embeddings,
               tableName,
@@ -108,7 +108,7 @@ public class PostgresClientRepository {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, raw_text, namespace, filename, timestamp, 1 - ( embedding <=> '%s') AS"
+              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, 1 - ( embedding <=> '%s') AS"
                   + " score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
               embeddings,
               tableName,
@@ -119,7 +119,7 @@ public class PostgresClientRepository {
     } else {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, raw_text, namespace, filename, timestamp, (embedding <-> '%s') AS score"
+              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, (embedding <-> '%s') AS score"
                   + " FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
               embeddings,
               tableName,
@@ -128,6 +128,15 @@ public class PostgresClientRepository {
               Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
               topK));
     }
+  }
+
+  public List<Map<String, Object>> getAllChunks(PostgresEndpoint endpoint) {
+    return jdbcTemplate.queryForList(
+            String.format(
+                    "SELECT embedding_id, raw_text, embedding, filename from %s;",
+                    endpoint.getTableName()
+            )
+    );
   }
 
   @Transactional

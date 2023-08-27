@@ -13,11 +13,22 @@ import retrofit2.http.POST;
 public interface PostgresService {
 
   @POST(value = "index/postgres/upsert")
-  Single<StringResponse> upsert(@Body PostgresEndpoint postgresEndpoint);
+  Single<Integer> upsert(@Body PostgresEndpoint postgresEndpoint);
 
-  //
+  @POST(value = "index/postgres/metadata/insert")
+  Single<Integer> insertMetadata(@Body PostgresEndpoint postgresEndpoint);
+
+  @POST(value = "index/postgres/join/insert")
+  Single<StringResponse> insertIntoJoinTable(@Body PostgresEndpoint postgresEndpoint);
+
   @POST(value = "index/postgres/query")
   Single<List<PostgresWordEmbeddings>> query(@Body PostgresEndpoint postgresEndpoint);
+
+  @POST(value = "index/postgres/chunks")
+  Single<List<PostgresWordEmbeddings>> getAllChunks(@Body PostgresEndpoint postgresEndpoint);
+
+  @POST(value = "index/postgres/similarity-metadata")
+  Single<List<PostgresWordEmbeddings>> similaritySearchMetadata(@Body PostgresEndpoint postgresEndpoint);
 
   @POST("index/postgres/probes")
   Single<StringResponse> probes(@Body PostgresEndpoint postgresEndpoint);
