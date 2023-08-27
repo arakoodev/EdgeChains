@@ -88,9 +88,14 @@ public class ChatCompletionLogService {
             + "    model VARCHAR(255) NOT NULL,\n"
             + "    input TEXT NOT NULL,\n"
             + "    content TEXT,\n"
+            + "    presence_penalty DOUBLE PRECISION,\n"
+            + "    frequency_penalty DOUBLE PRECISION,\n"
+            + "    top_p DOUBLE PRECISION,\n"
+            + "    n INTEGER,\n"
+            + "    temperature DOUBLE PRECISION,\n"
             + "    latency BIGINT,\n"
             + "    prompt_tokens BIGINT,\n"
-            + "    total_tokens BIGINT\n"
+            + "    total_tokens BIGINT"
             + ");");
   }
 }

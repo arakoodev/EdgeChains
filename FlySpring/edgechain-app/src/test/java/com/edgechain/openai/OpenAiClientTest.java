@@ -101,7 +101,7 @@ public class OpenAiClientTest {
             "", // apiKey
             "", // orgId
             "gpt-3.5-turbo",
-            "user",
+                "user",
             0.7,
             false,
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
@@ -140,8 +140,7 @@ public class OpenAiClientTest {
 
     TestObserver<ChatCompletionResponse> test =
         endpoint
-            .chatCompletion(
-                "Can you write two unique sentences on Java Language?", "TestChain", null)
+            .chatCompletion("Can you write two unique sentences on Java Language?", "TestChain", null)
             .test();
 
     // Step 4: To act & assert

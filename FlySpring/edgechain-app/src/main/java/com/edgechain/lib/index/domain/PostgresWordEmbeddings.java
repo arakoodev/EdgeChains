@@ -9,8 +9,9 @@ import java.util.List;
 
 public class PostgresWordEmbeddings implements ArkObject {
 
-  private Integer embedding_id;
+//  private Long embedding_id;
 
+  private Integer embedding_id;
   private String id;
 
   private String rawText;
@@ -23,7 +24,8 @@ public class PostgresWordEmbeddings implements ArkObject {
 
   private LocalDateTime timestamp;
 
-  private Double score; // will be added
+  private Double score;
+
   private String metadata;
   private Integer metadataId;
   private String titleMetadata;
@@ -119,22 +121,50 @@ public class PostgresWordEmbeddings implements ArkObject {
   @Override
   public JSONObject toJson() {
     JSONObject json = new JSONObject();
-    json.put("id", id);
-    json.put("rawText", rawText);
-    json.put("namespace", namespace);
-    json.put("filename", filename);
-    json.put("values", new JSONArray(values));
-    json.put("timestamp", timestamp.toString());
-    json.put("score", score);
 
-    // If metadata table is not null, add metadata and metadataDate
-    json.put("titleMetadata", titleMetadata);
+    if (embedding_id != null) {
+      json.put("embedding_id", embedding_id);
+    }
+
+    if (id != null) {
+      json.put("id", id);
+    }
+
+    if (rawText != null) {
+      json.put("rawText", rawText);
+    }
+
+    if (namespace != null) {
+      json.put("namespace", namespace);
+    }
+
+    if (filename != null) {
+      json.put("filename", filename);
+    }
+
+    if (values != null) {
+      json.put("values", new JSONArray(values));
+    }
+
+    if (timestamp != null) {
+      json.put("timestamp", timestamp.toString());
+    }
+
+    if (score != null && !Double.isNaN(score)) {
+      json.put("score", score);
+    }
+
+    if(titleMetadata != null) {
+      json.put("titleMetadata", titleMetadata);
+    }
+
     if (metadata != null) {
       json.put("metadata", metadata);
     }
     if (metadataId != null) {
       json.put("metadataId", metadataId);
     }
+
     return json;
   }
 }

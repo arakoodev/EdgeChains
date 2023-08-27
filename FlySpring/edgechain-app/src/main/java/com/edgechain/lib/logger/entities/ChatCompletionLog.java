@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 @Table(name = "chat_completion_logs")
@@ -31,6 +32,7 @@ public class ChatCompletionLog {
   @NotBlank
   private String type;
 
+
   private LocalDateTime createdAt;
   private LocalDateTime completedAt;
 
@@ -44,6 +46,15 @@ public class ChatCompletionLog {
 
   @Column(columnDefinition = "TEXT")
   private String content;
+
+  private Double presencePenalty;
+  private Double frequencyPenalty;
+
+  @Column(name = "top_p")
+  private Double topP;
+  private Integer n;
+
+  private Double temperature;
 
   private Long latency;
 
@@ -159,23 +170,67 @@ public class ChatCompletionLog {
     this.callIdentifier = callIdentifier;
   }
 
+
+  public Double getTemperature() {
+    return temperature;
+  }
+
+  public void setTemperature(Double temperature) {
+    this.temperature = temperature;
+  }
+
+  public Double getPresencePenalty() {
+    return presencePenalty;
+  }
+
+  public void setPresencePenalty(Double presencePenalty) {
+    this.presencePenalty = presencePenalty;
+  }
+
+  public Double getFrequencyPenalty() {
+    return frequencyPenalty;
+  }
+
+  public void setFrequencyPenalty(Double frequencyPenalty) {
+    this.frequencyPenalty = frequencyPenalty;
+  }
+
+  public Double getTopP() {
+    return topP;
+  }
+
+  public void setTopP(Double topP) {
+    this.topP = topP;
+  }
+
+  public Integer getN() {
+    return n;
+  }
+
+  public void setN(Integer n) {
+    this.n = n;
+  }
+
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("ChatCompletionLog{");
-    sb.append("chatCompletionId=").append(chatCompletionId);
-    sb.append(", id='").append(id).append('\'');
-    sb.append(", name='").append(name).append('\'');
-    sb.append(", callIdentifier='").append(callIdentifier).append('\'');
-    sb.append(", type='").append(type).append('\'');
-    sb.append(", createdAt=").append(createdAt);
-    sb.append(", completedAt=").append(completedAt);
-    sb.append(", model='").append(model).append('\'');
-    sb.append(", input='").append(input).append('\'');
-    sb.append(", content='").append(content).append('\'');
-    sb.append(", latency=").append(latency);
-    sb.append(", promptTokens=").append(promptTokens);
-    sb.append(", totalTokens=").append(totalTokens);
-    sb.append('}');
-    return sb.toString();
+    return new StringJoiner(", ", ChatCompletionLog.class.getSimpleName() + "[", "]")
+            .add("id='" + id + "'")
+            .add("name='" + name + "'")
+            .add("callIdentifier='" + callIdentifier + "'")
+            .add("type='" + type + "'")
+            .add("temperature=" + temperature)
+            .add("createdAt=" + createdAt)
+            .add("completedAt=" + completedAt)
+            .add("model='" + model + "'")
+            .add("input='" + input + "'")
+            .add("content='" + content + "'")
+            .add("presencePenalty=" + presencePenalty)
+            .add("frequencyPenalty=" + frequencyPenalty)
+            .add("topP=" + topP)
+            .add("n=" + n)
+            .add("latency=" + latency)
+            .add("promptTokens=" + promptTokens)
+            .add("totalTokens=" + totalTokens)
+            .toString();
   }
 }

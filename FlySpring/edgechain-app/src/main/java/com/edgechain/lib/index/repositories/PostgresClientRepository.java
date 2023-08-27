@@ -5,12 +5,14 @@ import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.utils.FloatUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
+import org.hibernate.JDBCException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -23,38 +25,61 @@ public class PostgresClientRepository {
   public void createTable(PostgresEndpoint postgresEndpoint) {
 
     jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector;");
-    jdbcTemplate.execute(
+
+    String checkTableQuery =
         String.format(
-            "CREATE TABLE IF NOT EXISTS %s (embedding_id SERIAL PRIMARY KEY, id VARCHAR(255) NOT"
-                + " NULL UNIQUE, raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
-                + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255));",
-            postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = '%s'",
+            postgresEndpoint.getTableName());
+
+    int tableExists = jdbcTemplate.queryForObject(checkTableQuery, Integer.class);
+
+    String indexName;
+    String vectorOps;
 
     if (PostgresDistanceMetric.L2.equals(postgresEndpoint.getMetric())) {
-      jdbcTemplate.execute(
-          String.format(
-              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_l2_ops) WITH"
-                  + " (lists = %s);",
-              postgresEndpoint.getTableName().concat("_").concat("l2_idx"),
-              postgresEndpoint.getTableName(),
-              postgresEndpoint.getLists()));
+      indexName = postgresEndpoint.getTableName().concat("_").concat("l2_idx");
+      vectorOps = "vector_l2_ops";
     } else if (PostgresDistanceMetric.COSINE.equals(postgresEndpoint.getMetric())) {
-      jdbcTemplate.execute(
-          String.format(
-              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_cosine_ops) WITH"
-                  + " (lists = %s);",
-              postgresEndpoint.getTableName().concat("_").concat("cosine_idx"),
-              postgresEndpoint.getTableName(),
-              postgresEndpoint.getLists()));
+      indexName = postgresEndpoint.getTableName().concat("_").concat("cosine_idx");
+      vectorOps = "vector_cosine_ops";
     } else {
+      indexName = postgresEndpoint.getTableName().concat("_").concat("ip_idx");
+      vectorOps = "vector_ip_ops";
+    }
+
+    String indexQuery =
+            String.format(
+                    "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding %s) WITH"
+                            + " (lists = %s);",
+                    indexName, postgresEndpoint.getTableName(), vectorOps, postgresEndpoint.getLists());
+
+    if (tableExists == 0) {
+
       jdbcTemplate.execute(
           String.format(
-              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_ip_ops) WITH"
-                  + " (lists = %s);",
-              postgresEndpoint.getTableName().concat("_").concat("ip_idx"),
-              postgresEndpoint.getTableName(),
-              postgresEndpoint.getLists()));
+              "CREATE TABLE IF NOT EXISTS %s (embedding_id SERIAL PRIMARY KEY, id VARCHAR(255) NOT"
+                  + " NULL UNIQUE, raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
+                  + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255));",
+              postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
+
+      jdbcTemplate.execute(indexQuery);
+
+    } else {
+
+      String checkIndexQuery =
+          String.format(
+              "SELECT COUNT(*) FROM pg_indexes WHERE tablename = '%s' AND indexname = '%s';",
+              postgresEndpoint.getTableName(), indexName);
+
+      int indexExists = jdbcTemplate.queryForObject(checkIndexQuery, Integer.class);
+
+      if (indexExists != 1)
+        throw new RuntimeException(
+            "No index is specifed therefore use the following SQL:\n"
+                + indexQuery);
+
     }
+
   }
 
   @Transactional
