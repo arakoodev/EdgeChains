@@ -16,7 +16,6 @@ public class ChatCompletionRequest {
   private static final Map<String, Integer> DEFAULT_LOGIT_BIAS = Collections.emptyMap();
   private static final String DEFAULT_USER = "";
 
-
   private String model;
   private Double temperature;
   private List<ChatMessage> messages;
@@ -37,11 +36,23 @@ public class ChatCompletionRequest {
 
   @JsonProperty("logit_bias")
   private Map<String, Integer> logitBias;
+
   private String user;
 
   public ChatCompletionRequest() {}
 
-  public ChatCompletionRequest(String model, Double temperature, List<ChatMessage> messages, Boolean stream, Double topP, Integer n, List<String> stop, Double presencePenalty, Double frequencyPenalty, Map<String, Integer> logitBias, String user) {
+  public ChatCompletionRequest(
+      String model,
+      Double temperature,
+      List<ChatMessage> messages,
+      Boolean stream,
+      Double topP,
+      Integer n,
+      List<String> stop,
+      Double presencePenalty,
+      Double frequencyPenalty,
+      Map<String, Integer> logitBias,
+      String user) {
     this.model = model;
     this.temperature = (temperature != null) ? temperature : DEFAULT_TEMPERATURE;
     this.messages = messages;
@@ -50,7 +61,8 @@ public class ChatCompletionRequest {
     this.n = (n != null) ? n : DEFAULT_N;
     this.stop = (stop != null) ? stop : DEFAULT_STOP;
     this.presencePenalty = (presencePenalty != null) ? presencePenalty : DEFAULT_PRESENCE_PENALTY;
-    this.frequencyPenalty = (frequencyPenalty != null) ? frequencyPenalty : DEFAULT_FREQUENCY_PENALTY;
+    this.frequencyPenalty =
+        (frequencyPenalty != null) ? frequencyPenalty : DEFAULT_FREQUENCY_PENALTY;
     this.logitBias = (logitBias != null) ? logitBias : DEFAULT_LOGIT_BIAS;
     this.user = (user != null) ? user : DEFAULT_USER;
   }
@@ -118,18 +130,18 @@ public class ChatCompletionRequest {
   @Override
   public String toString() {
     return new StringJoiner(", ", ChatCompletionRequest.class.getSimpleName() + "[", "]")
-            .add("model='" + model + "'")
-            .add("temperature=" + temperature)
-            .add("messages=" + messages)
-            .add("stream=" + stream)
-            .add("topP=" + topP)
-            .add("n=" + n)
-            .add("stop=" + stop)
-            .add("presencePenalty=" + presencePenalty)
-            .add("frequencyPenalty=" + frequencyPenalty)
-            .add("logitBias=" + logitBias)
-            .add("user='" + user + "'")
-            .toString();
+        .add("model='" + model + "'")
+        .add("temperature=" + temperature)
+        .add("messages=" + messages)
+        .add("stream=" + stream)
+        .add("topP=" + topP)
+        .add("n=" + n)
+        .add("stop=" + stop)
+        .add("presencePenalty=" + presencePenalty)
+        .add("frequencyPenalty=" + frequencyPenalty)
+        .add("logitBias=" + logitBias)
+        .add("user='" + user + "'")
+        .toString();
   }
 
   public static ChatCompletionRequestBuilder builder() {
@@ -141,20 +153,25 @@ public class ChatCompletionRequest {
     private Double temperature;
     private List<ChatMessage> messages;
     private Boolean stream;
+
     @JsonProperty("top_p")
     private Double topP;
+
     private Integer n;
     private List<String> stop;
+
     @JsonProperty("presence_penalty")
     private Double presencePenalty;
+
     @JsonProperty("frequency_penalty")
     private Double frequencyPenalty;
+
     @JsonProperty("logit_bias")
     private Map<String, Integer> logitBias;
+
     private String user;
 
     private ChatCompletionRequestBuilder() {}
-
 
     public ChatCompletionRequestBuilder model(String model) {
       this.model = model;
@@ -212,8 +229,18 @@ public class ChatCompletionRequest {
     }
 
     public ChatCompletionRequest build() {
-      return new ChatCompletionRequest(model, temperature, messages, stream, topP, n, stop,
-              presencePenalty, frequencyPenalty, logitBias, user);
+      return new ChatCompletionRequest(
+          model,
+          temperature,
+          messages,
+          stream,
+          topP,
+          n,
+          stop,
+          presencePenalty,
+          frequencyPenalty,
+          logitBias,
+          user);
     }
   }
 }

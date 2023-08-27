@@ -27,7 +27,7 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 @SpringBootApplication
 public class WikiExample {
 
-  private static final String OPENAI_AUTH_KEY =  "";
+  private static final String OPENAI_AUTH_KEY = "";
   private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
 
   /* Step 3: Create OpenAiEndpoint to communicate with OpenAiServices; */
@@ -54,22 +54,20 @@ public class WikiExample {
     properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
-
-
     new SpringApplicationBuilder(WikiExample.class).properties(properties).run(args);
 
     wikiEndpoint = new WikiEndpoint();
 
     gpt3Endpoint =
-            new OpenAiEndpoint(
-                    OPENAI_CHAT_COMPLETION_API,
-                    OPENAI_AUTH_KEY,
-                    OPENAI_ORG_ID,
-                    "gpt-3.5-turbo",
-                    "user",
-                    0.7,
-                    false,
-                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            false,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
   }
 
   @RestController
@@ -98,7 +96,8 @@ public class WikiExample {
 
       // Chain 3 ==> Pass Prompt to ChatCompletion API & Return ArkResponseObservable
       EdgeChain<ChatCompletionResponse> openAiChain =
-          new EdgeChain<>(gpt3Endpoint.chatCompletion(promptChain.get(), "WikiChain", loader,  arkRequest));
+          new EdgeChain<>(
+              gpt3Endpoint.chatCompletion(promptChain.get(), "WikiChain", loader, arkRequest));
 
       /**
        * The best part is flexibility with just one method EdgeChainsSDK will return response either

@@ -11,7 +11,6 @@ import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
@@ -61,20 +60,20 @@ public class OpenAiEndpoint extends Endpoint {
   }
 
   // For Embeddings....
-  public OpenAiEndpoint(String url, String apiKey, String orgId, String model, RetryPolicy retryPolicy) {
+  public OpenAiEndpoint(
+      String url, String apiKey, String orgId, String model, RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.orgId = orgId;
     this.model = model;
   }
 
-
   public OpenAiEndpoint(
-          String url,
-          String apiKey,
-          String model,
-          String role,
-          Double temperature,
-          RetryPolicy retryPolicy) {
+      String url,
+      String apiKey,
+      String model,
+      String role,
+      Double temperature,
+      RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.model = model;
     this.role = role;
@@ -82,7 +81,7 @@ public class OpenAiEndpoint extends Endpoint {
   }
 
   public OpenAiEndpoint(
-          String url, String apiKey, String model, String role, Double temperature, Boolean stream) {
+      String url, String apiKey, String model, String role, Double temperature, Boolean stream) {
     super(url, apiKey, null);
     this.model = model;
     this.role = role;
@@ -91,7 +90,13 @@ public class OpenAiEndpoint extends Endpoint {
   }
 
   public OpenAiEndpoint(
-          String url, String apiKey, String orgId, String model, String role, Double temperature, RetryPolicy retryPolicy) {
+      String url,
+      String apiKey,
+      String orgId,
+      String model,
+      String role,
+      Double temperature,
+      RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.model = model;
     this.role = role;
@@ -100,13 +105,13 @@ public class OpenAiEndpoint extends Endpoint {
   }
 
   public OpenAiEndpoint(
-          String url,
-          String apiKey,
-          String model,
-          String role,
-          Double temperature,
-          Boolean stream,
-          RetryPolicy retryPolicy) {
+      String url,
+      String apiKey,
+      String model,
+      String role,
+      Double temperature,
+      Boolean stream,
+      RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.model = model;
     this.role = role;
@@ -115,13 +120,13 @@ public class OpenAiEndpoint extends Endpoint {
   }
 
   public OpenAiEndpoint(
-          String url,
-          String apiKey,
-          String orgId,
-          String model,
-          String role,
-          Double temperature,
-          Boolean stream) {
+      String url,
+      String apiKey,
+      String orgId,
+      String model,
+      String role,
+      Double temperature,
+      Boolean stream) {
     super(url, apiKey, null);
     this.orgId = orgId;
     this.model = model;
@@ -130,17 +135,15 @@ public class OpenAiEndpoint extends Endpoint {
     this.stream = stream;
   }
 
-
-
   public OpenAiEndpoint(
-          String url,
-          String apiKey,
-          String orgId,
-          String model,
-          String role,
-          Double temperature,
-          Boolean stream,
-          RetryPolicy retryPolicy) {
+      String url,
+      String apiKey,
+      String orgId,
+      String model,
+      String role,
+      Double temperature,
+      Boolean stream,
+      RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.orgId = orgId;
     this.model = model;
@@ -148,11 +151,10 @@ public class OpenAiEndpoint extends Endpoint {
     this.temperature = temperature;
     this.stream = stream;
   }
+
   public String getModel() {
     return model;
   }
-
-
 
   public String getInput() {
     return input;
@@ -254,7 +256,6 @@ public class OpenAiEndpoint extends Endpoint {
     return chatMessages;
   }
 
-
   public void setJsonnetLoader(JsonnetLoader jsonnetLoader) {
     this.jsonnetLoader = jsonnetLoader;
   }
@@ -275,27 +276,33 @@ public class OpenAiEndpoint extends Endpoint {
     return callIdentifier;
   }
 
-  public Observable<ChatCompletionResponse> chatCompletion(String input, String chainName, ArkRequest arkRequest) {
+  public Observable<ChatCompletionResponse> chatCompletion(
+      String input, String chainName, ArkRequest arkRequest) {
     this.chatMessages = List.of(new ChatMessage(this.role, input));
     this.chainName = chainName;
     return chatCompletion(arkRequest);
   }
 
-  public Observable<ChatCompletionResponse> chatCompletion(String input, String chainName, JsonnetLoader loader, ArkRequest arkRequest) {
+  public Observable<ChatCompletionResponse> chatCompletion(
+      String input, String chainName, JsonnetLoader loader, ArkRequest arkRequest) {
     this.chatMessages = List.of(new ChatMessage(this.role, input));
     this.chainName = chainName;
     this.jsonnetLoader = loader;
     return chatCompletion(arkRequest);
   }
 
-
-  public Observable<ChatCompletionResponse> chatCompletion(List<ChatMessage> chatMessages, String chainName, ArkRequest arkRequest) {
+  public Observable<ChatCompletionResponse> chatCompletion(
+      List<ChatMessage> chatMessages, String chainName, ArkRequest arkRequest) {
     this.chainName = chainName;
     this.chatMessages = chatMessages;
     return chatCompletion(arkRequest);
   }
 
-  public Observable<ChatCompletionResponse> chatCompletion(List<ChatMessage> chatMessages, String chainName, JsonnetLoader loader, ArkRequest arkRequest) {
+  public Observable<ChatCompletionResponse> chatCompletion(
+      List<ChatMessage> chatMessages,
+      String chainName,
+      JsonnetLoader loader,
+      ArkRequest arkRequest) {
     this.chainName = chainName;
     this.chatMessages = chatMessages;
     this.jsonnetLoader = loader;
@@ -324,15 +331,14 @@ public class OpenAiEndpoint extends Endpoint {
 
     if (Objects.nonNull(getStream()) && getStream())
       return this.openAiStreamService
-              .chatCompletion(this)
-              .map(
-                      chatResponse -> {
-                        if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
-                          chatResponse.getChoices().get(0).getMessage().setContent("");
-                          return chatResponse;
-                        } else return chatResponse;
-                      });
+          .chatCompletion(this)
+          .map(
+              chatResponse -> {
+                if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
+                  chatResponse.getChoices().get(0).getMessage().setContent("");
+                  return chatResponse;
+                } else return chatResponse;
+              });
     else return Observable.fromSingle(this.openAiService.chatCompletion(this));
   }
-
 }

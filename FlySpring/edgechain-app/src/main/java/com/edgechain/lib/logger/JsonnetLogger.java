@@ -1,14 +1,11 @@
 package com.edgechain.lib.logger;
 
-import com.edgechain.lib.logger.entities.ChatCompletionLog;
 import com.edgechain.lib.logger.entities.JsonnetLog;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
-import com.edgechain.lib.retrofit.logger.ChatCompletionLoggerService;
 import java.util.HashMap;
 
 import com.edgechain.lib.retrofit.logger.JsonnetLoggerService;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.PathVariable;
 import retrofit2.Retrofit;
 
 public class JsonnetLogger {

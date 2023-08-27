@@ -33,7 +33,7 @@ public class JsonnetLoggerController {
   @PostMapping("/findByName/{page}/{size}")
   public Page<JsonnetLog> findAllBySelectedFileOrderByCreatedAtDesc(
       @RequestBody HashMap<String, String> mapper, @PathVariable int page, @PathVariable int size) {
-    return getInstance().findAllBySelectedFileOrderByCreatedAtDesc(mapper.get("filename"), page, size);
+    return getInstance()
+        .findAllBySelectedFileOrderByCreatedAtDesc(mapper.get("filename"), page, size);
   }
-
 }

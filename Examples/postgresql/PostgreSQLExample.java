@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.*;
 public class PostgreSQLExample {
 
   private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
-  private final static String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
+  private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
   private static OpenAiEndpoint ada002Embedding;
   private static OpenAiEndpoint gpt3Endpoint;
   private static PostgresEndpoint postgresEndpoint;
@@ -69,22 +69,22 @@ public class PostgreSQLExample {
 
     // Variables Initialization ==> Endpoints must be intialized in main method...
     ada002Embedding =
-            new OpenAiEndpoint(
-                    OPENAI_EMBEDDINGS_API,
-                    OPENAI_AUTH_KEY,
-                    OPENAI_ORG_ID,
-                    "text-embedding-ada-002",
-                    new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+        new OpenAiEndpoint(
+            OPENAI_EMBEDDINGS_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "text-embedding-ada-002",
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     gpt3Endpoint =
-            new OpenAiEndpoint(
-                    OPENAI_CHAT_COMPLETION_API,
-                    OPENAI_AUTH_KEY,
-                    OPENAI_ORG_ID,
-                    "gpt-3.5-turbo",
-                    "user",
-                    0.85,
-                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.85,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     postgresEndpoint =
         new PostgresEndpoint("spring_vectors", new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));

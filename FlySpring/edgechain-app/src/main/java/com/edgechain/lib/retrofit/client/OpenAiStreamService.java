@@ -6,7 +6,6 @@ import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.utils.JsonUtils;
 import io.reactivex.rxjava3.core.Observable;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

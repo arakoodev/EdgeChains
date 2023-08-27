@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PostgresWordEmbeddings implements ArkObject {
 
-//  private Long embedding_id;
+  //  private Long embedding_id;
 
   private Integer embedding_id;
   private String id;
@@ -154,7 +154,7 @@ public class PostgresWordEmbeddings implements ArkObject {
       json.put("score", score);
     }
 
-    if(titleMetadata != null) {
+    if (titleMetadata != null) {
       json.put("titleMetadata", titleMetadata);
     }
 
