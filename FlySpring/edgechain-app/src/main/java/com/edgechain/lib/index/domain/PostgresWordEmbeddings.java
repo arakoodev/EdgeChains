@@ -25,6 +25,10 @@ public class PostgresWordEmbeddings implements ArkObject {
 
   private Double score;
 
+  private String metadata;
+  private Integer metadataId;
+  private String titleMetadata;
+
   public Long getEmbedding_id() {
     return embedding_id;
   }
@@ -89,9 +93,34 @@ public class PostgresWordEmbeddings implements ArkObject {
     this.filename = filename;
   }
 
+  public String getMetadata() {
+    return metadata;
+  }
+
+  public void setMetadata(String metadata) {
+    this.metadata = metadata;
+  }
+
+  public Integer getMetadataId() {
+    return metadataId;
+  }
+
+  public void setMetadataId(Integer metadataId) {
+    this.metadataId = metadataId;
+  }
+
+  public String getTitleMetadata() {
+    return titleMetadata;
+  }
+
+  public void setTitleMetadata(String titleMetadata) {
+    this.titleMetadata = titleMetadata;
+  }
+
   @Override
   public JSONObject toJson() {
     JSONObject json = new JSONObject();
+
     if (embedding_id != null) {
       json.put("embedding_id", embedding_id);
     }
@@ -122,6 +151,17 @@ public class PostgresWordEmbeddings implements ArkObject {
 
     if (score != null && !Double.isNaN(score)) {
       json.put("score", score);
+    }
+
+    if(titleMetadata != null) {
+      json.put("titleMetadata", titleMetadata);
+    }
+
+    if (metadata != null) {
+      json.put("metadata", metadata);
+    }
+    if (metadataId != null) {
+      json.put("metadataId", metadataId);
     }
 
     return json;
