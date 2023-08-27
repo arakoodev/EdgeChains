@@ -27,6 +27,7 @@ public class PostgresWordEmbeddings implements ArkObject {
   private String metadata;
   private Integer metadataId;
   private String titleMetadata;
+
   public Integer getEmbedding_id() {
     return embedding_id;
   }
@@ -126,12 +127,12 @@ public class PostgresWordEmbeddings implements ArkObject {
     json.put("timestamp", timestamp.toString());
     json.put("score", score);
 
-    //If metadata table is not null, add metadata and metadataDate
+    // If metadata table is not null, add metadata and metadataDate
     json.put("titleMetadata", titleMetadata);
-    if(metadata != null) {
+    if (metadata != null) {
       json.put("metadata", metadata);
     }
-    if(metadataId != null) {
+    if (metadataId != null) {
       json.put("metadataId", metadataId);
     }
     return json;

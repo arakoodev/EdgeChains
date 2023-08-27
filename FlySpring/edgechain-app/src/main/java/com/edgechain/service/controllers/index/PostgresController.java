@@ -24,8 +24,7 @@ public class PostgresController {
   public Single<Integer> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
 
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-    EdgeChain<Integer> edgeChain =
-        this.postgresClient.upsert(postgresEndpoint.getWordEmbeddings());
+    EdgeChain<Integer> edgeChain = this.postgresClient.upsert(postgresEndpoint.getWordEmbeddings());
 
     return edgeChain.toSingle();
   }
@@ -34,12 +33,13 @@ public class PostgresController {
   public Single<Integer> insertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
     EdgeChain<Integer> edgeChain =
-            this.postgresClient.insertMetadata(postgresEndpoint.getWordEmbeddings());
+        this.postgresClient.insertMetadata(postgresEndpoint.getWordEmbeddings());
     return edgeChain.toSingle();
   }
 
   @PostMapping("/join/insert")
-  public Single<StringResponse> insertIntoJoinTable(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<StringResponse> insertIntoJoinTable(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
     EdgeChain<StringResponse> edgeChain = this.postgresClient.insertIntoJoinTable(postgresEndpoint);
     return edgeChain.toSingle();
@@ -60,22 +60,27 @@ public class PostgresController {
 
     return edgeChain.toSingle();
   }
+
   @PostMapping("/chunks")
   public Single<List<PostgresWordEmbeddings>> getAllChunks(
       @RequestBody PostgresEndpoint postgresEndpoint) {
 
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
 
-    EdgeChain<List<PostgresWordEmbeddings>> edgeChain = this.postgresClient.getAllChunks(postgresEndpoint);
+    EdgeChain<List<PostgresWordEmbeddings>> edgeChain =
+        this.postgresClient.getAllChunks(postgresEndpoint);
     return edgeChain.toSingle();
   }
 
   @PostMapping("/similarity-metadata")
   public Single<List<PostgresWordEmbeddings>> similaritySearchMetadata(
-          @RequestBody PostgresEndpoint postgresEndpoint
-  ) {
+      @RequestBody PostgresEndpoint postgresEndpoint) {
     this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-    EdgeChain<List<PostgresWordEmbeddings>> edgeChain = this.postgresClient.similaritySearchMetadata(postgresEndpoint.getWordEmbeddings(), postgresEndpoint.getMetric(), postgresEndpoint.getTopK());
+    EdgeChain<List<PostgresWordEmbeddings>> edgeChain =
+        this.postgresClient.similaritySearchMetadata(
+            postgresEndpoint.getWordEmbeddings(),
+            postgresEndpoint.getMetric(),
+            postgresEndpoint.getTopK());
     return edgeChain.toSingle();
   }
 
