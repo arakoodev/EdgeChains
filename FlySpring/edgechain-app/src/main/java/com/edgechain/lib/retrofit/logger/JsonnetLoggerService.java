@@ -1,6 +1,5 @@
 package com.edgechain.lib.retrofit.logger;
 
-
 import com.edgechain.lib.logger.entities.JsonnetLog;
 import io.reactivex.rxjava3.core.Single;
 import java.util.HashMap;
@@ -16,11 +15,10 @@ public interface JsonnetLoggerService {
   Single<Page<JsonnetLog>> findAll(@Path("page") int page, @Path("size") int size);
 
   @GET(value = "logs/jsonnet/findAll/sorted/{page}/{size}")
-  Single<Page<JsonnetLog>> findAllOrderByCreatedAtDesc(@Path("page") int page, @Path("size") int size);
+  Single<Page<JsonnetLog>> findAllOrderByCreatedAtDesc(
+      @Path("page") int page, @Path("size") int size);
 
   @POST(value = "logs/jsonnet/findByName/sorted/{page}/{size}")
   Single<Page<JsonnetLog>> findAllBySelectedFileOrderByCreatedAtDesc(
-          @Body HashMap<String, String> mapper, @Path("page") int page, @Path("size") int size);
-
-
+      @Body HashMap<String, String> mapper, @Path("page") int page, @Path("size") int size);
 }

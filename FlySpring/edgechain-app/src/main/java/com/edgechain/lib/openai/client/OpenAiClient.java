@@ -77,8 +77,8 @@ public class OpenAiClient {
       ChatCompletionRequest request) {
 
     try {
-        logger.info("Logging ChatCompletion Stream....");
-        logger.info(request.toString());
+      logger.info("Logging ChatCompletion Stream....");
+      logger.info(request.toString());
 
       return new EdgeChain<>(
           RxJava3Adapter.fluxToObservable(

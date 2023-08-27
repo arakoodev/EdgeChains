@@ -1,7 +1,6 @@
 package com.edgechain.lib.rxjava.transformer.observable;
 
 import com.edgechain.lib.endpoint.Endpoint;
-import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.response.ArkEmitter;
 import com.edgechain.lib.response.ArkObservable;

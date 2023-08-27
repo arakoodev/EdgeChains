@@ -3,7 +3,6 @@ package com.edgechain.lib.embeddings.response;
 import com.edgechain.lib.response.ArkObject;
 import org.json.JSONObject;
 
-import java.util.Objects;
 
 public class Usage implements ArkObject {
 

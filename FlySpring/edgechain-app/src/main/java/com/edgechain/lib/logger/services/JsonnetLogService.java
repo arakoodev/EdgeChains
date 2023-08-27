@@ -1,8 +1,6 @@
 package com.edgechain.lib.logger.services;
 
-import com.edgechain.lib.logger.entities.ChatCompletionLog;
 import com.edgechain.lib.logger.entities.JsonnetLog;
-import com.edgechain.lib.logger.repositories.ChatCompletionLogRepository;
 import com.edgechain.lib.logger.repositories.JsonnetLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,7 +31,8 @@ public class JsonnetLogService {
   }
 
   @Transactional(readOnly = true)
-  public Page<JsonnetLog> findAllBySelectedFileOrderByCreatedAtDesc(String filename, Pageable pageable) {
+  public Page<JsonnetLog> findAllBySelectedFileOrderByCreatedAtDesc(
+      String filename, Pageable pageable) {
     return this.jsonnetLogRepository.findAllBySelectedFileOrderByCreatedAtDesc(filename, pageable);
   }
 

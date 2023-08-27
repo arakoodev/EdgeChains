@@ -34,8 +34,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,7 +51,6 @@ public class OpenAiController {
 
   @PostMapping(value = "/chat-completion")
   public Single<ChatCompletionResponse> chatCompletion(@RequestBody OpenAiEndpoint openAiEndpoint) {
-
 
     ChatCompletionRequest chatCompletionRequest =
         ChatCompletionRequest.builder()
@@ -101,13 +98,13 @@ public class OpenAiController {
                 chatLog.setCompletedAt(LocalDateTime.now());
 
                 Duration duration =
-                        Duration.between(
-                                chatLog.getCreatedAt(), chatLog.getCompletedAt());
+                    Duration.between(chatLog.getCreatedAt(), chatLog.getCompletedAt());
                 chatLog.setLatency(duration.toMillis());
 
                 chatCompletionLogService.saveOrUpdate(chatLog);
 
-                if(Objects.nonNull(openAiEndpoint.getJsonnetLoader()) && openAiEndpoint.getJsonnetLoader().getThreshold() >= 1 ) {
+                if (Objects.nonNull(openAiEndpoint.getJsonnetLoader())
+                    && openAiEndpoint.getJsonnetLoader().getThreshold() >= 1) {
                   JsonnetLog jsonnetLog = new JsonnetLog();
                   jsonnetLog.setMetadata(openAiEndpoint.getJsonnetLoader().getMetadata());
                   jsonnetLog.setContent(c.getChoices().get(0).getMessage().getContent());
@@ -118,8 +115,6 @@ public class OpenAiController {
                   jsonnetLog.setSelectedFile(openAiEndpoint.getJsonnetLoader().getSelectedFile());
                   jsonnetLogService.saveOrUpdate(jsonnetLog);
                 }
-
-
               })
           .toSingle();
 
@@ -160,7 +155,6 @@ public class OpenAiController {
             AtomInteger chunks = AtomInteger.of(0);
 
             if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
-
 
               ChatCompletionLog chatLog = new ChatCompletionLog();
               chatLog.setName(openAiEndpoint.getChainName());
@@ -205,29 +199,27 @@ public class OpenAiController {
                         chatLog.setType(res.getObject());
                         chatLog.setContent(content.toString());
                         chatLog.setCompletedAt(LocalDateTime.now());
-                        chatLog.setTotalTokens(
-                            chunks.get() + chatLog.getPromptTokens());
+                        chatLog.setTotalTokens(chunks.get() + chatLog.getPromptTokens());
 
                         Duration duration =
-                            Duration.between(
-                                chatLog.getCreatedAt(),
-                                chatLog.getCompletedAt());
+                            Duration.between(chatLog.getCreatedAt(), chatLog.getCompletedAt());
                         chatLog.setLatency(duration.toMillis());
 
                         chatCompletionLogService.saveOrUpdate(chatLog);
 
-                          if(Objects.nonNull(openAiEndpoint.getJsonnetLoader()) && openAiEndpoint.getJsonnetLoader().getThreshold() >= 1 ) {
-                              JsonnetLog jsonnetLog = new JsonnetLog();
-                              jsonnetLog.setMetadata(openAiEndpoint.getJsonnetLoader().getMetadata());
-                              jsonnetLog.setContent(content.toString());
-                              jsonnetLog.setF1(openAiEndpoint.getJsonnetLoader().getF1());
-                              jsonnetLog.setF2(openAiEndpoint.getJsonnetLoader().getF2());
-                              jsonnetLog.setSplitSize(openAiEndpoint.getJsonnetLoader().getSplitSize());
-                              jsonnetLog.setCreatedAt(LocalDateTime.now());
-                              jsonnetLog.setSelectedFile(openAiEndpoint.getJsonnetLoader().getSelectedFile());
-                              jsonnetLogService.saveOrUpdate(jsonnetLog);
-                          }
-
+                        if (Objects.nonNull(openAiEndpoint.getJsonnetLoader())
+                            && openAiEndpoint.getJsonnetLoader().getThreshold() >= 1) {
+                          JsonnetLog jsonnetLog = new JsonnetLog();
+                          jsonnetLog.setMetadata(openAiEndpoint.getJsonnetLoader().getMetadata());
+                          jsonnetLog.setContent(content.toString());
+                          jsonnetLog.setF1(openAiEndpoint.getJsonnetLoader().getF1());
+                          jsonnetLog.setF2(openAiEndpoint.getJsonnetLoader().getF2());
+                          jsonnetLog.setSplitSize(openAiEndpoint.getJsonnetLoader().getSplitSize());
+                          jsonnetLog.setCreatedAt(LocalDateTime.now());
+                          jsonnetLog.setSelectedFile(
+                              openAiEndpoint.getJsonnetLoader().getSelectedFile());
+                          jsonnetLogService.saveOrUpdate(jsonnetLog);
+                        }
                       }
 
                     } catch (final Exception e) {
@@ -312,5 +304,4 @@ public class OpenAiController {
 
     return edgeChain.toSingle();
   }
-
 }

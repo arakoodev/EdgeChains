@@ -5,14 +5,12 @@ import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.utils.FloatUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
-import org.hibernate.JDBCException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -48,10 +46,10 @@ public class PostgresClientRepository {
     }
 
     String indexQuery =
-            String.format(
-                    "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding %s) WITH"
-                            + " (lists = %s);",
-                    indexName, postgresEndpoint.getTableName(), vectorOps, postgresEndpoint.getLists());
+        String.format(
+            "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding %s) WITH"
+                + " (lists = %s);",
+            indexName, postgresEndpoint.getTableName(), vectorOps, postgresEndpoint.getLists());
 
     if (tableExists == 0) {
 
@@ -75,11 +73,8 @@ public class PostgresClientRepository {
 
       if (indexExists != 1)
         throw new RuntimeException(
-            "No index is specifed therefore use the following SQL:\n"
-                + indexQuery);
-
+            "No index is specifed therefore use the following SQL:\n" + indexQuery);
     }
-
   }
 
   @Transactional

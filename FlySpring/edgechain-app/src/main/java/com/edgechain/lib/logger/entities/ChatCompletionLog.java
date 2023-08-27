@@ -32,7 +32,6 @@ public class ChatCompletionLog {
   @NotBlank
   private String type;
 
-
   private LocalDateTime createdAt;
   private LocalDateTime completedAt;
 
@@ -52,6 +51,7 @@ public class ChatCompletionLog {
 
   @Column(name = "top_p")
   private Double topP;
+
   private Integer n;
 
   private Double temperature;
@@ -170,7 +170,6 @@ public class ChatCompletionLog {
     this.callIdentifier = callIdentifier;
   }
 
-
   public Double getTemperature() {
     return temperature;
   }
@@ -214,23 +213,23 @@ public class ChatCompletionLog {
   @Override
   public String toString() {
     return new StringJoiner(", ", ChatCompletionLog.class.getSimpleName() + "[", "]")
-            .add("id='" + id + "'")
-            .add("name='" + name + "'")
-            .add("callIdentifier='" + callIdentifier + "'")
-            .add("type='" + type + "'")
-            .add("temperature=" + temperature)
-            .add("createdAt=" + createdAt)
-            .add("completedAt=" + completedAt)
-            .add("model='" + model + "'")
-            .add("input='" + input + "'")
-            .add("content='" + content + "'")
-            .add("presencePenalty=" + presencePenalty)
-            .add("frequencyPenalty=" + frequencyPenalty)
-            .add("topP=" + topP)
-            .add("n=" + n)
-            .add("latency=" + latency)
-            .add("promptTokens=" + promptTokens)
-            .add("totalTokens=" + totalTokens)
-            .toString();
+        .add("id='" + id + "'")
+        .add("name='" + name + "'")
+        .add("callIdentifier='" + callIdentifier + "'")
+        .add("type='" + type + "'")
+        .add("temperature=" + temperature)
+        .add("createdAt=" + createdAt)
+        .add("completedAt=" + completedAt)
+        .add("model='" + model + "'")
+        .add("input='" + input + "'")
+        .add("content='" + content + "'")
+        .add("presencePenalty=" + presencePenalty)
+        .add("frequencyPenalty=" + frequencyPenalty)
+        .add("topP=" + topP)
+        .add("n=" + n)
+        .add("latency=" + latency)
+        .add("promptTokens=" + promptTokens)
+        .add("totalTokens=" + totalTokens)
+        .toString();
   }
 }

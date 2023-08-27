@@ -6,7 +6,6 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ChatCompletionResponse implements ArkObject, Serializable {
@@ -18,8 +17,6 @@ public class ChatCompletionResponse implements ArkObject, Serializable {
   private long created;
 
   private String model;
-
-
 
   private List<ChatCompletionChoice> choices;
 
@@ -105,7 +102,9 @@ public class ChatCompletionResponse implements ArkObject, Serializable {
     }
 
     if (choices != null) {
-      json.put("choices", choices.stream().map(ChatCompletionChoice::toJson).collect(Collectors.toList()));
+      json.put(
+          "choices",
+          choices.stream().map(ChatCompletionChoice::toJson).collect(Collectors.toList()));
     }
 
     if (usage != null) {
@@ -113,6 +112,5 @@ public class ChatCompletionResponse implements ArkObject, Serializable {
     }
 
     return json;
-
   }
 }

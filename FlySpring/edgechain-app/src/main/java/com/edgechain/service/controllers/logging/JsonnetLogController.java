@@ -1,9 +1,7 @@
 package com.edgechain.service.controllers.logging;
 
 import com.edgechain.lib.configuration.WebConfiguration;
-import com.edgechain.lib.logger.entities.ChatCompletionLog;
 import com.edgechain.lib.logger.entities.JsonnetLog;
-import com.edgechain.lib.logger.services.ChatCompletionLogService;
 import java.util.HashMap;
 
 import com.edgechain.lib.logger.services.JsonnetLogService;
