@@ -32,12 +32,25 @@ public class FileJsonnetLoader extends JsonnetLoader {
   public FileJsonnetLoader(String filePath) {
     super(filePath);
     this.filePath1 = filePath;
+
+    if(!new File(filePath).exists()) {
+      throw new JsonnetLoaderException("File not found - " + filePath);
+    }
+
   }
 
   public FileJsonnetLoader(int threshold, String filePath1, String filePath2) {
     super(threshold, FilenameUtils.getName(filePath1), FilenameUtils.getName(filePath2));
     this.filePath1 = filePath1;
     this.filePath2 = filePath2;
+
+    if(!new File(filePath1).exists()) {
+      throw new JsonnetLoaderException("File not found - " + filePath1);
+    }
+
+    if(!new File(filePath2).exists()) {
+      throw new JsonnetLoaderException("File not found. " + filePath2);
+    }
   }
 
   @Override

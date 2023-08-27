@@ -50,10 +50,9 @@ public class WikiExample {
     properties.setProperty("spring.jpa.show-sql", "true");
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
-    properties.setProperty(
-            "postgres.db.host", "jdbc:postgresql://db.itlgddqhlxhdbncdqowa.supabase.co:5432/postgres");
-    properties.setProperty("postgres.db.username", "postgres");
-    properties.setProperty("postgres.db.password", "fsfVFQM4u2rYZehP");
+    properties.setProperty("postgres.db.host", "");
+    properties.setProperty("postgres.db.username", "");
+    properties.setProperty("postgres.db.password", "");
 
 
 

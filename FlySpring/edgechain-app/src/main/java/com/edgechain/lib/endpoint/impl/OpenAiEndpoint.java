@@ -60,17 +60,13 @@ public class OpenAiEndpoint extends Endpoint {
     this.model = model;
   }
 
-  public OpenAiEndpoint(String url, String apiKey, String model, RetryPolicy retryPolicy) {
+  // For Embeddings....
+  public OpenAiEndpoint(String url, String apiKey, String orgId, String model, RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
+    this.orgId = orgId;
     this.model = model;
   }
 
-  public OpenAiEndpoint(
-          String url, String apiKey, String model, String role, RetryPolicy retryPolicy) {
-    super(url, apiKey, retryPolicy);
-    this.model = model;
-    this.role = role;
-  }
 
   public OpenAiEndpoint(
           String url,
@@ -92,6 +88,15 @@ public class OpenAiEndpoint extends Endpoint {
     this.role = role;
     this.temperature = temperature;
     this.stream = stream;
+  }
+
+  public OpenAiEndpoint(
+          String url, String apiKey, String orgId, String model, String role, Double temperature, RetryPolicy retryPolicy) {
+    super(url, apiKey, retryPolicy);
+    this.model = model;
+    this.role = role;
+    this.temperature = temperature;
+    this.orgId = orgId;
   }
 
   public OpenAiEndpoint(
@@ -124,6 +129,8 @@ public class OpenAiEndpoint extends Endpoint {
     this.temperature = temperature;
     this.stream = stream;
   }
+
+
 
   public OpenAiEndpoint(
           String url,
