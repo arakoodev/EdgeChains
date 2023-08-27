@@ -90,4 +90,43 @@ public class PostgresRetrieval extends Retrieval {
       throw new RuntimeException(
           "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
   }
+  public Integer upsertAndReturnId(String input) {
+
+    if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
+      WordEmbeddings embeddings =
+          openAiEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
+      return this.postgresEndpoint.upsert(
+          embeddings, this.filename, this.dimensions, this.metric, this.lists);
+    } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
+      WordEmbeddings embeddings =
+          miniLMEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
+      return this.postgresEndpoint.upsert(
+          embeddings, this.filename, this.dimensions, this.metric, this.lists);
+    } else if (endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint) {
+      WordEmbeddings embeddings = bgeSmallEndpoint.embeddings(input, arkRequest);
+      return this.postgresEndpoint.upsert(
+          embeddings, this.filename, this.dimensions, this.metric, this.lists);
+    } else
+      throw new RuntimeException(
+          "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
+  }
+
+  public Integer insertMetadata(String metadata) {
+    if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
+      WordEmbeddings embeddings =
+              openAiEndpoint.embeddings(metadata, arkRequest).firstOrError().blockingGet();
+      return this.postgresEndpoint.insertMetadata(embeddings, this.dimensions, this.metric);
+    } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
+      WordEmbeddings embeddings =
+              miniLMEndpoint.embeddings(metadata, arkRequest).firstOrError().blockingGet();
+      return this.postgresEndpoint.insertMetadata(embeddings, this.dimensions, this.metric);
+    } else if (endpoint instanceof BgeSmallEndpoint bgeSmallEndpoint) {
+      WordEmbeddings embeddings = bgeSmallEndpoint.embeddings(metadata, arkRequest);
+      return this.postgresEndpoint.insertMetadata(embeddings, this.dimensions, this.metric);
+    } else {
+      throw new RuntimeException(
+              "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
+    }
+  }
+
 }
