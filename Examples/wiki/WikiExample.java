@@ -28,12 +28,15 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 public class WikiExample {
 
   private static final String OPENAI_AUTH_KEY = "";
+  private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
 
   /* Step 3: Create OpenAiEndpoint to communicate with OpenAiServices; */
-  private static OpenAiEndpoint gpt4Endpoint;
+  private static OpenAiEndpoint gpt3Endpoint;
   private static WikiEndpoint wikiEndpoint;
 
-  private final JsonnetLoader loader = new FileJsonnetLoader("./wiki/wiki.jsonnet");
+  // There is a 70% chance that file1 is executed; 30% chance file2 is executed....
+  private final JsonnetLoader loader =
+      new FileJsonnetLoader(70, "./wiki/wiki1.jsonnet", "./wiki/wiki2.jsonnet");
 
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
@@ -48,20 +51,22 @@ public class WikiExample {
     properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
     properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "postgres");
+    properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
     new SpringApplicationBuilder(WikiExample.class).properties(properties).run(args);
 
     wikiEndpoint = new WikiEndpoint();
 
-    gpt4Endpoint =
+    gpt3Endpoint =
         new OpenAiEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
-            "gpt-4",
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
             "user",
             0.7,
+            false,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
   }
 
@@ -81,7 +86,7 @@ public class WikiExample {
       boolean stream = arkRequest.getBooleanHeader("stream");
 
       // Configure GPT4Endpoint
-      gpt4Endpoint.setStream(stream);
+      gpt3Endpoint.setStream(stream);
 
       //  Chain 1 ==> WikiChain
       EdgeChain<WikiResponse> wikiChain = new EdgeChain<>(wikiEndpoint.getPageContent(query));
@@ -91,7 +96,8 @@ public class WikiExample {
 
       // Chain 3 ==> Pass Prompt to ChatCompletion API & Return ArkResponseObservable
       EdgeChain<ChatCompletionResponse> openAiChain =
-          new EdgeChain<>(gpt4Endpoint.chatCompletion(promptChain.get(), "WikiChain", arkRequest));
+          new EdgeChain<>(
+              gpt3Endpoint.chatCompletion(promptChain.get(), "WikiChain", loader, arkRequest));
 
       /**
        * The best part is flexibility with just one method EdgeChainsSDK will return response either

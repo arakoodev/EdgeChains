@@ -39,8 +39,8 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 
 @SpringBootApplication
 public class SupabaseMiniLMExample {
-  private static final String OPENAI_AUTH_KEY = "";
-
+  private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
+  private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
   private static OpenAiEndpoint gpt3Endpoint;
   private static PostgresEndpoint postgresEndpoint;
   private static PostgreSQLHistoryContextEndpoint contextEndpoint;
@@ -82,9 +82,10 @@ public class SupabaseMiniLMExample {
         new OpenAiEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
             "gpt-3.5-turbo",
             "user",
-            0.7,
+            0.85,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     // Creating MiniLM Endpoint

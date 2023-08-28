@@ -23,60 +23,81 @@ public class PostgresClientRepository {
   public void createTable(PostgresEndpoint postgresEndpoint) {
 
     jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector;");
-    jdbcTemplate.execute(
+
+    String checkTableQuery =
         String.format(
-            "CREATE TABLE IF NOT EXISTS %s (embedding_id SERIAL PRIMARY KEY, id VARCHAR(255) NOT"
-                + " NULL UNIQUE, raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
-                + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255));",
-            postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = '%s'",
+            postgresEndpoint.getTableName());
+
+    int tableExists = jdbcTemplate.queryForObject(checkTableQuery, Integer.class);
+
+    String indexName;
+    String vectorOps;
 
     if (PostgresDistanceMetric.L2.equals(postgresEndpoint.getMetric())) {
-      jdbcTemplate.execute(
-          String.format(
-              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_l2_ops) WITH"
-                  + " (lists = %s);",
-              postgresEndpoint.getTableName().concat("_").concat("l2_idx"),
-              postgresEndpoint.getTableName(),
-              postgresEndpoint.getLists()));
+      indexName = postgresEndpoint.getTableName().concat("_").concat("l2_idx");
+      vectorOps = "vector_l2_ops";
     } else if (PostgresDistanceMetric.COSINE.equals(postgresEndpoint.getMetric())) {
-      jdbcTemplate.execute(
-          String.format(
-              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_cosine_ops) WITH"
-                  + " (lists = %s);",
-              postgresEndpoint.getTableName().concat("_").concat("cosine_idx"),
-              postgresEndpoint.getTableName(),
-              postgresEndpoint.getLists()));
+      indexName = postgresEndpoint.getTableName().concat("_").concat("cosine_idx");
+      vectorOps = "vector_cosine_ops";
     } else {
+      indexName = postgresEndpoint.getTableName().concat("_").concat("ip_idx");
+      vectorOps = "vector_ip_ops";
+    }
+
+    String indexQuery =
+        String.format(
+            "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding %s) WITH"
+                + " (lists = %s);",
+            indexName, postgresEndpoint.getTableName(), vectorOps, postgresEndpoint.getLists());
+
+    if (tableExists == 0) {
+
       jdbcTemplate.execute(
           String.format(
-              "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (embedding vector_ip_ops) WITH"
-                  + " (lists = %s);",
-              postgresEndpoint.getTableName().concat("_").concat("ip_idx"),
-              postgresEndpoint.getTableName(),
-              postgresEndpoint.getLists()));
+              "CREATE TABLE IF NOT EXISTS %s (embedding_id SERIAL PRIMARY KEY, id VARCHAR(255) NOT"
+                  + " NULL UNIQUE, raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
+                  + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255));",
+              postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
+
+      jdbcTemplate.execute(indexQuery);
+
+    } else {
+
+      String checkIndexQuery =
+          String.format(
+              "SELECT COUNT(*) FROM pg_indexes WHERE tablename = '%s' AND indexname = '%s';",
+              postgresEndpoint.getTableName(), indexName);
+
+      int indexExists = jdbcTemplate.queryForObject(checkIndexQuery, Integer.class);
+
+      if (indexExists != 1)
+        throw new RuntimeException(
+            "No index is specifed therefore use the following SQL:\n" + indexQuery);
     }
   }
 
   @Transactional
-  public void upsertEmbeddings(
+  public Integer upsertEmbeddings(
       String tableName,
       String input,
       String filename,
       WordEmbeddings wordEmbeddings,
       String namespace) {
 
-    jdbcTemplate.execute(
+    return jdbcTemplate.queryForObject(
         String.format(
             "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES ('%s',"
                 + " '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE SET embedding ="
-                + " EXCLUDED.embedding;",
+                + " EXCLUDED.embedding RETURNING embedding_id;",
             tableName,
             UuidCreator.getTimeOrderedEpoch().toString(),
             input,
             Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
             LocalDateTime.now(),
             namespace,
-            filename));
+            filename),
+        Integer.class);
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
@@ -95,8 +116,9 @@ public class PostgresClientRepository {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, raw_text, namespace, filename, timestamp, ( embedding <#> '%s') * -1 AS"
-                  + " score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, ( embedding <#>"
+                  + " '%s') * -1 AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s'"
+                  + " LIMIT %s;",
               embeddings,
               tableName,
               namespace,
@@ -108,8 +130,9 @@ public class PostgresClientRepository {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, raw_text, namespace, filename, timestamp, 1 - ( embedding <=> '%s') AS"
-                  + " score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
+              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, 1 - ( embedding"
+                  + " <=> '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s'"
+                  + " LIMIT %s;",
               embeddings,
               tableName,
               namespace,
@@ -119,8 +142,9 @@ public class PostgresClientRepository {
     } else {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, raw_text, namespace, filename, timestamp, (embedding <-> '%s') AS score"
-                  + " FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
+              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, (embedding <->"
+                  + " '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' ASC"
+                  + " LIMIT %s;",
               embeddings,
               tableName,
               namespace,
@@ -128,6 +152,13 @@ public class PostgresClientRepository {
               Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
               topK));
     }
+  }
+
+  public List<Map<String, Object>> getAllChunks(PostgresEndpoint endpoint) {
+    return jdbcTemplate.queryForList(
+        String.format(
+            "SELECT embedding_id, raw_text, embedding, filename from %s;",
+            endpoint.getTableName()));
   }
 
   @Transactional

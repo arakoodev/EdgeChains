@@ -3,6 +3,7 @@ package com.edgechain.lib.embeddings.response;
 import com.edgechain.lib.response.ArkObject;
 import org.json.JSONObject;
 
+
 public class Usage implements ArkObject {
 
   long prompt_tokens;
@@ -36,8 +37,15 @@ public class Usage implements ArkObject {
   @Override
   public JSONObject toJson() {
     JSONObject json = new JSONObject();
-    json.put("prompt_tokens", prompt_tokens);
-    json.put("total_tokens", total_tokens);
+
+    if (prompt_tokens != 0L) {
+      json.put("prompt_tokens", prompt_tokens);
+    }
+
+    if (total_tokens != 0L) {
+      json.put("total_tokens", total_tokens);
+    }
+
     return json;
   }
 }

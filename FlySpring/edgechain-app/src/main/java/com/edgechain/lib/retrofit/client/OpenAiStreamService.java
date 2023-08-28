@@ -6,7 +6,6 @@ import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.utils.JsonUtils;
 import io.reactivex.rxjava3.core.Observable;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +22,6 @@ public class OpenAiStreamService {
   @Autowired private SecurityUUID securityUUID;
 
   public Observable<ChatCompletionResponse> chatCompletion(OpenAiEndpoint openAiEndpoint) {
-
-    logger.info("Logging Chat Completion Stream....");
-    logger.info("Prompt: " + StringUtils.join(openAiEndpoint.getChatMessages()));
 
     return RxJava3Adapter.fluxToObservable(
         WebClient.builder()
