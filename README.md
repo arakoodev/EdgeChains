@@ -122,7 +122,6 @@ We would like to express our sincere gratitude to the following individuals and 
 
 - First Hat tip to  [Spring](https://github.com/spring-projects/spring-framework).
 - We draw inspiration from the spirit of [Nextjs](https://github.com/vercel/next.js/).
-- We extend our appreciation to all the [contributors](https://github.com/wootzapp/wootz-browser/graphs/contributors) who have supported and enriched this project.
 - Respect to LangChain, Anthropic, Mosaic and the rest of the open-source LLM community. We are deeply grateful for sharing your knowledge and never turning anyone away.
 
 
