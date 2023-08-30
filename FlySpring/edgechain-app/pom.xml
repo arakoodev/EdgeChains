@@ -285,7 +285,7 @@
 					<dependency>
 						<groupId>org.springframework.boot</groupId>
 						<artifactId>spring-boot-maven-plugin</artifactId>
-						<version>${spring-boot-version}</version>
+						<version>${spring-boot.version}</version>
 					</dependency>
 				</dependencies>
 				
@@ -339,7 +339,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.8</version>
+				<version>${maven-antrun.version}</version>
 				<executions>
 					<execution>
 						<id>download-and-unpack-jbang</id>
