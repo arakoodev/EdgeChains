@@ -47,15 +47,15 @@ public class ReactChainApplication {
     new SpringApplicationBuilder(ReactChainApplication.class).properties(properties).run(args);
 
     userChatEndpoint =
-            new OpenAiEndpoint(
-                    OPENAI_CHAT_COMPLETION_API,
-                    OPENAI_AUTH_KEY,
-                    OPENAI_ORG_ID,
-                    "gpt-3.5-turbo",
-                    "user",
-                    0.7,
-                    false,
-                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            false,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
   }
 
   @RestController
@@ -92,7 +92,8 @@ public class ReactChainApplication {
         }
 
         String observation = loader.get("observation");
-        if(observation.isEmpty()) return "No info found on Wiki! Please broaden the search query or try again!";
+        if (observation.isEmpty())
+          return "No info found on Wiki! Please broaden the search query or try again!";
 
         prompt = loader.get("prompt");
         gptResponse = gptFn(prompt, arkRequest);
@@ -101,7 +102,7 @@ public class ReactChainApplication {
         loader.put("gptResponse", new JsonnetArgs(DataType.STRING, gptResponse));
       }
 
-      //Extracting the final answer
+      // Extracting the final answer
       loader.put("text", new JsonnetArgs(DataType.STRING, gptResponse));
 
       try {
@@ -118,11 +119,11 @@ public class ReactChainApplication {
 
     private String gptFn(String prompt, ArkRequest arkRequest) {
       return new EdgeChain<>(userChatEndpoint.chatCompletion(prompt, "React-Chain", arkRequest))
-              .get()
-              .getChoices()
-              .get(0)
-              .getMessage()
-              .getContent();
+          .get()
+          .getChoices()
+          .get(0)
+          .getMessage()
+          .getContent();
     }
   }
 }
