@@ -21,6 +21,7 @@ EdgeChains is an open-source chain-of-thought engineering framework tailored for
 ## Classical AI vs Generative AI - Why does something like EdgeChains exist?
 
 In classical AI, model build was the slowest part (and bottleneck) of an entire AI application. That was the part that took 6 months to build and so orchestration & other things did not matter - you could not accelerate the AI development process even if you accelerated orchestration.
+
 Generative AI is ***"few shot"*** - meaning a ***prompt** can change the behavior of a model. You dont need to rebuild your model for different applications. This means, the bottleneck of model build goes away! And instead orchestration becomes the bottleneck. Most other libraries still build GenAI libraries with the classical AI mindset - which is why prompts, chains and other parts of orchestration are hardcoded into Python classes.
 
 Edgechains focuses on solving the orchestration problem by modeling it as a declarative config.
