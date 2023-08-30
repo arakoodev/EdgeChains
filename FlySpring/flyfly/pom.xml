@@ -166,6 +166,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven-antrun.version}</version>
 						<executions>
 							<execution>
 								<phase>package</phase>
