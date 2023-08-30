@@ -12,11 +12,29 @@
   <img src="https://img.shields.io/github/last-commit/arakoodev/EdgeChains?style=for-the-badge" />
   </div>
   
+
 ---
+## Installation and Usage Quickstart
 
-Leveraging the full potential of Large language models (LLMs) often requires integrating them with other sources of computation or knowledge. Edgechains is specifically designed to **orchestrate** such applications.
+**Edgechains works on Java & Android right now. Javascript is upcoming**
 
-EdgeChains is an open-source chain-of-thought engineering framework tailored for Large Language Models (LLMs)- like OpenAI GPT, LLama2, Falcon, etc. - With a focus on enterprise-grade deployability and scalability. 
+To set up EdgeChains, you will need to download the release jar (`edgechain.jar`) from [https://github.com/arakoodev/EdgeChains/releases](https://github.com/arakoodev/EdgeChains/releases)
+
+Once downloaded, Follow these steps:
+
+1. **Copy all the contents from the _Examples_ folder** and paste into your folder. The _Examples_ folder includes all the Jsonnet files and `EdgeChainApplication.java` file.    
+2. **Prepare your OpenAI Key:** EdgeChains requires a valid OpenAI key to interact with the language models. Make sure you have your OpenAI Auth Key available, as you will need to add it to the Starter class in `EdgeChainApplication.java` file.
+3. **Configure Redis/Supabase/Pincone Connection:** locate the redisenv method in the Redisenv class in `EdgeChainApplication.java` file. Add your URL, port, and password to the appropriate fields in the method.
+
+Once you have completed these configuration steps, you are ready to run EdgeChains. 
+
+To start the application, execute the following command in your terminal:
+
+```bash
+# Go inside any of the examples
+java -jar edgechain.jar jbang Hello.java
+```
+### [Stuck?? Try the Docs](https://www.arakoo.ai/doc/category/getting-started)
 
 ## Classical AI vs Generative AI - Why does something like EdgeChains exist?
 
@@ -63,31 +81,6 @@ One of the big challenge in production is how to keep testing your prompts & cha
 ### Token costs & measurement
 Each prompt or chain has a token cost associated with it. You may think that a certain prompt is very good...but it may be consuming a huge amount of tokens. For example, Chain-of-Thought style prompts consume atleast 3X as many **output tokens** as a normal prompt. you need to have fine-grained tracking and measurement built into your framework to be able to manage this. Edgechains has this built in.
 
----
-## Installation and Usage
-
-### [Stuck?? Try the Docs](https://www.arakoo.ai/doc/category/getting-started)
-
-### Quickstart
-
-**Edgechains works on Java & Android right now. Javascript is upcoming**
-
-To set up EdgeChains, you will need to download the release jar (`edgechain.jar`) from [https://github.com/arakoodev/EdgeChains/releases](https://github.com/arakoodev/EdgeChains/releases)
-
-Once downloaded, Follow these steps:
-
-1. **Copy all the contents from the _Examples_ folder** and paste into your folder. The _Examples_ folder includes all the Jsonnet files and `EdgeChainApplication.java` file.    
-2. **Prepare your OpenAI Key:** EdgeChains requires a valid OpenAI key to interact with the language models. Make sure you have your OpenAI Auth Key available, as you will need to add it to the Starter class in `EdgeChainApplication.java` file.
-3. **Configure Redis/Supabase/Pincone Connection:** locate the redisenv method in the Redisenv class in `EdgeChainApplication.java` file. Add your URL, port, and password to the appropriate fields in the method.
-
-Once you have completed these configuration steps, you are ready to run EdgeChains. 
-
-To start the application, execute the following command in your terminal:
-
-```bash
-# Go inside any of the examples
-java -jar edgechain.jar jbang Hello.java
-```
 
 ## Contribution guidelines
 
