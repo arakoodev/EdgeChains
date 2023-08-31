@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.*;
 public class PostgreSQLExample {
 
   private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
-  private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
+  private final static String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
   private static OpenAiEndpoint ada002Embedding;
   private static OpenAiEndpoint gpt3Endpoint;
   private static PostgresEndpoint postgresEndpoint;
@@ -62,8 +62,9 @@ public class PostgreSQLExample {
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
-    properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "postgres");
+    properties.setProperty(
+            "postgres.db.host", "");
+    properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
     new SpringApplicationBuilder(PostgreSQLExample.class).properties(properties).run(args);
