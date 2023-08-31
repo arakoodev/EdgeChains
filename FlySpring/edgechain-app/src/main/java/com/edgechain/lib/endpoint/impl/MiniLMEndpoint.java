@@ -45,6 +45,7 @@ public class MiniLMEndpoint extends EmbeddingEndpoint {
     this.miniLMModel = miniLMModel;
   }
 
+  @Override
   public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
 
     final String str = input.replaceAll("'", "");
@@ -59,6 +60,6 @@ public class MiniLMEndpoint extends EmbeddingEndpoint {
     }
 
     return Observable.fromSingle(
-        miniLMService.embeddings(this).map(m -> new WordEmbeddings(input, m.getEmbedding())));
+        miniLMService.embeddings(this).map(m -> new WordEmbeddings(str, m.getEmbedding())));
   }
 }

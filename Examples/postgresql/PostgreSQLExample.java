@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.*;
 public class PostgreSQLExample {
 
   private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
-  private final static String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
+  private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
   private static OpenAiEndpoint ada002Embedding;
   private static OpenAiEndpoint gpt3Endpoint;
   private static PostgresEndpoint postgresEndpoint;

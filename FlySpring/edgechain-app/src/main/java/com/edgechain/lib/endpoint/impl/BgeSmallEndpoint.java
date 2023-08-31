@@ -84,7 +84,7 @@ public class BgeSmallEndpoint extends EmbeddingEndpoint {
         return Observable.fromSingle(
                 bgeSmallService
                         .embeddings(this)
-                        .map(m -> new WordEmbeddings(input, m.getEmbedding()))
+                        .map(m -> new WordEmbeddings(str, m.getEmbedding()))
         );
     }
 
