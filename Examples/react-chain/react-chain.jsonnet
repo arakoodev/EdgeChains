@@ -45,6 +45,7 @@ local preset = |||
                     Action 3: Finish[yes]
 
                     **ALL THE OBSERVATIONS WILL BE PROVIDED BY THE USER, YOU DON'T HAVE TO PROVIDE ANY OBSERVATION**
+                    Question: {}
                |||;
 
 //To extract action from the response
@@ -57,14 +58,27 @@ local extractThought(str) =
     local thought = xtr.strings.substringAfter(xtr.strings.substringBefore(str, "Action"), ":");
     thought;
 
+//Replace the {} in the preset with the question
+local updateQueryPrompt(question) =
+    local updatedPrompt = xtr.replace(preset, '{}', question + "\n");
+    updatedPrompt;
+
+//Extract the final answer
+local extractFinalAns(text) =
+    local finalAns = xtr.strings.substringAfter(xtr.strings.substringBeforeLast(xtr.strings.substringAfter(text, "Finish["), "]"), "[");
+    finalAns;
+
+local initialPrompt = updateQueryPrompt(payload.question);
 local gptResponse = payload.gptResponse; //this will be populated from the java code after the prompt is submitted to gpt
 local action = extractAction(gptResponse);
 local thought = extractThought(gptResponse);
-local searchResponse = std.substr(callFunction("search")(action), 0, 200); //extract action from response and insert here
+local searchResponse = std.substr(callFunction("search")(action), 0, 400); //extract action from response and insert here
 local observation = xtr.join(["Observation:", searchResponse], '');
-local context = payload.context + "\n" + gptResponse + "\n" + observation;
-local prompt = xtr.strings.appendIfMissing(context, "\n" + observation);
+local context = payload.context;
+local prompt = xtr.join([context, gptResponse, observation], '\n');
+local finalAns = extractFinalAns(payload.text);
 {
+    initialPrompt: initialPrompt,
     observation: observation,
     thought: thought,
     action: action,
@@ -72,6 +86,7 @@ local prompt = xtr.strings.appendIfMissing(context, "\n" + observation);
     prompt: prompt,
     context: context,
     searchResponse: searchResponse,
-    gptResponse: gptResponse
+    gptResponse: gptResponse,
+    finalAns: finalAns
 }
 
