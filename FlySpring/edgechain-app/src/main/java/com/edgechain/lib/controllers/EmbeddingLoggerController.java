@@ -1,7 +1,6 @@
 package com.edgechain.lib.controllers;
 
 import java.util.HashMap;
-import java.util.Objects;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,10 +18,10 @@ public class EmbeddingLoggerController {
   private EmbeddingLogger embeddingLogger;
 
   private EmbeddingLogger getInstance() {
-    if (Objects.isNull(embeddingLogger))
-      return embeddingLogger = new EmbeddingLogger();
-    else
-      return embeddingLogger;
+    if (embeddingLogger == null) {
+      embeddingLogger = new EmbeddingLogger();
+    }
+    return embeddingLogger;
   }
 
   @GetMapping("/findAll/{page}/{size}")

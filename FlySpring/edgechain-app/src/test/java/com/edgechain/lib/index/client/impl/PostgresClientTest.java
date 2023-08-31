@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.postgresql.util.PGobject;
@@ -96,6 +97,18 @@ class PostgresClientTest {
 
     service = new PostgresClient();
     service.setPostgresEndpoint(pe);
+  }
+
+  @AfterEach
+  void tearDown() {
+    try {
+      Field field = RetrofitClientInstance.class.getDeclaredField("retrofit");
+      field.setAccessible(true);
+      field.set(null, null);
+    } catch (NoSuchFieldException | SecurityException | IllegalArgumentException
+        | IllegalAccessException e) {
+      fail("could not set retrofit for test", e);
+    }
   }
 
   @Test

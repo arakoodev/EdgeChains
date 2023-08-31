@@ -1,13 +1,16 @@
 package com.edgechain.lib.flyfly.commands.run;
 
-import jakarta.annotation.PreDestroy;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.FileSystems;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.testcontainers.containers.PostgreSQLContainer;
+import jakarta.annotation.PreDestroy;
 
 @Component
 public class TestContainersStarter {
@@ -17,61 +20,59 @@ public class TestContainersStarter {
   private static final String dbName = "test";
   private static final String userName = "test";
   private static final String password = "test";
-  //  private MySQLContainer<?> mysql;
+  // private MySQLContainer<?> mysql;
   private PostgreSQLContainer<?> postgre;
-  //  private MariaDBContainer<?> mariaDB;
+  // private MariaDBContainer<?> mariaDB;
   private String flyflyTempTag = "#flyfly_temp_property";
 
-  //  public void startMySQL() throws IOException {
-  //    if (mysql != null && mysql.isRunning()) return;
-  //    log.info("Starting a temporary MySQL database.");
-  //    mysql =
-  //        new MySQLContainer<>(DockerImageName.parse("mysql:5.7"))
-  //            .withDatabaseName(dbName)
-  //            .withUsername(userName)
-  //            .withPassword(password);
-  //    mysql.addParameter("TC_MY_CNF", null);
-  //    mysql.start();
-  //    log.info("Database started.");
-  //    log.info("DB URL: " + mysql.getJdbcUrl());
-  //    log.info("DB Username: " + mysql.getUsername());
-  //    log.info("DB Password: " + mysql.getPassword());
-  //    addTempProperties(mysql.getJdbcUrl());
-  //  }
+  // public void startMySQL() throws IOException {
+  // if (mysql != null && mysql.isRunning()) return;
+  // log.info("Starting a temporary MySQL database.");
+  // mysql =
+  // new MySQLContainer<>(DockerImageName.parse("mysql:5.7"))
+  // .withDatabaseName(dbName)
+  // .withUsername(userName)
+  // .withPassword(password);
+  // mysql.addParameter("TC_MY_CNF", null);
+  // mysql.start();
+  // log.info("Database started.");
+  // log.info("DB URL: " + mysql.getJdbcUrl());
+  // log.info("DB Username: " + mysql.getUsername());
+  // log.info("DB Password: " + mysql.getPassword());
+  // addTempProperties(mysql.getJdbcUrl());
+  // }
 
   public void startPostgreSQL() throws IOException {
-    if (postgre != null && postgre.isRunning()) return;
+    if (postgre != null && postgre.isRunning())
+      return;
     log.info("Starting a temporary PostgreSQL database.");
-    postgre =
-        new PostgreSQLContainer<>("postgres:14.5")
-            .withDatabaseName(dbName)
-            .withUsername(userName)
-            .withPassword(password);
+    postgre = new PostgreSQLContainer<>("postgres:14.5").withDatabaseName(dbName)
+        .withUsername(userName).withPassword(password);
     postgre.addParameter("TC_MY_CNF", null);
     postgre.start();
     log.info("Database started.");
-    log.info("DB URL: " + postgre.getJdbcUrl());
-    log.info("DB Username: " + postgre.getUsername());
-    log.info("DB Password: " + postgre.getPassword());
+    log.info("DB URL: {}", postgre.getJdbcUrl());
+    log.info("DB Username: {}", postgre.getUsername());
+    log.info("DB Password: {}", postgre.getPassword());
     addTempProperties(postgre.getJdbcUrl());
   }
 
-  //  public void startMariaDB() throws IOException {
-  //    if (postgre != null && postgre.isRunning()) return;
-  //    log.info("Starting a temporary MariaDB database.");
-  //    mariaDB =
-  //        new MariaDBContainer<>("mariadb:10.3.6")
-  //            .withDatabaseName(dbName)
-  //            .withUsername(userName)
-  //            .withPassword(password);
-  //    mariaDB.addParameter("TC_MY_CNF", null);
-  //    mariaDB.start();
-  //    log.info("Database started.");
-  //    log.info("DB URL: " + mariaDB.getJdbcUrl());
-  //    log.info("DB Username: " + mariaDB.getUsername());
-  //    log.info("DB Password: " + mariaDB.getPassword());
-  //    addTempProperties(mariaDB.getJdbcUrl());
-  //  }
+  // public void startMariaDB() throws IOException {
+  // if (postgre != null && postgre.isRunning()) return;
+  // log.info("Starting a temporary MariaDB database.");
+  // mariaDB =
+  // new MariaDBContainer<>("mariadb:10.3.6")
+  // .withDatabaseName(dbName)
+  // .withUsername(userName)
+  // .withPassword(password);
+  // mariaDB.addParameter("TC_MY_CNF", null);
+  // mariaDB.start();
+  // log.info("Database started.");
+  // log.info("DB URL: " + mariaDB.getJdbcUrl());
+  // log.info("DB Username: " + mariaDB.getUsername());
+  // log.info("DB Password: " + mariaDB.getPassword());
+  // addTempProperties(mariaDB.getJdbcUrl());
+  // }
 
   public void addTempProperties(String url) throws IOException {
     log.info("Appending temporary DB configuration to application.properties");
@@ -106,7 +107,8 @@ public class TestContainersStarter {
       sb.append(line + "\n");
     }
     reader.close();
-    if (tempNotFound) return;
+    if (tempNotFound)
+      return;
 
     BufferedWriter writer = new BufferedWriter(new FileWriter(getPropertiesPath()));
     writer.write(sb.toString());
@@ -130,15 +132,8 @@ public class TestContainersStarter {
 
   public String getPropertiesPath() {
     String separator = FileSystems.getDefault().getSeparator();
-    return System.getProperty("user.dir")
-        + separator
-        + "src"
-        + separator
-        + "main"
-        + separator
-        + "resources"
-        + separator
-        + "application.properties";
+    return System.getProperty("user.dir") + separator + "src" + separator + "main" + separator
+        + "resources" + separator + "application.properties";
   }
 
   @PreDestroy
@@ -147,8 +142,9 @@ public class TestContainersStarter {
       removeTempProperties();
     } catch (IOException e) {
     }
-    //    if (mysql != null && mysql.isRunning()) mysql.close();
-    if (postgre != null && postgre.isRunning()) postgre.close();
-    //    if (mariaDB != null && mariaDB.isRunning()) mariaDB.close();
+    // if (mysql != null && mysql.isRunning()) mysql.close();
+    if (postgre != null && postgre.isRunning())
+      postgre.close();
+    // if (mariaDB != null && mariaDB.isRunning()) mariaDB.close();
   }
 }

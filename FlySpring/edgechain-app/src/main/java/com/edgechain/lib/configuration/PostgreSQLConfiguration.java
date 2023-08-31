@@ -1,6 +1,5 @@
 package com.edgechain.lib.configuration;
 
-import java.util.Objects;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.DataSourceBuilder;
