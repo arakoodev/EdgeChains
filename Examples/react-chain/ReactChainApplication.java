@@ -9,9 +9,10 @@ import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -22,8 +23,9 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 public class ReactChainApplication {
 
   private static final String OPENAI_AUTH_KEY = "";
-
+  private static final String OPENAI_ORG_ID = "";
   private static OpenAiEndpoint userChatEndpoint;
+  private static JsonnetLoader loader = new FileJsonnetLoader("./react-chain/react-chain.jsonnet");
 
   public static void main(String[] args) {
     System.setProperty("server.port", "8080");
@@ -48,61 +50,80 @@ public class ReactChainApplication {
         new OpenAiEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
             "gpt-3.5-turbo",
             "user",
             0.7,
+            false,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
   }
 
   @RestController
   @RequestMapping("/v1/examples")
-  public class ExampleController {
+  public class ReactChainController {
 
-    @GetMapping(value = "/react-chain")
+    @PostMapping(value = "/react-chain")
     public String reactChain(ArkRequest arkRequest) {
       String prompt = (String) arkRequest.getBody().get("prompt");
-      StringBuilder context = new StringBuilder();
-      JsonnetLoader loader =
-          new FileJsonnetLoader("./react-chain.jsonnet")
-              .put("context", new JsonnetArgs(DataType.STRING, "This is context"))
-              .put("gptResponse", new JsonnetArgs(DataType.STRING, ""))
-              .loadOrReload();
-      String preset = loader.get("preset");
 
-      prompt = preset + " \nQuestion: " + prompt;
+      loader.put("context", new JsonnetArgs(DataType.STRING, "This is context"));
+      loader.put("gptResponse", new JsonnetArgs(DataType.STRING, ""));
+      loader.put("question", new JsonnetArgs(DataType.STRING, prompt));
+      loader.put("text", new JsonnetArgs(DataType.STRING, ""));
 
-      String gptResponse =
-          userChatEndpoint
-              .chatCompletion(prompt, "React-Chain", arkRequest)
-              .blockingFirst()
-              .getChoices()
-              .get(0)
-              .getMessage()
-              .getContent();
-      context.append(prompt);
-      loader.put("context", new JsonnetArgs(DataType.STRING, context.toString()));
+      try {
+        loader.loadOrReload();
+      } catch (Exception e) {
+        e.printStackTrace();
+        return "Please broaden the search query!";
+      }
+      prompt = loader.get("initialPrompt");
+
+      String gptResponse = gptFn(prompt, arkRequest);
+
+      loader.put("context", new JsonnetArgs(DataType.STRING, prompt));
       loader.put("gptResponse", new JsonnetArgs(DataType.STRING, gptResponse));
 
       while (!checkIfFinished(gptResponse)) {
-        loader.loadOrReload();
+        try {
+          loader.loadOrReload();
+        } catch (Exception e) {
+          return "Please broaden the search query or try again!";
+        }
+
+        String observation = loader.get("observation");
+        if (observation.isEmpty())
+          return "No info found on Wiki! Please broaden the search query or try again!";
+
         prompt = loader.get("prompt");
-        gptResponse =
-            userChatEndpoint
-                .chatCompletion(prompt, "React-Chain", arkRequest)
-                .blockingFirst()
-                .getChoices()
-                .get(0)
-                .getMessage()
-                .getContent();
-        context.append("\n" + prompt);
-        loader.put("context", new JsonnetArgs(DataType.STRING, context.toString()));
+        gptResponse = gptFn(prompt, arkRequest);
+
+        loader.put("context", new JsonnetArgs(DataType.STRING, prompt));
         loader.put("gptResponse", new JsonnetArgs(DataType.STRING, gptResponse));
       }
-      return gptResponse.substring(gptResponse.indexOf("Finish[") + 7, gptResponse.indexOf("]"));
+
+      // Extracting the final answer
+      loader.put("text", new JsonnetArgs(DataType.STRING, gptResponse));
+
+      try {
+        loader.loadOrReload();
+        return loader.get("finalAns");
+      } catch (Exception e) {
+        return "Please broaden the search query or try again!";
+      }
     }
 
     private boolean checkIfFinished(String gptResponse) {
       return gptResponse.contains("Finish");
+    }
+
+    private String gptFn(String prompt, ArkRequest arkRequest) {
+      return new EdgeChain<>(userChatEndpoint.chatCompletion(prompt, "React-Chain", arkRequest))
+          .get()
+          .getChoices()
+          .get(0)
+          .getMessage()
+          .getContent();
     }
   }
 }
