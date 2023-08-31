@@ -178,6 +178,15 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
     else return this.observable.subscribeOn(Schedulers.io()).firstOrError();
   }
 
+  public Single<T> toSingleWithoutScheduler() {
+
+    if (RetryUtils.available(endpoint))
+      return this.observable
+              .retryWhen(endpoint.getRetryPolicy())
+              .firstOrError();
+    else return this.observable.firstOrError();
+  }
+
   @Override
   public T get() {
     if (RetryUtils.available(endpoint))
@@ -220,10 +229,10 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
   }
 
   public ArkResponse getArkResponse() {
-    return new ArkObservable<>(this.observable.subscribeOn(Schedulers.io()));
+    return new ArkObservable<>(this.observable);
   }
 
   public ArkResponse getArkStreamResponse() {
-    return new ArkEmitter<>(this.observable.subscribeOn(Schedulers.io()));
+    return new ArkEmitter<>(this.observable);
   }
 }

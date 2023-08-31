@@ -35,7 +35,7 @@ public class BgeSmallController {
     this.bgeSmallClient.setEndpoint(bgeSmallEndpoint);
 
     EdgeChain<BgeSmallResponse> edgeChain =
-        this.bgeSmallClient.createEmbeddings(bgeSmallEndpoint.getInput());
+        this.bgeSmallClient.createEmbeddings(bgeSmallEndpoint.getRawText());
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 

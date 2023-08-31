@@ -43,14 +43,16 @@ public class PostgresClientMetadataRepository {
 
   @Transactional
   public Integer insertMetadata(
-      String metadataTableName, String metadata, WordEmbeddings wordEmbeddings) {
-    return jdbcTemplate.queryForObject(
+      String metadataTableName, String metadata, List<Float> values) {
+
+
+    return jdbcTemplate.update(
         String.format(
             "INSERT INTO %s (metadata, metadata_embedding) VALUES ('%s', '%s') RETURNING "
                 + "metadata_id;",
             metadataTableName,
             metadata,
-            Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues()))),
+            Arrays.toString(FloatUtils.toFloatArray(values))),
         Integer.class);
   }
 
@@ -73,10 +75,10 @@ public class PostgresClientMetadataRepository {
       String namespace,
       int probes,
       PostgresDistanceMetric metric,
-      WordEmbeddings wordEmbeddings,
+      List<Float> values,
       int topK) {
 
-    String embeddings = Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues()));
+    String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
 
     jdbcTemplate.execute(String.format("SET LOCAL ivfflat.probes = %s;", probes));
     String joinTable = tableName + "_join_" + metadataTableName;
@@ -94,7 +96,7 @@ public class PostgresClientMetadataRepository {
               metadataTableName,
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              embeddings,
               topK));
 
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
@@ -110,7 +112,7 @@ public class PostgresClientMetadataRepository {
               metadataTableName,
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              embeddings,
               topK));
     } else {
       return jdbcTemplate.queryForList(
@@ -125,7 +127,7 @@ public class PostgresClientMetadataRepository {
               metadataTableName,
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              embeddings,
               topK));
     }
   }
@@ -134,10 +136,10 @@ public class PostgresClientMetadataRepository {
   public List<Map<String, Object>> similaritySearchMetadata(
       String metadataTableName,
       PostgresDistanceMetric metric,
-      WordEmbeddings wordEmbeddings,
+      List<Float> values,
       int topK) {
 
-    String embeddings = Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues()));
+    String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
 
     if (metric.equals(PostgresDistanceMetric.IP)) {
       return jdbcTemplate.queryForList(
@@ -147,7 +149,7 @@ public class PostgresClientMetadataRepository {
               embeddings,
               metadataTableName,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              Arrays.toString(FloatUtils.toFloatArray(values)),
               topK));
 
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
@@ -158,7 +160,7 @@ public class PostgresClientMetadataRepository {
               embeddings,
               metadataTableName,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              Arrays.toString(FloatUtils.toFloatArray(values)),
               topK));
     } else {
       return jdbcTemplate.queryForList(
@@ -168,7 +170,7 @@ public class PostgresClientMetadataRepository {
               embeddings,
               metadataTableName,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              Arrays.toString(FloatUtils.toFloatArray(values)),
               topK));
     }
   }

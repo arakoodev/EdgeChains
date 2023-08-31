@@ -12,8 +12,14 @@ import retrofit2.http.POST;
 
 public interface PostgresService {
 
+  @POST(value = "index/postgres/create-table")
+  Single<StringResponse> createTable(@Body PostgresEndpoint postgresEndpoint);
+
   @POST(value = "index/postgres/upsert")
-  Single<Integer> upsert(@Body PostgresEndpoint postgresEndpoint);
+  Single<StringResponse> upsert(@Body PostgresEndpoint postgresEndpoint);
+
+  @POST(value = "index/postgres/batch-upsert")
+  Single<List<StringResponse>> batchUpsert(@Body PostgresEndpoint postgresEndpoint);
 
   @POST(value = "index/postgres/metadata/insert")
   Single<Integer> insertMetadata(@Body PostgresEndpoint postgresEndpoint);
