@@ -91,7 +91,7 @@ public final class TestConfigSupport {
       field.set(null, null); // set to null so it will be created again if needed
     } catch (NoSuchFieldException | SecurityException | IllegalArgumentException
         | IllegalAccessException e) {
-      fail("could not set retrofit for test", e);
+      fail("could not tear down retrofit for test", e);
     }
 
     if (prevServerPort != null) {
