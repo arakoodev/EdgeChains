@@ -1,40 +1,28 @@
 package com.edgechain.lib.endpoint.impl;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationContext;
-import com.edgechain.lib.configuration.context.ApplicationContextHolder;
+import com.edgechain.testutil.TestConfigSupport;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
 
 class BgeSmallEndpointTest {
 
+  private final TestConfigSupport testSupport = new TestConfigSupport();
+
   @BeforeEach
   void setup() {
-    // Retrofit needs an application context which is a
-    // private static field so we use reflection to set it.
-    ApplicationContext mockAppContext = mock(ApplicationContext.class);
-    try {
-      Field field = ApplicationContextHolder.class.getDeclaredField("context");
-      field.setAccessible(true);
-      field.set(null, mockAppContext);
-    } catch (NoSuchFieldException | SecurityException | IllegalArgumentException
-        | IllegalAccessException e) {
-      fail("could not set context for test", e);
-    }
-
-    // Retrofit needs a valid port
-    System.setProperty("server.port", "8888");
+    testSupport.setupAppContext();
+    testSupport.setupRetrofit();
   }
 
   @AfterEach
   void teardown() {
-    // no really, make sure we clean up afterwards
-    deleteFiles();
+    testSupport.tearDownRetrofit();
+    testSupport.tearDownAppContext();
+
+    deleteFiles(); // make sure we clean up afterwards
   }
 
   @Test

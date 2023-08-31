@@ -1,7 +1,6 @@
 package com.edgechain.lib.index.client.impl;
 
 import io.reactivex.rxjava3.core.Single;
-import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -16,7 +15,6 @@ import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
@@ -24,11 +22,10 @@ import com.edgechain.lib.index.repositories.PostgresClientMetadataRepository;
 import com.edgechain.lib.index.repositories.PostgresClientRepository;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.retrofit.PostgresService;
-import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import com.edgechain.testutil.TestConfigSupport;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -55,18 +52,11 @@ class PostgresClientTest {
   private PostgresEndpoint pe;
   private PostgresClient service;
 
+  private final TestConfigSupport testSupport = new TestConfigSupport();
+
   @BeforeEach
   void setup() {
-    // use reflection to add content to static class
-    ApplicationContext mockAppContext = mock(ApplicationContext.class);
-    try {
-      Field field = ApplicationContextHolder.class.getDeclaredField("context");
-      field.setAccessible(true);
-      field.set(null, mockAppContext);
-    } catch (NoSuchFieldException | SecurityException | IllegalArgumentException
-        | IllegalAccessException e) {
-      fail("could not set context for test", e);
-    }
+    ApplicationContext mockAppContext = testSupport.setupAppContext();
 
     mockPostgresClientRepository = mock(PostgresClientRepository.class);
     mockPostgresClientMetadataRepository = mock(PostgresClientMetadataRepository.class);
@@ -76,16 +66,7 @@ class PostgresClientTest {
     when(mockAppContext.getBean(PostgresClientMetadataRepository.class))
         .thenReturn(mockPostgresClientMetadataRepository);
 
-    // use reflection to prepare a Retrofit instance
-    Retrofit mockRetrofit = mock(Retrofit.class);
-    try {
-      Field field = RetrofitClientInstance.class.getDeclaredField("retrofit");
-      field.setAccessible(true);
-      field.set(null, mockRetrofit);
-    } catch (NoSuchFieldException | SecurityException | IllegalArgumentException
-        | IllegalAccessException e) {
-      fail("could not set retrofit for test", e);
-    }
+    Retrofit mockRetrofit = testSupport.setupRetrofit();
 
     // set up a mock service - we use it to set the filename of the endpoint
     PostgresService mockPostgresService = mock(PostgresService.class);
@@ -101,14 +82,8 @@ class PostgresClientTest {
 
   @AfterEach
   void tearDown() {
-    try {
-      Field field = RetrofitClientInstance.class.getDeclaredField("retrofit");
-      field.setAccessible(true);
-      field.set(null, null);
-    } catch (NoSuchFieldException | SecurityException | IllegalArgumentException
-        | IllegalAccessException e) {
-      fail("could not set retrofit for test", e);
-    }
+    testSupport.tearDownRetrofit();
+    testSupport.tearDownAppContext();
   }
 
   @Test
