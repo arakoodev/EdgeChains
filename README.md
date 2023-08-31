@@ -36,17 +36,6 @@ java -jar edgechain.jar jbang Hello.java
 ```
 ### [Stuck?? Try the Docs](https://www.arakoo.ai/doc/category/getting-started)
 
-## Classical AI vs Generative AI - Why does something like EdgeChains exist?
-
-In classical AI, model build was the slowest part (and bottleneck) of an entire AI application. That was the part that took 6 months to build and so orchestration & other things did not matter - you could not accelerate the AI development process even if you accelerated orchestration.
-
-Generative AI is ***"few shot"*** - meaning a ***prompt** can change the behavior of a model. You dont need to rebuild your model for different applications. This means, the bottleneck of model build goes away! And instead orchestration becomes the bottleneck. Most other libraries still build GenAI libraries with the classical AI mindset - which is why prompts, chains and other parts of orchestration are hardcoded into Python classes.
-
-Edgechains focuses on solving the orchestration problem by modeling it as a declarative config.
-
-We build on top of a tech that has solved this problem in a different domain - Kubernetes Config Management - and bring that to Generative AI.
-Edgechains is built on top of jsonnet, originally built by Google based on their experience managing a vast amount of configuration code in the Borg infrastructure. 
-
 
 ## About Edgechains
 Edgechains gives you:
@@ -59,6 +48,17 @@ Edgechains gives you:
 
 ## Why do you need Prompt & Chain Orchestration ? 
 Most people who are new to Generative AI think that the way to use OpenAI or other LLMs is to simply ask it a question and have it magically reply. The answer is extremely different and complex.
+
+### Classical AI vs Generative AI - Training models is no longer needed..but Orchestration is still hard.
+
+In classical AI, model build was the slowest part (and bottleneck) of an entire AI application. That was the part that took 6 months to build and so orchestration & other things did not matter - you could not accelerate the AI development process even if you accelerated orchestration.
+
+Generative AI is ***"few shot"*** - meaning a ***prompt** can change the behavior of a model. You dont need to rebuild your model for different applications. This means, the bottleneck of model build goes away! And instead ***orchestration becomes the bottleneck***. Most other libraries still build GenAI libraries with the classical AI mindset - which is why prompts, chains and other parts of orchestration are hardcoded into Python classes (they assume that prompts & chains are the slowest moving parts of the equation).
+
+Edgechains focuses on solving the orchestration problem by modeling it as a declarative config.
+
+We build on top of a tech that has solved this problem in a different domain - Kubernetes Config Management - and bring that to Generative AI.
+Edgechains is built on top of jsonnet, originally built by Google based on their experience managing a vast amount of configuration code in the Borg infrastructure. 
 
 ### Complexity of Prompt Engineering
 Generative AI, OpenAI and LLMs need you to write your prompt in very specific ways. Each of these ways to write prompts is very involved and highly complex - it is in fact so complex that there are research papers published for this. E.g.:
