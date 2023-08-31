@@ -35,7 +35,7 @@ public class MiniLMController {
     this.miniLMClient.setEndpoint(miniLMEndpoint);
 
     EdgeChain<MiniLMResponse> edgeChain =
-        this.miniLMClient.createEmbeddings(miniLMEndpoint.getInput());
+        this.miniLMClient.createEmbeddings(miniLMEndpoint.getRawText());
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 

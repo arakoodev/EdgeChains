@@ -25,6 +25,7 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
@@ -53,8 +54,8 @@ public class PostgreSQLExample {
     Properties properties = new Properties();
 
     // Should only be used in dev environment
-    properties.setProperty("spring.jpa.show-sql", "true");
-    properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
+//    properties.setProperty("spring.jpa.show-sql", "true");
+//    properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
     // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
     properties.setProperty("cors.origins", "http://localhost:4200");
@@ -137,7 +138,7 @@ public class PostgreSQLExample {
      * concept of namespace is defined above *
      */
     @PostMapping("/postgres/upsert")
-    public void upsert(ArkRequest arkRequest) throws IOException {
+    public void upsert(ArkRequest arkRequest) throws IOException, ExecutionException, InterruptedException {
 
       String namespace = arkRequest.getQueryParam("namespace");
       String filename = arkRequest.getMultiPart("file").getSubmittedFileName();
@@ -147,10 +148,17 @@ public class PostgreSQLExample {
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
-      final Retrieval retrieval =
-          new PostgresRetrieval(postgresEndpoint, filename, 1536, ada002Embedding, arkRequest);
+      PostgresRetrieval retrieval = new PostgresRetrieval(
+              arr, ada002Embedding, postgresEndpoint, 1536, filename, arkRequest);
 
-      IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
+      //   retrieval.setBatchSize(50); // Modifying batchSize....(Default is 30)
+
+      // Getting ids from upsertion... Internally, it automatically parallelizes the operation...
+      List<String> ids = retrieval.upsert();
+
+      ids.forEach(System.out::println);
+
+      System.out.println("Size: " + ids.size()); // Printing the UUIDs
     }
 
     @PostMapping(value = "/postgres/query")

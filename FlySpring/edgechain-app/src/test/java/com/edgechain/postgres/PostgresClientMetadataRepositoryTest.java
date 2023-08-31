@@ -103,7 +103,7 @@ public class PostgresClientMetadataRepositoryTest {
         .thenReturn(expectedMetadataId);
 
     // Act
-    Integer result = repository.insertMetadata(metadataTableName, metadata, wordEmbeddings);
+    Integer result = repository.insertMetadata(metadataTableName, metadata, wordEmbeddings.getValues());
 
     // Assert
     // Verify that the queryForObject method was called with the expected parameters
@@ -185,7 +185,7 @@ public class PostgresClientMetadataRepositoryTest {
     // Act
     List<Map<String, Object>> result =
         repository.queryWithMetadata(
-            tableName, metadataTableName, namespace, probes, metric, wordEmbeddings, topK);
+            tableName, metadataTableName, namespace, probes, metric, wordEmbeddings.getValues(), topK);
 
     // Assert
     verify(jdbcTemplate).queryForList(anyString());
@@ -209,7 +209,7 @@ public class PostgresClientMetadataRepositoryTest {
 
     // Act
     List<Map<String, Object>> result =
-        repository.similaritySearchMetadata(metadataTableName, metric, wordEmbeddings, topK);
+        repository.similaritySearchMetadata(metadataTableName, metric, wordEmbeddings.getValues(), topK);
 
     // Assert
     verify(jdbcTemplate).queryForList(sqlQueryCaptor.capture());

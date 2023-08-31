@@ -6,11 +6,16 @@ import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.utils.FloatUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Array;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -54,11 +59,11 @@ public class PostgresClientRepository {
     if (tableExists == 0) {
 
       jdbcTemplate.execute(
-          String.format(
-              "CREATE TABLE IF NOT EXISTS %s (embedding_id SERIAL PRIMARY KEY, id VARCHAR(255) NOT"
-                  + " NULL UNIQUE, raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
-                  + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255));",
-              postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
+              String.format(
+                      "CREATE TABLE IF NOT EXISTS %s (id UUID PRIMARY KEY, "
+                              + " raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
+                              + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255) );",
+                      postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
 
       jdbcTemplate.execute(indexQuery);
 
@@ -77,27 +82,63 @@ public class PostgresClientRepository {
     }
   }
 
+
+  public List<String> batchUpsertEmbeddings(
+          String tableName,
+          List<WordEmbeddings> wordEmbeddingsList,
+          String filename,
+          String namespace)
+  {
+    List<String> uuidList = new ArrayList<>();
+
+   String[] sql = new String[wordEmbeddingsList.size()];
+
+   for(int i = 0; i < wordEmbeddingsList.size(); i++) {
+     UUID uuid = UuidCreator.getTimeOrderedEpoch();
+
+     sql[i] =  String.format(
+             "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES ('%s',"
+                     + " '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE SET embedding ="
+                     + " EXCLUDED.embedding;",
+             tableName,
+             uuid,
+             wordEmbeddingsList.get(i).getId(),
+             Arrays.toString(FloatUtils.toFloatArray(wordEmbeddingsList.get(i).getValues())),
+             LocalDateTime.now(),
+             namespace,
+             filename);
+     uuidList.add(uuid.toString());
+   }
+
+
+    jdbcTemplate.batchUpdate(sql);
+
+   return uuidList;
+  }
+
   @Transactional
-  public Integer upsertEmbeddings(
+  public String  upsertEmbeddings(
       String tableName,
-      String input,
-      String filename,
       WordEmbeddings wordEmbeddings,
+      String filename,
       String namespace) {
 
-    return jdbcTemplate.queryForObject(
+    UUID uuid = UuidCreator.getTimeOrderedEpoch();
+
+    jdbcTemplate.update(
         String.format(
             "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES ('%s',"
                 + " '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE SET embedding ="
-                + " EXCLUDED.embedding RETURNING embedding_id;",
+                + " EXCLUDED.embedding;",
             tableName,
-            UuidCreator.getTimeOrderedEpoch().toString(),
-            input,
+            uuid,
+            wordEmbeddings.getId(),
             Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
             LocalDateTime.now(),
             namespace,
-            filename),
-        Integer.class);
+            filename));
+
+    return uuid.toString();
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
@@ -106,24 +147,24 @@ public class PostgresClientRepository {
       String namespace,
       int probes,
       PostgresDistanceMetric metric,
-      WordEmbeddings wordEmbeddings,
+      List<Float> values,
       int topK) {
 
-    String embeddings = Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues()));
+    String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
 
     jdbcTemplate.execute(String.format("SET LOCAL ivfflat.probes = %s;", probes));
     if (metric.equals(PostgresDistanceMetric.IP)) {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, ( embedding <#>"
+              "SELECT id, raw_text, namespace, filename, timestamp, ( embedding <#>"
                   + " '%s') * -1 AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s'"
                   + " LIMIT %s;",
               embeddings,
               tableName,
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              Arrays.toString(FloatUtils.toFloatArray(values)),
               topK));
 
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
@@ -137,7 +178,7 @@ public class PostgresClientRepository {
               tableName,
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              Arrays.toString(FloatUtils.toFloatArray(values)),
               topK));
     } else {
       return jdbcTemplate.queryForList(
@@ -149,7 +190,7 @@ public class PostgresClientRepository {
               tableName,
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
+              Arrays.toString(FloatUtils.toFloatArray(values)),
               topK));
     }
   }

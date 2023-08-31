@@ -10,8 +10,8 @@ import java.util.List;
 public class PostgresWordEmbeddings implements ArkObject {
 
   //  private Long embedding_id;
-
-  private Integer embedding_id;
+//
+//  private Integer embedding_id;
   private String id;
 
   private String rawText;
@@ -30,13 +30,13 @@ public class PostgresWordEmbeddings implements ArkObject {
   private Integer metadataId;
   private String titleMetadata;
 
-  public Integer getEmbedding_id() {
-    return embedding_id;
-  }
-
-  public void setEmbedding_id(Integer embedding_id) {
-    this.embedding_id = embedding_id;
-  }
+//  public Integer getEmbedding_id() {
+//    return embedding_id;
+//  }
+//
+//  public void setEmbedding_id(Integer embedding_id) {
+//    this.embedding_id = embedding_id;
+//  }
 
   public String getId() {
     return id;
@@ -122,9 +122,9 @@ public class PostgresWordEmbeddings implements ArkObject {
   public JSONObject toJson() {
     JSONObject json = new JSONObject();
 
-    if (embedding_id != null) {
-      json.put("embedding_id", embedding_id);
-    }
+//    if (embedding_id != null) {
+//      json.put("embedding_id", embedding_id);
+//    }
 
     if (id != null) {
       json.put("id", id);
@@ -166,5 +166,20 @@ public class PostgresWordEmbeddings implements ArkObject {
     }
 
     return json;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    PostgresWordEmbeddings that = (PostgresWordEmbeddings) o;
+
+      return id.equals(that.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return id.hashCode();
   }
 }
