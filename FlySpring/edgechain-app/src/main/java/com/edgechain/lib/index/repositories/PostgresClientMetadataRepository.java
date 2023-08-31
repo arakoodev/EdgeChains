@@ -42,22 +42,21 @@ public class PostgresClientMetadataRepository {
   }
 
   public List<String> batchInsertMetadata(
-          String metadataTableName, String metadata, List<Float> values)
+          String metadataTableName, List<WordEmbeddings> wordEmbeddingsList)
   {
     List<String> uuidList = new ArrayList<>();
 
-    String[] sql = new String[values.size()];
+    String[] sql = new String[wordEmbeddingsList.size()];
 
-    for(int i = 0; i < values.size(); i++) {
+    for(int i = 0; i < wordEmbeddingsList.size(); i++) {
       UUID uuid = UuidCreator.getTimeOrderedEpoch();
 
       sql[i] =  String.format(
-              "INSERT INTO %s (metadata_id, metadata, metadata_embedding) VALUES ('%s', '%s', '%s') RETURNING "
-                      + "metadata_id;",
+              "INSERT INTO %s (metadata_id, metadata, metadata_embedding) VALUES ('%s', '%s', '%s');",
               metadataTableName,
               uuid,
-              metadata,
-              Arrays.toString(FloatUtils.toFloatArray(values)));
+              wordEmbeddingsList.get(i).getId(),
+              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddingsList.get(i).getValues())));
       uuidList.add(uuid.toString());
     }
 
@@ -90,7 +89,7 @@ public class PostgresClientMetadataRepository {
     jdbcTemplate.execute(
         String.format(
             "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s');",
-            joinTableName, postgresEndpoint.getId(), postgresEndpoint.getMetadataId()));
+            joinTableName, UUID.fromString(postgresEndpoint.getId()), UUID.fromString(postgresEndpoint.getMetadataId())));
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
@@ -111,7 +110,7 @@ public class PostgresClientMetadataRepository {
     if (metric.equals(PostgresDistanceMetric.IP)) {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp, ("
+              "SELECT e.id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp, ("
                   + " embedding <#> '%s') * -1 AS score FROM %s e INNER JOIN %s j ON e.id"
                   + " = j.id INNER JOIN %s m ON j.metadata_id = m.metadata_id WHERE"
                   + " namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
@@ -127,7 +126,7 @@ public class PostgresClientMetadataRepository {
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp, 1 - ("
+              "SELECT e.id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp, 1 - ("
                   + " embedding <=> '%s') AS score FROM %s e INNER JOIN %s j ON e.id ="
                   + " j.id INNER JOIN %s m ON j.metadata_id = m.metadata_id WHERE"
                   + " namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
@@ -142,7 +141,7 @@ public class PostgresClientMetadataRepository {
     } else {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp,"
+              "SELECT e.id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp,"
                   + " (embedding <-> '%s') AS score FROM %s e INNER JOIN %s j ON e.id ="
                   + " j.id INNER JOIN %s m ON j.metadata_id = m.metadata_id WHERE"
                   + " namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",

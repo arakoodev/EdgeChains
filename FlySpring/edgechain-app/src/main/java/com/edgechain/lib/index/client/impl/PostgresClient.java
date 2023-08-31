@@ -137,8 +137,7 @@ public class PostgresClient {
                                 // Insert metadata
                                 List<String> strings = this.metadataRepository.batchInsertMetadata(
                                         postgresEndpoint.getMetadataTableNames().get(0),
-                                        postgresEndpoint.getWordEmbedding().getId(),
-                                        postgresEndpoint.getWordEmbedding().getValues());
+                                        postgresEndpoint.getWordEmbeddingsList());
 
                                 List<StringResponse> stringResponseList = strings.stream()
                                         .map(StringResponse::new)
@@ -230,12 +229,12 @@ public class PostgresClient {
                                 // To filter out duplicate context chunks
                                 Set<String> contextChunkIds = new HashSet<>();
                                 for (Map row : rows) {
-                                    String metadataId = (String) row.get("metadata_id");
+                                    String metadataId = row.get("metadata_id").toString();
                                     if (!metadataTableName.contains("_title_metadata")
                                             && contextChunkIds.contains(metadataId)) continue;
 
                                     PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                                    val.setId((String) row.get("id"));
+                                    val.setId(row.get("id").toString());
                                     val.setRawText((String) row.get("raw_text"));
                                     val.setFilename((String) row.get("filename"));
                                     val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
@@ -244,7 +243,7 @@ public class PostgresClient {
 
                                     // Add metadata fields in response
                                     if (metadataTableName.contains("_title_metadata")) {
-                                        titleMetadataMap.put((String) row.get("id"), (String) row.get("metadata"));
+                                        titleMetadataMap.put(row.get("id").toString(), (String) row.get("metadata"));
 
                                         // For checking if only one metadata table is present which is the title
                                         // table
@@ -321,8 +320,8 @@ public class PostgresClient {
                         for (Map row : rows) {
 
                           PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                          val.setMetadataId((String) row.get("metadata_id"));
-                          val.setRawText((String) row.get("metadata"));
+                          val.setMetadataId(row.get("metadata_id").toString());
+                          val.setMetadata((String) row.get("metadata"));
                           val.setScore((Double) row.get("score"));
 
                           wordEmbeddingsList.add(val);
