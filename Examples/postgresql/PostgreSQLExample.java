@@ -54,8 +54,8 @@ public class PostgreSQLExample {
     Properties properties = new Properties();
 
     // Should only be used in dev environment
-//    properties.setProperty("spring.jpa.show-sql", "true");
-//    properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
+    properties.setProperty("spring.jpa.show-sql", "true");
+    properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
 
     // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
     properties.setProperty("cors.origins", "http://localhost:4200");
