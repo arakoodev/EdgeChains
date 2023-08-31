@@ -29,6 +29,10 @@ public class PostgresRetrieval {
     private final PostgresEndpoint postgresEndpoint;
     private final EmbeddingEndpoint embeddingEndpoint;
 
+    private final int dimensions;
+    private final PostgresDistanceMetric metric;
+    private final int lists;
+
     public PostgresRetrieval(String[] arr, EmbeddingEndpoint embeddingEndpoint, PostgresEndpoint postgresEndpoint, int dimensions, PostgresDistanceMetric metric, int lists, String filename, ArkRequest arkRequest) {
         this.arr = arr;
         this.filename = filename;
@@ -36,8 +40,10 @@ public class PostgresRetrieval {
         this.postgresEndpoint = postgresEndpoint;
         this.embeddingEndpoint = embeddingEndpoint;
 
-        // Create Table...
-        this.postgresEndpoint.createTable(dimensions, metric, lists);
+        this.dimensions = dimensions;
+        this.metric = metric;
+        this.lists = lists;
+
     }
 
 
@@ -48,11 +54,15 @@ public class PostgresRetrieval {
         this.postgresEndpoint = postgresEndpoint;
         this.embeddingEndpoint = embeddingEndpoint;
 
-        // Create Table...
-        this.postgresEndpoint.createTable(dimensions, PostgresDistanceMetric.COSINE, 1000);
+        this.dimensions = dimensions;
+        this.metric = PostgresDistanceMetric.COSINE;
+        this.lists = 1000;
     }
 
     public List<String> upsert() {
+
+        // Create Table...
+        this.postgresEndpoint.createTable(dimensions, metric, lists);
 
         ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
 
