@@ -57,24 +57,6 @@ public class PostgresClientMetadataRepositoryTest {
 //
 //    // Assert
 //    verify(jdbcTemplate, times(2)).execute(sqlQueryCaptor.capture());
-//
-//    // Check for SQL queries
-//
-//    List<String> capturedSqlQueries = sqlQueryCaptor.getAllValues();
-//
-//    // Assert that the first query is for creating the metadata table
-//    assertTrue(capturedSqlQueries.get(0).contains("CREATE TABLE IF NOT EXISTS"));
-//    assertTrue(capturedSqlQueries.get(0).contains("metadata_id SERIAL PRIMARY KEY"));
-//    assertTrue(capturedSqlQueries.get(0).contains("metadata TEXT"));
-//    assertTrue(capturedSqlQueries.get(0).contains("metadata_embedding vector"));
-//
-//    // Assert that the second query is for creating the join table
-//    assertTrue(capturedSqlQueries.get(1).contains("CREATE TABLE IF NOT EXISTS"));
-//    assertTrue(capturedSqlQueries.get(1).contains("embedding_id INT"));
-//    assertTrue(capturedSqlQueries.get(1).contains("metadata_id INT"));
-//    assertTrue(capturedSqlQueries.get(1).contains("FOREIGN KEY (embedding_id) REFERENCES"));
-//    assertTrue(capturedSqlQueries.get(1).contains("FOREIGN KEY (metadata_id) REFERENCES"));
-//    assertTrue(capturedSqlQueries.get(1).contains("PRIMARY KEY (embedding_id, metadata_id)"));
   }
 
   @Test

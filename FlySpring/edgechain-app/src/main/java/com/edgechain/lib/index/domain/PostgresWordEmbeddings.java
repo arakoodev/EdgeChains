@@ -27,7 +27,7 @@ public class PostgresWordEmbeddings implements ArkObject {
   private Double score;
 
   private String metadata;
-  private Integer metadataId;
+  private String metadataId;
   private String titleMetadata;
 
 //  public Integer getEmbedding_id() {
@@ -102,11 +102,11 @@ public class PostgresWordEmbeddings implements ArkObject {
     this.metadata = metadata;
   }
 
-  public Integer getMetadataId() {
+  public String getMetadataId() {
     return metadataId;
   }
 
-  public void setMetadataId(Integer metadataId) {
+  public void setMetadataId(String metadataId) {
     this.metadataId = metadataId;
   }
 

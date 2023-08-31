@@ -23,6 +23,7 @@ public class PostgresEndpoint extends Endpoint {
     private String tableName;
     private int lists;
 
+    private String id;
     private String namespace;
 
     private String filename;
@@ -41,8 +42,7 @@ public class PostgresEndpoint extends Endpoint {
     // Fields for metadata table
     private List<String> metadataTableNames;
     private String metadata;
-    private Integer metadataId;
-    private Integer embeddingId;
+    private String metadataId;
 
 
     public PostgresEndpoint() {
@@ -90,11 +90,11 @@ public class PostgresEndpoint extends Endpoint {
         this.metadata = metadata;
     }
 
-    public void setEmbeddingId(Integer embeddingId) {
-        this.embeddingId = embeddingId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public void setMetadataId(Integer metadataId) {
+    public void setMetadataId(String metadataId) {
         this.metadataId = metadataId;
     }
 
@@ -140,14 +140,13 @@ public class PostgresEndpoint extends Endpoint {
         return metadata;
     }
 
-    public Integer getEmbeddingId() {
-        return embeddingId;
-    }
-
-    public Integer getMetadataId() {
+    public String getMetadataId() {
         return metadataId;
     }
 
+    public String getId() {
+        return id;
+    }
 
     public StringResponse upsert(
             WordEmbeddings wordEmbeddings,
@@ -168,6 +167,11 @@ public class PostgresEndpoint extends Endpoint {
         return this.postgresService.createTable(this).blockingGet();
     }
 
+    public StringResponse createMetadataTable(int dimensions) {
+        this.dimensions = dimensions;
+        return this.postgresService.createMetadataTable(this).blockingGet();
+    }
+
     public List<StringResponse> upsert(
             List<WordEmbeddings> wordEmbeddingsList,
             String filename
@@ -177,7 +181,7 @@ public class PostgresEndpoint extends Endpoint {
         return this.postgresService.batchUpsert(this).blockingGet();
     }
 
-    public Integer insertMetadata(
+    public StringResponse insertMetadata(
             WordEmbeddings wordEmbeddings, int dimensions, PostgresDistanceMetric metric) {
         this.dimensions = dimensions;
         this.wordEmbedding = wordEmbeddings;
@@ -185,8 +189,14 @@ public class PostgresEndpoint extends Endpoint {
         return this.postgresService.insertMetadata(this).blockingGet();
     }
 
-    public StringResponse insertIntoJoinTable(Integer embeddingId, Integer metadataId) {
-        this.embeddingId = embeddingId;
+    public List<StringResponse> batchInsertMetadata(
+            List<WordEmbeddings> wordEmbeddingsList) {
+        this.wordEmbeddingsList = wordEmbeddingsList;
+        return this.postgresService.batchInsertMetadata(this).blockingGet();
+    }
+
+    public StringResponse insertIntoJoinTable(String id, String metadataId) {
+        this.id = id;
         this.metadataId = metadataId;
         return this.postgresService.insertIntoJoinTable(this).blockingGet();
     }

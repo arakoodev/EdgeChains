@@ -40,6 +40,17 @@ public class PostgresClient {
           }
       }));
   }
+  public EdgeChain<StringResponse> createMetadataTable(PostgresEndpoint postgresEndpoint) {
+      return new EdgeChain<>(Observable.create(emitter -> {
+          try {
+              this.metadataRepository.createTable(postgresEndpoint);
+              emitter.onNext(new StringResponse("Table: " + postgresEndpoint.getMetadataTableNames().get(0)));
+              emitter.onComplete();
+          }catch (final Exception e) {
+              emitter.onError(e);
+          }
+      }));
+  }
 
   public EdgeChain<List<StringResponse>> batchUpsert(PostgresEndpoint postgresEndpoint) {
 
@@ -101,15 +112,12 @@ public class PostgresClient {
             Observable.create(
                     emitter -> {
                       try {
-//                        // Create Table (Removed It)....
-//                        this.metadataRepository.createTable(postgresEndpoint);
-
                         // Upsert Embeddings ==>  This needs to be fixed.....
-//                        String metadataId =
-//                                this.metadataRepository.insertMetadata(
-//                                        postgresEndpoint.getMetadataTableNames().get(0), input, postgresEndpoint.getWordEmbeddings().getValues());
+                        String metadataId =
+                                this.metadataRepository.insertMetadata(
+                                        postgresEndpoint.getMetadataTableNames().get(0), postgresEndpoint.getWordEmbedding().getId(), postgresEndpoint.getWordEmbedding().getValues());
 
-                        emitter.onNext(new StringResponse(""));
+                        emitter.onNext(new StringResponse(metadataId));
                         emitter.onComplete();
 
                       } catch (final Exception e) {
@@ -118,6 +126,34 @@ public class PostgresClient {
                     }),
             postgresEndpoint);
   }
+
+    public EdgeChain<List<StringResponse>> batchInsertMetadata(PostgresEndpoint postgresEndpoint) {
+
+        return new EdgeChain<>(
+                Observable.create(
+                        emitter -> {
+                            try {
+
+                                // Insert metadata
+                                List<String> strings = this.metadataRepository.batchInsertMetadata(
+                                        postgresEndpoint.getMetadataTableNames().get(0),
+                                        postgresEndpoint.getWordEmbedding().getId(),
+                                        postgresEndpoint.getWordEmbedding().getValues());
+
+                                List<StringResponse> stringResponseList = strings.stream()
+                                        .map(StringResponse::new)
+                                        .toList();
+
+                                emitter.onNext(stringResponseList);
+                                emitter.onComplete();
+
+                            } catch (final Exception e) {
+                                emitter.onError(e);
+                            }
+                        }),
+                postgresEndpoint);
+
+    }
 
   public EdgeChain<StringResponse> insertIntoJoinTable(PostgresEndpoint postgresEndpoint) {
     return new EdgeChain<>(
@@ -167,61 +203,67 @@ public class PostgresClient {
 
                             wordEmbeddingsList.add(val);
                           }
-                        } else { // If the metadata table is not null, then we need to query with metadata
+                        } else { // If the metadata table exists, then we need to query with metadata
 
                           List<String> metadataTableNames = postgresEndpoint.getMetadataTableNames();
                           int numberOfMetadataTables = metadataTableNames.size();
 
-                          // This map will store the <id, titleMetadata> pairs
+                          /*
+                          * This map will store the <id, titleMetadata> pairs
+                          * We need to extract the title info from another metadata table.
+                          * So instead of having extra PostgresWordEmbeddings objects for the title info
+                          * We can store the title info in a map corresponding to the id key of the embeddings table
+                          * Then after the loop is over we can inject the title field in the correct PostgresWordEmbeddings object by using the id key.
+                          */
                           Map<String, String> titleMetadataMap = new HashMap<>();
-                          for (int i = 0; i < numberOfMetadataTables; i++) {
-                            String metadataTableName = metadataTableNames.get(i);
-                            List<Map<String, Object>> rows =
-                                    this.metadataRepository.queryWithMetadata(
-                                            postgresEndpoint.getTableName(),
-                                            metadataTableName,
-                                            getNamespace(postgresEndpoint),
-                                            postgresEndpoint.getProbes(),
-                                            postgresEndpoint.getMetric(),
-                                            postgresEndpoint.getWordEmbedding().getValues(),
-                                            postgresEndpoint.getTopK());
-                            // To filter out duplicate context chunks
-                            Set<Integer> contextChunkIds = new HashSet<>();
-                            for (Map row : rows) {
-                              Integer metadataId = (Integer) row.get("metadata_id");
-                              if (!metadataTableName.contains("_title_metadata")
-                                      && contextChunkIds.contains(metadataId)) continue;
+                            for (String metadataTableName : metadataTableNames) {
+                                List<Map<String, Object>> rows =
+                                        this.metadataRepository.queryWithMetadata(
+                                                postgresEndpoint.getTableName(),
+                                                metadataTableName,
+                                                getNamespace(postgresEndpoint),
+                                                postgresEndpoint.getProbes(),
+                                                postgresEndpoint.getMetric(),
+                                                postgresEndpoint.getWordEmbedding().getValues(),
+                                                postgresEndpoint.getTopK());
 
-                              PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                              val.setId((String) row.get("id"));
-                              val.setRawText((String) row.get("raw_text"));
-                              val.setFilename((String) row.get("filename"));
-                              val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
-                              val.setNamespace((String) row.get("namespace"));
-                              val.setScore((Double) row.get("score"));
+                                // To filter out duplicate context chunks
+                                Set<String> contextChunkIds = new HashSet<>();
+                                for (Map row : rows) {
+                                    String metadataId = (String) row.get("metadata_id");
+                                    if (!metadataTableName.contains("_title_metadata")
+                                            && contextChunkIds.contains(metadataId)) continue;
 
-                              // Add metadata fields in response
-                              if (metadataTableName.contains("_title_metadata")) {
-                                titleMetadataMap.put((String) row.get("id"), (String) row.get("metadata"));
+                                    PostgresWordEmbeddings val = new PostgresWordEmbeddings();
+                                    val.setId((String) row.get("id"));
+                                    val.setRawText((String) row.get("raw_text"));
+                                    val.setFilename((String) row.get("filename"));
+                                    val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
+                                    val.setNamespace((String) row.get("namespace"));
+                                    val.setScore((Double) row.get("score"));
 
-                                // For checking if only one metadata table is present which is the title
-                                // table
-                                if (numberOfMetadataTables > 1) continue;
-                              } else {
-                                val.setMetadata((String) row.get("metadata"));
-                              }
-                              contextChunkIds.add(metadataId);
-                              wordEmbeddingsList.add(val);
+                                    // Add metadata fields in response
+                                    if (metadataTableName.contains("_title_metadata")) {
+                                        titleMetadataMap.put((String) row.get("id"), (String) row.get("metadata"));
+
+                                        // For checking if only one metadata table is present which is the title
+                                        // table
+                                        if (numberOfMetadataTables > 1) continue;
+                                    } else {
+                                        val.setMetadata((String) row.get("metadata"));
+                                    }
+                                    contextChunkIds.add(metadataId);
+                                    wordEmbeddingsList.add(val);
+                                }
+
+                                // Insert the title fields into their respective PostgresWordEmbeddings
+                                for (PostgresWordEmbeddings wordEmbedding : wordEmbeddingsList) {
+                                    String id = wordEmbedding.getId();
+                                    if (titleMetadataMap.containsKey(id)) {
+                                        wordEmbedding.setTitleMetadata(titleMetadataMap.get(id));
+                                    }
+                                }
                             }
-
-                            // Insert the title fields into their respective word embeddings
-                            for (PostgresWordEmbeddings wordEmbedding : wordEmbeddingsList) {
-                              String id = wordEmbedding.getId();
-                              if (titleMetadataMap.containsKey(id)) {
-                                wordEmbedding.setTitleMetadata(titleMetadataMap.get(id));
-                              }
-                            }
-                          }
                         }
 
                         emitter.onNext(wordEmbeddingsList);
@@ -279,7 +321,7 @@ public class PostgresClient {
                         for (Map row : rows) {
 
                           PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                          val.setMetadataId((Integer) row.get("metadata_id"));
+                          val.setMetadataId((String) row.get("metadata_id"));
                           val.setRawText((String) row.get("metadata"));
                           val.setScore((Double) row.get("score"));
 

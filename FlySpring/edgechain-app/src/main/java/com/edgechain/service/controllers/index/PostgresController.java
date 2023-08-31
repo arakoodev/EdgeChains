@@ -25,6 +25,11 @@ public class PostgresController {
     return this.postgresClient.createTable(postgresEndpoint).toSingle();
   }
 
+  @PostMapping("/metadata/create-table")
+  public Single<StringResponse> createMetadataTable(@RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.createMetadataTable(postgresEndpoint).toSingle();
+  }
+
   @PostMapping("/upsert")
   public Single<StringResponse> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
     return this.postgresClient.upsert(postgresEndpoint).toSingle();
@@ -38,6 +43,10 @@ public class PostgresController {
   @PostMapping("/metadata/insert")
   public Single<StringResponse> insertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
     return this.postgresClient.insertMetadata(postgresEndpoint).toSingle();
+  }
+  @PostMapping("/metadata/batch-insert")
+  public Single<List<StringResponse>> batchInsertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.batchInsertMetadata(postgresEndpoint).toSingle();
   }
 
   @PostMapping("/join/insert")

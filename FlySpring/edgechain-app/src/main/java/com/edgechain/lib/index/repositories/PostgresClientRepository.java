@@ -171,7 +171,7 @@ public class PostgresClientRepository {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, 1 - ( embedding"
+              "SELECT id, raw_text, namespace, filename, timestamp, 1 - ( embedding"
                   + " <=> '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s'"
                   + " LIMIT %s;",
               embeddings,
@@ -183,7 +183,7 @@ public class PostgresClientRepository {
     } else {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, embedding_id, raw_text, namespace, filename, timestamp, (embedding <->"
+              "SELECT id, raw_text, namespace, filename, timestamp, (embedding <->"
                   + " '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' ASC"
                   + " LIMIT %s;",
               embeddings,
@@ -198,7 +198,7 @@ public class PostgresClientRepository {
   public List<Map<String, Object>> getAllChunks(PostgresEndpoint endpoint) {
     return jdbcTemplate.queryForList(
         String.format(
-            "SELECT embedding_id, raw_text, embedding, filename from %s;",
+            "SELECT id, raw_text, embedding, filename from %s;",
             endpoint.getTableName()));
   }
 

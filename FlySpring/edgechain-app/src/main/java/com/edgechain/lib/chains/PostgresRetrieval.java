@@ -94,6 +94,45 @@ public class PostgresRetrieval {
         return this.postgresEndpoint.upsert(wordEmbeddingsList, filename).stream()
                 .map(StringResponse::getResponse).collect(Collectors.toList());
     }
+    public List<String> insertMetadata() {
+
+        // Create Table...
+        this.postgresEndpoint.createMetadataTable(dimensions);
+
+        ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Observable.fromArray(arr)
+                .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input))
+                        .subscribeOn(Schedulers.io()))
+                .buffer(batchSize)
+                .flatMapCompletable(wordEmbeddingsList ->
+                        Completable.fromAction(() -> insertMetadataAndCollectIds(wordEmbeddingsList, uuidQueue))
+                                .subscribeOn(Schedulers.io())
+                )
+                .blockingSubscribe(latch::countDown, error -> latch.countDown());
+
+        return new ArrayList<>(uuidQueue);
+    }
+
+    public StringResponse insertOneMetadata(String metadata) {
+        // Create Table...
+        this.postgresEndpoint.createMetadataTable(dimensions);
+        WordEmbeddings wordEmbeddings = generateEmbeddings(metadata);
+        return this.postgresEndpoint.insertMetadata(wordEmbeddings, dimensions, metric);
+    }
+
+    private void insertMetadataAndCollectIds(List<WordEmbeddings> wordEmbeddingsList, ConcurrentLinkedQueue<String> uuidQueue) {
+        List<String> batchUuidList = executeBatchInsertMetadata(wordEmbeddingsList);
+        uuidQueue.addAll(batchUuidList);
+    }
+
+    private List<String> executeBatchInsertMetadata(List<WordEmbeddings> wordEmbeddingsList) {
+        return this.postgresEndpoint.batchInsertMetadata(wordEmbeddingsList).stream()
+                .map(StringResponse::getResponse).collect(Collectors.toList());
+    }
+
 
     public int getBatchSize() {
         return batchSize;
@@ -102,4 +141,5 @@ public class PostgresRetrieval {
     public void setBatchSize(int batchSize) {
         this.batchSize = batchSize;
     }
+
 }
