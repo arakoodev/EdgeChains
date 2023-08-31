@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import org.postgresql.util.PGobject;
 import org.springframework.stereotype.Service;
@@ -54,9 +53,7 @@ public class PostgresClient {
 
     return new EdgeChain<>(Observable.create(emitter -> {
       try {
-        this.namespace = (Objects.isNull(postgresEndpoint.getNamespace())
-            || postgresEndpoint.getNamespace().isEmpty()) ? "knowledge"
-                : postgresEndpoint.getNamespace();
+        this.namespace = namespaceOrDefault();
 
         // Create Table
         this.repository.createTable(postgresEndpoint);
@@ -117,9 +114,7 @@ public class PostgresClient {
 
     return new EdgeChain<>(Observable.create(emitter -> {
       try {
-        this.namespace = (Objects.isNull(postgresEndpoint.getNamespace())
-            || postgresEndpoint.getNamespace().isEmpty()) ? "knowledge"
-                : postgresEndpoint.getNamespace();
+        this.namespace = namespaceOrDefault();
 
         List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
         if (postgresEndpoint.getMetadataTableNames() == null) {
@@ -150,7 +145,7 @@ public class PostgresClient {
             List<Map<String, Object>> rows =
                 this.metadataRepository.queryWithMetadata(postgresEndpoint.getTableName(),
                     metadataTableName, this.namespace, probes, metric, wordEmbeddings, topK);
-            
+
             // To filter out duplicate context chunks
             Set<Integer> contextChunkIds = new HashSet<>();
             for (Map<String, Object> row : rows) {
@@ -202,7 +197,7 @@ public class PostgresClient {
   }
 
   public EdgeChain<List<PostgresWordEmbeddings>> getAllChunks(PostgresEndpoint postgresEndpoint) {
-    ObjectMapper objectMapper = new ObjectMapper(); // TODO heavy instance! Create once and re-use.
+    ObjectMapper objectMapper = new ObjectMapper(); // heavy instance! Create once and re-use.
     final TypeReference<List<Float>> valueTypeRef = new TypeReference<>() {};
 
     return new EdgeChain<>(Observable.create(emitter -> {
@@ -260,21 +255,28 @@ public class PostgresClient {
   public EdgeChain<StringResponse> deleteAll() {
 
     return new EdgeChain<>(Observable.create(emitter -> {
-      this.namespace = (Objects.isNull(postgresEndpoint.getNamespace())
-          || postgresEndpoint.getNamespace().isEmpty()) ? "knowledge"
-              : postgresEndpoint.getNamespace();
+      this.namespace = namespaceOrDefault();
 
       try {
         this.repository.deleteAll(postgresEndpoint.getTableName(), this.namespace);
-        
+
         emitter.onNext(new StringResponse(
             "Word embeddings are successfully deleted for namespace:" + this.namespace));
         emitter.onComplete();
-        
+
       } catch (final Exception e) {
         emitter.onError(e);
       }
     }), postgresEndpoint);
+  }
+
+  private String namespaceOrDefault() {
+    String ns = postgresEndpoint.getNamespace();
+    if (ns == null || ns.isEmpty()) {
+      return "knowledge";
+    } else {
+      return ns;
+    }
   }
 
 }
