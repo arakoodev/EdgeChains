@@ -54,7 +54,6 @@ public class PostgresClient {
 
     return new EdgeChain<>(Observable.create(emitter -> {
       try {
-
         this.namespace = (Objects.isNull(postgresEndpoint.getNamespace())
             || postgresEndpoint.getNamespace().isEmpty()) ? "knowledge"
                 : postgresEndpoint.getNamespace();
@@ -62,7 +61,7 @@ public class PostgresClient {
         // Create Table
         this.repository.createTable(postgresEndpoint);
 
-        String input = wordEmbeddings.getId().replaceAll("'", "");
+        String input = wordEmbeddings.getId().replace("'", "");
 
         // Upsert Embeddings
         Integer embeddingId = this.repository.upsertEmbeddings(postgresEndpoint.getTableName(),
@@ -81,13 +80,11 @@ public class PostgresClient {
 
     return new EdgeChain<>(Observable.create(emitter -> {
       try {
-
         // Create Table
         this.metadataRepository.createTable(postgresEndpoint);
 
-        String input = wordEmbeddings.getId().replaceAll("'", "");
+        String input = wordEmbeddings.getId().replace("'", "");
 
-        // Upsert Embeddings
         Integer metadataId = this.metadataRepository
             .insertMetadata(postgresEndpoint.getMetadataTableNames().get(0), input, wordEmbeddings);
 
@@ -101,9 +98,9 @@ public class PostgresClient {
   }
 
   public EdgeChain<StringResponse> insertIntoJoinTable(PostgresEndpoint postgresEndpoint) {
+
     return new EdgeChain<>(Observable.create(emitter -> {
       try {
-
         this.metadataRepository.insertIntoJoinTable(postgresEndpoint);
 
         emitter.onNext(new StringResponse("Inserted"));
@@ -143,8 +140,8 @@ public class PostgresClient {
           }
         } else { // If the metadata table is not null, then we need to query with metadata
 
-          List<String> metadataTableNames = postgresEndpoint.getMetadataTableNames();
-          int numberOfMetadataTables = metadataTableNames.size();
+          final List<String> metadataTableNames = postgresEndpoint.getMetadataTableNames();
+          final int numberOfMetadataTables = metadataTableNames.size();
 
           // This map will store the <id, titleMetadata> pairs
           Map<String, String> titleMetadataMap = new HashMap<>();
@@ -153,6 +150,7 @@ public class PostgresClient {
             List<Map<String, Object>> rows =
                 this.metadataRepository.queryWithMetadata(postgresEndpoint.getTableName(),
                     metadataTableName, this.namespace, probes, metric, wordEmbeddings, topK);
+            
             // To filter out duplicate context chunks
             Set<Integer> contextChunkIds = new HashSet<>();
             for (Map<String, Object> row : rows) {
@@ -204,7 +202,9 @@ public class PostgresClient {
   }
 
   public EdgeChain<List<PostgresWordEmbeddings>> getAllChunks(PostgresEndpoint postgresEndpoint) {
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = new ObjectMapper(); // TODO heavy instance! Create once and re-use.
+    final TypeReference<List<Float>> valueTypeRef = new TypeReference<>() {};
+
     return new EdgeChain<>(Observable.create(emitter -> {
       try {
         List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
@@ -214,14 +214,17 @@ public class PostgresClient {
           val.setEmbedding_id((Integer) row.get("embedding_id"));
           val.setRawText((String) row.get("raw_text"));
           val.setFilename((String) row.get("filename"));
+
           PGobject pgObject = (PGobject) row.get("embedding");
           String jsonString = pgObject.getValue();
-          List<Float> values = objectMapper.readValue(jsonString, new TypeReference<>() {});
+          List<Float> values = objectMapper.readValue(jsonString, valueTypeRef);
           val.setValues(values);
           wordEmbeddingsList.add(val);
         }
+
         emitter.onNext(wordEmbeddingsList);
         emitter.onComplete();
+
       } catch (final Exception e) {
         emitter.onError(e);
       }
@@ -237,7 +240,6 @@ public class PostgresClient {
         List<Map<String, Object>> rows = this.metadataRepository.similaritySearchMetadata(
             postgresEndpoint.getMetadataTableNames().get(0), metric, wordEmbeddings, topK);
         for (Map<String, Object> row : rows) {
-
           PostgresWordEmbeddings val = new PostgresWordEmbeddings();
           val.setMetadataId((Integer) row.get("metadata_id"));
           val.setRawText((String) row.get("metadata"));
@@ -264,12 +266,15 @@ public class PostgresClient {
 
       try {
         this.repository.deleteAll(postgresEndpoint.getTableName(), this.namespace);
+        
         emitter.onNext(new StringResponse(
             "Word embeddings are successfully deleted for namespace:" + this.namespace));
         emitter.onComplete();
+        
       } catch (final Exception e) {
         emitter.onError(e);
       }
     }), postgresEndpoint);
   }
+
 }
