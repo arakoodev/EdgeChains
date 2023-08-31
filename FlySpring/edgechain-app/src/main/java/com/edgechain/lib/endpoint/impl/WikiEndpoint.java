@@ -1,11 +1,11 @@
 package com.edgechain.lib.endpoint.impl;
 
+import io.reactivex.rxjava3.core.Observable;
 import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.retrofit.WikiService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import com.edgechain.lib.wiki.response.WikiResponse;
-import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 
 public class WikiEndpoint extends Endpoint {
@@ -19,7 +19,6 @@ public class WikiEndpoint extends Endpoint {
 
   public WikiEndpoint(RetryPolicy retryPolicy) {
     super(retryPolicy);
-    this.input = input;
   }
 
   public String getInput() {
