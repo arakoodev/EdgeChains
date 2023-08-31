@@ -13,7 +13,8 @@ public class ProjectSetup {
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-  @Autowired FileTools fileTools;
+  @Autowired
+  FileTools fileTools;
 
   private String userHome = System.getProperty("user.home");
   private String separator = FileSystems.getDefault().getSeparator();
@@ -25,43 +26,47 @@ public class ProjectSetup {
   private String glowrootDir = flyflyDir + separator + "glowroot";
 
   public boolean initscriptExists() {
-    log.debug("Checking if flyfly.gradle exists in " + initscriptDir);
+    log.debug("Checking if flyfly.gradle exists in {}", initscriptDir);
     return new File(initscriptDir).exists();
   }
 
   public void addInitscript() throws IOException {
     File initDir = new File(userHome + separator + ".gradle" + separator + "init.d");
-    if (!initDir.exists()) initDir.mkdirs();
+    if (!initDir.exists())
+      initDir.mkdirs();
     fileTools.exportFileTo("flyfly.gradle", initscriptDir);
   }
 
   public void addAutorouteJar() throws IOException {
     File flyflyFolder = new File(flyflyDir);
-    if (!flyflyFolder.exists()) flyflyFolder.mkdirs();
+    if (!flyflyFolder.exists())
+      flyflyFolder.mkdirs();
     File autorouteFile = new File(autorouteDir);
     if (!autorouteFile.exists() || (autorouteFile.exists() && autorouteFile.delete()))
       fileTools.exportFileTo("autoroute.jar", autorouteDir);
   }
 
   public boolean formatScriptExists() {
-    log.debug("Checking if format.gradle exists in " + formatScriptDir);
+    log.debug("Checking if format.gradle exists in {}", formatScriptDir);
     return new File(formatScriptDir).exists();
   }
 
   public void addFormatScript() throws IOException {
     File flyflyFolder = new File(flyflyDir);
-    if (!flyflyFolder.exists()) flyflyFolder.mkdirs();
+    if (!flyflyFolder.exists())
+      flyflyFolder.mkdirs();
     fileTools.exportFileTo("format.gradle", formatScriptDir);
   }
 
   public boolean glowrootAgentExists() {
-    log.debug("Checking if glowroot folder exists in " + glowrootDir);
+    log.debug("Checking if glowroot folder exists in {}", glowrootDir);
     return new File(glowrootDir).exists();
   }
 
   public void addGlowrootAgent() throws IOException {
     File flyflyFolder = new File(flyflyDir);
-    if (!flyflyFolder.exists()) flyflyFolder.mkdirs();
+    if (!flyflyFolder.exists())
+      flyflyFolder.mkdirs();
     String zipDir = flyflyDir + separator + "glowroot.zip";
     fileTools.exportFileTo("glowroot.zip", zipDir);
     fileTools.unzip(zipDir, flyflyDir);
