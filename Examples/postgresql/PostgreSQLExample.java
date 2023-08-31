@@ -138,7 +138,7 @@ public class PostgreSQLExample {
      * concept of namespace is defined above *
      */
     @PostMapping("/postgres/upsert")
-    public void upsert(ArkRequest arkRequest) throws IOException, ExecutionException, InterruptedException {
+    public void upsert(ArkRequest arkRequest) throws IOException {
 
       String namespace = arkRequest.getQueryParam("namespace");
       String filename = arkRequest.getMultiPart("file").getSubmittedFileName();

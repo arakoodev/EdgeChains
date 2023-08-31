@@ -52,7 +52,7 @@ public class PostgresRetrieval {
         this.postgresEndpoint.createTable(dimensions, PostgresDistanceMetric.COSINE, 1000);
     }
 
-    public List<String> upsert() throws InterruptedException, ExecutionException {
+    public List<String> upsert() {
 
         ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
 
