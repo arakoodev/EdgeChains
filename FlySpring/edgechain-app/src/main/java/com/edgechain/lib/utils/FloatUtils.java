@@ -6,23 +6,18 @@ import java.util.List;
 
 public class FloatUtils {
 
-  public static byte[] toByteArray(Float[] input) {
-    float[] primitiveArray = new float[input.length];
-    for (int i = 0; i < input.length; i++) {
-      primitiveArray[i] = input[i] != null ? input[i] : Float.NaN;
-    }
-
-    byte[] bytes = new byte[Float.BYTES * primitiveArray.length];
-    ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().put(primitiveArray);
+  public static byte[] toByteArray(float[] input) {
+    byte[] bytes = new byte[Float.BYTES * input.length];
+    ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().put(input);
     return bytes;
   }
 
-  public static Float[] toFloatArray(List<Float> floatList) {
-    Float[] floatArray = new Float[floatList.size()];
+  public static float[] toFloatArray(List<Float> floatList) {
+    float[] floatArray = new float[floatList.size()];
     int i = 0;
 
     for (Float f : floatList) {
-      floatArray[i++] = f;
+      floatArray[i++] = (f != null ? f : Float.NaN);
     }
 
     return floatArray;
