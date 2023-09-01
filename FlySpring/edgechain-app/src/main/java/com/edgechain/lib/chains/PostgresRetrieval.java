@@ -2,6 +2,9 @@ package com.edgechain.lib.chains;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.EmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.BgeSmallEndpoint;
+import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
+import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.request.ArkRequest;
@@ -9,6 +12,8 @@ import com.edgechain.lib.response.StringResponse;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +23,9 @@ import java.util.stream.Collectors;
 
 public class PostgresRetrieval {
 
-    private int batchSize = 30;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private int batchSize = 50;
 
     private final String[] arr;
 
@@ -44,6 +51,13 @@ public class PostgresRetrieval {
         this.metric = metric;
         this.lists = lists;
 
+        if (embeddingEndpoint instanceof OpenAiEndpoint openAiEndpoint)
+            logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
+        else if (embeddingEndpoint instanceof MiniLMEndpoint miniLMEndpoint)
+            logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
+        else if (embeddingEndpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
+            logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
+
     }
 
 
@@ -57,6 +71,14 @@ public class PostgresRetrieval {
         this.dimensions = dimensions;
         this.metric = PostgresDistanceMetric.COSINE;
         this.lists = 1000;
+
+        if (embeddingEndpoint instanceof OpenAiEndpoint openAiEndpoint)
+            logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
+        else if (embeddingEndpoint instanceof MiniLMEndpoint miniLMEndpoint)
+            logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
+        else if (embeddingEndpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
+            logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
+
     }
 
     public List<String> upsert() {
@@ -66,17 +88,13 @@ public class PostgresRetrieval {
 
         ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
 
-        CountDownLatch latch = new CountDownLatch(1);
-
         Observable.fromArray(arr)
-                .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input))
-                        .subscribeOn(Schedulers.io()))
                 .buffer(batchSize)
-                .flatMapCompletable(wordEmbeddingsList ->
-                        Completable.fromAction(() -> upsertAndCollectIds(wordEmbeddingsList, uuidQueue))
-                                .subscribeOn(Schedulers.io())
-                )
-                .blockingSubscribe(latch::countDown, error -> latch.countDown());
+                .concatMapCompletable(batch -> Observable.fromIterable(batch)
+                        .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input)).subscribeOn(Schedulers.io()))
+                        .buffer(batchSize / 2)
+                        .flatMapCompletable(wordEmbeddingsList -> Completable.fromAction(() -> upsertAndCollectIds(wordEmbeddingsList, uuidQueue)).subscribeOn(Schedulers.io())))
+                .blockingAwait();
 
         return new ArrayList<>(uuidQueue);
     }

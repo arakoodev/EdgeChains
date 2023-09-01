@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import retrofit2.Retrofit;
 
 import java.util.List;
+import java.util.StringJoiner;
 
 public class PostgresEndpoint extends Endpoint {
 
@@ -236,4 +237,5 @@ public class PostgresEndpoint extends Endpoint {
     public StringResponse deleteAll() {
         return this.postgresService.deleteAll(this).blockingGet();
     }
+
 }

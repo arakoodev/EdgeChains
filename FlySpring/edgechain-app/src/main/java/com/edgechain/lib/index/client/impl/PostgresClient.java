@@ -143,7 +143,6 @@ public class PostgresClient {
             Observable.create(
                     emitter -> {
                       try {
-
                         List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
                         if (postgresEndpoint.getMetadataTableNames() == null) {
                           List<Map<String, Object>> rows =
