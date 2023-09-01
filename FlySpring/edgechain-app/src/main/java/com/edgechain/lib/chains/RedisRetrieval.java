@@ -25,7 +25,7 @@ public class RedisRetrieval {
   private final String[] arr;
   private final int dimension;
   private final RedisDistanceMetric metric;
-  private int batchSize = 50;
+  private int batchSize = 30;
 
   public RedisRetrieval(
           String[] arr,
@@ -59,7 +59,7 @@ public class RedisRetrieval {
             .buffer(batchSize)
             .concatMapCompletable(batch -> Observable.fromIterable(batch)
                     .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input)).subscribeOn(Schedulers.io()))
-                    .buffer(batchSize / 2)
+                    .toList()
                     .flatMapCompletable(wordEmbeddingsList -> Completable.fromAction(() -> executeBatchUpsert(wordEmbeddingsList)).subscribeOn(Schedulers.io())))
             .blockingAwait();
 
