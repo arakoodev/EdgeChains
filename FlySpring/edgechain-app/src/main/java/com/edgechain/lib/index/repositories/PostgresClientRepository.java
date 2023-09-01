@@ -198,8 +198,8 @@ public class PostgresClientRepository {
   public List<Map<String, Object>> getAllChunks(PostgresEndpoint endpoint) {
     return jdbcTemplate.queryForList(
         String.format(
-            "SELECT id, raw_text, embedding, filename from %s;",
-            endpoint.getTableName()));
+            "SELECT id, raw_text, embedding, filename from %s WHERE filename = '%s';",
+            endpoint.getTableName(), endpoint.getFilename()));
   }
 
   @Transactional

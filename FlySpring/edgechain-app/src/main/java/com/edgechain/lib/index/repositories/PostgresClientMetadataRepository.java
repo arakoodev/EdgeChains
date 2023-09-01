@@ -21,11 +21,32 @@ public class PostgresClientMetadataRepository {
 
   @Transactional
   public void createTable(PostgresEndpoint postgresEndpoint) {
+    String indexName;
+    String vectorOps;
+
+    if (PostgresDistanceMetric.L2.equals(postgresEndpoint.getMetric())) {
+      indexName = postgresEndpoint.getMetadataTableNames().get(0).concat("_").concat("l2_idx");
+      vectorOps = "vector_l2_ops";
+    } else if (PostgresDistanceMetric.COSINE.equals(postgresEndpoint.getMetric())) {
+      indexName = postgresEndpoint.getMetadataTableNames().get(0).concat("_").concat("cosine_idx");
+      vectorOps = "vector_cosine_ops";
+    } else {
+      indexName = postgresEndpoint.getMetadataTableNames().get(0).concat("_").concat("ip_idx");
+      vectorOps = "vector_ip_ops";
+    }
+
+    String indexQuery =
+            String.format(
+                    "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (metadata_embedding %s) WITH"
+                            + " (lists = %s);",
+                    indexName, postgresEndpoint.getMetadataTableNames().get(0), vectorOps, postgresEndpoint.getLists());
+
     jdbcTemplate.execute(
         String.format(
             "CREATE TABLE IF NOT EXISTS %s (metadata_id UUID PRIMARY KEY, metadata TEXT NOT NULL UNIQUE, "
                 + "metadata_embedding vector(%s));",
             postgresEndpoint.getMetadataTableNames().get(0), postgresEndpoint.getDimensions()));
+    jdbcTemplate.execute(indexQuery);
 
     // Create a JOIN table
     jdbcTemplate.execute(
@@ -161,10 +182,11 @@ public class PostgresClientMetadataRepository {
       String metadataTableName,
       PostgresDistanceMetric metric,
       List<Float> values,
+      int probes,
       int topK) {
 
     String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
-
+    jdbcTemplate.execute(String.format("SET LOCAL ivfflat.probes = %s;", probes));
     if (metric.equals(PostgresDistanceMetric.IP)) {
       return jdbcTemplate.queryForList(
           String.format(

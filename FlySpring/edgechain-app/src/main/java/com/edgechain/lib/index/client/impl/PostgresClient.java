@@ -316,6 +316,7 @@ public class PostgresClient {
                                         postgresEndpoint.getMetadataTableNames().get(0),
                                         postgresEndpoint.getMetric(),
                                         postgresEndpoint.getWordEmbedding().getValues(),
+                                        postgresEndpoint.getProbes(),
                                         postgresEndpoint.getTopK());
                         for (Map row : rows) {
 

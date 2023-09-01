@@ -167,8 +167,10 @@ public class PostgresEndpoint extends Endpoint {
         return this.postgresService.createTable(this).blockingGet();
     }
 
-    public StringResponse createMetadataTable(int dimensions) {
+    public StringResponse createMetadataTable(int dimensions, PostgresDistanceMetric metric, int lists) {
         this.dimensions = dimensions;
+        this.metric = metric;
+        this.lists = lists;
         return this.postgresService.createMetadataTable(this).blockingGet();
     }
 

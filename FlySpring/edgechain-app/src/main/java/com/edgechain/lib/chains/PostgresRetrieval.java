@@ -97,7 +97,7 @@ public class PostgresRetrieval {
     public List<String> insertMetadata() {
 
         // Create Table...
-        this.postgresEndpoint.createMetadataTable(dimensions);
+        this.postgresEndpoint.createMetadataTable(dimensions, metric, lists);
 
         ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
 
@@ -118,7 +118,7 @@ public class PostgresRetrieval {
 
     public StringResponse insertOneMetadata(String metadata) {
         // Create Table...
-        this.postgresEndpoint.createMetadataTable(dimensions);
+        this.postgresEndpoint.createMetadataTable(dimensions, metric, lists);
         WordEmbeddings wordEmbeddings = generateEmbeddings(metadata);
         return this.postgresEndpoint.insertMetadata(wordEmbeddings, dimensions, metric);
     }
