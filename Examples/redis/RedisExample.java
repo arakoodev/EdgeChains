@@ -62,7 +62,7 @@ public class RedisExample {
 
         // Redis Configuration
       properties.setProperty("redis.url", "");
-      properties.setProperty("redis.port","");
+      properties.setProperty("redis.port","12885");
       properties.setProperty("redis.username", "default");
       properties.setProperty("redis.password", "");
       properties.setProperty("redis.ttl", "3600");
