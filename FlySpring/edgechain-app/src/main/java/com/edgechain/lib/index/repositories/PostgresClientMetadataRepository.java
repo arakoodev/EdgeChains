@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class PostgresClientMetadataRepository {
@@ -169,6 +170,11 @@ public class PostgresClientMetadataRepository {
   public List<Map<String, Object>> getSimilarMetadataChunk(
       String metadataTableName,
       String embeddingChunk) {
+    // Remove special characters and replace with a space
+    String cleanEmbeddingChunk = embeddingChunk.replaceAll("[^a-zA-Z0-9\\s]", " ").replaceAll("\\s+", " ").trim();
+
+    // Split the embeddingChunk into words and join them with the | operator
+    String tsquery = String.join(" | ", cleanEmbeddingChunk.split("\\s+"));
     return jdbcTemplate.queryForList(
             String.format(
                     "SELECT *, ts_rank(to_tsvector(%s.metadata), query) as rank_metadata " +
@@ -177,7 +183,7 @@ public class PostgresClientMetadataRepository {
                     metadataTableName,
                     metadataTableName,
                     metadataTableName,
-                    embeddingChunk
+                    tsquery
             )
     );
   }

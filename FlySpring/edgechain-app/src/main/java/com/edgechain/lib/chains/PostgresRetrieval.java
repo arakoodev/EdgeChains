@@ -104,13 +104,10 @@ public class PostgresRetrieval {
         CountDownLatch latch = new CountDownLatch(1);
 
         Observable.fromArray(arr)
-//                .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input))
-//                        .subscribeOn(Schedulers.io()))
+                .map(str -> str.replaceAll("'", ""))
                 .buffer(batchSize)
                 .flatMapCompletable(metadataList ->
-                        Completable.fromAction(() -> insertMetadataAndCollectIds(metadataList, uuidQueue))
-                                .subscribeOn(Schedulers.io())
-                )
+                        Completable.fromAction(() -> insertMetadataAndCollectIds(metadataList, uuidQueue)))
                 .blockingSubscribe(latch::countDown, error -> latch.countDown());
 
         return new ArrayList<>(uuidQueue);

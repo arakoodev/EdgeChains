@@ -21,8 +21,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-// import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -48,153 +48,119 @@ public class PostgresClientMetadataRepositoryTest {
       "Test if jdbcTemplate execute method is called twice for createTable() and verifying sql"
           + " queries")
   public void testCreateTable_NonEmptyMetadataTableNames() {
-//    // Arrange
-//    when(postgresEndpoint.getMetadataTableNames())
-//        .thenReturn(Collections.singletonList("metadataTestTable"));
-//
-//    // Act
-//    repository.createTable(postgresEndpoint);
-//
-//    // Assert
-//    verify(jdbcTemplate, times(2)).execute(sqlQueryCaptor.capture());
+    // Arrange
+    when(postgresEndpoint.getMetadataTableNames())
+        .thenReturn(Collections.singletonList("metadataTestTable"));
+
+    // Act
+    repository.createTable(postgresEndpoint);
+
+    // Assert
+    verify(jdbcTemplate, times(2)).execute(sqlQueryCaptor.capture());
   }
 
   @Test
   @DisplayName("createTable() should throw error when the metadata table names list is empty")
   public void testCreateTable_EmptyMetadataTableNames() {
-//    // Arrange
-//    when(postgresEndpoint.getMetadataTableNames()).thenReturn(Collections.emptyList());
-//
-//    // Act and Assert
-//    assertThrows(IndexOutOfBoundsException.class, () -> repository.createTable(postgresEndpoint));
-//    verify(jdbcTemplate, times(0)).execute(sqlQueryCaptor.capture());
+    // Arrange
+    when(postgresEndpoint.getMetadataTableNames()).thenReturn(Collections.emptyList());
+
+    // Act and Assert
+    assertThrows(IndexOutOfBoundsException.class, () -> repository.createTable(postgresEndpoint));
+    verify(jdbcTemplate, times(0)).execute(sqlQueryCaptor.capture());
   }
 
   @Test
   @DisplayName("Insert metadata should return metadata id after getting inserted")
   public void testInsertMetadata_ReturnsMetadataId() {
-//    // Arrange
-//    String metadataTableName = "metadata_table";
-//    String metadata = "example_metadata";
-//    List<Float> wordEmbeddingValues = List.of(0.1f, 0.2f, 0.3f);
-//    WordEmbeddings wordEmbeddings = new WordEmbeddings(metadata, wordEmbeddingValues);
-//
-//    // Mock the queryForObject to return the expected metadata id
-//    Integer expectedMetadataId = 101;
-//    when(jdbcTemplate.queryForObject(sqlQueryCaptor.capture(), eq(Integer.class)))
-//        .thenReturn(expectedMetadataId);
-//
-//    // Act
-//    Integer result = repository.insertMetadata(metadataTableName, metadata, wordEmbeddings.getValues());
-//
-//    // Assert
-//    // Verify that the queryForObject method was called with the expected parameters
-//    verify(jdbcTemplate)
-//        .queryForObject(
-//            eq(
-//                String.format(
-//                    "INSERT INTO metadata_table (metadata, metadata_embedding) VALUES ('%s', '%s') "
-//                        + "RETURNING metadata_id;",
-//                    metadata, wordEmbeddingValues)),
-//            eq(Integer.class));
-//
-//    // Verify that the result matches the expected metadataId
-//    assertEquals(expectedMetadataId, result);
+    // Arrange
+    String metadataTableName = "metadata_table";
+    String metadata = "example_metadata";
+
+    //Act
+    repository.insertMetadata(metadataTableName, metadata);
+
+    //Assert
+    verify(jdbcTemplate, times(1)).update(sqlQueryCaptor.capture());
   }
 
   @Test
   @DisplayName("Insert entry into the join table")
   public void testInsertIntoJoinTable() {
-//    // Arrange
-//    when(postgresEndpoint.getTableName()).thenReturn("embedding_table");
-//    when(postgresEndpoint.getMetadataTableNames())
-//        .thenReturn(Collections.singletonList("metadata_table"));
-//    String joinTable =
-//        postgresEndpoint.getTableName()
-//            + "_join_"
-//            + postgresEndpoint.getMetadataTableNames().get(0);
-//
-//    // Act
-//    repository.insertIntoJoinTable(postgresEndpoint);
-//
-//    // Assert
-//    verify(jdbcTemplate, times(1)).execute(sqlQueryCaptor.capture());
-//
-//    // Verify the captured query and actual query is same or not
-//    String capturedQuery = sqlQueryCaptor.getValue();
-//    String expectedQuery =
-//        String.format(
-//            "INSERT INTO %s (embedding_id, metadata_id) VALUES (%s, %s);",
-//            joinTable, postgresEndpoint.getEmbeddingId(), postgresEndpoint.getMetadataId());
-//    assertEquals(expectedQuery, capturedQuery);
+    // Arrange
+    String id = UUID.randomUUID().toString();
+    String metadataId = UUID.randomUUID().toString();
+    when(postgresEndpoint.getTableName()).thenReturn("embedding_table");
+    when(postgresEndpoint.getMetadataTableNames())
+        .thenReturn(Collections.singletonList("metadata_table"));
+    when(postgresEndpoint.getId())
+        .thenReturn(id);
+    when(postgresEndpoint.getMetadataId())
+        .thenReturn(metadataId);
+    String joinTable =
+        postgresEndpoint.getTableName()
+            + "_join_"
+            + postgresEndpoint.getMetadataTableNames().get(0);
+
+    // Act
+    repository.insertIntoJoinTable(postgresEndpoint);
+
+    // Assert
+    verify(jdbcTemplate, times(1)).execute(sqlQueryCaptor.capture());
+
+    // Verify the captured query and actual query is same or not
+    String capturedQuery = sqlQueryCaptor.getValue();
+    String expectedQuery =
+        String.format(
+            "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s');",
+            joinTable, postgresEndpoint.getId(), postgresEndpoint.getMetadataId());
+    assertEquals(expectedQuery, capturedQuery);
   }
 
   @Test
   @DisplayName("Query with metadata")
   public void testQueryWithMetadata() {
-//    // Arrange
-//    String tableName = "embedding_table";
-//    String metadataTableName = "metadata_table";
-//    String namespace = "example_namespace";
-//    int probes = 1;
-//    PostgresDistanceMetric metric = PostgresDistanceMetric.L2;
-//    List<Float> wordEmbeddingValues = List.of(0.1f, 0.2f, 0.3f);
-//    WordEmbeddings wordEmbeddings = new WordEmbeddings("", wordEmbeddingValues);
-//    int topK = 5;
-//
-//    // Mock queryForList method to return a dummy result
-//    List<Map<String, Object>> dummyResult =
-//        List.of(
-//            Map.of(
-//                "id",
-//                "xyz21",
-//                "metadata",
-//                "example_metadata",
-//                "metadata_id",
-//                1,
-//                "raw_text",
-//                "example_raw_text",
-//                "namespace",
-//                "example_namespace",
-//                "filename",
-//                "example_filename",
-//                "timestamp",
-//                "example_timestamp",
-//                "score",
-//                0.5));
-//    when(jdbcTemplate.queryForList(anyString())).thenReturn(dummyResult);
-//
-//    // Act
-//    List<Map<String, Object>> result =
-//        repository.queryWithMetadata(
-//            tableName, metadataTableName, namespace, probes, metric, wordEmbeddings.getValues(), topK);
-//
-//    // Assert
-//    verify(jdbcTemplate).queryForList(anyString());
-//    assertEquals(dummyResult, result);
-  }
+    // Arrange
+    String tableName = "embedding_table";
+    String metadataTableName = "metadata_table";
+    String namespace = "example_namespace";
+    int probes = 1;
+    PostgresDistanceMetric metric = PostgresDistanceMetric.L2;
+    List<Float> wordEmbeddingValues = List.of(0.1f, 0.2f, 0.3f);
+    WordEmbeddings wordEmbeddings = new WordEmbeddings("", wordEmbeddingValues);
+    int topK = 5;
+    String metadataId = UUID.randomUUID().toString();
+    String id = UUID.randomUUID().toString();
 
-  @Test
-  @DisplayName("Similarity search on metadata table")
-  public void testSimilaritySearchMetadata() {
-//    // Arrange
-//    String metadataTableName = "metadata_table";
-//    PostgresDistanceMetric metric = PostgresDistanceMetric.L2;
-//    List<Float> wordEmbeddingValues = List.of(0.1f, 0.2f, 0.3f);
-//    WordEmbeddings wordEmbeddings = new WordEmbeddings("", wordEmbeddingValues);
-//    int topK = 5;
-//
-//    // Mock queryForList method to return a dummy result
-//    List<Map<String, Object>> dummyResult =
-//        List.of(Map.of("metadata_id", 1, "metadata", "example_metadata", "score", 0.5));
-//    when(jdbcTemplate.queryForList(anyString())).thenReturn(dummyResult);
-//
-//    // Act
-//    List<Map<String, Object>> result =
-//        repository.similaritySearchMetadata(metadataTableName, metric, wordEmbeddings.getValues(), topK);
-//
-//    // Assert
-//    verify(jdbcTemplate).queryForList(sqlQueryCaptor.capture());
-//    assertEquals(dummyResult, result);
+    // Mock queryForList method to return a dummy result
+    List<Map<String, Object>> dummyResult =
+            List.of(
+                    Map.of(
+                            "id",
+                            id,
+                            "metadata",
+                            "example_metadata",
+                            "metadata_id",
+                            metadataId,
+                            "raw_text",
+                            "example_raw_text",
+                            "namespace",
+                            "example_namespace",
+                            "filename",
+                            "example_filename",
+                            "timestamp",
+                            "example_timestamp",
+                            "score",
+                            0.5));
+    when(jdbcTemplate.queryForList(anyString())).thenReturn(dummyResult);
+
+    // Act
+    List<Map<String, Object>> result =
+        repository.queryWithMetadata(
+            tableName, metadataTableName, namespace, probes, metric, wordEmbeddings.getValues(), topK);
+
+    // Assert
+    verify(jdbcTemplate).queryForList(sqlQueryCaptor.capture());
+    assertEquals(dummyResult, result);
   }
 }

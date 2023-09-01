@@ -112,7 +112,6 @@ public class PostgresClient {
             Observable.create(
                     emitter -> {
                       try {
-                        // Upsert Embeddings ==>  This needs to be fixed.....
                           String metadata = postgresEndpoint.getMetadata();
                           String input = metadata.replaceAll("'", "");
 
@@ -138,13 +137,9 @@ public class PostgresClient {
                             try {
 
                                 // Insert metadata
-                                List<String> metadataList = postgresEndpoint.getMetadataList();
-                                List<String> updatedMetadataList = metadataList.stream()
-                                        .map(metadata -> metadata.replaceAll("'", ""))
-                                        .toList();
                                 List<String> strings = this.metadataRepository.batchInsertMetadata(
                                         postgresEndpoint.getMetadataTableNames().get(0),
-                                        updatedMetadataList);
+                                        postgresEndpoint.getMetadataList());
 
                                 List<StringResponse> stringResponseList = strings.stream()
                                         .map(StringResponse::new)
