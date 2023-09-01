@@ -68,8 +68,8 @@ public class PostgresController {
   }
 
   @PostMapping("/similarity-metadata")
-  public Single<List<PostgresWordEmbeddings>> similaritySearchMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
-    return this.postgresClient.similaritySearchMetadata(postgresEndpoint).toSingle();
+  public Single<List<PostgresWordEmbeddings>> getSimilarMetadataChunk(@RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.getSimilarMetadataChunk(postgresEndpoint).toSingle();
   }
 
   @DeleteMapping("/deleteAll")

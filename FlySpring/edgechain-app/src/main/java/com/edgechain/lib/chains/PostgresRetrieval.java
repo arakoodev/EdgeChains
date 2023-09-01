@@ -97,18 +97,18 @@ public class PostgresRetrieval {
     public List<String> insertMetadata() {
 
         // Create Table...
-        this.postgresEndpoint.createMetadataTable(dimensions, metric, lists);
+        this.postgresEndpoint.createMetadataTable();
 
         ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
 
         CountDownLatch latch = new CountDownLatch(1);
 
         Observable.fromArray(arr)
-                .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input))
-                        .subscribeOn(Schedulers.io()))
+//                .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input))
+//                        .subscribeOn(Schedulers.io()))
                 .buffer(batchSize)
-                .flatMapCompletable(wordEmbeddingsList ->
-                        Completable.fromAction(() -> insertMetadataAndCollectIds(wordEmbeddingsList, uuidQueue))
+                .flatMapCompletable(metadataList ->
+                        Completable.fromAction(() -> insertMetadataAndCollectIds(metadataList, uuidQueue))
                                 .subscribeOn(Schedulers.io())
                 )
                 .blockingSubscribe(latch::countDown, error -> latch.countDown());
@@ -118,18 +118,17 @@ public class PostgresRetrieval {
 
     public StringResponse insertOneMetadata(String metadata) {
         // Create Table...
-        this.postgresEndpoint.createMetadataTable(dimensions, metric, lists);
-        WordEmbeddings wordEmbeddings = generateEmbeddings(metadata);
-        return this.postgresEndpoint.insertMetadata(wordEmbeddings, dimensions, metric);
+        this.postgresEndpoint.createMetadataTable();
+        return this.postgresEndpoint.insertMetadata(metadata);
     }
 
-    private void insertMetadataAndCollectIds(List<WordEmbeddings> wordEmbeddingsList, ConcurrentLinkedQueue<String> uuidQueue) {
-        List<String> batchUuidList = executeBatchInsertMetadata(wordEmbeddingsList);
+    private void insertMetadataAndCollectIds(List<String> metadataList, ConcurrentLinkedQueue<String> uuidQueue) {
+        List<String> batchUuidList = executeBatchInsertMetadata(metadataList);
         uuidQueue.addAll(batchUuidList);
     }
 
-    private List<String> executeBatchInsertMetadata(List<WordEmbeddings> wordEmbeddingsList) {
-        return this.postgresEndpoint.batchInsertMetadata(wordEmbeddingsList).stream()
+    private List<String> executeBatchInsertMetadata(List<String> metadataList) {
+        return this.postgresEndpoint.batchInsertMetadata(metadataList).stream()
                 .map(StringResponse::getResponse).collect(Collectors.toList());
     }
 

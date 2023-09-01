@@ -113,9 +113,12 @@ public class PostgresClient {
                     emitter -> {
                       try {
                         // Upsert Embeddings ==>  This needs to be fixed.....
-                        String metadataId =
-                                this.metadataRepository.insertMetadata(
-                                        postgresEndpoint.getMetadataTableNames().get(0), postgresEndpoint.getWordEmbedding().getId(), postgresEndpoint.getWordEmbedding().getValues());
+                          String metadata = postgresEndpoint.getMetadata();
+                          String input = metadata.replaceAll("'", "");
+
+                          String metadataId =
+                                  this.metadataRepository.insertMetadata(
+                                          postgresEndpoint.getMetadataTableNames().get(0), input);
 
                         emitter.onNext(new StringResponse(metadataId));
                         emitter.onComplete();
@@ -135,9 +138,13 @@ public class PostgresClient {
                             try {
 
                                 // Insert metadata
+                                List<String> metadataList = postgresEndpoint.getMetadataList();
+                                List<String> updatedMetadataList = metadataList.stream()
+                                        .map(metadata -> metadata.replaceAll("'", ""))
+                                        .toList();
                                 List<String> strings = this.metadataRepository.batchInsertMetadata(
                                         postgresEndpoint.getMetadataTableNames().get(0),
-                                        postgresEndpoint.getWordEmbeddingsList());
+                                        updatedMetadataList);
 
                                 List<StringResponse> stringResponseList = strings.stream()
                                         .map(StringResponse::new)
@@ -304,7 +311,7 @@ public class PostgresClient {
             postgresEndpoint);
   }
 
-  public EdgeChain<List<PostgresWordEmbeddings>> similaritySearchMetadata(PostgresEndpoint postgresEndpoint) {
+  public EdgeChain<List<PostgresWordEmbeddings>> getSimilarMetadataChunk(PostgresEndpoint postgresEndpoint) {
 
     return new EdgeChain<>(
             Observable.create(
@@ -312,18 +319,14 @@ public class PostgresClient {
                       try {
                         List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
                         List<Map<String, Object>> rows =
-                                this.metadataRepository.similaritySearchMetadata(
+                                this.metadataRepository.getSimilarMetadataChunk(
                                         postgresEndpoint.getMetadataTableNames().get(0),
-                                        postgresEndpoint.getMetric(),
-                                        postgresEndpoint.getWordEmbedding().getValues(),
-                                        postgresEndpoint.getProbes(),
-                                        postgresEndpoint.getTopK());
+                                        postgresEndpoint.getEmbeddingChunk());
                         for (Map row : rows) {
 
                           PostgresWordEmbeddings val = new PostgresWordEmbeddings();
                           val.setMetadataId(row.get("metadata_id").toString());
                           val.setMetadata((String) row.get("metadata"));
-                          val.setScore((Double) row.get("score"));
 
                           wordEmbeddingsList.add(val);
                         }

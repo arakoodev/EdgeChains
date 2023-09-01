@@ -21,32 +21,22 @@ public class PostgresClientMetadataRepository {
 
   @Transactional
   public void createTable(PostgresEndpoint postgresEndpoint) {
-    String indexName;
-    String vectorOps;
-
-    if (PostgresDistanceMetric.L2.equals(postgresEndpoint.getMetric())) {
-      indexName = postgresEndpoint.getMetadataTableNames().get(0).concat("_").concat("l2_idx");
-      vectorOps = "vector_l2_ops";
-    } else if (PostgresDistanceMetric.COSINE.equals(postgresEndpoint.getMetric())) {
-      indexName = postgresEndpoint.getMetadataTableNames().get(0).concat("_").concat("cosine_idx");
-      vectorOps = "vector_cosine_ops";
-    } else {
-      indexName = postgresEndpoint.getMetadataTableNames().get(0).concat("_").concat("ip_idx");
-      vectorOps = "vector_ip_ops";
-    }
-
-    String indexQuery =
-            String.format(
-                    "CREATE INDEX IF NOT EXISTS %s ON %s USING ivfflat (metadata_embedding %s) WITH"
-                            + " (lists = %s);",
-                    indexName, postgresEndpoint.getMetadataTableNames().get(0), vectorOps, postgresEndpoint.getLists());
-
+    String metadataTable = postgresEndpoint.getMetadataTableNames().get(0);
     jdbcTemplate.execute(
         String.format(
-            "CREATE TABLE IF NOT EXISTS %s (metadata_id UUID PRIMARY KEY, metadata TEXT NOT NULL UNIQUE, "
-                + "metadata_embedding vector(%s));",
-            postgresEndpoint.getMetadataTableNames().get(0), postgresEndpoint.getDimensions()));
-    jdbcTemplate.execute(indexQuery);
+            "CREATE TABLE IF NOT EXISTS %s (metadata_id UUID PRIMARY KEY, metadata TEXT NOT NULL UNIQUE);",
+                metadataTable));
+
+    //Creating a GIN index for improving the performance
+//    String index = metadataTable.concat("_search_idx");
+//    jdbcTemplate.execute(
+//            String.format(
+//                    "CREATE INDEX %s ON %s USING GIN (to_tsvector(%s.metadata));",
+//                    index,
+//                    metadataTable,
+//                    metadataTable
+//            )
+//    );
 
     // Create a JOIN table
     jdbcTemplate.execute(
@@ -57,47 +47,43 @@ public class PostgresClientMetadataRepository {
                 + "PRIMARY KEY (id, metadata_id));",
             postgresEndpoint.getTableName()
                 + "_join_"
-                + postgresEndpoint.getMetadataTableNames().get(0),
+                + metadataTable,
             postgresEndpoint.getTableName(),
-            postgresEndpoint.getMetadataTableNames().get(0)));
+                metadataTable));
   }
 
   public List<String> batchInsertMetadata(
-          String metadataTableName, List<WordEmbeddings> wordEmbeddingsList)
+          String metadataTableName, List<String> metadataList)
   {
     List<String> uuidList = new ArrayList<>();
 
-    String[] sql = new String[wordEmbeddingsList.size()];
+    String[] sql = new String[metadataList.size()];
 
-    for(int i = 0; i < wordEmbeddingsList.size(); i++) {
+    for(int i = 0; i < metadataList.size(); i++) {
       UUID uuid = UuidCreator.getTimeOrderedEpoch();
 
       sql[i] =  String.format(
-              "INSERT INTO %s (metadata_id, metadata, metadata_embedding) VALUES ('%s', '%s', '%s');",
+              "INSERT INTO %s (metadata_id, metadata) VALUES ('%s', '%s');",
               metadataTableName,
               uuid,
-              wordEmbeddingsList.get(i).getId(),
-              Arrays.toString(FloatUtils.toFloatArray(wordEmbeddingsList.get(i).getValues())));
+              metadataList.get(i));
       uuidList.add(uuid.toString());
     }
-
-
     jdbcTemplate.batchUpdate(sql);
 
     return uuidList;
   }
   @Transactional
   public String insertMetadata(
-      String metadataTableName, String metadata, List<Float> values) {
+      String metadataTableName, String metadata) {
 
     UUID uuid = UuidCreator.getTimeOrderedEpoch();
     jdbcTemplate.update(
             String.format(
-                    "INSERT INTO %s (metadata_id, metadata, metadata_embedding) VALUES ('%s', '%s', '%s');",
+                    "INSERT INTO %s (metadata_id, metadata) VALUES ('%s', '%s');",
                     metadataTableName,
                     uuid,
-                    metadata,
-                    Arrays.toString(FloatUtils.toFloatArray(values))));
+                    metadata));
     return uuid.toString();
   }
 
@@ -177,47 +163,23 @@ public class PostgresClientMetadataRepository {
     }
   }
 
+
+  //Full-text search
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  public List<Map<String, Object>> similaritySearchMetadata(
+  public List<Map<String, Object>> getSimilarMetadataChunk(
       String metadataTableName,
-      PostgresDistanceMetric metric,
-      List<Float> values,
-      int probes,
-      int topK) {
-
-    String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
-    jdbcTemplate.execute(String.format("SET LOCAL ivfflat.probes = %s;", probes));
-    if (metric.equals(PostgresDistanceMetric.IP)) {
-      return jdbcTemplate.queryForList(
-          String.format(
-              "SELECT metadata_id, metadata, ( metadata_embedding <#> '%s') * -1 AS score FROM %s"
-                  + " ORDER BY metadata_embedding %s '%s' LIMIT %s;",
-              embeddings,
-              metadataTableName,
-              PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(values)),
-              topK));
-
-    } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
-      return jdbcTemplate.queryForList(
-          String.format(
-              "SELECT metadata_id, metadata, 1 - ( metadata_embedding <=> '%s') AS score FROM %s"
-                  + " ORDER BY metadata_embedding %s '%s' LIMIT %s;",
-              embeddings,
-              metadataTableName,
-              PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(values)),
-              topK));
-    } else {
-      return jdbcTemplate.queryForList(
-          String.format(
-              "SELECT metadata_id, metadata, (metadata_embedding <-> '%s') AS score FROM %s ORDER"
-                  + " BY metadata_embedding %s '%s' ASC LIMIT %s;",
-              embeddings,
-              metadataTableName,
-              PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(values)),
-              topK));
-    }
+      String embeddingChunk) {
+    return jdbcTemplate.queryForList(
+            String.format(
+                    "SELECT *, ts_rank(to_tsvector(%s.metadata), query) as rank_metadata " +
+                            "FROM %s, to_tsvector(%s.metadata) document, to_tsquery('%s') query " +
+                            "WHERE query @@ document ORDER BY rank_metadata DESC",
+                    metadataTableName,
+                    metadataTableName,
+                    metadataTableName,
+                    embeddingChunk
+            )
+    );
   }
+
 }
