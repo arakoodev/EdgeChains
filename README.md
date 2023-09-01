@@ -46,7 +46,7 @@ Edgechains gives you:
 * **Fault tolerance**: EdgeChains is designed to be fault-tolerant, and can continue to retry & backoff even if some of the requests in the system fail.
 * **Scalability**: EdgeChains is designed to be scalable, and can be used to write your chain-of-thought applications on large number of APIs, prompt lengths and vector datasets.
 
-## Why do you need Prompt & Chain Orchestration ? 
+## Why do you need Declarative Prompt & Chain Orchestration ? 
 Most people who are new to Generative AI think that the way to use OpenAI or other LLMs is to simply ask it a question and have it magically reply. The answer is extremely different and complex.
 
 ### Classical AI vs Generative AI - Training models is no longer needed..but Orchestration is still hard.
