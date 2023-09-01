@@ -2,7 +2,6 @@ package com.edgechain.lib.chains;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.EmbeddingEndpoint;
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.endpoint.impl.BgeSmallEndpoint;
 import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
