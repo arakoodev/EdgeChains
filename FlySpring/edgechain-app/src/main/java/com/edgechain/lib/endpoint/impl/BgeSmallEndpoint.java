@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -19,6 +20,9 @@ import com.edgechain.lib.rxjava.retry.RetryPolicy;
 
 public class BgeSmallEndpoint extends Endpoint {
 
+  @Serial
+  private static final long serialVersionUID = 1L;
+
   private static final Logger logger = LoggerFactory.getLogger(BgeSmallEndpoint.class);
 
   private final BgeSmallService bgeSmallService =
@@ -31,7 +35,7 @@ public class BgeSmallEndpoint extends Endpoint {
 
   private String callIdentifier;
 
-  static final String MODEL_FOLDER = "./model";
+  public static final String MODEL_FOLDER = "./model";
   static final String MODEL_PATH = MODEL_FOLDER + "/model.onnx";
   static final String TOKENIZER_PATH = MODEL_FOLDER + "/tokenizer.json";
 
