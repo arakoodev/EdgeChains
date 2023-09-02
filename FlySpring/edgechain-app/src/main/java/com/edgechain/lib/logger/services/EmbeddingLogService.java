@@ -65,13 +65,22 @@ public class EmbeddingLogService {
     return this.embeddingLogRepository.findAllByLatencyGreaterThanEqual(latency, pageable);
   }
 
+  private static final String SQL_CREATE_TABLE = """
+      CREATE TABLE IF NOT EXISTS embedding_logs (
+              embedding_id SERIAL PRIMARY KEY,
+              id VARCHAR(255) NOT NULL UNIQUE,
+              call_identifier VARCHAR(255) NOT NULL,
+              created_at TIMESTAMP,
+              completed_at TIMESTAMP,
+              model VARCHAR(255) NOT NULL,
+              latency BIGINT,
+              prompt_tokens BIGINT,
+              total_tokens BIGINT
+          );
+              """;
+
   @Transactional
   public void createTable() {
-    jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS embedding_logs (\n"
-        + "    embedding_id SERIAL PRIMARY KEY,\n" + "    id VARCHAR(255) NOT NULL UNIQUE,\n"
-        + "    call_identifier VARCHAR(255) NOT NULL,\n" + "    created_at TIMESTAMP,\n"
-        + "    completed_at TIMESTAMP,\n" + "    model VARCHAR(255) NOT NULL,\n"
-        + "    latency BIGINT,\n" + "    prompt_tokens BIGINT,\n" + "    total_tokens BIGINT\n"
-        + ");;");
+    jdbcTemplate.execute(SQL_CREATE_TABLE);
   }
 }
