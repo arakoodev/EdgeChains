@@ -160,10 +160,16 @@ public class SupabaseMiniLMExample {
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
-      Retrieval retrieval =
-          new PostgresRetrieval(postgresEndpoint, filename, 384, miniLMEndpoint, arkRequest);
+      PostgresRetrieval retrieval = new PostgresRetrieval(arr, miniLMEndpoint, postgresEndpoint, 1536, filename, arkRequest);
 
-      IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
+      //   retrieval.setBatchSize(100); // Modifying batchSize....
+
+      // Getting ids from upsertion... Internally, it automatically parallelizes the operation...
+      List<String> ids = retrieval.upsert();
+
+      ids.forEach(System.out::println);
+
+      System.out.println("Size: " + ids.size()); // Printing the UUIDs
     }
 
     @PostMapping(value = "/miniLM/query")
