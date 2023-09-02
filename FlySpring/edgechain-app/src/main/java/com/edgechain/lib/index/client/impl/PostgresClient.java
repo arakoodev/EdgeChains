@@ -118,7 +118,7 @@ public class PostgresClient {
 
                                 String metadataId =
                                         this.metadataRepository.insertMetadata(
-                                                postgresEndpoint.getMetadataTableNames().get(0), input);
+                                                postgresEndpoint.getMetadataTableNames().get(0), input, postgresEndpoint.getDocumentDate());
 
                                 emitter.onNext(new StringResponse(metadataId));
                                 emitter.onComplete();
@@ -218,6 +218,7 @@ public class PostgresClient {
                                          * Then after the loop is over we can inject the title field in the correct PostgresWordEmbeddings object by using the id key.
                                          */
                                         Map<String, String> titleMetadataMap = new HashMap<>();
+                                        Map<String, String> dateMetadataMap = new HashMap<>();
                                         for (String metadataTableName : metadataTableNames) {
                                             List<Map<String, Object>> rows =
                                                     this.metadataRepository.queryWithMetadata(
@@ -247,6 +248,7 @@ public class PostgresClient {
                                                 // Add metadata fields in response
                                                 if (metadataTableName.contains("_title_metadata")) {
                                                     titleMetadataMap.put(row.get("id").toString(), (String) row.get("metadata"));
+                                                    dateMetadataMap.put(row.get("id").toString(), (String) row.get("document_date"));
 
                                                     // For checking if only one metadata table is present which is the title
                                                     // table
@@ -258,17 +260,19 @@ public class PostgresClient {
                                                 wordEmbeddingsList.add(val);
                                             }
 
-                                            // Insert the title fields into their respective PostgresWordEmbeddings
+                                            // Insert the title and date fields into their respective PostgresWordEmbeddings
                                             for (PostgresWordEmbeddings wordEmbedding : wordEmbeddingsList) {
                                                 String id = wordEmbedding.getId();
                                                 if (titleMetadataMap.containsKey(id)) {
                                                     wordEmbedding.setTitleMetadata(titleMetadataMap.get(id));
                                                 }
+                                                if (dateMetadataMap.containsKey(id)) {
+                                                    wordEmbedding.setDocumentDate(dateMetadataMap.get(id));
+                                                }
                                             }
                                         }
                                     } catch (Exception e) {
-                                        emitter.onError(new RuntimeException("Please check if the tables exist!"));
-                                        return;
+                                        e.printStackTrace();
                                     }
                                 }
 

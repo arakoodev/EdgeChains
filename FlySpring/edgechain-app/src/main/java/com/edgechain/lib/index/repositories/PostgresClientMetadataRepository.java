@@ -25,19 +25,9 @@ public class PostgresClientMetadataRepository {
     String metadataTable = postgresEndpoint.getMetadataTableNames().get(0);
     jdbcTemplate.execute(
         String.format(
-            "CREATE TABLE IF NOT EXISTS %s (metadata_id UUID PRIMARY KEY, metadata TEXT NOT NULL UNIQUE);",
+            "CREATE TABLE IF NOT EXISTS %s (metadata_id UUID PRIMARY KEY, metadata TEXT NOT NULL, document_date DATE);",
                 metadataTable));
 
-    //Creating a GIN index for improving the performance
-//    String index = metadataTable.concat("_search_idx");
-//    jdbcTemplate.execute(
-//            String.format(
-//                    "CREATE INDEX %s ON %s USING GIN (to_tsvector(%s.metadata));",
-//                    index,
-//                    metadataTable,
-//                    metadataTable
-//            )
-//    );
 
     // Create a JOIN table
     jdbcTemplate.execute(
@@ -76,15 +66,17 @@ public class PostgresClientMetadataRepository {
   }
   @Transactional
   public String insertMetadata(
-      String metadataTableName, String metadata) {
+      String metadataTableName, String metadata, String documentDate) {
 
     UUID uuid = UuidCreator.getTimeOrderedEpoch();
     jdbcTemplate.update(
             String.format(
-                    "INSERT INTO %s (metadata_id, metadata) VALUES ('%s', '%s');",
+                    "INSERT INTO %s (metadata_id, metadata, document_date) VALUES ('%s', '%s', TO_DATE(NULLIF('%s', ''), 'Month DD, YYYY'));",
                     metadataTableName,
                     uuid,
-                    metadata));
+                    metadata,
+                    documentDate
+                    ));
     return uuid.toString();
   }
 
@@ -118,7 +110,7 @@ public class PostgresClientMetadataRepository {
     if (metric.equals(PostgresDistanceMetric.IP)) {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT e.id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp, ("
+              "SELECT e.id, metadata, TO_CHAR(document_date, 'Month DD, YYYY') as document_date, j.metadata_id, raw_text, namespace, filename, timestamp, ("
                   + " embedding <#> '%s') * -1 AS score FROM %s e INNER JOIN %s j ON e.id"
                   + " = j.id INNER JOIN %s m ON j.metadata_id = m.metadata_id WHERE"
                   + " namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
@@ -134,7 +126,7 @@ public class PostgresClientMetadataRepository {
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT e.id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp, 1 - ("
+              "SELECT e.id, metadata, TO_CHAR(document_date, 'Month DD, YYYY') as document_date, j.metadata_id, raw_text, namespace, filename, timestamp, 1 - ("
                   + " embedding <=> '%s') AS score FROM %s e INNER JOIN %s j ON e.id ="
                   + " j.id INNER JOIN %s m ON j.metadata_id = m.metadata_id WHERE"
                   + " namespace='%s' ORDER BY embedding %s '%s' LIMIT %s;",
@@ -149,7 +141,7 @@ public class PostgresClientMetadataRepository {
     } else {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT e.id, metadata, j.metadata_id, raw_text, namespace, filename, timestamp,"
+              "SELECT e.id, metadata, TO_CHAR(document_date, 'Month DD, YYYY') as document_date, j.metadata_id, raw_text, namespace, filename, timestamp,"
                   + " (embedding <-> '%s') AS score FROM %s e INNER JOIN %s j ON e.id ="
                   + " j.id INNER JOIN %s m ON j.metadata_id = m.metadata_id WHERE"
                   + " namespace='%s' ORDER BY embedding %s '%s' ASC LIMIT %s;",
@@ -173,7 +165,7 @@ public class PostgresClientMetadataRepository {
     // Remove special characters and replace with a space
     String cleanEmbeddingChunk = embeddingChunk.replaceAll("[^a-zA-Z0-9\\s]", " ").replaceAll("\\s+", " ").trim();
 
-    // Split the embeddingChunk into words and join them with the | operator
+    // Split the embeddingChunk into words and join them with the '|' (OR) operator
     String tsquery = String.join(" | ", cleanEmbeddingChunk.split("\\s+"));
     return jdbcTemplate.queryForList(
             String.format(

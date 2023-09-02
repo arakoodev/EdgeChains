@@ -76,14 +76,15 @@ public class PostgresClientMetadataRepositoryTest {
     // Arrange
     String metadataTableName = "metadata_table";
     String metadata = "example_metadata";
+    String documentDate = "Aug 01, 2023";
 
     //Act
-    repository.insertMetadata(metadataTableName, metadata);
+    repository.insertMetadata(metadataTableName, metadata, documentDate);
 
     //Assert
     verify(jdbcTemplate, times(1)).update(sqlQueryCaptor.capture());
   }
-
+//
   @Test
   @DisplayName("Insert entry into the join table")
   public void testInsertIntoJoinTable() {
@@ -140,6 +141,8 @@ public class PostgresClientMetadataRepositoryTest {
                             id,
                             "metadata",
                             "example_metadata",
+                            "document_date",
+                            "Aug 01, 2023",
                             "metadata_id",
                             metadataId,
                             "raw_text",

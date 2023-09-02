@@ -46,6 +46,7 @@ public class PostgresEndpoint extends Endpoint {
     private String metadata;
     private String metadataId;
     private List<String> metadataList;
+    private String documentDate;
 
 
     public PostgresEndpoint() {
@@ -167,6 +168,10 @@ public class PostgresEndpoint extends Endpoint {
         return embeddingChunk;
     }
 
+    public String getDocumentDate() {
+        return documentDate;
+    }
+
     public StringResponse upsert(
             WordEmbeddings wordEmbeddings,
             String filename,
@@ -199,8 +204,9 @@ public class PostgresEndpoint extends Endpoint {
         return this.postgresService.batchUpsert(this).blockingGet();
     }
 
-    public StringResponse insertMetadata(String metadata) {
+    public StringResponse insertMetadata(String metadata, String documentDate) {
         this.metadata = metadata;
+        this.documentDate = documentDate;
         return this.postgresService.insertMetadata(this).blockingGet();
     }
 

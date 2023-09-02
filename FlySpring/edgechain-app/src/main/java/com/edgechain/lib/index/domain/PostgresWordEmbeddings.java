@@ -29,6 +29,7 @@ public class PostgresWordEmbeddings implements ArkObject {
   private String metadata;
   private String metadataId;
   private String titleMetadata;
+  private String documentDate;
 
 //  public Integer getEmbedding_id() {
 //    return embedding_id;
@@ -118,6 +119,14 @@ public class PostgresWordEmbeddings implements ArkObject {
     this.titleMetadata = titleMetadata;
   }
 
+  public String getDocumentDate() {
+    return documentDate;
+  }
+
+  public void setDocumentDate(String documentDate) {
+    this.documentDate = documentDate;
+  }
+
   @Override
   public JSONObject toJson() {
     JSONObject json = new JSONObject();
@@ -156,6 +165,10 @@ public class PostgresWordEmbeddings implements ArkObject {
 
     if (titleMetadata != null) {
       json.put("titleMetadata", titleMetadata);
+    }
+
+    if(documentDate != null) {
+      json.put("documentDate", documentDate);
     }
 
     if (metadata != null) {

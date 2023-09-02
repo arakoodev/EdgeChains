@@ -131,10 +131,10 @@ public class PostgresRetrieval {
         return new ArrayList<>(uuidQueue);
     }
 
-    public StringResponse insertOneMetadata(String metadata) {
+    public StringResponse insertOneMetadata(String metadata, String documentDate) {
         // Create Table...
         this.postgresEndpoint.createMetadataTable();
-        return this.postgresEndpoint.insertMetadata(metadata);
+        return this.postgresEndpoint.insertMetadata(metadata, documentDate);
     }
 
     private void insertMetadataAndCollectIds(List<String> metadataList, ConcurrentLinkedQueue<String> uuidQueue) {
