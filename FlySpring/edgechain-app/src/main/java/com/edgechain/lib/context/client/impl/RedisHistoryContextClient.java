@@ -5,6 +5,9 @@ import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +15,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 @Repository
 public class RedisHistoryContextClient
