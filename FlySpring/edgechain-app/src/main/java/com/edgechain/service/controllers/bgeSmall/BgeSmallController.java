@@ -35,7 +35,7 @@ public class BgeSmallController {
     this.bgeSmallClient.setEndpoint(bgeSmallEndpoint);
 
     EdgeChain<BgeSmallResponse> edgeChain =
-        this.bgeSmallClient.createEmbeddings(bgeSmallEndpoint.getInput());
+        this.bgeSmallClient.createEmbeddings(bgeSmallEndpoint.getRawText());
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
@@ -53,9 +53,9 @@ public class BgeSmallController {
                 embeddingLog.setLatency(duration.toMillis());
                 embeddingLogService.saveOrUpdate(embeddingLog);
               })
-          .toSingle();
+          .toSingleWithoutScheduler();
     }
 
-    return edgeChain.toSingle();
+    return edgeChain.toSingleWithoutScheduler();
   }
 }

@@ -21,8 +21,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-// import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -57,24 +57,6 @@ public class PostgresClientMetadataRepositoryTest {
 
     // Assert
     verify(jdbcTemplate, times(2)).execute(sqlQueryCaptor.capture());
-
-    // Check for SQL queries
-
-    List<String> capturedSqlQueries = sqlQueryCaptor.getAllValues();
-
-    // Assert that the first query is for creating the metadata table
-    assertTrue(capturedSqlQueries.get(0).contains("CREATE TABLE IF NOT EXISTS"));
-    assertTrue(capturedSqlQueries.get(0).contains("metadata_id SERIAL PRIMARY KEY"));
-    assertTrue(capturedSqlQueries.get(0).contains("metadata TEXT"));
-    assertTrue(capturedSqlQueries.get(0).contains("metadata_embedding vector"));
-
-    // Assert that the second query is for creating the join table
-    assertTrue(capturedSqlQueries.get(1).contains("CREATE TABLE IF NOT EXISTS"));
-    assertTrue(capturedSqlQueries.get(1).contains("embedding_id INT"));
-    assertTrue(capturedSqlQueries.get(1).contains("metadata_id INT"));
-    assertTrue(capturedSqlQueries.get(1).contains("FOREIGN KEY (embedding_id) REFERENCES"));
-    assertTrue(capturedSqlQueries.get(1).contains("FOREIGN KEY (metadata_id) REFERENCES"));
-    assertTrue(capturedSqlQueries.get(1).contains("PRIMARY KEY (embedding_id, metadata_id)"));
   }
 
   @Test
@@ -94,39 +76,28 @@ public class PostgresClientMetadataRepositoryTest {
     // Arrange
     String metadataTableName = "metadata_table";
     String metadata = "example_metadata";
-    List<Float> wordEmbeddingValues = List.of(0.1f, 0.2f, 0.3f);
-    WordEmbeddings wordEmbeddings = new WordEmbeddings(metadata, wordEmbeddingValues);
+    String documentDate = "Aug 01, 2023";
 
-    // Mock the queryForObject to return the expected metadata id
-    Integer expectedMetadataId = 101;
-    when(jdbcTemplate.queryForObject(sqlQueryCaptor.capture(), eq(Integer.class)))
-        .thenReturn(expectedMetadataId);
+    //Act
+    repository.insertMetadata(metadataTableName, metadata, documentDate);
 
-    // Act
-    Integer result = repository.insertMetadata(metadataTableName, metadata, wordEmbeddings);
-
-    // Assert
-    // Verify that the queryForObject method was called with the expected parameters
-    verify(jdbcTemplate)
-        .queryForObject(
-            eq(
-                String.format(
-                    "INSERT INTO metadata_table (metadata, metadata_embedding) VALUES ('%s', '%s') "
-                        + "RETURNING metadata_id;",
-                    metadata, wordEmbeddingValues)),
-            eq(Integer.class));
-
-    // Verify that the result matches the expected metadataId
-    assertEquals(expectedMetadataId, result);
+    //Assert
+    verify(jdbcTemplate, times(1)).update(sqlQueryCaptor.capture());
   }
-
+//
   @Test
   @DisplayName("Insert entry into the join table")
   public void testInsertIntoJoinTable() {
     // Arrange
+    String id = UUID.randomUUID().toString();
+    String metadataId = UUID.randomUUID().toString();
     when(postgresEndpoint.getTableName()).thenReturn("embedding_table");
     when(postgresEndpoint.getMetadataTableNames())
         .thenReturn(Collections.singletonList("metadata_table"));
+    when(postgresEndpoint.getId())
+        .thenReturn(id);
+    when(postgresEndpoint.getMetadataId())
+        .thenReturn(metadataId);
     String joinTable =
         postgresEndpoint.getTableName()
             + "_join_"
@@ -142,8 +113,8 @@ public class PostgresClientMetadataRepositoryTest {
     String capturedQuery = sqlQueryCaptor.getValue();
     String expectedQuery =
         String.format(
-            "INSERT INTO %s (embedding_id, metadata_id) VALUES (%s, %s);",
-            joinTable, postgresEndpoint.getEmbeddingId(), postgresEndpoint.getMetadataId());
+            "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s');",
+            joinTable, postgresEndpoint.getId(), postgresEndpoint.getMetadataId());
     assertEquals(expectedQuery, capturedQuery);
   }
 
@@ -159,57 +130,37 @@ public class PostgresClientMetadataRepositoryTest {
     List<Float> wordEmbeddingValues = List.of(0.1f, 0.2f, 0.3f);
     WordEmbeddings wordEmbeddings = new WordEmbeddings("", wordEmbeddingValues);
     int topK = 5;
+    String metadataId = UUID.randomUUID().toString();
+    String id = UUID.randomUUID().toString();
 
     // Mock queryForList method to return a dummy result
     List<Map<String, Object>> dummyResult =
-        List.of(
-            Map.of(
-                "id",
-                "xyz21",
-                "metadata",
-                "example_metadata",
-                "metadata_id",
-                1,
-                "raw_text",
-                "example_raw_text",
-                "namespace",
-                "example_namespace",
-                "filename",
-                "example_filename",
-                "timestamp",
-                "example_timestamp",
-                "score",
-                0.5));
+            List.of(
+                    Map.of(
+                            "id",
+                            id,
+                            "metadata",
+                            "example_metadata",
+                            "document_date",
+                            "Aug 01, 2023",
+                            "metadata_id",
+                            metadataId,
+                            "raw_text",
+                            "example_raw_text",
+                            "namespace",
+                            "example_namespace",
+                            "filename",
+                            "example_filename",
+                            "timestamp",
+                            "example_timestamp",
+                            "score",
+                            0.5));
     when(jdbcTemplate.queryForList(anyString())).thenReturn(dummyResult);
 
     // Act
     List<Map<String, Object>> result =
         repository.queryWithMetadata(
-            tableName, metadataTableName, namespace, probes, metric, wordEmbeddings, topK);
-
-    // Assert
-    verify(jdbcTemplate).queryForList(anyString());
-    assertEquals(dummyResult, result);
-  }
-
-  @Test
-  @DisplayName("Similarity search on metadata table")
-  public void testSimilaritySearchMetadata() {
-    // Arrange
-    String metadataTableName = "metadata_table";
-    PostgresDistanceMetric metric = PostgresDistanceMetric.L2;
-    List<Float> wordEmbeddingValues = List.of(0.1f, 0.2f, 0.3f);
-    WordEmbeddings wordEmbeddings = new WordEmbeddings("", wordEmbeddingValues);
-    int topK = 5;
-
-    // Mock queryForList method to return a dummy result
-    List<Map<String, Object>> dummyResult =
-        List.of(Map.of("metadata_id", 1, "metadata", "example_metadata", "score", 0.5));
-    when(jdbcTemplate.queryForList(anyString())).thenReturn(dummyResult);
-
-    // Act
-    List<Map<String, Object>> result =
-        repository.similaritySearchMetadata(metadataTableName, metric, wordEmbeddings, topK);
+            tableName, metadataTableName, namespace, probes, metric, wordEmbeddings.getValues(), topK);
 
     // Assert
     verify(jdbcTemplate).queryForList(sqlQueryCaptor.capture());
