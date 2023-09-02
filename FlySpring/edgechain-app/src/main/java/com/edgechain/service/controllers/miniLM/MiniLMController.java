@@ -53,7 +53,7 @@ public class MiniLMController {
                 embeddingLog.setLatency(duration.toMillis());
                 embeddingLogService.saveOrUpdate(embeddingLog);
               })
-              .toSingleWithoutScheduler();
+          .toSingleWithoutScheduler();
     }
 
     return edgeChain.toSingleWithoutScheduler();

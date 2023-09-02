@@ -20,140 +20,163 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-
 public class PostgresRetrieval {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private int batchSize = 30;
+  private int batchSize = 30;
 
-    private final String[] arr;
+  private final String[] arr;
 
-    private final String filename;
+  private final String filename;
 
-    private final ArkRequest arkRequest;
+  private final ArkRequest arkRequest;
 
-    private final PostgresEndpoint postgresEndpoint;
-    private final EmbeddingEndpoint embeddingEndpoint;
+  private final PostgresEndpoint postgresEndpoint;
+  private final EmbeddingEndpoint embeddingEndpoint;
 
-    private final int dimensions;
-    private final PostgresDistanceMetric metric;
-    private final int lists;
+  private final int dimensions;
+  private final PostgresDistanceMetric metric;
+  private final int lists;
 
-    public PostgresRetrieval(String[] arr, EmbeddingEndpoint embeddingEndpoint, PostgresEndpoint postgresEndpoint, int dimensions, PostgresDistanceMetric metric, int lists, String filename, ArkRequest arkRequest) {
-        this.arr = arr;
-        this.filename = filename;
-        this.arkRequest = arkRequest;
-        this.postgresEndpoint = postgresEndpoint;
-        this.embeddingEndpoint = embeddingEndpoint;
+  public PostgresRetrieval(
+      String[] arr,
+      EmbeddingEndpoint embeddingEndpoint,
+      PostgresEndpoint postgresEndpoint,
+      int dimensions,
+      PostgresDistanceMetric metric,
+      int lists,
+      String filename,
+      ArkRequest arkRequest) {
+    this.arr = arr;
+    this.filename = filename;
+    this.arkRequest = arkRequest;
+    this.postgresEndpoint = postgresEndpoint;
+    this.embeddingEndpoint = embeddingEndpoint;
 
-        this.dimensions = dimensions;
-        this.metric = metric;
-        this.lists = lists;
+    this.dimensions = dimensions;
+    this.metric = metric;
+    this.lists = lists;
 
-        if (embeddingEndpoint instanceof OpenAiEndpoint openAiEndpoint)
-            logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
-        else if (embeddingEndpoint instanceof MiniLMEndpoint miniLMEndpoint)
-            logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
-        else if (embeddingEndpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
-            logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
+    if (embeddingEndpoint instanceof OpenAiEndpoint openAiEndpoint)
+      logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
+    else if (embeddingEndpoint instanceof MiniLMEndpoint miniLMEndpoint)
+      logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
+    else if (embeddingEndpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
+      logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
+  }
 
-    }
+  public PostgresRetrieval(
+      String[] arr,
+      EmbeddingEndpoint embeddingEndpoint,
+      PostgresEndpoint postgresEndpoint,
+      int dimensions,
+      String filename,
+      ArkRequest arkRequest) {
+    this.arr = arr;
+    this.filename = filename;
+    this.arkRequest = arkRequest;
+    this.postgresEndpoint = postgresEndpoint;
+    this.embeddingEndpoint = embeddingEndpoint;
 
+    this.dimensions = dimensions;
+    this.metric = PostgresDistanceMetric.COSINE;
+    this.lists = 1000;
 
-    public PostgresRetrieval(String[] arr, EmbeddingEndpoint embeddingEndpoint, PostgresEndpoint postgresEndpoint, int dimensions, String filename, ArkRequest arkRequest) {
-        this.arr = arr;
-        this.filename = filename;
-        this.arkRequest = arkRequest;
-        this.postgresEndpoint = postgresEndpoint;
-        this.embeddingEndpoint = embeddingEndpoint;
+    if (embeddingEndpoint instanceof OpenAiEndpoint openAiEndpoint)
+      logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
+    else if (embeddingEndpoint instanceof MiniLMEndpoint miniLMEndpoint)
+      logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
+    else if (embeddingEndpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
+      logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
+  }
 
-        this.dimensions = dimensions;
-        this.metric = PostgresDistanceMetric.COSINE;
-        this.lists = 1000;
+  public List<String> upsert() {
 
-        if (embeddingEndpoint instanceof OpenAiEndpoint openAiEndpoint)
-            logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
-        else if (embeddingEndpoint instanceof MiniLMEndpoint miniLMEndpoint)
-            logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
-        else if (embeddingEndpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
-            logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
+    // Create Table...
+    this.postgresEndpoint.createTable(dimensions, metric, lists);
 
-    }
+    ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
 
-    public List<String> upsert() {
+    Observable.fromArray(arr)
+        .buffer(batchSize)
+        .concatMapCompletable(
+            batch ->
+                Observable.fromIterable(batch)
+                    .flatMap(
+                        input ->
+                            Observable.fromCallable(() -> generateEmbeddings(input))
+                                .subscribeOn(Schedulers.io()))
+                    .toList()
+                    .flatMapCompletable(
+                        wordEmbeddingsList ->
+                            Completable.fromAction(
+                                    () -> upsertAndCollectIds(wordEmbeddingsList, uuidQueue))
+                                .subscribeOn(Schedulers.io())))
+        .blockingAwait();
 
-        // Create Table...
-        this.postgresEndpoint.createTable(dimensions, metric, lists);
+    return new ArrayList<>(uuidQueue);
+  }
 
-        ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
+  private WordEmbeddings generateEmbeddings(String input) {
+    return embeddingEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
+  }
 
-        Observable.fromArray(arr)
-                .buffer(batchSize)
-                .concatMapCompletable(batch -> Observable.fromIterable(batch)
-                        .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input)).subscribeOn(Schedulers.io()))
-                        .toList()
-                        .flatMapCompletable(wordEmbeddingsList -> Completable.fromAction(() -> upsertAndCollectIds(wordEmbeddingsList, uuidQueue)).subscribeOn(Schedulers.io())))
-                .blockingAwait();
+  private void upsertAndCollectIds(
+      List<WordEmbeddings> wordEmbeddingsList, ConcurrentLinkedQueue<String> uuidQueue) {
+    List<String> batchUuidList = executeBatchUpsert(wordEmbeddingsList);
+    uuidQueue.addAll(batchUuidList);
+  }
 
-        return new ArrayList<>(uuidQueue);
-    }
+  private List<String> executeBatchUpsert(List<WordEmbeddings> wordEmbeddingsList) {
+    return this.postgresEndpoint.upsert(wordEmbeddingsList, filename).stream()
+        .map(StringResponse::getResponse)
+        .collect(Collectors.toList());
+  }
 
-    private WordEmbeddings generateEmbeddings(String input) {
-        return embeddingEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
-    }
+  public List<String> insertMetadata() {
 
-    private void upsertAndCollectIds(List<WordEmbeddings> wordEmbeddingsList, ConcurrentLinkedQueue<String> uuidQueue) {
-        List<String> batchUuidList = executeBatchUpsert(wordEmbeddingsList);
-        uuidQueue.addAll(batchUuidList);
-    }
+    // Create Table...
+    this.postgresEndpoint.createMetadataTable();
 
-    private List<String> executeBatchUpsert(List<WordEmbeddings> wordEmbeddingsList) {
-        return this.postgresEndpoint.upsert(wordEmbeddingsList, filename).stream()
-                .map(StringResponse::getResponse).collect(Collectors.toList());
-    }
-    public List<String> insertMetadata() {
+    ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
 
-        // Create Table...
-        this.postgresEndpoint.createMetadataTable();
+    CountDownLatch latch = new CountDownLatch(1);
 
-        ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
+    Observable.fromArray(arr)
+        .map(str -> str.replaceAll("'", ""))
+        .buffer(batchSize)
+        .flatMapCompletable(
+            metadataList ->
+                Completable.fromAction(() -> insertMetadataAndCollectIds(metadataList, uuidQueue)))
+        .blockingSubscribe(latch::countDown, error -> latch.countDown());
 
-        CountDownLatch latch = new CountDownLatch(1);
+    return new ArrayList<>(uuidQueue);
+  }
 
-        Observable.fromArray(arr)
-                .map(str -> str.replaceAll("'", ""))
-                .buffer(batchSize)
-                .flatMapCompletable(metadataList ->
-                        Completable.fromAction(() -> insertMetadataAndCollectIds(metadataList, uuidQueue)))
-                .blockingSubscribe(latch::countDown, error -> latch.countDown());
+  public StringResponse insertOneMetadata(String metadata, String documentDate) {
+    // Create Table...
+    this.postgresEndpoint.createMetadataTable();
+    return this.postgresEndpoint.insertMetadata(metadata, documentDate);
+  }
 
-        return new ArrayList<>(uuidQueue);
-    }
+  private void insertMetadataAndCollectIds(
+      List<String> metadataList, ConcurrentLinkedQueue<String> uuidQueue) {
+    List<String> batchUuidList = executeBatchInsertMetadata(metadataList);
+    uuidQueue.addAll(batchUuidList);
+  }
 
-    public StringResponse insertOneMetadata(String metadata, String documentDate) {
-        // Create Table...
-        this.postgresEndpoint.createMetadataTable();
-        return this.postgresEndpoint.insertMetadata(metadata, documentDate);
-    }
+  private List<String> executeBatchInsertMetadata(List<String> metadataList) {
+    return this.postgresEndpoint.batchInsertMetadata(metadataList).stream()
+        .map(StringResponse::getResponse)
+        .collect(Collectors.toList());
+  }
 
-    private void insertMetadataAndCollectIds(List<String> metadataList, ConcurrentLinkedQueue<String> uuidQueue) {
-        List<String> batchUuidList = executeBatchInsertMetadata(metadataList);
-        uuidQueue.addAll(batchUuidList);
-    }
+  public int getBatchSize() {
+    return batchSize;
+  }
 
-    private List<String> executeBatchInsertMetadata(List<String> metadataList) {
-        return this.postgresEndpoint.batchInsertMetadata(metadataList).stream()
-                .map(StringResponse::getResponse).collect(Collectors.toList());
-    }
-
-
-    public int getBatchSize() {
-        return batchSize;
-    }
-
-    public void setBatchSize(int batchSize) {
-        this.batchSize = batchSize;
-    }
-
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
+  }
 }

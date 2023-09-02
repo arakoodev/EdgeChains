@@ -4,8 +4,7 @@ public class OpenAiEmbeddingRequest {
   private String input;
   private String model;
 
-  public OpenAiEmbeddingRequest() {
-  }
+  public OpenAiEmbeddingRequest() {}
 
   public OpenAiEmbeddingRequest(String model, String input) {
     this.model = model;

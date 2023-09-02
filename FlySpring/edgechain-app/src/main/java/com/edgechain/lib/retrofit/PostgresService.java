@@ -26,6 +26,7 @@ public interface PostgresService {
 
   @POST(value = "index/postgres/metadata/insert")
   Single<StringResponse> insertMetadata(@Body PostgresEndpoint postgresEndpoint);
+
   @POST(value = "index/postgres/metadata/batch-insert")
   Single<List<StringResponse>> batchInsertMetadata(@Body PostgresEndpoint postgresEndpoint);
 
@@ -39,7 +40,8 @@ public interface PostgresService {
   Single<List<PostgresWordEmbeddings>> getAllChunks(@Body PostgresEndpoint postgresEndpoint);
 
   @POST(value = "index/postgres/similarity-metadata")
-  Single<List<PostgresWordEmbeddings>> getSimilarMetadataChunk(@Body PostgresEndpoint postgresEndpoint);
+  Single<List<PostgresWordEmbeddings>> getSimilarMetadataChunk(
+      @Body PostgresEndpoint postgresEndpoint);
 
   @POST("index/postgres/probes")
   Single<StringResponse> probes(@Body PostgresEndpoint postgresEndpoint);

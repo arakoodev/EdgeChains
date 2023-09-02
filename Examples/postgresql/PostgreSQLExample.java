@@ -146,8 +146,8 @@ public class PostgreSQLExample {
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
-      PostgresRetrieval retrieval = new PostgresRetrieval(
-              arr, ada002Embedding, postgresEndpoint, 1536, filename, arkRequest);
+      PostgresRetrieval retrieval =
+          new PostgresRetrieval(arr, ada002Embedding, postgresEndpoint, 1536, filename, arkRequest);
 
       //   retrieval.setBatchSize(100); // Modifying batchSize....(Default is 50)
 
@@ -176,7 +176,10 @@ public class PostgreSQLExample {
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
           new EdgeChain<>(
               postgresEndpoint.query(
-                  embeddingsChain.get(), PostgresDistanceMetric.COSINE, topK, 10)); // defining probes
+                  embeddingsChain.get(),
+                  PostgresDistanceMetric.COSINE,
+                  topK,
+                  10)); // defining probes
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI

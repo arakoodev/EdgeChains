@@ -15,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
 
 public class RedisRetrieval {
   private final RedisEndpoint redisEndpoint;
@@ -28,12 +26,12 @@ public class RedisRetrieval {
   private int batchSize = 30;
 
   public RedisRetrieval(
-          String[] arr,
-          EmbeddingEndpoint embeddingEndpoint,
-          RedisEndpoint redisEndpoint,
-          int dimension,
-          RedisDistanceMetric metric,
-          ArkRequest arkRequest) {
+      String[] arr,
+      EmbeddingEndpoint embeddingEndpoint,
+      RedisEndpoint redisEndpoint,
+      int dimension,
+      RedisDistanceMetric metric,
+      ArkRequest arkRequest) {
     this.redisEndpoint = redisEndpoint;
     this.embeddingEndpoint = embeddingEndpoint;
     this.dimension = dimension;
@@ -48,7 +46,6 @@ public class RedisRetrieval {
       logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
     else if (embeddingEndpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
       logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
-
   }
 
   public void upsert() {
@@ -56,13 +53,20 @@ public class RedisRetrieval {
     this.redisEndpoint.createIndex(redisEndpoint.getNamespace(), dimension, metric);
 
     Observable.fromArray(arr)
-            .buffer(batchSize)
-            .concatMapCompletable(batch -> Observable.fromIterable(batch)
-                    .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input)).subscribeOn(Schedulers.io()))
+        .buffer(batchSize)
+        .concatMapCompletable(
+            batch ->
+                Observable.fromIterable(batch)
+                    .flatMap(
+                        input ->
+                            Observable.fromCallable(() -> generateEmbeddings(input))
+                                .subscribeOn(Schedulers.io()))
                     .toList()
-                    .flatMapCompletable(wordEmbeddingsList -> Completable.fromAction(() -> executeBatchUpsert(wordEmbeddingsList)).subscribeOn(Schedulers.io())))
-            .blockingAwait();
-
+                    .flatMapCompletable(
+                        wordEmbeddingsList ->
+                            Completable.fromAction(() -> executeBatchUpsert(wordEmbeddingsList))
+                                .subscribeOn(Schedulers.io())))
+        .blockingAwait();
   }
 
   private WordEmbeddings generateEmbeddings(String input) {

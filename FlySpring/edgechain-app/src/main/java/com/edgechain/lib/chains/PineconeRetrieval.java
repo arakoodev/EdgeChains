@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class PineconeRetrieval  {
+public class PineconeRetrieval {
 
   private final PineconeEndpoint pineconeEndpoint;
 
@@ -27,7 +27,10 @@ public class PineconeRetrieval  {
   private int batchSize = 30;
 
   public PineconeRetrieval(
-          String[] arr, EmbeddingEndpoint embeddingEndpoint, PineconeEndpoint pineconeEndpoint,  ArkRequest arkRequest) {
+      String[] arr,
+      EmbeddingEndpoint embeddingEndpoint,
+      PineconeEndpoint pineconeEndpoint,
+      ArkRequest arkRequest) {
     this.pineconeEndpoint = pineconeEndpoint;
     this.embeddingEndpoint = embeddingEndpoint;
     this.arkRequest = arkRequest;
@@ -44,12 +47,20 @@ public class PineconeRetrieval  {
 
   public void upsert() {
     Observable.fromArray(arr)
-            .buffer(batchSize)
-            .concatMapCompletable(batch -> Observable.fromIterable(batch)
-                    .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input)).subscribeOn(Schedulers.io()))
+        .buffer(batchSize)
+        .concatMapCompletable(
+            batch ->
+                Observable.fromIterable(batch)
+                    .flatMap(
+                        input ->
+                            Observable.fromCallable(() -> generateEmbeddings(input))
+                                .subscribeOn(Schedulers.io()))
                     .toList()
-                    .flatMapCompletable(wordEmbeddingsList -> Completable.fromAction(() -> executeBatchUpsert(wordEmbeddingsList)).subscribeOn(Schedulers.io())))
-            .blockingAwait();
+                    .flatMapCompletable(
+                        wordEmbeddingsList ->
+                            Completable.fromAction(() -> executeBatchUpsert(wordEmbeddingsList))
+                                .subscribeOn(Schedulers.io())))
+        .blockingAwait();
   }
 
   private WordEmbeddings generateEmbeddings(String input) {

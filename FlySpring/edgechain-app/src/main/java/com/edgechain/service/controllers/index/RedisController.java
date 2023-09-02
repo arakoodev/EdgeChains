@@ -5,7 +5,6 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.RedisEndpoint;
 import com.edgechain.lib.index.client.impl.RedisClient;
 import com.edgechain.lib.response.StringResponse;
-import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.beans.factory.annotation.Autowired;

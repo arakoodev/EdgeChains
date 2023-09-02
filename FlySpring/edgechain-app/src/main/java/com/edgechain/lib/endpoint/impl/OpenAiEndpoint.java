@@ -8,7 +8,6 @@ import com.edgechain.lib.openai.request.ChatMessage;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.retrofit.client.OpenAiStreamService;
 import com.edgechain.lib.retrofit.OpenAiService;
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
@@ -21,324 +20,318 @@ import java.util.Objects;
 
 public class OpenAiEndpoint extends EmbeddingEndpoint {
 
-    private final OpenAiStreamService openAiStreamService =
-            ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
+  private final OpenAiStreamService openAiStreamService =
+      ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
 
-    private final Retrofit retrofit = RetrofitClientInstance.getInstance();
-    private final OpenAiService openAiService = retrofit.create(OpenAiService.class);
+  private final Retrofit retrofit = RetrofitClientInstance.getInstance();
+  private final OpenAiService openAiService = retrofit.create(OpenAiService.class);
 
-    private String orgId;
-    private String model;
+  private String orgId;
+  private String model;
 
-    private Double temperature;
-    private List<ChatMessage> chatMessages;
-    private Boolean stream;
-    private Double topP;
-    private Integer n;
-    private List<String> stop;
-    private Double presencePenalty;
-    private Double frequencyPenalty;
-    private Map<String, Integer> logitBias;
-    private String user;
+  private Double temperature;
+  private List<ChatMessage> chatMessages;
+  private Boolean stream;
+  private Double topP;
+  private Integer n;
+  private List<String> stop;
+  private Double presencePenalty;
+  private Double frequencyPenalty;
+  private Map<String, Integer> logitBias;
+  private String user;
 
-    private String role;
+  private String role;
 
+  /** Log fields * */
+  private String chainName;
 
+  private String callIdentifier;
 
-    /**
-     * Log fields *
-     */
-    private String chainName;
+  private JsonnetLoader jsonnetLoader;
 
-    private String callIdentifier;
+  public OpenAiEndpoint() {}
 
-    private JsonnetLoader jsonnetLoader;
+  public OpenAiEndpoint(String url, String apiKey, String model) {
+    super(url, apiKey, null);
+    this.model = model;
+  }
 
-    public OpenAiEndpoint() {
-    }
+  // For Embeddings....
+  public OpenAiEndpoint(
+      String url, String apiKey, String orgId, String model, RetryPolicy retryPolicy) {
+    super(url, apiKey, retryPolicy);
+    this.orgId = orgId;
+    this.model = model;
+  }
 
-    public OpenAiEndpoint(String url, String apiKey, String model) {
-        super(url, apiKey, null);
-        this.model = model;
-    }
+  public OpenAiEndpoint(
+      String url,
+      String apiKey,
+      String model,
+      String role,
+      Double temperature,
+      RetryPolicy retryPolicy) {
+    super(url, apiKey, retryPolicy);
+    this.model = model;
+    this.role = role;
+    this.temperature = temperature;
+  }
 
-    // For Embeddings....
-    public OpenAiEndpoint(
-            String url, String apiKey, String orgId, String model, RetryPolicy retryPolicy) {
-        super(url, apiKey, retryPolicy);
-        this.orgId = orgId;
-        this.model = model;
-    }
+  public OpenAiEndpoint(
+      String url, String apiKey, String model, String role, Double temperature, Boolean stream) {
+    super(url, apiKey, null);
+    this.model = model;
+    this.role = role;
+    this.temperature = temperature;
+    this.stream = stream;
+  }
 
-    public OpenAiEndpoint(
-            String url,
-            String apiKey,
-            String model,
-            String role,
-            Double temperature,
-            RetryPolicy retryPolicy) {
-        super(url, apiKey, retryPolicy);
-        this.model = model;
-        this.role = role;
-        this.temperature = temperature;
-    }
+  public OpenAiEndpoint(
+      String url,
+      String apiKey,
+      String orgId,
+      String model,
+      String role,
+      Double temperature,
+      RetryPolicy retryPolicy) {
+    super(url, apiKey, retryPolicy);
+    this.model = model;
+    this.role = role;
+    this.temperature = temperature;
+    this.orgId = orgId;
+  }
 
-    public OpenAiEndpoint(
-            String url, String apiKey, String model, String role, Double temperature, Boolean stream) {
-        super(url, apiKey, null);
-        this.model = model;
-        this.role = role;
-        this.temperature = temperature;
-        this.stream = stream;
-    }
+  public OpenAiEndpoint(
+      String url,
+      String apiKey,
+      String model,
+      String role,
+      Double temperature,
+      Boolean stream,
+      RetryPolicy retryPolicy) {
+    super(url, apiKey, retryPolicy);
+    this.model = model;
+    this.role = role;
+    this.temperature = temperature;
+    this.stream = stream;
+  }
 
-    public OpenAiEndpoint(
-            String url,
-            String apiKey,
-            String orgId,
-            String model,
-            String role,
-            Double temperature,
-            RetryPolicy retryPolicy) {
-        super(url, apiKey, retryPolicy);
-        this.model = model;
-        this.role = role;
-        this.temperature = temperature;
-        this.orgId = orgId;
-    }
+  public OpenAiEndpoint(
+      String url,
+      String apiKey,
+      String orgId,
+      String model,
+      String role,
+      Double temperature,
+      Boolean stream) {
+    super(url, apiKey, null);
+    this.orgId = orgId;
+    this.model = model;
+    this.role = role;
+    this.temperature = temperature;
+    this.stream = stream;
+  }
 
-    public OpenAiEndpoint(
-            String url,
-            String apiKey,
-            String model,
-            String role,
-            Double temperature,
-            Boolean stream,
-            RetryPolicy retryPolicy) {
-        super(url, apiKey, retryPolicy);
-        this.model = model;
-        this.role = role;
-        this.temperature = temperature;
-        this.stream = stream;
-    }
+  public OpenAiEndpoint(
+      String url,
+      String apiKey,
+      String orgId,
+      String model,
+      String role,
+      Double temperature,
+      Boolean stream,
+      RetryPolicy retryPolicy) {
+    super(url, apiKey, retryPolicy);
+    this.orgId = orgId;
+    this.model = model;
+    this.role = role;
+    this.temperature = temperature;
+    this.stream = stream;
+  }
 
-    public OpenAiEndpoint(
-            String url,
-            String apiKey,
-            String orgId,
-            String model,
-            String role,
-            Double temperature,
-            Boolean stream) {
-        super(url, apiKey, null);
-        this.orgId = orgId;
-        this.model = model;
-        this.role = role;
-        this.temperature = temperature;
-        this.stream = stream;
-    }
+  public String getModel() {
+    return model;
+  }
 
-    public OpenAiEndpoint(
-            String url,
-            String apiKey,
-            String orgId,
-            String model,
-            String role,
-            Double temperature,
-            Boolean stream,
-            RetryPolicy retryPolicy) {
-        super(url, apiKey, retryPolicy);
-        this.orgId = orgId;
-        this.model = model;
-        this.role = role;
-        this.temperature = temperature;
-        this.stream = stream;
-    }
+  public Double getTemperature() {
+    return temperature;
+  }
 
-    public String getModel() {
-        return model;
-    }
+  public Boolean getStream() {
+    return stream;
+  }
 
+  public void setOrgId(String orgId) {
+    this.orgId = orgId;
+  }
 
-    public Double getTemperature() {
-        return temperature;
-    }
+  public String getOrgId() {
+    return orgId;
+  }
 
-    public Boolean getStream() {
-        return stream;
-    }
+  public void setModel(String model) {
+    this.model = model;
+  }
 
-    public void setOrgId(String orgId) {
-        this.orgId = orgId;
-    }
+  public void setTemperature(Double temperature) {
+    this.temperature = temperature;
+  }
 
-    public String getOrgId() {
-        return orgId;
-    }
+  public void setStream(Boolean stream) {
+    this.stream = stream;
+  }
 
-    public void setModel(String model) {
-        this.model = model;
-    }
+  public Double getTopP() {
+    return topP;
+  }
 
-    public void setTemperature(Double temperature) {
-        this.temperature = temperature;
-    }
+  public void setTopP(Double topP) {
+    this.topP = topP;
+  }
 
-    public void setStream(Boolean stream) {
-        this.stream = stream;
-    }
+  public Integer getN() {
+    return n;
+  }
 
-    public Double getTopP() {
-        return topP;
-    }
+  public void setN(Integer n) {
+    this.n = n;
+  }
 
-    public void setTopP(Double topP) {
-        this.topP = topP;
-    }
+  public List<String> getStop() {
+    return stop;
+  }
 
-    public Integer getN() {
-        return n;
-    }
+  public void setStop(List<String> stop) {
+    this.stop = stop;
+  }
 
-    public void setN(Integer n) {
-        this.n = n;
-    }
+  public Double getPresencePenalty() {
+    return presencePenalty;
+  }
 
-    public List<String> getStop() {
-        return stop;
-    }
+  public void setPresencePenalty(Double presencePenalty) {
+    this.presencePenalty = presencePenalty;
+  }
 
-    public void setStop(List<String> stop) {
-        this.stop = stop;
-    }
+  public Double getFrequencyPenalty() {
+    return frequencyPenalty;
+  }
 
-    public Double getPresencePenalty() {
-        return presencePenalty;
-    }
+  public void setFrequencyPenalty(Double frequencyPenalty) {
+    this.frequencyPenalty = frequencyPenalty;
+  }
 
-    public void setPresencePenalty(Double presencePenalty) {
-        this.presencePenalty = presencePenalty;
-    }
+  public Map<String, Integer> getLogitBias() {
+    return logitBias;
+  }
 
-    public Double getFrequencyPenalty() {
-        return frequencyPenalty;
-    }
+  public void setLogitBias(Map<String, Integer> logitBias) {
+    this.logitBias = logitBias;
+  }
 
-    public void setFrequencyPenalty(Double frequencyPenalty) {
-        this.frequencyPenalty = frequencyPenalty;
-    }
+  public String getUser() {
+    return user;
+  }
 
-    public Map<String, Integer> getLogitBias() {
-        return logitBias;
-    }
+  public void setUser(String user) {
+    this.user = user;
+  }
 
-    public void setLogitBias(Map<String, Integer> logitBias) {
-        this.logitBias = logitBias;
-    }
+  public void setCallIdentifier(String callIdentifier) {
+    this.callIdentifier = callIdentifier;
+  }
 
-    public String getUser() {
-        return user;
-    }
+  public List<ChatMessage> getChatMessages() {
+    return chatMessages;
+  }
 
-    public void setUser(String user) {
-        this.user = user;
-    }
+  public void setJsonnetLoader(JsonnetLoader jsonnetLoader) {
+    this.jsonnetLoader = jsonnetLoader;
+  }
 
-    public void setCallIdentifier(String callIdentifier) {
-        this.callIdentifier = callIdentifier;
-    }
+  public JsonnetLoader getJsonnetLoader() {
+    return jsonnetLoader;
+  }
 
-    public List<ChatMessage> getChatMessages() {
-        return chatMessages;
-    }
+  public String getChainName() {
+    return chainName;
+  }
 
-    public void setJsonnetLoader(JsonnetLoader jsonnetLoader) {
-        this.jsonnetLoader = jsonnetLoader;
-    }
+  public void setChainName(String chainName) {
+    this.chainName = chainName;
+  }
 
-    public JsonnetLoader getJsonnetLoader() {
-        return jsonnetLoader;
-    }
+  public String getCallIdentifier() {
+    return callIdentifier;
+  }
 
-    public String getChainName() {
-        return chainName;
-    }
+  public Observable<ChatCompletionResponse> chatCompletion(
+      String input, String chainName, ArkRequest arkRequest) {
+    this.chatMessages = List.of(new ChatMessage(this.role, input));
+    this.chainName = chainName;
+    return chatCompletion(arkRequest);
+  }
 
-    public void setChainName(String chainName) {
-        this.chainName = chainName;
-    }
+  public Observable<ChatCompletionResponse> chatCompletion(
+      String input, String chainName, JsonnetLoader loader, ArkRequest arkRequest) {
+    this.chatMessages = List.of(new ChatMessage(this.role, input));
+    this.chainName = chainName;
+    this.jsonnetLoader = loader;
+    return chatCompletion(arkRequest);
+  }
 
-    public String getCallIdentifier() {
-        return callIdentifier;
-    }
+  public Observable<ChatCompletionResponse> chatCompletion(
+      List<ChatMessage> chatMessages, String chainName, ArkRequest arkRequest) {
+    this.chainName = chainName;
+    this.chatMessages = chatMessages;
+    return chatCompletion(arkRequest);
+  }
 
-    public Observable<ChatCompletionResponse> chatCompletion(
-            String input, String chainName, ArkRequest arkRequest) {
-        this.chatMessages = List.of(new ChatMessage(this.role, input));
-        this.chainName = chainName;
-        return chatCompletion(arkRequest);
-    }
+  public Observable<ChatCompletionResponse> chatCompletion(
+      List<ChatMessage> chatMessages,
+      String chainName,
+      JsonnetLoader loader,
+      ArkRequest arkRequest) {
+    this.chainName = chainName;
+    this.chatMessages = chatMessages;
+    this.jsonnetLoader = loader;
+    return chatCompletion(arkRequest);
+  }
 
-    public Observable<ChatCompletionResponse> chatCompletion(
-            String input, String chainName, JsonnetLoader loader, ArkRequest arkRequest) {
-        this.chatMessages = List.of(new ChatMessage(this.role, input));
-        this.chainName = chainName;
-        this.jsonnetLoader = loader;
-        return chatCompletion(arkRequest);
-    }
+  @Override
+  public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
+    //    ?this.input = input; // set Input
 
-    public Observable<ChatCompletionResponse> chatCompletion(
-            List<ChatMessage> chatMessages, String chainName, ArkRequest arkRequest) {
-        this.chainName = chainName;
-        this.chatMessages = chatMessages;
-        return chatCompletion(arkRequest);
-    }
+    final String str = input.replaceAll("'", "");
 
-    public Observable<ChatCompletionResponse> chatCompletion(
-            List<ChatMessage> chatMessages,
-            String chainName,
-            JsonnetLoader loader,
-            ArkRequest arkRequest) {
-        this.chainName = chainName;
-        this.chatMessages = chatMessages;
-        this.jsonnetLoader = loader;
-        return chatCompletion(arkRequest);
-    }
+    setRawText(str);
 
-    @Override
-    public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
-//    ?this.input = input; // set Input
+    if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
+    else this.callIdentifier = "URI wasn't provided";
 
-        final String str = input.replaceAll("'", "");
+    return Observable.fromSingle(
+        openAiService
+            .embeddings(this)
+            .map(
+                embeddingResponse ->
+                    new WordEmbeddings(str, embeddingResponse.getData().get(0).getEmbedding())));
+  }
 
-        setRawText(str);
+  private Observable<ChatCompletionResponse> chatCompletion(ArkRequest arkRequest) {
 
-        if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
-        else this.callIdentifier = "URI wasn't provided";
+    if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
+    else this.callIdentifier = "URI wasn't provided";
 
-        return Observable.fromSingle(
-                openAiService.embeddings(this)
-                        .map(embeddingResponse -> new WordEmbeddings(str, embeddingResponse.getData().get(0).getEmbedding())));
-    }
-
-    private Observable<ChatCompletionResponse> chatCompletion(ArkRequest arkRequest) {
-
-        if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
-        else this.callIdentifier = "URI wasn't provided";
-
-        if (Objects.nonNull(getStream()) && getStream())
-            return this.openAiStreamService
-                    .chatCompletion(this)
-                    .map(
-                            chatResponse -> {
-                                if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
-                                    chatResponse.getChoices().get(0).getMessage().setContent("");
-                                    return chatResponse;
-                                } else return chatResponse;
-                            });
-        else return Observable.fromSingle(this.openAiService.chatCompletion(this));
-    }
-
-
-
+    if (Objects.nonNull(getStream()) && getStream())
+      return this.openAiStreamService
+          .chatCompletion(this)
+          .map(
+              chatResponse -> {
+                if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
+                  chatResponse.getChoices().get(0).getMessage().setContent("");
+                  return chatResponse;
+                } else return chatResponse;
+              });
+    else return Observable.fromSingle(this.openAiService.chatCompletion(this));
+  }
 }

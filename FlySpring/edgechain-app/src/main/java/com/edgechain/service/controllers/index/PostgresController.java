@@ -26,7 +26,8 @@ public class PostgresController {
   }
 
   @PostMapping("/metadata/create-table")
-  public Single<StringResponse> createMetadataTable(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<StringResponse> createMetadataTable(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
     return this.postgresClient.createMetadataTable(postgresEndpoint).toSingle();
   }
 
@@ -44,8 +45,10 @@ public class PostgresController {
   public Single<StringResponse> insertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
     return this.postgresClient.insertMetadata(postgresEndpoint).toSingle();
   }
+
   @PostMapping("/metadata/batch-insert")
-  public Single<List<StringResponse>> batchInsertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<List<StringResponse>> batchInsertMetadata(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
     return this.postgresClient.batchInsertMetadata(postgresEndpoint).toSingle();
   }
 
@@ -57,7 +60,8 @@ public class PostgresController {
   }
 
   @PostMapping("/query")
-  public Single<List<PostgresWordEmbeddings>> query(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<List<PostgresWordEmbeddings>> query(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
 
     System.out.println(postgresEndpoint);
 
@@ -71,7 +75,8 @@ public class PostgresController {
   }
 
   @PostMapping("/similarity-metadata")
-  public Single<List<PostgresWordEmbeddings>> getSimilarMetadataChunk(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<List<PostgresWordEmbeddings>> getSimilarMetadataChunk(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
     return this.postgresClient.getSimilarMetadataChunk(postgresEndpoint).toSingle();
   }
 
