@@ -33,6 +33,8 @@ public class PostgresClient {
   private final PostgresClientMetadataRepository metadataRepository =
       ApplicationContextHolder.getContext().getBean(PostgresClientMetadataRepository.class);
 
+  private final ObjectMapper objectMapper = new ObjectMapper();
+
   public PostgresEndpoint getPostgresEndpoint() {
     return postgresEndpoint;
   }
@@ -197,7 +199,6 @@ public class PostgresClient {
   }
 
   public EdgeChain<List<PostgresWordEmbeddings>> getAllChunks(PostgresEndpoint postgresEndpoint) {
-    ObjectMapper objectMapper = new ObjectMapper(); // heavy instance! Create once and re-use.
     final TypeReference<List<Float>> valueTypeRef = new TypeReference<>() {};
 
     return new EdgeChain<>(Observable.create(emitter -> {
@@ -212,7 +213,7 @@ public class PostgresClient {
 
           PGobject pgObject = (PGobject) row.get("embedding");
           String jsonString = pgObject.getValue();
-          List<Float> values = objectMapper.readValue(jsonString, valueTypeRef);
+          List<Float> values = objectMapper.readerFor(valueTypeRef).readValue(jsonString);
           val.setValues(values);
           wordEmbeddingsList.add(val);
         }
