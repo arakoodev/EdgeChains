@@ -32,12 +32,9 @@ import com.edgechain.lib.configuration.domain.AuthFilter;
 @Configuration
 public class WebSecurity {
 
-  @Autowired
-  private Environment env;
-  @Autowired
-  private AuthFilter authFilter;
-  @Autowired
-  private JwtFilter jwtFilter;
+  @Autowired private Environment env;
+  @Autowired private AuthFilter authFilter;
+  @Autowired private JwtFilter jwtFilter;
 
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
@@ -53,22 +50,31 @@ public class WebSecurity {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    http.cors(cors -> cors.configurationSource(corsConfiguration())).csrf(csrf -> csrf.disable())
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**").permitAll()
-            .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests()).permitAll()
-            .requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests()).permitAll()
-            .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
-            .permitAll().requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
-            .permitAll()
-            .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
-            .permitAll().anyRequest().permitAll())
+    http.cors(cors -> cors.configurationSource(corsConfiguration()))
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests())
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests())
+                    .permitAll()
+                    .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
+                    .permitAll()
+                    .requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
+                    .permitAll()
+                    .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
+                    .permitAll()
+                    .anyRequest()
+                    .permitAll())
         .httpBasic(Customizer.withDefaults())
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
         .sessionManagement(
             management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .exceptionHandling(Customizer.withDefaults())
-        .securityContext(c -> c.requireExplicitSave(false)).formLogin(login -> login.disable());
+        .securityContext(c -> c.requireExplicitSave(false))
+        .formLogin(login -> login.disable());
     return http.build();
   }
 
@@ -86,9 +92,17 @@ public class WebSecurity {
     configuration.setAllowCredentials(true);
     configuration.setAllowedMethods(
         Arrays.asList("GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE", "HEAD"));
-    configuration.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept",
-        "Access-Control-Allow-Headers", "Access-Control-Request-Method",
-        "Access-Control-Request-Headers", "X-Requested-With", "Authorization", "Stream"));
+    configuration.setAllowedHeaders(
+        Arrays.asList(
+            "Origin",
+            "Content-Type",
+            "Accept",
+            "Access-Control-Allow-Headers",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers",
+            "X-Requested-With",
+            "Authorization",
+            "Stream"));
     configuration.setMaxAge(3600L);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
