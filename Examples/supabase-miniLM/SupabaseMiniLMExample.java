@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETION_API;
 
@@ -159,7 +158,8 @@ public class SupabaseMiniLMExample {
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
-      PostgresRetrieval retrieval = new PostgresRetrieval(arr, miniLMEndpoint, postgresEndpoint, 1536, filename, arkRequest);
+      PostgresRetrieval retrieval =
+          new PostgresRetrieval(arr, miniLMEndpoint, postgresEndpoint, 1536, filename, arkRequest);
 
       //   retrieval.setBatchSize(100); // Modifying batchSize....
 
