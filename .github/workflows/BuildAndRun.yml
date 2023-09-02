@@ -33,20 +33,13 @@ jobs:
       - name: Create output folder
         run: mkdir BuildOutput
 
-#      - name: Build flyfly project
-#        working-directory: ./FlySpring/flyfly
-#        run: mvn clean package
-
-#      - name: Copy flyfly JAR to Examples folder and rename
-#        run: cp ./FlySpring/flyfly/target/flyfly-0.0.1-SNAPSHOT.jar ././BuildOutput/flyfly.jar
-
       - name: Build edgechain-app project
-        working-directory: ./FlySpring/edgechain-app
+        working-directory: ./FlySpring
         #         run: mvn -Djavacpp.platform=linux-x86_64 clean package -DskipTests
         run: mvn  clean package -DskipTests
 
       - name: Run edgechain testcases
-        working-directory: ./FlySpring/edgechain-app
+        working-directory: ./FlySpring
         run: mvn test
 
       - name: Copy edgechain-app JAR to Examples folder
@@ -72,24 +65,6 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
-      #       - name: Create Release
-      #         id: create_release
-      #         uses: actions/create-release@v1.1.4
-      #         env:
-      #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #         with:
-      #           tag_name: ${{ github.ref }}
-      #           release_name: ${{ github.ref }}
-      #       - name: Upload Release jar
-      #         id: upload_release_asset
-      #         uses: actions/upload-release-asset@v1.0.1
-      #         env:
-      #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #         with:
-      #           upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #           asset_path: Examples/
-      #           asset_name: Examples
-      #           asset_content_type: application/zip
       - name: 'Get variables'
         id: vars
         run: |
