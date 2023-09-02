@@ -1,7 +1,7 @@
 package com.edgechain.lib.supabase.security;
 
-import com.edgechain.lib.configuration.WebConfiguration;
-import com.edgechain.lib.configuration.domain.AuthFilter;
+import java.util.Arrays;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -24,18 +24,20 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
-import java.util.Arrays;
-import java.util.Objects;
+import com.edgechain.lib.configuration.WebConfiguration;
+import com.edgechain.lib.configuration.domain.AuthFilter;
 
 @EnableWebSecurity
 @EnableMethodSecurity
 @Configuration
 public class WebSecurity {
 
-  @Autowired private Environment env;
-  @Autowired private AuthFilter authFilter;
-  @Autowired private JwtFilter jwtFilter;
+  @Autowired
+  private Environment env;
+  @Autowired
+  private AuthFilter authFilter;
+  @Autowired
+  private JwtFilter jwtFilter;
 
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
@@ -51,45 +53,23 @@ public class WebSecurity {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    return http.cors()
-        .configurationSource(corsConfiguration())
-        .and()
-        .csrf()
-        .disable()
-        .authorizeHttpRequests(
-            (auth) -> {
-              try {
-                auth.requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests())
-                    .hasAnyAuthority(authFilter.getRequestPost().getAuthorities())
-                    //
-                    .requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests())
-                    .hasAnyAuthority(authFilter.getRequestGet().getAuthorities())
-                    .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
-                    .hasAnyAuthority(authFilter.getRequestDelete().getAuthorities())
-                    .requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
-                    .hasAnyAuthority(authFilter.getRequestPut().getAuthorities())
-                    .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
-                    .hasAnyAuthority(authFilter.getRequestPatch().getAuthorities())
-                    .anyRequest()
-                    .permitAll();
-
-              } catch (Exception e) {
-                throw new RuntimeException(e);
-              }
-            })
+    http.cors(cors -> cors.configurationSource(corsConfiguration())).csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**").permitAll()
+            .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests()).permitAll()
+            .requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests()).permitAll()
+            .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
+            .permitAll().requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
+            .permitAll()
+            .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
+            .permitAll().anyRequest().permitAll())
         .httpBasic(Customizer.withDefaults())
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
-        .exceptionHandling()
-        .and()
-        .securityContext(c -> c.requireExplicitSave(false))
-        .formLogin()
-        .disable()
-        .build();
+        .sessionManagement(
+            management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .exceptionHandling(Customizer.withDefaults())
+        .securityContext(c -> c.requireExplicitSave(false)).formLogin(login -> login.disable());
+    return http.build();
   }
 
   @Bean
@@ -106,17 +86,9 @@ public class WebSecurity {
     configuration.setAllowCredentials(true);
     configuration.setAllowedMethods(
         Arrays.asList("GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE", "HEAD"));
-    configuration.setAllowedHeaders(
-        Arrays.asList(
-            "Origin",
-            "Content-Type",
-            "Accept",
-            "Access-Control-Allow-Headers",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers",
-            "X-Requested-With",
-            "Authorization",
-            "Stream"));
+    configuration.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept",
+        "Access-Control-Allow-Headers", "Access-Control-Request-Method",
+        "Access-Control-Request-Headers", "X-Requested-With", "Authorization", "Stream"));
     configuration.setMaxAge(3600L);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

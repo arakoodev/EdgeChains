@@ -1,87 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.0.0</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<groupId>com.flyspring</groupId>
+		<artifactId>edgechain-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<groupId>com.flyspring</groupId>
+
 	<artifactId>flyfly</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>flyfly</name>
 	<description>flyfly CLI</description>
+
 	<properties>
-		<java.version>17</java.version>
+		<maven-model.version>3.3.9</maven-model.version>
 	</properties>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.testcontainers</groupId>
-				<artifactId>testcontainers-bom</artifactId>
-				<version>1.17.6</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli-spring-boot-starter</artifactId>
-			<version>4.7.0</version>
+			<version>${picocli.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.11.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>
 			<artifactId>zip4j</artifactId>
-			<version>2.11.3</version>
+			<version>${zip4j.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.zeroturnaround</groupId>
 			<artifactId>zt-exec</artifactId>
-			<version>1.12</version>
+			<version>${zeroturnaround.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-model</artifactId>
-			<version>3.3.9</version>
+			<version>${maven-model.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.20</version>
-			<scope>provided</scope>
+			<optional>true</optional>
 		</dependency>
+
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers</artifactId>
-			<version>1.17.6</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>mysql</artifactId>
 		</dependency>
+
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>postgresql</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -91,10 +89,12 @@
 			<groupId>org.testcontainers</groupId>
 			<artifactId>mariadb</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -103,19 +103,21 @@
 	</dependencies>
 
 	<build>
+		<defaultGoal>clean install</defaultGoal>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
 				<configuration>
-					<mainClass> com.flyspring.flyfly.FlyflyApplication
-					</mainClass>
+					<mainClass>com.flyspring.flyfly.FlyflyApplication</mainClass>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.8</version>
+				<version>${maven-antrun.version}</version>
 				<executions>
 					<execution>
 						<id>download-and-unpack-jbang</id>
@@ -126,18 +128,20 @@
 						<configuration>
 							<target>
 								<!-- Download Jbang archive -->
-								<get src="https://github.com/jbangdev/jbang/releases/download/v0.109.0/jbang.zip"
-									 dest="${project.build.directory}/jbang.zip"
-									 skipexisting="true" />
+								<get
+									src="https://github.com/jbangdev/jbang/releases/download/v0.109.0/jbang.zip"
+									dest="${project.build.directory}/jbang.zip"
+									skipexisting="true" />
 
 								<!-- Unpack Jbang archive -->
 								<unzip src="${project.build.directory}/jbang.zip"
-									   dest="${project.build.directory}/jbang" />
+									dest="${project.build.directory}/jbang" />
 
-								<!-- Copy only the 'jbang.jar' file to the 'src/main/resources' directory -->
+								<!-- Copy only the 'jbang.jar' file to the 'src/main/resources'
+								directory -->
 								<copy
-										file="${project.build.directory}/jbang/jbang/bin/jbang.jar"
-										tofile="${project.basedir}/src/main/resources/jbang.jar" />
+									file="${project.build.directory}/jbang/jbang/bin/jbang.jar"
+									tofile="${project.basedir}/src/main/resources/jbang.jar" />
 
 								<!-- Remove the temporary Jbang folder -->
 								<delete includeemptydirs="true">
@@ -156,17 +160,21 @@
 	<profiles>
 		<profile>
 			<id>gofly</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
 						<artifactId>maven-antrun-plugin</artifactId>
-						<version>3.1.0</version>
+						<version>${maven-antrun.version}</version>
 						<executions>
 							<execution>
 								<phase>package</phase>
 								<configuration>
 									<target>
-										<copy file="target/flyfly-0.0.1-SNAPSHOT.jar" tofile="${project.basedir}/../../Script/flyfly.jar"/>
+										<copy file="target/flyfly-${project.version}.jar"
+											tofile="${project.basedir}/../../Script/flyfly.jar" />
 									</target>
 								</configuration>
 								<goals>
@@ -179,14 +187,5 @@
 			</build>
 		</profile>
 	</profiles>
-
-	<!--	<build>-->
-	<!--		<plugins>-->
-	<!--			<plugin>-->
-	<!--				<groupId>org.springframework.boot</groupId>-->
-	<!--				<artifactId>spring-boot-maven-plugin</artifactId>-->
-	<!--			</plugin>-->
-	<!--		</plugins>-->
-	<!--	</build>-->
 
 </project>
