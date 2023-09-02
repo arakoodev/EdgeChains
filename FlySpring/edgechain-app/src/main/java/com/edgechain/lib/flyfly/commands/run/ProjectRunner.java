@@ -128,7 +128,7 @@ public class ProjectRunner {
             continue;
           String groupID = line.substring(start + 1, end);
           if (supportedDBGroupIds.contains(groupID)) {
-            if (!testContainersStarter.isServiesNeeded())
+            if (!testContainersStarter.isServiceNeeded())
               break;
             logger.info("Found : {}", groupID);
             switch (groupID) {
