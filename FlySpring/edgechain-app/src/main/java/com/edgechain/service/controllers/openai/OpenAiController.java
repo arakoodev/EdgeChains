@@ -262,9 +262,6 @@ public class OpenAiController {
             .temperature(openAiEndpoint.getTemperature())
             .build();
 
-
-
-
     this.openAiClient.setEndpoint(openAiEndpoint);
 
     EdgeChain<CompletionResponse> edgeChain = openAiClient.createCompletion(completionRequest);

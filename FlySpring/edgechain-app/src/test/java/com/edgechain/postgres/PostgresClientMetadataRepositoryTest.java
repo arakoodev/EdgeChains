@@ -78,13 +78,14 @@ public class PostgresClientMetadataRepositoryTest {
     String metadata = "example_metadata";
     String documentDate = "Aug 01, 2023";
 
-    //Act
+    // Act
     repository.insertMetadata(metadataTableName, metadata, documentDate);
 
-    //Assert
+    // Assert
     verify(jdbcTemplate, times(1)).update(sqlQueryCaptor.capture());
   }
-//
+
+  //
   @Test
   @DisplayName("Insert entry into the join table")
   public void testInsertIntoJoinTable() {
@@ -94,10 +95,8 @@ public class PostgresClientMetadataRepositoryTest {
     when(postgresEndpoint.getTableName()).thenReturn("embedding_table");
     when(postgresEndpoint.getMetadataTableNames())
         .thenReturn(Collections.singletonList("metadata_table"));
-    when(postgresEndpoint.getId())
-        .thenReturn(id);
-    when(postgresEndpoint.getMetadataId())
-        .thenReturn(metadataId);
+    when(postgresEndpoint.getId()).thenReturn(id);
+    when(postgresEndpoint.getMetadataId()).thenReturn(metadataId);
     String joinTable =
         postgresEndpoint.getTableName()
             + "_join_"
@@ -135,32 +134,38 @@ public class PostgresClientMetadataRepositoryTest {
 
     // Mock queryForList method to return a dummy result
     List<Map<String, Object>> dummyResult =
-            List.of(
-                    Map.of(
-                            "id",
-                            id,
-                            "metadata",
-                            "example_metadata",
-                            "document_date",
-                            "Aug 01, 2023",
-                            "metadata_id",
-                            metadataId,
-                            "raw_text",
-                            "example_raw_text",
-                            "namespace",
-                            "example_namespace",
-                            "filename",
-                            "example_filename",
-                            "timestamp",
-                            "example_timestamp",
-                            "score",
-                            0.5));
+        List.of(
+            Map.of(
+                "id",
+                id,
+                "metadata",
+                "example_metadata",
+                "document_date",
+                "Aug 01, 2023",
+                "metadata_id",
+                metadataId,
+                "raw_text",
+                "example_raw_text",
+                "namespace",
+                "example_namespace",
+                "filename",
+                "example_filename",
+                "timestamp",
+                "example_timestamp",
+                "score",
+                0.5));
     when(jdbcTemplate.queryForList(anyString())).thenReturn(dummyResult);
 
     // Act
     List<Map<String, Object>> result =
         repository.queryWithMetadata(
-            tableName, metadataTableName, namespace, probes, metric, wordEmbeddings.getValues(), topK);
+            tableName,
+            metadataTableName,
+            namespace,
+            probes,
+            metric,
+            wordEmbeddings.getValues(),
+            topK);
 
     // Assert
     verify(jdbcTemplate).queryForList(sqlQueryCaptor.capture());

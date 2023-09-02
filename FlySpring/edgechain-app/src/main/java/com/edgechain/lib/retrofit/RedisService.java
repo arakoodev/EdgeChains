@@ -8,7 +8,6 @@ import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.Body;
 import retrofit2.http.HTTP;
 import retrofit2.http.POST;
-import retrofit2.http.Query;
 
 import java.util.List;
 

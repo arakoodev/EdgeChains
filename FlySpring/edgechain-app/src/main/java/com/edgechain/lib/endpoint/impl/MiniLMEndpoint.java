@@ -3,7 +3,6 @@ package com.edgechain.lib.endpoint.impl;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.embeddings.miniLLM.enums.MiniLMModel;
 import com.edgechain.lib.endpoint.EmbeddingEndpoint;
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.retrofit.MiniLMService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;

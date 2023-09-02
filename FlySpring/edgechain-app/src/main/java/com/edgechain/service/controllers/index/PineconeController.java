@@ -5,7 +5,6 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
 import com.edgechain.lib.index.client.impl.PineconeClient;
 import com.edgechain.lib.response.StringResponse;
-import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +27,6 @@ public class PineconeController {
     return pineconeClient.batchUpsert(pineconeEndpoint).toSingleWithoutScheduler();
   }
 
-
   @PostMapping("/query")
   public Single<List<WordEmbeddings>> query(@RequestBody PineconeEndpoint pineconeEndpoint) {
     return pineconeClient.query(pineconeEndpoint).toSingle();
@@ -36,6 +34,6 @@ public class PineconeController {
 
   @DeleteMapping("/deleteAll")
   public Single<StringResponse> deleteAll(@RequestBody PineconeEndpoint pineconeEndpoint) {
-   return pineconeClient.deleteAll(pineconeEndpoint).toSingle();
+    return pineconeClient.deleteAll(pineconeEndpoint).toSingle();
   }
 }

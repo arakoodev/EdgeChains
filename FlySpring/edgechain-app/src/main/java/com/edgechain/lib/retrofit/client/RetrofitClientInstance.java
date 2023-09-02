@@ -47,7 +47,7 @@ public class RetrofitClientInstance {
               .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
               .client(
                   new OkHttpClient.Builder()
-                          .connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES))
+                      .connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES))
                       .addInterceptor(
                           chain -> {
                             Request original = chain.request();

@@ -10,7 +10,6 @@ import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Retrofit;
 import java.util.List;
-import java.util.StringJoiner;
 
 public class RedisEndpoint extends Endpoint {
 
@@ -143,5 +142,4 @@ public class RedisEndpoint extends Endpoint {
     this.pattern = patternName;
     this.redisService.deleteByPattern(this).blockingAwait();
   }
-
 }

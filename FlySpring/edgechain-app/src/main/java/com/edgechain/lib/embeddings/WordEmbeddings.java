@@ -92,7 +92,7 @@ public class WordEmbeddings implements ArkObject, Serializable {
 
     WordEmbeddings that = (WordEmbeddings) o;
 
-      return id.equals(that.id);
+    return id.equals(that.id);
   }
 
   @Override
