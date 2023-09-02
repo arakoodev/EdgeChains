@@ -1,7 +1,6 @@
 package com.edgechain;
 
 import com.edgechain.lib.chains.PostgresRetrieval;
-import com.edgechain.lib.chains.Retrieval;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.embeddings.miniLLM.enums.MiniLMModel;
