@@ -23,7 +23,7 @@ To set up EdgeChains, you will need to download the release jar (`edgechain.jar`
 Once downloaded, Follow these steps:
 
 1. **Copy all the contents from the _Examples_ folder** and paste into your folder. The _Examples_ folder includes all the Jsonnet files and `EdgeChainApplication.java` file.    
-2. **Prepare your OpenAI Key:** EdgeChains requires a valid OpenAI key to interact with the language models. Make sure you have your OpenAI Auth Key available, as you will need to add it to the Starter class in `EdgeChainApplication.java` file.
+2. **Prepare your OpenAI Key:** EdgeChains requires a valid OpenAI key to interact with the language models. Make sure you have your OpenAI Auth Key available, as you will need to add it in `EdgeChainApplication.java` file (there will be placeholders for `OPENAI_AUTH_KEY` and `OPENAI_ORG_ID` )
 3. **Configure Redis/Supabase/Pincone Connection:** locate the redisenv method in the Redisenv class in `EdgeChainApplication.java` file. Add your URL, port, and password to the appropriate fields in the method.
 
 Once you have completed these configuration steps, you are ready to run EdgeChains. 
