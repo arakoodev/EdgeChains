@@ -25,7 +25,7 @@ public class PostgresRetrieval {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private int batchSize = 50;
+    private int batchSize = 30;
 
     private final String[] arr;
 
@@ -92,7 +92,7 @@ public class PostgresRetrieval {
                 .buffer(batchSize)
                 .concatMapCompletable(batch -> Observable.fromIterable(batch)
                         .flatMap(input -> Observable.fromCallable(() -> generateEmbeddings(input)).subscribeOn(Schedulers.io()))
-                        .buffer(batchSize / 2)
+                        .toList()
                         .flatMapCompletable(wordEmbeddingsList -> Completable.fromAction(() -> upsertAndCollectIds(wordEmbeddingsList, uuidQueue)).subscribeOn(Schedulers.io())))
                 .blockingAwait();
 
