@@ -62,9 +62,6 @@ public class PostgresController {
   @PostMapping("/query")
   public Single<List<PostgresWordEmbeddings>> query(
       @RequestBody PostgresEndpoint postgresEndpoint) {
-
-    System.out.println(postgresEndpoint);
-
     return this.postgresClient.query(postgresEndpoint).toSingle();
   }
 
