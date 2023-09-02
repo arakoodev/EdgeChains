@@ -1,5 +1,11 @@
 package com.edgechain.lib.endpoint.impl;
 
+import com.edgechain.lib.embeddings.WordEmbeddings;
+import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.request.ArkRequest;
+import com.edgechain.lib.retrofit.BgeSmallService;
+import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
+import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,12 +17,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.Endpoint;
-import com.edgechain.lib.request.ArkRequest;
-import com.edgechain.lib.retrofit.BgeSmallService;
-import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
-import com.edgechain.lib.rxjava.retry.RetryPolicy;
 
 public class BgeSmallEndpoint extends Endpoint {
 

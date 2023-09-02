@@ -1,13 +1,13 @@
 package com.edgechain.lib.logger.services;
 
+import com.edgechain.lib.logger.entities.EmbeddingLog;
+import com.edgechain.lib.logger.repositories.EmbeddingLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.edgechain.lib.logger.entities.EmbeddingLog;
-import com.edgechain.lib.logger.repositories.EmbeddingLogRepository;
 
 @Service
 public class EmbeddingLogService {

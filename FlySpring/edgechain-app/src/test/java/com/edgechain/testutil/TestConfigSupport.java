@@ -1,11 +1,11 @@
 package com.edgechain.testutil;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.test.util.ReflectionTestUtils;
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
-import static org.mockito.Mockito.mock;
+import org.springframework.context.ApplicationContext;
+import org.springframework.test.util.ReflectionTestUtils;
 import retrofit2.Retrofit;
+import static org.mockito.Mockito.mock;
 
 /**
  * Two useful pairs of functions to set private static fields.

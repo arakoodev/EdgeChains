@@ -1,10 +1,10 @@
 package com.edgechain.lib.endpoint.impl;
 
+import com.edgechain.testutil.TestConfigSupport;
 import java.io.File;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import com.edgechain.testutil.TestConfigSupport;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BgeSmallEndpointTest {

@@ -1,5 +1,8 @@
 package com.edgechain.lib.configuration;
 
+import com.edgechain.lib.configuration.domain.AuthFilter;
+import com.edgechain.lib.configuration.domain.MethodAuthentication;
+import com.edgechain.lib.configuration.domain.SecurityUUID;
 import java.util.List;
 import java.util.UUID;
 import org.modelmapper.ModelMapper;
@@ -8,9 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.client.RestTemplate;
-import com.edgechain.lib.configuration.domain.AuthFilter;
-import com.edgechain.lib.configuration.domain.MethodAuthentication;
-import com.edgechain.lib.configuration.domain.SecurityUUID;
 
 @Configuration("WebConfiguration")
 @Import(EdgeChainAutoConfiguration.class)

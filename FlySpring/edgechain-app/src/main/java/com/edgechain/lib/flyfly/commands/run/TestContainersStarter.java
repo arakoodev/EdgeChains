@@ -1,5 +1,6 @@
 package com.edgechain.lib.flyfly.commands.run;
 
+import jakarta.annotation.PreDestroy;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -10,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.testcontainers.containers.PostgreSQLContainer;
-import jakarta.annotation.PreDestroy;
 
 @Component
 public class TestContainersStarter {

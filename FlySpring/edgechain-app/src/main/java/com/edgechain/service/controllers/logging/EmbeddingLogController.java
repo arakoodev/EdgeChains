@@ -1,5 +1,8 @@
 package com.edgechain.service.controllers.logging;
 
+import com.edgechain.lib.configuration.WebConfiguration;
+import com.edgechain.lib.logger.entities.EmbeddingLog;
+import com.edgechain.lib.logger.services.EmbeddingLogService;
 import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,9 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.edgechain.lib.configuration.WebConfiguration;
-import com.edgechain.lib.logger.entities.EmbeddingLog;
-import com.edgechain.lib.logger.services.EmbeddingLogService;
 
 @RestController("Service EmbeddingLogController")
 @RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/logs/embeddings")

@@ -1,15 +1,5 @@
 package com.edgechain.lib.index.client.impl;
 
-import io.reactivex.rxjava3.core.Observable;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.postgresql.util.PGobject;
-import org.springframework.stereotype.Service;
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
@@ -21,6 +11,16 @@ import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.reactivex.rxjava3.core.Observable;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.postgresql.util.PGobject;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PostgresClient {

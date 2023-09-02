@@ -1,5 +1,7 @@
 package com.edgechain.lib.controllers;
 
+import com.edgechain.lib.logger.EmbeddingLogger;
+import com.edgechain.lib.logger.entities.EmbeddingLog;
 import java.util.HashMap;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,8 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.edgechain.lib.logger.EmbeddingLogger;
-import com.edgechain.lib.logger.entities.EmbeddingLog;
 
 @RestController
 @RequestMapping("/v1/logs/embeddings")

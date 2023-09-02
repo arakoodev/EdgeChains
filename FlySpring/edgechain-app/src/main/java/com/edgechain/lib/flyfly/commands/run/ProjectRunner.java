@@ -1,5 +1,7 @@
 package com.edgechain.lib.flyfly.commands.run;
 
+import com.edgechain.lib.flyfly.utils.ProjectSetup;
+import jakarta.annotation.PreDestroy;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -21,11 +23,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.zeroturnaround.exec.ProcessExecutor;
-import com.edgechain.lib.flyfly.utils.ProjectSetup;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
-import jakarta.annotation.PreDestroy;
 
 @Component
 public class ProjectRunner {

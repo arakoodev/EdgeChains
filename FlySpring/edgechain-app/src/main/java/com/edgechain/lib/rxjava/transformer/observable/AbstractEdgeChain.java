@@ -1,5 +1,6 @@
 package com.edgechain.lib.rxjava.transformer.observable;
 
+import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Notification;
@@ -15,7 +16,6 @@ import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.functions.Predicate;
 import java.io.Serializable;
-import com.edgechain.lib.rxjava.retry.RetryPolicy;
 
 public abstract class AbstractEdgeChain<T> implements Serializable {
 
