@@ -15,6 +15,9 @@ public interface PineconeService {
   @POST(value = "index/pinecone/upsert")
   Single<StringResponse> upsert(@Body PineconeEndpoint pineconeEndpoint);
 
+  @POST(value = "index/pinecone/batch-upsert")
+  Single<StringResponse> batchUpsert(@Body PineconeEndpoint pineconeEndpoint);
+
   @POST(value = "index/pinecone/query")
   Single<List<WordEmbeddings>> query(@Body PineconeEndpoint pineconeEndpoint);
 

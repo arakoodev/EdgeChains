@@ -1,5 +1,7 @@
 package com.edgechain.lib.configuration;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -13,37 +15,31 @@ import java.util.Objects;
 @Configuration
 public class PostgreSQLConfiguration {
 
-  @Autowired private Environment env;
+    @Autowired
+    private Environment env;
 
-  @Bean
-  public DataSource dataSource() {
+    @Bean
+    public DataSource dataSource() {
 
-    String dbHost = env.getProperty("postgres.db.host");
-    String dbUsername = env.getProperty("postgres.db.username");
-    String dbPassword = env.getProperty("postgres.db.password");
+        String dbHost = env.getProperty("postgres.db.host");
+        String dbUsername = env.getProperty("postgres.db.username");
+        String dbPassword = env.getProperty("postgres.db.password");
 
-    return DataSourceBuilder.create()
-        .url(dbHost)
-        .driverClassName("org.postgresql.Driver")
-        .username(dbUsername)
-        .password(dbPassword)
-        .build();
+        return DataSourceBuilder.create()
+                .type(HikariDataSource.class)
+                .url(dbHost)
+                .driverClassName("org.postgresql.Driver")
+                .username(dbUsername)
+                .password(dbPassword)
+                .build();
+    }
 
-    //    return DataSourceBuilder.create()
-    //              .type(HikariDataSource.class)
-    //              .url(dbHost)
-    //              .driverClassName("org.postgresql.Driver")
-    //              .username(dbUsername)
-    //              .password(dbPassword)
-    //              .build();
-  }
+    @Bean
+    public JdbcTemplate jdbcTemplate() {
+        return new JdbcTemplate(dataSource());
+    }
 
-  @Bean
-  public JdbcTemplate jdbcTemplate() {
-    return new JdbcTemplate(dataSource());
-  }
-
-  private boolean nonNullAndNotEmpty(String val) {
-    return Objects.nonNull(val) && val.trim().isEmpty();
-  }
+    private boolean nonNullAndNotEmpty(String val) {
+        return Objects.nonNull(val) && val.trim().isEmpty();
+    }
 }

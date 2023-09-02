@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ForkJoinPool;
 
 @Configuration("WebConfiguration")
 @Import(EdgeChainAutoConfiguration.class)
