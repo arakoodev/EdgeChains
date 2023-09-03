@@ -39,22 +39,23 @@ public class PostgresClientMetadataRepository {
   }
 
   public List<String> batchInsertMetadata(String metadataTableName, List<String> metadataList) {
-    List<String> uuidList = new ArrayList<>();
 
-    String[] sql = new String[metadataList.size()];
+    Set<String> uuidSet = new HashSet<>();
 
     for (int i = 0; i < metadataList.size(); i++) {
-      UUID uuid = UuidCreator.getTimeOrderedEpoch();
+      UUID metadataId =
+          jdbcTemplate.queryForObject(
+              String.format(
+                  "INSERT INTO %s (metadata_id, metadata) VALUES ('%s', '%s') RETURNING metadata_id;",
+                  metadataTableName, UuidCreator.getTimeOrderedEpoch(), metadataList.get(i)),
+              UUID.class);
 
-      sql[i] =
-          String.format(
-              "INSERT INTO %s (metadata_id, metadata) VALUES ('%s', '%s');",
-              metadataTableName, uuid, metadataList.get(i));
-      uuidList.add(uuid.toString());
+      if (metadataId != null) {
+        uuidSet.add(metadataId.toString());
+      }
     }
-    jdbcTemplate.batchUpdate(sql);
 
-    return uuidList;
+    return new ArrayList<>(uuidSet);
   }
 
   @Transactional
