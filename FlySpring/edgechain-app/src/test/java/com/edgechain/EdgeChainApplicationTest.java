@@ -10,5 +10,4 @@ class EdgeChainApplicationTest {
   void test() {
     // simply checks server can start
   }
-
 }

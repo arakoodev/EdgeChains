@@ -17,9 +17,7 @@ import redis.clients.jedis.JedisPooled;
 @Configuration
 public class RedisConfiguration {
 
-  @Autowired
-  @Lazy
-  private Environment env;
+  @Autowired @Lazy private Environment env;
 
   @Bean
   @Lazy
@@ -36,8 +34,8 @@ public class RedisConfiguration {
       host = env.getProperty("redis.url");
     }
 
-    return new JedisPooled(host, port, env.getProperty("redis.username"),
-        env.getProperty("redis.password"));
+    return new JedisPooled(
+        host, port, env.getProperty("redis.username"), env.getProperty("redis.password"));
   }
 
   @Bean

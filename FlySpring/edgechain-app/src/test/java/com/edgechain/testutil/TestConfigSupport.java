@@ -7,9 +7,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import retrofit2.Retrofit;
 import static org.mockito.Mockito.mock;
 
-/**
- * Two useful pairs of functions to set private static fields.
- */
+/** Two useful pairs of functions to set private static fields. */
 public final class TestConfigSupport {
 
   private ApplicationContext prevAppContext;
@@ -18,7 +16,7 @@ public final class TestConfigSupport {
   /**
    * Creates and forcefully uses a mock application context. Previous value is remembered. Call this
    * once in a @BeforeEach setup method.
-   * 
+   *
    * @return a mock application context
    */
   public ApplicationContext setupAppContext() {
@@ -41,7 +39,7 @@ public final class TestConfigSupport {
   /**
    * Creates and forcefully uses a mock Retrofit instance. Call this once in a @BeforeEach setup
    * method.
-   * 
+   *
    * @return a mock Retrofit instance
    */
   public Retrofit setupRetrofit() {
@@ -66,5 +64,4 @@ public final class TestConfigSupport {
       System.setProperty("server.port", prevServerPort);
     }
   }
-
 }

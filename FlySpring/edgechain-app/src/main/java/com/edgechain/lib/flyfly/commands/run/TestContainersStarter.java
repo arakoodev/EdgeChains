@@ -56,14 +56,14 @@ public class TestContainersStarter {
   // addTempProperties(mysql.getJdbcUrl());
   // }
 
-
-
   public void startPostgreSQL() throws IOException {
-    if (postgre != null && postgre.isRunning())
-      return;
+    if (postgre != null && postgre.isRunning()) return;
     log.info("Starting a temporary PostgreSQL database.");
-    postgre = new PostgreSQLContainer<>("postgres:14.5").withDatabaseName(DBNAME)
-        .withUsername(USERNAME).withPassword(PASSWORD);
+    postgre =
+        new PostgreSQLContainer<>("postgres:14.5")
+            .withDatabaseName(DBNAME)
+            .withUsername(USERNAME)
+            .withPassword(PASSWORD);
     postgre.addParameter("TC_MY_CNF", null);
     postgre.start();
 
@@ -82,8 +82,7 @@ public class TestContainersStarter {
     }
     // if (mysql != null && mysql.isRunning()) mysql.close();
     log.info("Stopping temporary PostgreSQL database.");
-    if (postgre != null && postgre.isRunning())
-      postgre.close();
+    if (postgre != null && postgre.isRunning()) postgre.close();
     // if (mariaDB != null && mariaDB.isRunning()) mariaDB.close();
   }
 
@@ -140,8 +139,7 @@ public class TestContainersStarter {
         sb.append(line).append("\n");
       }
     }
-    if (tempNotFound)
-      return;
+    if (tempNotFound) return;
 
     try (FileWriter fw = new FileWriter(propertiesPath);
         BufferedWriter writer = new BufferedWriter(fw)) {
@@ -166,8 +164,15 @@ public class TestContainersStarter {
 
   private static String buildPropertiesPath() {
     String separator = FileSystems.getDefault().getSeparator();
-    return System.getProperty("user.dir") + separator + "src" + separator + "main" + separator
-        + "resources" + separator + "application.properties";
+    return System.getProperty("user.dir")
+        + separator
+        + "src"
+        + separator
+        + "main"
+        + separator
+        + "resources"
+        + separator
+        + "application.properties";
   }
 
   @PreDestroy
@@ -177,5 +182,4 @@ public class TestContainersStarter {
     } catch (IOException e) {
     }
   }
-
 }

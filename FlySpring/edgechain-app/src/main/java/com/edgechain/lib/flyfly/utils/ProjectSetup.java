@@ -13,8 +13,7 @@ public class ProjectSetup {
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-  @Autowired
-  FileTools fileTools;
+  @Autowired FileTools fileTools;
 
   private String userHome = System.getProperty("user.home");
   private String separator = FileSystems.getDefault().getSeparator();
@@ -32,15 +31,13 @@ public class ProjectSetup {
 
   public void addInitscript() throws IOException {
     File initDir = new File(userHome + separator + ".gradle" + separator + "init.d");
-    if (!initDir.exists())
-      initDir.mkdirs();
+    if (!initDir.exists()) initDir.mkdirs();
     fileTools.exportFileTo("flyfly.gradle", initscriptDir);
   }
 
   public void addAutorouteJar() throws IOException {
     File flyflyFolder = new File(flyflyDir);
-    if (!flyflyFolder.exists())
-      flyflyFolder.mkdirs();
+    if (!flyflyFolder.exists()) flyflyFolder.mkdirs();
     File autorouteFile = new File(autorouteDir);
     if (!autorouteFile.exists() || (autorouteFile.exists() && autorouteFile.delete()))
       fileTools.exportFileTo("autoroute.jar", autorouteDir);
@@ -53,8 +50,7 @@ public class ProjectSetup {
 
   public void addFormatScript() throws IOException {
     File flyflyFolder = new File(flyflyDir);
-    if (!flyflyFolder.exists())
-      flyflyFolder.mkdirs();
+    if (!flyflyFolder.exists()) flyflyFolder.mkdirs();
     fileTools.exportFileTo("format.gradle", formatScriptDir);
   }
 
@@ -65,8 +61,7 @@ public class ProjectSetup {
 
   public void addGlowrootAgent() throws IOException {
     File flyflyFolder = new File(flyflyDir);
-    if (!flyflyFolder.exists())
-      flyflyFolder.mkdirs();
+    if (!flyflyFolder.exists()) flyflyFolder.mkdirs();
     String zipDir = flyflyDir + separator + "glowroot.zip";
     fileTools.exportFileTo("glowroot.zip", zipDir);
     fileTools.unzip(zipDir, flyflyDir);

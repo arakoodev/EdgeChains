@@ -63,7 +63,5 @@ class EmbeddingLogServiceTest {
       LOGGER.info("stopping container");
       super.stop();
     }
-
   }
-
 }

@@ -24,112 +24,121 @@ public class RedisHistoryContextClient
 
   private static final String PREFIX = "historycontext:";
 
-  @Autowired
-  private RedisTemplate<String, Object> redisTemplate;
+  @Autowired private RedisTemplate<String, Object> redisTemplate;
 
-  @Autowired
-  @Lazy
-  private Environment env;
+  @Autowired @Lazy private Environment env;
 
   @Override
   public EdgeChain<HistoryContext> create(String id, RedisHistoryContextEndpoint endpoint) {
-    return new EdgeChain<>(Observable.create(emitter -> {
-      try {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
 
-        if (Objects.isNull(id) || id.isEmpty())
-          throw new RuntimeException("Redis key cannot be empty or null");
+                if (Objects.isNull(id) || id.isEmpty())
+                  throw new RuntimeException("Redis key cannot be empty or null");
 
-        String key = PREFIX + id;
+                String key = PREFIX + id;
 
-        if (this.redisTemplate.hasKey(key))
-          throw new RuntimeException("Duplicate historycontext is not allowed.");
+                if (this.redisTemplate.hasKey(key))
+                  throw new RuntimeException("Duplicate historycontext is not allowed.");
 
-        HistoryContext context = new HistoryContext();
-        context.setId(key);
-        context.setResponse("");
-        context.setCreatedAt(LocalDateTime.now());
+                HistoryContext context = new HistoryContext();
+                context.setId(key);
+                context.setResponse("");
+                context.setCreatedAt(LocalDateTime.now());
 
-        this.redisTemplate.opsForValue().set(key, context);
-        this.redisTemplate.expire(key, Long.parseLong(env.getProperty("redis.ttl")),
-            TimeUnit.SECONDS);
+                this.redisTemplate.opsForValue().set(key, context);
+                this.redisTemplate.expire(
+                    key, Long.parseLong(env.getProperty("redis.ttl")), TimeUnit.SECONDS);
 
-        if (logger.isInfoEnabled()) {
-          logger.info("{} is added", key);
-        }
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is added", key);
+                }
 
-        emitter.onNext(context);
-        emitter.onComplete();
+                emitter.onNext(context);
+                emitter.onComplete();
 
-      } catch (final Exception e) {
-        emitter.onError(e);
-      }
-    }), endpoint);
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
   }
 
   @Override
-  public EdgeChain<HistoryContext> put(String key, String response,
-      RedisHistoryContextEndpoint endpoint) {
-    return new EdgeChain<>(Observable.create(emitter -> {
-      try {
-        HistoryContext historyContext = this.get(key, null).get();
-        historyContext.setResponse(response);
+  public EdgeChain<HistoryContext> put(
+      String key, String response, RedisHistoryContextEndpoint endpoint) {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
+                HistoryContext historyContext = this.get(key, null).get();
+                historyContext.setResponse(response);
 
-        this.redisTemplate.opsForValue().set(key, historyContext);
-        this.redisTemplate.expire(key, Long.parseLong(env.getProperty("redis.ttl")),
-            TimeUnit.SECONDS);
+                this.redisTemplate.opsForValue().set(key, historyContext);
+                this.redisTemplate.expire(
+                    key, Long.parseLong(env.getProperty("redis.ttl")), TimeUnit.SECONDS);
 
-        if (logger.isInfoEnabled()) {
-          logger.info("{} is updated", key);
-        }
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is updated", key);
+                }
 
-        emitter.onNext(historyContext);
-        emitter.onComplete();
+                emitter.onNext(historyContext);
+                emitter.onComplete();
 
-      } catch (final Exception e) {
-        emitter.onError(e);
-      }
-    }), endpoint);
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
   }
 
   @Override
   public EdgeChain<HistoryContext> get(String key, RedisHistoryContextEndpoint endpoint) {
-    return new EdgeChain<>(Observable.create(emitter -> {
-      try {
-        Boolean b = this.redisTemplate.hasKey(key);
-        if (Boolean.TRUE.equals(b)) {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
+                Boolean b = this.redisTemplate.hasKey(key);
+                if (Boolean.TRUE.equals(b)) {
 
-          HistoryContext obj = (HistoryContext) this.redisTemplate.opsForValue().get(key);
-          Objects.requireNonNull(obj, "null value not allowed! key " + key);
+                  HistoryContext obj = (HistoryContext) this.redisTemplate.opsForValue().get(key);
+                  Objects.requireNonNull(obj, "null value not allowed! key " + key);
 
-          emitter.onNext(obj);
-          emitter.onComplete();
-        } else {
-          emitter.onError(new RuntimeException("Redis history_context id isn't found."));
-        }
+                  emitter.onNext(obj);
+                  emitter.onComplete();
+                } else {
+                  emitter.onError(new RuntimeException("Redis history_context id isn't found."));
+                }
 
-      } catch (final Exception e) {
-        emitter.onError(e);
-      }
-    }), endpoint);
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
   }
 
   @Override
   public EdgeChain<String> delete(String key, RedisHistoryContextEndpoint endpoint) {
-    return new EdgeChain<>(Observable.create(emitter -> {
-      try {
-        this.get(key, null).get();
-        this.redisTemplate.delete(key);
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
+                this.get(key, null).get();
+                this.redisTemplate.delete(key);
 
-        if (logger.isInfoEnabled()) {
-          logger.info("{} is deleted", key);
-        }
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is deleted", key);
+                }
 
-        emitter.onNext("");
-        emitter.onComplete();
+                emitter.onNext("");
+                emitter.onComplete();
 
-      } catch (final Exception e) {
-        emitter.onError(e);
-      }
-    }), endpoint);
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
   }
 }

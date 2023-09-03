@@ -30,14 +30,14 @@ public class EmbeddingLoggerController {
   }
 
   @GetMapping("/findAll/sorted/{page}/{size}")
-  public Page<EmbeddingLog> findAllOrderByCompletedAtDesc(@PathVariable int page,
-      @PathVariable int size) {
+  public Page<EmbeddingLog> findAllOrderByCompletedAtDesc(
+      @PathVariable int page, @PathVariable int size) {
     return getInstance().findAllOrderByCompletedAtDesc(page, size);
   }
 
   @PostMapping("/findByModel/{page}/{size}")
-  public Page<EmbeddingLog> findAllByModel(@RequestBody HashMap<String, String> mapper,
-      @PathVariable int page, @PathVariable int size) {
+  public Page<EmbeddingLog> findAllByModel(
+      @RequestBody HashMap<String, String> mapper, @PathVariable int page, @PathVariable int size) {
     return getInstance().findAllByModel(mapper.get("model"), page, size);
   }
 
@@ -48,21 +48,21 @@ public class EmbeddingLoggerController {
   }
 
   @PostMapping("/findByIdentifier/{page}/{size}")
-  public Page<EmbeddingLog> findAllByCallIdentifier(@RequestBody HashMap<String, String> mapper,
-      @PathVariable int page, @PathVariable int size) {
+  public Page<EmbeddingLog> findAllByCallIdentifier(
+      @RequestBody HashMap<String, String> mapper, @PathVariable int page, @PathVariable int size) {
     return getInstance().findAllByCallIdentifier(mapper.get("identifier"), page, size);
   }
 
   @PostMapping("/findByIdentifier/sorted/{page}/{size}")
   public Page<EmbeddingLog> findAllByCallIdentifierOrderByCompletedAtDesc(
       @RequestBody HashMap<String, String> mapper, @PathVariable int page, @PathVariable int size) {
-    return getInstance().findAllByCallIdentifierOrderByCompletedAtDesc(mapper.get("identifier"),
-        page, size);
+    return getInstance()
+        .findAllByCallIdentifierOrderByCompletedAtDesc(mapper.get("identifier"), page, size);
   }
 
   @PostMapping("/findByLatencyLessThanEq/{page}/{size}")
-  public Page<EmbeddingLog> findAllByLatencyLessThanEqual(@RequestBody HashMap<String, Long> mapper,
-      @PathVariable int page, @PathVariable int size) {
+  public Page<EmbeddingLog> findAllByLatencyLessThanEqual(
+      @RequestBody HashMap<String, Long> mapper, @PathVariable int page, @PathVariable int size) {
     return getInstance().findAllByLatencyLessThanEqual(mapper.get("latency"), page, size);
   }
 

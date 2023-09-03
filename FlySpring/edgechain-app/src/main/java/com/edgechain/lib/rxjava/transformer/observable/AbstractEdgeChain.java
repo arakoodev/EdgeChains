@@ -29,8 +29,8 @@ public abstract class AbstractEdgeChain<T> implements Serializable {
 
   public abstract <R> AbstractEdgeChain<R> transform(Function<T, R> mapper);
 
-  public abstract <R> AbstractEdgeChain<R> combine(ObservableSource<T> other,
-      BiFunction<T, T, R> zipper);
+  public abstract <R> AbstractEdgeChain<R> combine(
+      ObservableSource<T> other, BiFunction<T, T, R> zipper);
 
   public abstract <R> AbstractEdgeChain<R> combine(EdgeChain<T> other, BiFunction<T, T, R> zipper);
 
@@ -70,14 +70,17 @@ public abstract class AbstractEdgeChain<T> implements Serializable {
 
   public abstract void execute(Consumer<? super T> onNext, Consumer<? super Throwable> onError);
 
-  public abstract void execute(Consumer<? super T> onNext, Consumer<? super Throwable> onError,
+  public abstract void execute(
+      Consumer<? super T> onNext, Consumer<? super Throwable> onError, RetryPolicy retryPolicy);
+
+  public abstract void execute(
+      Consumer<? super T> onNext,
+      Consumer<? super Throwable> onError,
+      Action onComplete,
       RetryPolicy retryPolicy);
 
-  public abstract void execute(Consumer<? super T> onNext, Consumer<? super Throwable> onError,
-      Action onComplete, RetryPolicy retryPolicy);
-
-  public abstract void execute(Consumer<? super T> onNext, Consumer<? super Throwable> onError,
-      Action onComplete);
+  public abstract void execute(
+      Consumer<? super T> onNext, Consumer<? super Throwable> onError, Action onComplete);
 
   public abstract Observable<T> getObservable();
 
