@@ -46,7 +46,8 @@ public class PostgresClientMetadataRepository {
       UUID metadataId =
           jdbcTemplate.queryForObject(
               String.format(
-                  "INSERT INTO %s (metadata_id, metadata) VALUES ('%s', '%s') RETURNING metadata_id;",
+                  "INSERT INTO %s (metadata_id, metadata) VALUES ('%s', '%s') RETURNING"
+                      + " metadata_id;",
                   metadataTableName, UuidCreator.getTimeOrderedEpoch(), metadataList.get(i)),
               UUID.class);
 
