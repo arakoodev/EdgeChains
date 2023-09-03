@@ -95,9 +95,9 @@ public class PostgresClientRepository {
         UUID id =
             jdbcTemplate.queryForObject(
                 String.format(
-                    "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES"
-                        + " ('%s', '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE"
-                        + " SET embedding = EXCLUDED.embedding RETURNING id;",
+                    "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename)"
+                        + " VALUES ('%s', '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO"
+                        + " UPDATE SET embedding = EXCLUDED.embedding RETURNING id;",
                     tableName,
                     UuidCreator.getTimeOrderedEpoch(),
                     wordEmbeddings.getId(),
