@@ -23,7 +23,8 @@ class BgeSmallEndpointTest {
 
       // WHEN we create the endpoint instance
       // (get tiny JSON files as example download data)
-      new BgeSmallEndpoint("https://jsonplaceholder.typicode.com/posts/1",
+      new BgeSmallEndpoint(
+          "https://jsonplaceholder.typicode.com/posts/1",
           "https://jsonplaceholder.typicode.com/posts/2");
 
       // THEN the files now exist
@@ -49,5 +50,4 @@ class BgeSmallEndpointTest {
     File tokenizerFile = new File(BgeSmallEndpoint.TOKENIZER_PATH);
     tokenizerFile.delete();
   }
-
 }

@@ -43,14 +43,18 @@ public class BgeSmallEndpoint extends EmbeddingEndpoint {
 
     File modelFile = new File(MODEL_PATH);
     if (!modelFile.exists()) {
-      logger.info("Downloading bge-small-en model from {} to {}. Please wait...", modelUrl,
+      logger.info(
+          "Downloading bge-small-en model from {} to {}. Please wait...",
+          modelUrl,
           modelFile.getAbsolutePath());
       downloadFile(modelUrl, MODEL_PATH);
     }
 
     File tokenizerFile = new File(TOKENIZER_PATH);
     if (!tokenizerFile.exists()) {
-      logger.info("Downloading bge-small-en tokenizer from {} to {}. Please wait...", tokenizerUrl,
+      logger.info(
+          "Downloading bge-small-en tokenizer from {} to {}. Please wait...",
+          tokenizerUrl,
           tokenizerFile.getAbsolutePath());
       downloadFile(tokenizerUrl, TOKENIZER_PATH);
     }
@@ -83,10 +87,8 @@ public class BgeSmallEndpoint extends EmbeddingEndpoint {
 
     setRawText(str);
 
-    if (Objects.nonNull(arkRequest))
-      this.callIdentifier = arkRequest.getRequestURI();
-    else
-      this.callIdentifier = "URI wasn't provided";
+    if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
+    else this.callIdentifier = "URI wasn't provided";
 
     return Observable.fromSingle(
         bgeSmallService.embeddings(this).map(m -> new WordEmbeddings(str, m.getEmbedding())));

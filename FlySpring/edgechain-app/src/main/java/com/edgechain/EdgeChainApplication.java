@@ -25,8 +25,11 @@ public class EdgeChainApplication {
     System.setProperty("jar.name", jarFileName);
     logger.info("Executed jar file: {}", jarFileName);
 
-    SpringApplication springApplication = new SpringApplicationBuilder()
-        .sources(EdgeChainApplication.class).web(WebApplicationType.NONE).build();
+    SpringApplication springApplication =
+        new SpringApplicationBuilder()
+            .sources(EdgeChainApplication.class)
+            .web(WebApplicationType.NONE)
+            .build();
 
     springApplication.run(args);
   }

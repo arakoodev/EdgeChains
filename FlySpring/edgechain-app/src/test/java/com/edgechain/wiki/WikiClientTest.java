@@ -20,8 +20,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class WikiClientTest {
 
-  @LocalServerPort
-  private int port;
+  @LocalServerPort private int port;
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

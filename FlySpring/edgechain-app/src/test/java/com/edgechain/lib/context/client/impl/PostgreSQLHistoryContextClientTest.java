@@ -28,8 +28,7 @@ class PostgreSQLHistoryContextClientTest {
 
   private static PostgresTestContainer instance = new PostgresTestContainer();
 
-  @Autowired
-  private HikariConfig hikariConfig;
+  @Autowired private HikariConfig hikariConfig;
 
   @BeforeAll
   static void baseSetupAll() {
@@ -53,8 +52,7 @@ class PostgreSQLHistoryContextClientTest {
     reg.add("spring.datasource.password", () -> instance.getPassword());
   }
 
-  @Autowired
-  private PostgreSQLHistoryContextClient service;
+  @Autowired private PostgreSQLHistoryContextClient service;
 
   @Test
   void cycle() {
@@ -72,8 +70,7 @@ class PostgreSQLHistoryContextClientTest {
     LOGGER.info("create OK id={}", data.id);
 
     final EdgeChain<HistoryContext> put = service.put(data.id, "COW", null);
-    put.toSingle().blockingSubscribe(s -> {
-    }, e -> data.failed = true);
+    put.toSingle().blockingSubscribe(s -> {}, e -> data.failed = true);
     assertFalse(data.failed);
     LOGGER.info("put OK");
 
@@ -90,8 +87,9 @@ class PostgreSQLHistoryContextClientTest {
     LOGGER.info("delete OK val={}", data.val);
 
     final EdgeChain<HistoryContext> getMissing = service.get("not_there", null);
-    getMissing.toSingle().blockingSubscribe(s -> data.failed = true,
-        e -> data.val = e.getMessage());
+    getMissing
+        .toSingle()
+        .blockingSubscribe(s -> data.failed = true, e -> data.val = e.getMessage());
     assertFalse(data.failed);
     assertEquals("PostgreSQL history_context id isn't found.", data.val);
     LOGGER.info("get-NotFound OK val={}", data.val);
@@ -123,7 +121,5 @@ class PostgreSQLHistoryContextClientTest {
       LOGGER.info("stopping container");
       super.stop();
     }
-
   }
-
 }

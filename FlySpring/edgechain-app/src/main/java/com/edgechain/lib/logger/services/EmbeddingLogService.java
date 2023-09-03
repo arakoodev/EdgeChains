@@ -12,10 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class EmbeddingLogService {
 
-  @Autowired
-  private EmbeddingLogRepository embeddingLogRepository;
-  @Autowired
-  private JdbcTemplate jdbcTemplate;
+  @Autowired private EmbeddingLogRepository embeddingLogRepository;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   @Transactional
   public EmbeddingLog saveOrUpdate(EmbeddingLog embeddingLog) {
@@ -49,10 +47,10 @@ public class EmbeddingLogService {
   }
 
   @Transactional(readOnly = true)
-  public Page<EmbeddingLog> findAllByCallIdentifierOrderByCompletedAtDesc(String callIdentifier,
-      Pageable pageable) {
-    return this.embeddingLogRepository.findAllByCallIdentifierOrderByCompletedAtDesc(callIdentifier,
-        pageable);
+  public Page<EmbeddingLog> findAllByCallIdentifierOrderByCompletedAtDesc(
+      String callIdentifier, Pageable pageable) {
+    return this.embeddingLogRepository.findAllByCallIdentifierOrderByCompletedAtDesc(
+        callIdentifier, pageable);
   }
 
   @Transactional(readOnly = true)
@@ -65,7 +63,8 @@ public class EmbeddingLogService {
     return this.embeddingLogRepository.findAllByLatencyGreaterThanEqual(latency, pageable);
   }
 
-  private static final String SQL_CREATE_TABLE = """
+  private static final String SQL_CREATE_TABLE =
+      """
       CREATE TABLE IF NOT EXISTS embedding_logs (
               embedding_id SERIAL PRIMARY KEY,
               id VARCHAR(255) NOT NULL UNIQUE,

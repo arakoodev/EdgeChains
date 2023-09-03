@@ -9,7 +9,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
-import java.util.Objects;
 
 @Configuration
 public class PostgreSQLConfiguration {
@@ -36,5 +35,4 @@ public class PostgreSQLConfiguration {
   JdbcTemplate jdbcTemplate() {
     return new JdbcTemplate(dataSource());
   }
-
 }

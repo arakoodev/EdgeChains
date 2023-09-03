@@ -21,103 +21,117 @@ public class PostgreSQLHistoryContextClient
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  @Autowired
-  private PostgreSQLHistoryContextRepository historyContextRepository;
+  @Autowired private PostgreSQLHistoryContextRepository historyContextRepository;
 
-  @Autowired
-  private JdbcTemplate jdbcTemplate;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private static final String PREFIX = "historycontext:";
 
   @Transactional
   @Override
   public EdgeChain<HistoryContext> create(String id, PostgreSQLHistoryContextEndpoint endpoint) {
-    return new EdgeChain<>(Observable.create(emitter -> {
-      try {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
 
-        if (Objects.isNull(id) || id.isEmpty())
-          throw new RuntimeException("Postgres history_context id cannot be empty or null");
+                if (Objects.isNull(id) || id.isEmpty())
+                  throw new RuntimeException("Postgres history_context id cannot be empty or null");
 
-        this.createTable(); // Create Table IF NOT EXISTS;
+                this.createTable(); // Create Table IF NOT EXISTS;
 
-        HistoryContext context = new HistoryContext(PREFIX + id, "", LocalDateTime.now());
+                HistoryContext context = new HistoryContext(PREFIX + id, "", LocalDateTime.now());
 
-        if (logger.isInfoEnabled()) {
-          logger.info("{} is added", context.getId());
-        }
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is added", context.getId());
+                }
 
-        emitter.onNext(historyContextRepository.save(context));
-        emitter.onComplete();
+                emitter.onNext(historyContextRepository.save(context));
+                emitter.onComplete();
 
-      } catch (final Exception e) {
-        emitter.onError(e);
-      }
-    }), endpoint);
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
   }
 
   @Transactional
   @Override
-  public EdgeChain<HistoryContext> put(String id, String response,
-      PostgreSQLHistoryContextEndpoint endpoint) {
-    return new EdgeChain<>(Observable.create(emitter -> {
-      try {
+  public EdgeChain<HistoryContext> put(
+      String id, String response, PostgreSQLHistoryContextEndpoint endpoint) {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
 
-        HistoryContext historyContext = this.get(id, null).get();
-        String input = response.replace("'", "");
-        historyContext.setResponse(input);
+                HistoryContext historyContext = this.get(id, null).get();
+                String input = response.replace("'", "");
+                historyContext.setResponse(input);
 
-        HistoryContext returnValue = this.historyContextRepository.save(historyContext);
+                HistoryContext returnValue = this.historyContextRepository.save(historyContext);
 
-        if (logger.isInfoEnabled()) {
-          logger.info("{} is updated", id);
-        }
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is updated", id);
+                }
 
-        emitter.onNext(returnValue);
-        emitter.onComplete();
+                emitter.onNext(returnValue);
+                emitter.onComplete();
 
-      } catch (final Exception e) {
-        emitter.onError(e);
-      }
-    }), endpoint);
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
   }
 
   @Transactional(readOnly = true)
   @Override
   public EdgeChain<HistoryContext> get(String id, PostgreSQLHistoryContextEndpoint endpoint) {
-    return new EdgeChain<>(Observable.create(emitter -> {
-      try {
-        final HistoryContext val = this.historyContextRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("PostgreSQL history_context id isn't found."));
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
+                final HistoryContext val =
+                    this.historyContextRepository
+                        .findById(id)
+                        .orElseThrow(
+                            () ->
+                                new RuntimeException("PostgreSQL history_context id isn't found."));
 
-        emitter.onNext(val);
-        emitter.onComplete();
+                emitter.onNext(val);
+                emitter.onComplete();
 
-      } catch (final Exception e) {
-        emitter.onError(e);
-      }
-    }), endpoint);
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
   }
 
   @Transactional
   @Override
   public EdgeChain<String> delete(String id, PostgreSQLHistoryContextEndpoint endpoint) {
-    return new EdgeChain<>(Observable.create(emitter -> {
-      try {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
 
-        HistoryContext historyContext = this.get(id, null).get();
-        this.historyContextRepository.delete(historyContext);
+                HistoryContext historyContext = this.get(id, null).get();
+                this.historyContextRepository.delete(historyContext);
 
-        if (logger.isInfoEnabled()) {
-          logger.info("{} is deleted", id);
-        }
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is deleted", id);
+                }
 
-        emitter.onNext("");
-        emitter.onComplete();
+                emitter.onNext("");
+                emitter.onComplete();
 
-      } catch (final Exception e) {
-        emitter.onError(e);
-      }
-    }), endpoint);
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
   }
 
   @Transactional
