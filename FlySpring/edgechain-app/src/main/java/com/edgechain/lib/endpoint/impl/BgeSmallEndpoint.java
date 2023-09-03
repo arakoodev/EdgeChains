@@ -17,14 +17,13 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import retrofit2.Retrofit;
 
 public class BgeSmallEndpoint extends EmbeddingEndpoint {
 
   private static final Logger logger = LoggerFactory.getLogger(BgeSmallEndpoint.class);
 
-  private final Retrofit retrofit = RetrofitClientInstance.getInstance();
-  private final BgeSmallService bgeSmallService = retrofit.create(BgeSmallService.class);
+  private final BgeSmallService bgeSmallService =
+      RetrofitClientInstance.getInstance().create(BgeSmallService.class);
 
   private String modelUrl;
   private String tokenizerUrl;
