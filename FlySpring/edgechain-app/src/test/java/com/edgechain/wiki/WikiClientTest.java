@@ -41,7 +41,7 @@ class WikiClientTest {
   @Order(1)
   void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo)
       throws InterruptedException {
-    
+
     logger.info("======== {} ========", testInfo.getDisplayName());
 
     // Prepare test data
@@ -66,23 +66,22 @@ class WikiClientTest {
       when(mockSecurityUUID.getAuthKey()).thenThrow(new RuntimeException("FORCED TEST EXCEPTION"));
       ReflectionTestUtils.setField(RetrofitClientInstance.class, "securityUUID", mockSecurityUUID);
       ReflectionTestUtils.setField(RetrofitClientInstance.class, "retrofit", null);
-      
+
       logger.info("======== {} ========", testInfo.getDisplayName());
-  
+
       // Prepare test data
       WikiEndpoint wikiEndpoint = new WikiEndpoint();
       TestObserver<WikiResponse> test = wikiEndpoint.getPageContent("Barack Obama").test();
-  
+
       test.await();
-  
+
       logger.info("{}", test.values().toString());
-  
+
       test.assertError(IOException.class);
-    }finally {
+    } finally {
       // reset instance
       ReflectionTestUtils.setField(RetrofitClientInstance.class, "securityUUID", null);
       ReflectionTestUtils.setField(RetrofitClientInstance.class, "retrofit", null);
     }
   }
-  
 }

@@ -15,19 +15,20 @@ class BgeSmallEndpointTest {
   @DirtiesContext
   void downloadFiles() {
     // Retrofit needs a port
-    System.setProperty("server.port","8888");
-    
+    System.setProperty("server.port", "8888");
+
     // give Retrofit a mock securityUUI instance so it goes not call context
     SecurityUUID mockSecurityUUID = mock(SecurityUUID.class);
     ReflectionTestUtils.setField(RetrofitClientInstance.class, "securityUUID", mockSecurityUUID);
-    
+
     try {
       // GIVEN we have no local files
       deleteFiles();
 
       // WHEN we create the endpoint instance
       // (get tiny JSON files as example download data)
-      new BgeSmallEndpoint("https://jsonplaceholder.typicode.com/posts/1",
+      new BgeSmallEndpoint(
+          "https://jsonplaceholder.typicode.com/posts/1",
           "https://jsonplaceholder.typicode.com/posts/2");
 
       // THEN the files now exist
@@ -40,7 +41,7 @@ class BgeSmallEndpointTest {
       // reset the Retrofit instance
       ReflectionTestUtils.setField(RetrofitClientInstance.class, "securityUUID", null);
       ReflectionTestUtils.setField(RetrofitClientInstance.class, "retrofit", null);
-      
+
       deleteFiles(); // make sure we clean up files afterwards
     }
   }

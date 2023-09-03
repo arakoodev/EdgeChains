@@ -22,7 +22,8 @@ public class BgeSmallEndpoint extends EmbeddingEndpoint {
 
   private static final Logger logger = LoggerFactory.getLogger(BgeSmallEndpoint.class);
 
-  private final BgeSmallService bgeSmallService = RetrofitClientInstance.getInstance().create(BgeSmallService.class);
+  private final BgeSmallService bgeSmallService =
+      RetrofitClientInstance.getInstance().create(BgeSmallService.class);
 
   private String modelUrl;
   private String tokenizerUrl;
