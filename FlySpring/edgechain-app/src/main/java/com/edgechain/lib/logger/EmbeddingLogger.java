@@ -1,15 +1,12 @@
 package com.edgechain.lib.logger;
 
 import com.edgechain.lib.logger.entities.EmbeddingLog;
-import com.edgechain.lib.logger.entities.EmbeddingLog;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.retrofit.logger.EmbeddingLoggerService;
-import com.edgechain.lib.retrofit.logger.EmbeddingLoggerService;
+import java.util.HashMap;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PathVariable;
 import retrofit2.Retrofit;
-
-import java.util.HashMap;
 
 public class EmbeddingLogger {
 

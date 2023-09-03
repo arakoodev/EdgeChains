@@ -4,7 +4,6 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
 import com.edgechain.lib.chains.PostgresRetrieval;
-import com.edgechain.lib.chains.Retrieval;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.*;
@@ -26,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -38,6 +36,7 @@ public class PostgreSQLExample {
 
   private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
   private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
+
   private static OpenAiEndpoint ada002Embedding;
   private static OpenAiEndpoint gpt3Endpoint;
   private static PostgresEndpoint postgresEndpoint;
@@ -62,7 +61,7 @@ public class PostgreSQLExample {
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
     properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "postgres");
+    properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
     new SpringApplicationBuilder(PostgreSQLExample.class).properties(properties).run(args);
@@ -147,10 +146,17 @@ public class PostgreSQLExample {
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
-      final Retrieval retrieval =
-          new PostgresRetrieval(postgresEndpoint, filename, 1536, ada002Embedding, arkRequest);
+      PostgresRetrieval retrieval =
+          new PostgresRetrieval(arr, ada002Embedding, postgresEndpoint, 1536, filename, arkRequest);
 
-      IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
+      //   retrieval.setBatchSize(100); // Modifying batchSize....(Default is 50)
+
+      // Getting ids from upsertion... Internally, it automatically parallelizes the operation...
+      List<String> ids = retrieval.upsert();
+
+      ids.forEach(System.out::println);
+
+      System.out.println("Size: " + ids.size()); // Printing the UUIDs
     }
 
     @PostMapping(value = "/postgres/query")
@@ -170,7 +176,10 @@ public class PostgreSQLExample {
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
           new EdgeChain<>(
               postgresEndpoint.query(
-                  embeddingsChain.get(), PostgresDistanceMetric.IP, topK, 10)); // defining probes
+                  embeddingsChain.get(),
+                  PostgresDistanceMetric.COSINE,
+                  topK,
+                  10)); // defining probes
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI
@@ -217,7 +226,7 @@ public class PostgreSQLExample {
       // let's say topK=5; then we concatenate List into a string using String.join method
       EdgeChain<List<PostgresWordEmbeddings>> postgresChain =
           new EdgeChain<>(
-              postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK));
+              postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.COSINE, topK));
 
       // Chain 3 ===> Transform String of Queries into List<Queries>
       EdgeChain<String> queryChain =

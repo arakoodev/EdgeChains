@@ -1,7 +1,7 @@
 package com.edgechain.lib.supabase.security;
 
-import com.edgechain.lib.configuration.WebConfiguration;
-import com.edgechain.lib.configuration.domain.AuthFilter;
+import java.util.Arrays;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -24,9 +24,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
-import java.util.Arrays;
-import java.util.Objects;
+import com.edgechain.lib.configuration.WebConfiguration;
+import com.edgechain.lib.configuration.domain.AuthFilter;
 
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -51,45 +50,32 @@ public class WebSecurity {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    return http.cors()
-        .configurationSource(corsConfiguration())
-        .and()
-        .csrf()
-        .disable()
+    http.cors(cors -> cors.configurationSource(corsConfiguration()))
+        .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(
-            (auth) -> {
-              try {
+            auth ->
                 auth.requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests())
-                    .hasAnyAuthority(authFilter.getRequestPost().getAuthorities())
-                    //
+                    .permitAll()
                     .requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests())
-                    .hasAnyAuthority(authFilter.getRequestGet().getAuthorities())
+                    .permitAll()
                     .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
-                    .hasAnyAuthority(authFilter.getRequestDelete().getAuthorities())
+                    .permitAll()
                     .requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
-                    .hasAnyAuthority(authFilter.getRequestPut().getAuthorities())
+                    .permitAll()
                     .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
-                    .hasAnyAuthority(authFilter.getRequestPatch().getAuthorities())
+                    .permitAll()
                     .anyRequest()
-                    .permitAll();
-
-              } catch (Exception e) {
-                throw new RuntimeException(e);
-              }
-            })
+                    .permitAll())
         .httpBasic(Customizer.withDefaults())
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
-        .exceptionHandling()
-        .and()
+        .sessionManagement(
+            management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .exceptionHandling(Customizer.withDefaults())
         .securityContext(c -> c.requireExplicitSave(false))
-        .formLogin()
-        .disable()
-        .build();
+        .formLogin(login -> login.disable());
+    return http.build();
   }
 
   @Bean

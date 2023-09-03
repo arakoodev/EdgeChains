@@ -1,10 +1,13 @@
 package com.edgechain.lib.context.client.impl;
 
-import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.context.client.HistoryContextClient;
+import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,25 +16,20 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
 @Repository
 public class RedisHistoryContextClient
     implements HistoryContextClient<RedisHistoryContextEndpoint> {
 
-  private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private static final String PREFIX = "historycontext:";
 
-  @Autowired private RedisTemplate redisTemplate;
+  @Autowired private RedisTemplate<String, Object> redisTemplate;
 
   @Autowired @Lazy private Environment env;
 
   @Override
   public EdgeChain<HistoryContext> create(String id, RedisHistoryContextEndpoint endpoint) {
-
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -54,6 +52,10 @@ public class RedisHistoryContextClient
                 this.redisTemplate.expire(
                     key, Long.parseLong(env.getProperty("redis.ttl")), TimeUnit.SECONDS);
 
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is added", key);
+                }
+
                 emitter.onNext(context);
                 emitter.onComplete();
 
@@ -71,7 +73,6 @@ public class RedisHistoryContextClient
         Observable.create(
             emitter -> {
               try {
-
                 HistoryContext historyContext = this.get(key, null).get();
                 historyContext.setResponse(response);
 
@@ -79,7 +80,9 @@ public class RedisHistoryContextClient
                 this.redisTemplate.expire(
                     key, Long.parseLong(env.getProperty("redis.ttl")), TimeUnit.SECONDS);
 
-                logger.info(String.format("%s is updated", key));
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is updated", key);
+                }
 
                 emitter.onNext(historyContext);
                 emitter.onComplete();
@@ -99,9 +102,11 @@ public class RedisHistoryContextClient
               try {
                 Boolean b = this.redisTemplate.hasKey(key);
                 if (Boolean.TRUE.equals(b)) {
-                  emitter.onNext(
-                      Objects.requireNonNull(
-                          (HistoryContext) this.redisTemplate.opsForValue().get(key)));
+
+                  HistoryContext obj = (HistoryContext) this.redisTemplate.opsForValue().get(key);
+                  Objects.requireNonNull(obj, "null value not allowed! key " + key);
+
+                  emitter.onNext(obj);
                   emitter.onComplete();
                 } else {
                   emitter.onError(new RuntimeException("Redis history_context id isn't found."));
@@ -116,13 +121,17 @@ public class RedisHistoryContextClient
 
   @Override
   public EdgeChain<String> delete(String key, RedisHistoryContextEndpoint endpoint) {
-
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
                 this.get(key, null).get();
                 this.redisTemplate.delete(key);
+
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is deleted", key);
+                }
+
                 emitter.onNext("");
                 emitter.onComplete();
 

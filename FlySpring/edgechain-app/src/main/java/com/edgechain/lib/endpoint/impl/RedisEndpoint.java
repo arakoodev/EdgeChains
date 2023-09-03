@@ -20,13 +20,16 @@ public class RedisEndpoint extends Endpoint {
   private String namespace;
 
   // Getters;
-  private WordEmbeddings wordEmbeddings;
+  private WordEmbeddings wordEmbedding;
+  private List<WordEmbeddings> wordEmbeddingsList;
 
   private int dimensions;
 
   private RedisDistanceMetric metric;
 
   private int topK;
+
+  private String pattern;
 
   public RedisEndpoint() {}
 
@@ -71,12 +74,12 @@ public class RedisEndpoint extends Endpoint {
   }
 
   // Getters
-  public WordEmbeddings getWordEmbeddings() {
-    return wordEmbeddings;
+  public WordEmbeddings getWordEmbedding() {
+    return wordEmbedding;
   }
 
-  public void setWordEmbeddings(WordEmbeddings wordEmbeddings) {
-    this.wordEmbeddings = wordEmbeddings;
+  public void setWordEmbeddings(WordEmbeddings wordEmbedding) {
+    this.wordEmbedding = wordEmbedding;
   }
 
   public int getDimensions() {
@@ -91,6 +94,10 @@ public class RedisEndpoint extends Endpoint {
     return metric;
   }
 
+  public List<WordEmbeddings> getWordEmbeddingsList() {
+    return wordEmbeddingsList;
+  }
+
   public void setMetric(RedisDistanceMetric metric) {
     this.metric = metric;
   }
@@ -103,24 +110,36 @@ public class RedisEndpoint extends Endpoint {
     this.topK = topK;
   }
 
-  // Convenience Methods
-  public StringResponse upsert(
-      WordEmbeddings wordEmbeddings, int dimension, RedisDistanceMetric metric) {
+  public String getPattern() {
+    return pattern;
+  }
 
-    this.wordEmbeddings = wordEmbeddings;
+  // Convenience Methods
+  public StringResponse createIndex(String namespace, int dimension, RedisDistanceMetric metric) {
     this.dimensions = dimension;
     this.metric = metric;
+    this.namespace = namespace;
+    return this.redisService.createIndex(this).blockingGet();
+  }
 
+  public void batchUpsert(List<WordEmbeddings> wordEmbeddingsList) {
+    this.wordEmbeddingsList = wordEmbeddingsList;
+    this.redisService.batchUpsert(this).ignoreElement().blockingAwait();
+  }
+
+  public StringResponse upsert(WordEmbeddings wordEmbeddings) {
+    this.wordEmbedding = wordEmbeddings;
     return this.redisService.upsert(this).blockingGet();
   }
 
   public Observable<List<WordEmbeddings>> query(WordEmbeddings embeddings, int topK) {
     this.topK = topK;
-    this.wordEmbeddings = embeddings;
+    this.wordEmbedding = embeddings;
     return Observable.fromSingle(this.redisService.query(this));
   }
 
   public void delete(String patternName) {
-    this.redisService.deleteByPattern(patternName, this).blockingAwait();
+    this.pattern = patternName;
+    this.redisService.deleteByPattern(this).blockingAwait();
   }
 }

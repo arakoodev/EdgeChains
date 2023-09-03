@@ -20,23 +20,29 @@ public class PostgresEndpoint extends Endpoint {
   private String tableName;
   private int lists;
 
+  private String id;
   private String namespace;
 
   private String filename;
 
   // Getters
-  private WordEmbeddings wordEmbeddings;
+  private WordEmbeddings wordEmbedding;
+
+  private List<WordEmbeddings> wordEmbeddingsList;
+
   private PostgresDistanceMetric metric;
   private int dimensions;
   private int topK;
 
   private int probes;
+  private String embeddingChunk;
 
   // Fields for metadata table
   private List<String> metadataTableNames;
   private String metadata;
-  private Integer metadataId;
-  private Integer embeddingId;
+  private String metadataId;
+  private List<String> metadataList;
+  private String documentDate;
 
   public PostgresEndpoint() {}
 
@@ -82,18 +88,26 @@ public class PostgresEndpoint extends Endpoint {
     this.metadata = metadata;
   }
 
-  public void setEmbeddingId(Integer embeddingId) {
-    this.embeddingId = embeddingId;
+  public void setId(String id) {
+    this.id = id;
   }
 
-  public void setMetadataId(Integer metadataId) {
+  public void setMetadataId(String metadataId) {
     this.metadataId = metadataId;
+  }
+
+  public void setMetadataList(List<String> metadataList) {
+    this.metadataList = metadataList;
+  }
+
+  public void setEmbeddingChunk(String embeddingChunk) {
+    this.embeddingChunk = embeddingChunk;
   }
 
   // Getters
 
-  public WordEmbeddings getWordEmbeddings() {
-    return wordEmbeddings;
+  public WordEmbeddings getWordEmbedding() {
+    return wordEmbedding;
   }
 
   public int getDimensions() {
@@ -106,6 +120,10 @@ public class PostgresEndpoint extends Endpoint {
 
   public String getFilename() {
     return filename;
+  }
+
+  public List<WordEmbeddings> getWordEmbeddingsList() {
+    return wordEmbeddingsList;
   }
 
   public PostgresDistanceMetric getMetric() {
@@ -128,47 +146,75 @@ public class PostgresEndpoint extends Endpoint {
     return metadata;
   }
 
-  public Integer getEmbeddingId() {
-    return embeddingId;
-  }
-
-  public Integer getMetadataId() {
+  public String getMetadataId() {
     return metadataId;
   }
 
-  // Convenience Methods
+  public String getId() {
+    return id;
+  }
 
-  public Integer upsert(
+  public List<String> getMetadataList() {
+    return metadataList;
+  }
+
+  public String getEmbeddingChunk() {
+    return embeddingChunk;
+  }
+
+  public String getDocumentDate() {
+    return documentDate;
+  }
+
+  public StringResponse upsert(
       WordEmbeddings wordEmbeddings,
       String filename,
       int dimension,
-      PostgresDistanceMetric metric,
-      int lists) {
-    this.wordEmbeddings = wordEmbeddings;
+      PostgresDistanceMetric metric) {
+    this.wordEmbedding = wordEmbeddings;
     this.dimensions = dimension;
     this.filename = filename;
     this.metric = metric;
-    this.lists = lists;
     return this.postgresService.upsert(this).blockingGet();
   }
 
-  public Integer insertMetadata(
-      WordEmbeddings wordEmbeddings, int dimensions, PostgresDistanceMetric metric) {
+  public StringResponse createTable(int dimensions, PostgresDistanceMetric metric, int lists) {
     this.dimensions = dimensions;
-    this.wordEmbeddings = wordEmbeddings;
     this.metric = metric;
+    this.lists = lists;
+    return this.postgresService.createTable(this).blockingGet();
+  }
+
+  public StringResponse createMetadataTable() {
+    return this.postgresService.createMetadataTable(this).blockingGet();
+  }
+
+  public List<StringResponse> upsert(List<WordEmbeddings> wordEmbeddingsList, String filename) {
+    this.wordEmbeddingsList = wordEmbeddingsList;
+    this.filename = filename;
+    return this.postgresService.batchUpsert(this).blockingGet();
+  }
+
+  public StringResponse insertMetadata(String metadata, String documentDate) {
+    this.metadata = metadata;
+    this.documentDate = documentDate;
     return this.postgresService.insertMetadata(this).blockingGet();
   }
 
-  public StringResponse insertIntoJoinTable(Integer embeddingId, Integer metadataId) {
-    this.embeddingId = embeddingId;
+  public List<StringResponse> batchInsertMetadata(List<String> metadataList) {
+    this.metadataList = metadataList;
+    return this.postgresService.batchInsertMetadata(this).blockingGet();
+  }
+
+  public StringResponse insertIntoJoinTable(String id, String metadataId) {
+    this.id = id;
     this.metadataId = metadataId;
     return this.postgresService.insertIntoJoinTable(this).blockingGet();
   }
 
   public Observable<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
-    this.wordEmbeddings = wordEmbeddings;
+    this.wordEmbedding = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;
     this.probes = 1;
@@ -177,19 +223,16 @@ public class PostgresEndpoint extends Endpoint {
 
   public Observable<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK, int probes) {
-    this.wordEmbeddings = wordEmbeddings;
+    this.wordEmbedding = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;
     this.probes = probes;
     return Observable.fromSingle(this.postgresService.query(this));
   }
 
-  public Observable<List<PostgresWordEmbeddings>> similaritySearchMetadata(
-      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
-    this.wordEmbeddings = wordEmbeddings;
-    this.topK = topK;
-    this.metric = metric;
-    return Observable.fromSingle(this.postgresService.similaritySearchMetadata(this));
+  public Observable<List<PostgresWordEmbeddings>> getSimilarMetadataChunk(String embeddingChunk) {
+    this.embeddingChunk = embeddingChunk;
+    return Observable.fromSingle(this.postgresService.getSimilarMetadataChunk(this));
   }
 
   public Observable<List<PostgresWordEmbeddings>> getAllChunks(String tableName, String filename) {

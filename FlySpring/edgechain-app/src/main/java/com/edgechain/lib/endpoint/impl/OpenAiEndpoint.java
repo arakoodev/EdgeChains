@@ -2,12 +2,12 @@ package com.edgechain.lib.endpoint.impl;
 
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
+import com.edgechain.lib.endpoint.EmbeddingEndpoint;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.openai.request.ChatMessage;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.retrofit.client.OpenAiStreamService;
 import com.edgechain.lib.retrofit.OpenAiService;
-import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class OpenAiEndpoint extends Endpoint {
+public class OpenAiEndpoint extends EmbeddingEndpoint {
 
   private final OpenAiStreamService openAiStreamService =
       ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
@@ -41,9 +41,6 @@ public class OpenAiEndpoint extends Endpoint {
   private String user;
 
   private String role;
-
-  /** Getter Fields ** */
-  private String input;
 
   /** Log fields * */
   private String chainName;
@@ -156,10 +153,6 @@ public class OpenAiEndpoint extends Endpoint {
     return model;
   }
 
-  public String getInput() {
-    return input;
-  }
-
   public Double getTemperature() {
     return temperature;
   }
@@ -244,10 +237,6 @@ public class OpenAiEndpoint extends Endpoint {
     this.user = user;
   }
 
-  public void setInput(String input) {
-    this.input = input;
-  }
-
   public void setCallIdentifier(String callIdentifier) {
     this.callIdentifier = callIdentifier;
   }
@@ -309,19 +298,23 @@ public class OpenAiEndpoint extends Endpoint {
     return chatCompletion(arkRequest);
   }
 
+  @Override
   public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
-    this.input = input; // set Input
+    //    ?this.input = input; // set Input
 
-    if (Objects.nonNull(arkRequest)) {
-      this.callIdentifier = arkRequest.getRequestURI();
-    }
+    final String str = input.replaceAll("'", "");
+
+    setRawText(str);
+
+    if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
+    else this.callIdentifier = "URI wasn't provided";
 
     return Observable.fromSingle(
         openAiService
             .embeddings(this)
             .map(
                 embeddingResponse ->
-                    new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
+                    new WordEmbeddings(str, embeddingResponse.getData().get(0).getEmbedding())));
   }
 
   private Observable<ChatCompletionResponse> chatCompletion(ArkRequest arkRequest) {

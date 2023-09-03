@@ -25,7 +25,7 @@ public class ProjectSetup {
   private String glowrootDir = flyflyDir + separator + "glowroot";
 
   public boolean initscriptExists() {
-    log.debug("Checking if flyfly.gradle exists in " + initscriptDir);
+    log.debug("Checking if flyfly.gradle exists in {}", initscriptDir);
     return new File(initscriptDir).exists();
   }
 
@@ -44,7 +44,7 @@ public class ProjectSetup {
   }
 
   public boolean formatScriptExists() {
-    log.debug("Checking if format.gradle exists in " + formatScriptDir);
+    log.debug("Checking if format.gradle exists in {}", formatScriptDir);
     return new File(formatScriptDir).exists();
   }
 
@@ -55,7 +55,7 @@ public class ProjectSetup {
   }
 
   public boolean glowrootAgentExists() {
-    log.debug("Checking if glowroot folder exists in " + glowrootDir);
+    log.debug("Checking if glowroot folder exists in {}", glowrootDir);
     return new File(glowrootDir).exists();
   }
 

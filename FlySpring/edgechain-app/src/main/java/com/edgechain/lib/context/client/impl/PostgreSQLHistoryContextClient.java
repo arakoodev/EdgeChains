@@ -6,6 +6,8 @@ import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.endpoint.impl.PostgreSQLHistoryContextEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +15,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Objects;
-
 @Service
 public class PostgreSQLHistoryContextClient
     implements HistoryContextClient<PostgreSQLHistoryContextEndpoint> {
 
-  private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Autowired private PostgreSQLHistoryContextRepository historyContextRepository;
 
@@ -28,6 +27,7 @@ public class PostgreSQLHistoryContextClient
 
   private static final String PREFIX = "historycontext:";
 
+  @Transactional
   @Override
   public EdgeChain<HistoryContext> create(String id, PostgreSQLHistoryContextEndpoint endpoint) {
     return new EdgeChain<>(
@@ -41,6 +41,11 @@ public class PostgreSQLHistoryContextClient
                 this.createTable(); // Create Table IF NOT EXISTS;
 
                 HistoryContext context = new HistoryContext(PREFIX + id, "", LocalDateTime.now());
+
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is added", context.getId());
+                }
+
                 emitter.onNext(historyContextRepository.save(context));
                 emitter.onComplete();
 
@@ -51,6 +56,7 @@ public class PostgreSQLHistoryContextClient
         endpoint);
   }
 
+  @Transactional
   @Override
   public EdgeChain<HistoryContext> put(
       String id, String response, PostgreSQLHistoryContextEndpoint endpoint) {
@@ -60,11 +66,14 @@ public class PostgreSQLHistoryContextClient
               try {
 
                 HistoryContext historyContext = this.get(id, null).get();
-                String input = response.replaceAll("'", "");
+                String input = response.replace("'", "");
                 historyContext.setResponse(input);
 
                 HistoryContext returnValue = this.historyContextRepository.save(historyContext);
-                logger.info(String.format("%s is updated", id));
+
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is updated", id);
+                }
 
                 emitter.onNext(returnValue);
                 emitter.onComplete();
@@ -76,20 +85,23 @@ public class PostgreSQLHistoryContextClient
         endpoint);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public EdgeChain<HistoryContext> get(String id, PostgreSQLHistoryContextEndpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
-                emitter.onNext(
+                final HistoryContext val =
                     this.historyContextRepository
                         .findById(id)
                         .orElseThrow(
                             () ->
-                                new RuntimeException(
-                                    "PostgreSQL history_context id isn't found.")));
+                                new RuntimeException("PostgreSQL history_context id isn't found."));
+
+                emitter.onNext(val);
                 emitter.onComplete();
+
               } catch (final Exception e) {
                 emitter.onError(e);
               }
@@ -97,6 +109,7 @@ public class PostgreSQLHistoryContextClient
         endpoint);
   }
 
+  @Transactional
   @Override
   public EdgeChain<String> delete(String id, PostgreSQLHistoryContextEndpoint endpoint) {
     return new EdgeChain<>(
@@ -107,8 +120,13 @@ public class PostgreSQLHistoryContextClient
                 HistoryContext historyContext = this.get(id, null).get();
                 this.historyContextRepository.delete(historyContext);
 
+                if (logger.isInfoEnabled()) {
+                  logger.info("{} is deleted", id);
+                }
+
                 emitter.onNext("");
                 emitter.onComplete();
+
               } catch (final Exception e) {
                 emitter.onError(e);
               }
