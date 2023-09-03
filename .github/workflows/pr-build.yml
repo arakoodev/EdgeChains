@@ -59,11 +59,12 @@ jobs:
         run: mkdir BuildOutput
 
       - name: Build edgechain-app project
-        working-directory: ./FlySpring/edgechain-app
+        working-directory: ./FlySpring
+        #         run: mvn -Djavacpp.platform=linux-x86_64 clean package -DskipTests
         run: mvn  clean package -DskipTests
 
       - name: Run edgechain testcases
-        working-directory: ./FlySpring/edgechain-app
+        working-directory: ./FlySpring
         run: mvn test
 
       - name: Copy edgechain-app JAR to Examples folder
@@ -74,5 +75,4 @@ jobs:
         with:
           name: Output
           path: ./BuildOutput/
-
     
