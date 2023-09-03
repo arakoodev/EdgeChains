@@ -35,6 +35,7 @@ public interface PostgresService {
 
   @POST(value = "index/postgres/query")
   Single<List<PostgresWordEmbeddings>> query(@Body PostgresEndpoint postgresEndpoint);
+
   @POST(value = "index/postgres/metadata/query")
   Single<List<PostgresWordEmbeddings>> queryWithMetadata(@Body PostgresEndpoint postgresEndpoint);
 
