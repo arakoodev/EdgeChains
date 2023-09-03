@@ -17,11 +17,13 @@ import redis.clients.jedis.JedisPooled;
 @Configuration
 public class RedisConfiguration {
 
-  @Autowired @Lazy private Environment env;
+  @Autowired
+  @Lazy
+  private Environment env;
 
   @Bean
   @Lazy
-  public JedisPooled jedisPooled() {
+  JedisPooled jedisPooled() {
 
     int port = 6379;
     String host = "127.0.0.1";
@@ -34,13 +36,13 @@ public class RedisConfiguration {
       host = env.getProperty("redis.url");
     }
 
-    return new JedisPooled(
-        host, port, env.getProperty("redis.username"), env.getProperty("redis.password"));
+    return new JedisPooled(host, port, env.getProperty("redis.username"),
+        env.getProperty("redis.password"));
   }
 
   @Bean
   @Lazy
-  public JedisConnectionFactory jedisConnectionFactory() {
+  JedisConnectionFactory jedisConnectionFactory() {
 
     int port = 6379;
     String host = "127.0.0.1";
@@ -63,7 +65,7 @@ public class RedisConfiguration {
   }
 
   @Bean
-  public RedisTemplate<String, Object> redisTemplate() {
+  RedisTemplate<String, Object> redisTemplate() {
     RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(jedisConnectionFactory());
     redisTemplate.setKeySerializer(new StringRedisSerializer());

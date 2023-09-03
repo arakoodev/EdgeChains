@@ -19,13 +19,14 @@ import com.edgechain.lib.embeddings.bgeSmall.response.BgeSmallResponse;
 import com.edgechain.lib.endpoint.impl.BgeSmallEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 public class BgeSmallClient {
@@ -44,24 +45,21 @@ public class BgeSmallClient {
 
   public EdgeChain<BgeSmallResponse> createEmbeddings(String input) {
 
-    return new EdgeChain<>(
-        Observable.create(
-            emitter -> {
-              try {
-                Predictor<String, float[]> predictor = loadSmallBgeEn().newPredictor();
-                float[] predict = predictor.predict(input);
-                List<Float> floatList = new LinkedList<>();
-                for (float v : predict) {
-                  floatList.add(v);
-                }
+    return new EdgeChain<>(Observable.create(emitter -> {
+      try {
+        Predictor<String, float[]> predictor = loadSmallBgeEn().newPredictor();
+        float[] predict = predictor.predict(input);
+        List<Float> floatList = new LinkedList<>();
+        for (float v : predict) {
+          floatList.add(v);
+        }
 
-                emitter.onNext(new BgeSmallResponse(floatList));
-                emitter.onComplete();
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
+        emitter.onNext(new BgeSmallResponse(floatList));
+        emitter.onComplete();
+      } catch (final Exception e) {
+        emitter.onError(e);
+      }
+    }), endpoint);
   }
 
   private ZooModel<String, float[]> loadSmallBgeEn() throws IOException {
@@ -69,32 +67,28 @@ public class BgeSmallClient {
     ZooModel<String, float[]> r = bgeSmallEn;
 
     if (r == null) {
+      final Logger logger = LoggerFactory.getLogger(BgeSmallEndpoint.class);
       synchronized (this) {
         r = bgeSmallEn;
         if (r == null) {
-          Path path = Paths.get("./model");
-          HuggingFaceTokenizer tokenizer =
-              HuggingFaceTokenizer.builder()
-                  .optTokenizerPath(path)
-                  .optManager(NDManager.newBaseManager("PyTorch"))
-                  .build();
+          logger.info("Creating tokenizer");
+          Path path = Paths.get(BgeSmallEndpoint.MODEL_FOLDER);
+          HuggingFaceTokenizer tokenizer = HuggingFaceTokenizer.builder().optTokenizerPath(path)
+              .optManager(NDManager.newBaseManager("PyTorch")).build();
 
+          logger.info("Creating translator");
           MyTextEmbeddingTranslator translator =
               new MyTextEmbeddingTranslator(tokenizer, Batchifier.STACK, "cls", true, true);
 
-          Criteria<String, float[]> criteria =
-              Criteria.builder()
-                  .setTypes(String.class, float[].class)
-                  .optModelPath(path)
-                  .optEngine("OnnxRuntime")
-                  .optTranslator(translator)
-                  .optProgress(new ProgressBar())
-                  .build();
+          logger.info("Loading criteria");
+          Criteria<String, float[]> criteria = Criteria.builder()
+              .setTypes(String.class, float[].class).optModelPath(path).optEngine("OnnxRuntime")
+              .optTranslator(translator).optProgress(new ProgressBar()).build();
           try {
             r = criteria.loadModel();
             bgeSmallEn = r;
           } catch (IOException | ModelNotFoundException | MalformedModelException e) {
-            e.printStackTrace();
+            logger.error("Failed to load model", e);
             throw new RuntimeException(e);
           }
         }
@@ -114,12 +108,8 @@ public class BgeSmallClient {
     private String pooling;
     private boolean includeTokenTypes;
 
-    MyTextEmbeddingTranslator(
-        HuggingFaceTokenizer tokenizer,
-        Batchifier batchifier,
-        String pooling,
-        boolean normalize,
-        boolean includeTokenTypes) {
+    MyTextEmbeddingTranslator(HuggingFaceTokenizer tokenizer, Batchifier batchifier, String pooling,
+        boolean normalize, boolean includeTokenTypes) {
       this.tokenizer = tokenizer;
       this.batchifier = batchifier;
       this.pooling = pooling;
@@ -154,16 +144,17 @@ public class BgeSmallClient {
       return embeddings.toFloatArray();
     }
 
-    static NDArray processEmbedding(
-        NDManager manager, NDList list, Encoding encoding, String pooling) {
+    static NDArray processEmbedding(NDManager manager, NDList list, Encoding encoding,
+        String pooling) {
       NDArray embedding = list.get("last_hidden_state");
       if (embedding == null) {
         // For Onnx model, NDArray name is not present
         embedding = list.head();
       }
       long[] attentionMask = encoding.getAttentionMask();
-      try (NDManager ptManager = NDManager.newBaseManager("PyTorch")) {
-        NDArray inputAttentionMask = ptManager.create(attentionMask).toType(DataType.FLOAT32, true);
+      try (NDManager ptManager = NDManager.newBaseManager("PyTorch");
+          NDArray array = ptManager.create(attentionMask)) {
+        NDArray inputAttentionMask = array.toType(DataType.FLOAT32, true);
         switch (pooling) {
           case "mean":
             return meanPool(embedding, inputAttentionMask, false);
@@ -206,7 +197,7 @@ public class BgeSmallClient {
 
     private static NDArray weightedMeanPool(NDArray embeddings, NDArray attentionMask) {
       long[] shape = embeddings.getShape().getShape();
-      NDArray weight = embeddings.getManager().arange(1, shape[0] + 1);
+      NDArray weight = embeddings.getManager().arange(1f, shape[0] + 1f);
       weight = weight.expandDims(-1).broadcast(shape);
 
       attentionMask = attentionMask.expandDims(-1).broadcast(shape).mul(weight);

@@ -1,8 +1,6 @@
 package com.edgechain.lib.logger.services;
 
 import com.edgechain.lib.logger.entities.EmbeddingLog;
-import com.edgechain.lib.logger.entities.EmbeddingLog;
-import com.edgechain.lib.logger.repositories.EmbeddingLogRepository;
 import com.edgechain.lib.logger.repositories.EmbeddingLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,9 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class EmbeddingLogService {
 
-  @Autowired private EmbeddingLogRepository embeddingLogRepository;
-  @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired
+  private EmbeddingLogRepository embeddingLogRepository;
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
 
+  @Transactional
   public EmbeddingLog saveOrUpdate(EmbeddingLog embeddingLog) {
     this.createTable();
     return this.embeddingLogRepository.save(embeddingLog);
@@ -48,10 +49,10 @@ public class EmbeddingLogService {
   }
 
   @Transactional(readOnly = true)
-  public Page<EmbeddingLog> findAllByCallIdentifierOrderByCompletedAtDesc(
-      String callIdentifier, Pageable pageable) {
-    return this.embeddingLogRepository.findAllByCallIdentifierOrderByCompletedAtDesc(
-        callIdentifier, pageable);
+  public Page<EmbeddingLog> findAllByCallIdentifierOrderByCompletedAtDesc(String callIdentifier,
+      Pageable pageable) {
+    return this.embeddingLogRepository.findAllByCallIdentifierOrderByCompletedAtDesc(callIdentifier,
+        pageable);
   }
 
   @Transactional(readOnly = true)
@@ -64,19 +65,22 @@ public class EmbeddingLogService {
     return this.embeddingLogRepository.findAllByLatencyGreaterThanEqual(latency, pageable);
   }
 
+  private static final String SQL_CREATE_TABLE = """
+      CREATE TABLE IF NOT EXISTS embedding_logs (
+              embedding_id SERIAL PRIMARY KEY,
+              id VARCHAR(255) NOT NULL UNIQUE,
+              call_identifier VARCHAR(255) NOT NULL,
+              created_at TIMESTAMP,
+              completed_at TIMESTAMP,
+              model VARCHAR(255) NOT NULL,
+              latency BIGINT,
+              prompt_tokens BIGINT,
+              total_tokens BIGINT
+          );
+              """;
+
   @Transactional
   public void createTable() {
-    jdbcTemplate.execute(
-        "CREATE TABLE IF NOT EXISTS embedding_logs (\n"
-            + "    embedding_id SERIAL PRIMARY KEY,\n"
-            + "    id VARCHAR(255) NOT NULL UNIQUE,\n"
-            + "    call_identifier VARCHAR(255) NOT NULL,\n"
-            + "    created_at TIMESTAMP,\n"
-            + "    completed_at TIMESTAMP,\n"
-            + "    model VARCHAR(255) NOT NULL,\n"
-            + "    latency BIGINT,\n"
-            + "    prompt_tokens BIGINT,\n"
-            + "    total_tokens BIGINT\n"
-            + ");;");
+    jdbcTemplate.execute(SQL_CREATE_TABLE);
   }
 }
