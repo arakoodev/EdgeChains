@@ -20,27 +20,41 @@ public class PostgresController {
 
   @Autowired @Lazy private PostgresClient postgresClient;
 
+  @PostMapping("/create-table")
+  public Single<StringResponse> createTable(@RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.createTable(postgresEndpoint).toSingle();
+  }
+
+  @PostMapping("/metadata/create-table")
+  public Single<StringResponse> createMetadataTable(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.createMetadataTable(postgresEndpoint).toSingle();
+  }
+
   @PostMapping("/upsert")
-  public Single<Integer> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
+  public Single<StringResponse> upsert(@RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.upsert(postgresEndpoint).toSingle();
+  }
 
-    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-    EdgeChain<Integer> edgeChain = this.postgresClient.upsert(postgresEndpoint.getWordEmbeddings());
-
-    return edgeChain.toSingle();
+  @PostMapping("/batch-upsert")
+  public Single<List<StringResponse>> batchUpsert(@RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.batchUpsert(postgresEndpoint).toSingleWithoutScheduler();
   }
 
   @PostMapping("/metadata/insert")
-  public Single<Integer> insertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
-    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-    EdgeChain<Integer> edgeChain =
-        this.postgresClient.insertMetadata(postgresEndpoint.getWordEmbeddings());
-    return edgeChain.toSingle();
+  public Single<StringResponse> insertMetadata(@RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.insertMetadata(postgresEndpoint).toSingle();
+  }
+
+  @PostMapping("/metadata/batch-insert")
+  public Single<List<StringResponse>> batchInsertMetadata(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.batchInsertMetadata(postgresEndpoint).toSingle();
   }
 
   @PostMapping("/join/insert")
   public Single<StringResponse> insertIntoJoinTable(
       @RequestBody PostgresEndpoint postgresEndpoint) {
-    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
     EdgeChain<StringResponse> edgeChain = this.postgresClient.insertIntoJoinTable(postgresEndpoint);
     return edgeChain.toSingle();
   }
@@ -48,48 +62,23 @@ public class PostgresController {
   @PostMapping("/query")
   public Single<List<PostgresWordEmbeddings>> query(
       @RequestBody PostgresEndpoint postgresEndpoint) {
-
-    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-
-    EdgeChain<List<PostgresWordEmbeddings>> edgeChain =
-        this.postgresClient.query(
-            postgresEndpoint.getWordEmbeddings(),
-            postgresEndpoint.getMetric(),
-            postgresEndpoint.getTopK(),
-            postgresEndpoint.getProbes());
-
-    return edgeChain.toSingle();
+    return this.postgresClient.query(postgresEndpoint).toSingle();
   }
 
   @PostMapping("/chunks")
   public Single<List<PostgresWordEmbeddings>> getAllChunks(
       @RequestBody PostgresEndpoint postgresEndpoint) {
-
-    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-
-    EdgeChain<List<PostgresWordEmbeddings>> edgeChain =
-        this.postgresClient.getAllChunks(postgresEndpoint);
-    return edgeChain.toSingle();
+    return this.postgresClient.getAllChunks(postgresEndpoint).toSingle();
   }
 
   @PostMapping("/similarity-metadata")
-  public Single<List<PostgresWordEmbeddings>> similaritySearchMetadata(
+  public Single<List<PostgresWordEmbeddings>> getSimilarMetadataChunk(
       @RequestBody PostgresEndpoint postgresEndpoint) {
-    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-    EdgeChain<List<PostgresWordEmbeddings>> edgeChain =
-        this.postgresClient.similaritySearchMetadata(
-            postgresEndpoint.getWordEmbeddings(),
-            postgresEndpoint.getMetric(),
-            postgresEndpoint.getTopK());
-    return edgeChain.toSingle();
+    return this.postgresClient.getSimilarMetadataChunk(postgresEndpoint).toSingle();
   }
 
   @DeleteMapping("/deleteAll")
   public Single<StringResponse> deleteAll(@RequestBody PostgresEndpoint postgresEndpoint) {
-
-    this.postgresClient.setPostgresEndpoint(postgresEndpoint);
-
-    EdgeChain<StringResponse> edgeChain = this.postgresClient.deleteAll();
-    return edgeChain.toSingle();
+    return this.postgresClient.deleteAll(postgresEndpoint).toSingle();
   }
 }

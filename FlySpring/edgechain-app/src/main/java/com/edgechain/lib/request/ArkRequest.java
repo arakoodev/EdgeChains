@@ -9,12 +9,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class ArkRequest {
 
@@ -99,11 +99,19 @@ public class ArkRequest {
   }
 
   public JSONObject getBody() {
-    try {
-      return new JSONObject(this.request.getReader().lines().collect(Collectors.joining()));
+
+    StringBuilder jsonContent = new StringBuilder();
+
+    try (BufferedReader reader = request.getReader()) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        jsonContent.append(line);
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+
+    return new JSONObject(jsonContent.toString());
   }
 
   public Cookie[] getCookies() {

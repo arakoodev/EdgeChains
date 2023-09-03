@@ -2,45 +2,40 @@ package com.edgechain.lib.endpoint.impl;
 
 import com.edgechain.testutil.TestConfigSupport;
 import java.io.File;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.annotation.DirtiesContext;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BgeSmallEndpointTest {
 
   private final TestConfigSupport testSupport = new TestConfigSupport();
 
-  @BeforeEach
-  void setup() {
+  @Test
+  @DirtiesContext
+  void downloadFiles() {
     testSupport.setupAppContext();
     testSupport.setupRetrofit();
-  }
+    try {
+      // GIVEN we have no local files
+      deleteFiles();
 
-  @AfterEach
-  void teardown() {
-    testSupport.tearDownRetrofit();
-    testSupport.tearDownAppContext();
+      // WHEN we create the endpoint instance
+      // (get tiny JSON files as example download data)
+      new BgeSmallEndpoint("https://jsonplaceholder.typicode.com/posts/1",
+          "https://jsonplaceholder.typicode.com/posts/2");
 
-    deleteFiles(); // make sure we clean up afterwards
-  }
+      // THEN the files now exist
+      File modelFile = new File(BgeSmallEndpoint.MODEL_PATH);
+      assertTrue(modelFile.exists());
 
-  @Test
-  void downloadFiles() {
-    // GIVEN we have no local files
-    deleteFiles();
+      File tokenizerFile = new File(BgeSmallEndpoint.TOKENIZER_PATH);
+      assertTrue(tokenizerFile.exists());
+    } finally {
+      deleteFiles(); // make sure we clean up afterwards
 
-    // WHEN we create the endpoint instance
-    // (get tiny JSON files as example download data)
-    new BgeSmallEndpoint("https://jsonplaceholder.typicode.com/posts/1",
-        "https://jsonplaceholder.typicode.com/posts/2");
-
-    // THEN the files now exist
-    File modelFile = new File(BgeSmallEndpoint.MODEL_PATH);
-    assertTrue(modelFile.exists());
-
-    File tokenizerFile = new File(BgeSmallEndpoint.TOKENIZER_PATH);
-    assertTrue(tokenizerFile.exists());
+      testSupport.tearDownAppContext();
+      testSupport.tearDownRetrofit();
+    }
   }
 
   // === HELPER METHODS ===

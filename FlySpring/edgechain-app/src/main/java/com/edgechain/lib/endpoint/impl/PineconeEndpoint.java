@@ -19,7 +19,9 @@ public class PineconeEndpoint extends Endpoint {
   private String namespace;
 
   // Getters;
-  private WordEmbeddings wordEmbeddings;
+  private WordEmbeddings wordEmbedding;
+
+  private List<WordEmbeddings> wordEmbeddingsList;
 
   private int topK;
 
@@ -57,12 +59,16 @@ public class PineconeEndpoint extends Endpoint {
 
   // Getters
 
-  public WordEmbeddings getWordEmbeddings() {
-    return wordEmbeddings;
+  public WordEmbeddings getWordEmbedding() {
+    return wordEmbedding;
   }
 
-  public void setWordEmbeddings(WordEmbeddings wordEmbeddings) {
-    this.wordEmbeddings = wordEmbeddings;
+  public List<WordEmbeddings> getWordEmbeddingsList() {
+    return wordEmbeddingsList;
+  }
+
+  public void setWordEmbeddings(WordEmbeddings wordEmbedding) {
+    this.wordEmbedding = wordEmbedding;
   }
 
   public int getTopK() {
@@ -74,12 +80,17 @@ public class PineconeEndpoint extends Endpoint {
   }
 
   public StringResponse upsert(WordEmbeddings wordEmbeddings) {
-    this.wordEmbeddings = wordEmbeddings;
+    this.wordEmbedding = wordEmbeddings;
     return this.pineconeService.upsert(this).blockingGet();
   }
 
+  public StringResponse batchUpsert(List<WordEmbeddings> wordEmbeddingsList) {
+    this.wordEmbeddingsList = wordEmbeddingsList;
+    return this.pineconeService.batchUpsert(this).blockingGet();
+  }
+
   public Observable<List<WordEmbeddings>> query(WordEmbeddings wordEmbeddings, int topK) {
-    this.wordEmbeddings = wordEmbeddings;
+    this.wordEmbedding = wordEmbeddings;
     this.topK = topK;
     return Observable.fromSingle(this.pineconeService.query(this));
   }

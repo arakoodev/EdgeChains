@@ -257,7 +257,7 @@ public class OpenAiController {
 
     CompletionRequest completionRequest =
         CompletionRequest.builder()
-            .prompt(openAiEndpoint.getInput())
+            .prompt(openAiEndpoint.getRawText())
             .model(openAiEndpoint.getModel())
             .temperature(openAiEndpoint.getTemperature())
             .build();
@@ -277,7 +277,7 @@ public class OpenAiController {
 
     EdgeChain<OpenAiEmbeddingResponse> edgeChain =
         openAiClient.createEmbeddings(
-            new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), openAiEndpoint.getInput()));
+            new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), openAiEndpoint.getRawText()));
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
@@ -299,9 +299,9 @@ public class OpenAiController {
 
                 embeddingLogService.saveOrUpdate(embeddingLog);
               })
-          .toSingle();
+          .toSingleWithoutScheduler();
     }
 
-    return edgeChain.toSingle();
+    return edgeChain.toSingleWithoutScheduler();
   }
 }

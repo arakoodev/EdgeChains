@@ -13,10 +13,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+import okhttp3.*;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -50,6 +47,7 @@ public class RetrofitClientInstance {
               .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
               .client(
                   new OkHttpClient.Builder()
+                      .connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES))
                       .addInterceptor(
                           chain -> {
                             Request original = chain.request();

@@ -4,7 +4,6 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
 import com.edgechain.lib.chains.PineconeRetrieval;
-import com.edgechain.lib.chains.Retrieval;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -66,7 +64,7 @@ public class PineconeExample {
 
     // Redis Configuration
     properties.setProperty("redis.url", "");
-    properties.setProperty("redis.port", "12285");
+    properties.setProperty("redis.port", "");
     properties.setProperty("redis.username", "default");
     properties.setProperty("redis.password", "");
     properties.setProperty("redis.ttl", "3600");
@@ -74,7 +72,7 @@ public class PineconeExample {
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
     properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "postgres");
+    properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
     new SpringApplicationBuilder(PineconeExample.class).properties(properties).run(args);
@@ -174,10 +172,10 @@ public class PineconeExample {
        * Embedding Endpoint is not provided; then Doc2Vec constructor is used If the model is not
        * provided, then it will emit an error
        */
-      Retrieval retrieval =
-          new PineconeRetrieval(upsertPineconeEndpoint, ada002Embedding, arkRequest);
+      PineconeRetrieval retrieval =
+          new PineconeRetrieval(arr, ada002Embedding, upsertPineconeEndpoint, arkRequest);
 
-      IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
+      retrieval.upsert();
     }
 
     @PostMapping(value = "/pinecone/query")

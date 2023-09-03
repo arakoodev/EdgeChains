@@ -12,11 +12,23 @@ import retrofit2.http.POST;
 
 public interface PostgresService {
 
+  @POST(value = "index/postgres/create-table")
+  Single<StringResponse> createTable(@Body PostgresEndpoint postgresEndpoint);
+
+  @POST(value = "index/postgres/metadata/create-table")
+  Single<StringResponse> createMetadataTable(@Body PostgresEndpoint postgresEndpoint);
+
   @POST(value = "index/postgres/upsert")
-  Single<Integer> upsert(@Body PostgresEndpoint postgresEndpoint);
+  Single<StringResponse> upsert(@Body PostgresEndpoint postgresEndpoint);
+
+  @POST(value = "index/postgres/batch-upsert")
+  Single<List<StringResponse>> batchUpsert(@Body PostgresEndpoint postgresEndpoint);
 
   @POST(value = "index/postgres/metadata/insert")
-  Single<Integer> insertMetadata(@Body PostgresEndpoint postgresEndpoint);
+  Single<StringResponse> insertMetadata(@Body PostgresEndpoint postgresEndpoint);
+
+  @POST(value = "index/postgres/metadata/batch-insert")
+  Single<List<StringResponse>> batchInsertMetadata(@Body PostgresEndpoint postgresEndpoint);
 
   @POST(value = "index/postgres/join/insert")
   Single<StringResponse> insertIntoJoinTable(@Body PostgresEndpoint postgresEndpoint);
@@ -28,7 +40,7 @@ public interface PostgresService {
   Single<List<PostgresWordEmbeddings>> getAllChunks(@Body PostgresEndpoint postgresEndpoint);
 
   @POST(value = "index/postgres/similarity-metadata")
-  Single<List<PostgresWordEmbeddings>> similaritySearchMetadata(
+  Single<List<PostgresWordEmbeddings>> getSimilarMetadataChunk(
       @Body PostgresEndpoint postgresEndpoint);
 
   @POST("index/postgres/probes")

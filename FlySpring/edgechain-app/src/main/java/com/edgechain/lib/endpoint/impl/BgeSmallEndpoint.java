@@ -1,34 +1,30 @@
 package com.edgechain.lib.endpoint.impl;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.Endpoint;
+import com.edgechain.lib.endpoint.EmbeddingEndpoint;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.retrofit.BgeSmallService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
+import io.reactivex.rxjava3.core.Observable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serial;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import retrofit2.Retrofit;
 
-public class BgeSmallEndpoint extends Endpoint {
-
-  @Serial
-  private static final long serialVersionUID = 1L;
+public class BgeSmallEndpoint extends EmbeddingEndpoint {
 
   private static final Logger logger = LoggerFactory.getLogger(BgeSmallEndpoint.class);
 
-  private final BgeSmallService bgeSmallService =
-      RetrofitClientInstance.getInstance().create(BgeSmallService.class);
-
-  private String input;
+  private final Retrofit retrofit = RetrofitClientInstance.getInstance();
+  private final BgeSmallService bgeSmallService = retrofit.create(BgeSmallService.class);
 
   private String modelUrl;
   private String tokenizerUrl;
@@ -59,7 +55,7 @@ public class BgeSmallEndpoint extends Endpoint {
       downloadFile(tokenizerUrl, TOKENIZER_PATH);
     }
 
-    logger.info("Model bge-small-en present!");
+    logger.info("Model downloaded successfully!");
   }
 
   public String getModelUrl() {
@@ -68,10 +64,6 @@ public class BgeSmallEndpoint extends Endpoint {
 
   public String getTokenizerUrl() {
     return tokenizerUrl;
-  }
-
-  public String getInput() {
-    return input;
   }
 
   public String getCallIdentifier() {
@@ -84,16 +76,20 @@ public class BgeSmallEndpoint extends Endpoint {
     this.tokenizerUrl = tokenizerUrl;
   }
 
-  public WordEmbeddings embeddings(String input, ArkRequest arkRequest) {
+  @Override
+  public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
 
-    this.input = input; // set Input
+    final String str = input.replaceAll("'", "");
 
-    if (Objects.nonNull(arkRequest)) {
+    setRawText(str);
+
+    if (Objects.nonNull(arkRequest))
       this.callIdentifier = arkRequest.getRequestURI();
-    }
+    else
+      this.callIdentifier = "URI wasn't provided";
 
-    return bgeSmallService.embeddings(this).map(m -> new WordEmbeddings(input, m.getEmbedding()))
-        .blockingGet();
+    return Observable.fromSingle(
+        bgeSmallService.embeddings(this).map(m -> new WordEmbeddings(str, m.getEmbedding())));
   }
 
   private void downloadFile(String urlStr, String path) {
