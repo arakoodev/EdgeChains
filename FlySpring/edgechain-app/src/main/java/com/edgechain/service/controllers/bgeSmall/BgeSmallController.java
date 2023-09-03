@@ -32,10 +32,8 @@ public class BgeSmallController {
   @PostMapping
   public Single<BgeSmallResponse> embeddings(@RequestBody BgeSmallEndpoint bgeSmallEndpoint) {
 
-    this.bgeSmallClient.setEndpoint(bgeSmallEndpoint);
-
     EdgeChain<BgeSmallResponse> edgeChain =
-        this.bgeSmallClient.createEmbeddings(bgeSmallEndpoint.getRawText());
+        this.bgeSmallClient.createEmbeddings(bgeSmallEndpoint.getRawText(), bgeSmallEndpoint);
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 

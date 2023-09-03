@@ -31,19 +31,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class BgeSmallClient {
 
-  private BgeSmallEndpoint endpoint;
-
   private static volatile ZooModel<String, float[]> bgeSmallEn;
 
-  public BgeSmallEndpoint getEndpoint() {
-    return endpoint;
-  }
-
-  public void setEndpoint(BgeSmallEndpoint endpoint) {
-    this.endpoint = endpoint;
-  }
-
-  public EdgeChain<BgeSmallResponse> createEmbeddings(String input) {
+  public EdgeChain<BgeSmallResponse> createEmbeddings(String input, BgeSmallEndpoint endpoint) {
 
     return new EdgeChain<>(
         Observable.create(
