@@ -230,6 +230,24 @@ public class PostgresEndpoint extends Endpoint {
     return Observable.fromSingle(this.postgresService.query(this));
   }
 
+  public Observable<List<PostgresWordEmbeddings>> queryWithMetadata(
+      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
+    this.wordEmbedding = wordEmbeddings;
+    this.topK = topK;
+    this.metric = metric;
+    this.probes = 1;
+    return Observable.fromSingle(this.postgresService.queryWithMetadata(this));
+  }
+
+  public Observable<List<PostgresWordEmbeddings>> queryWithMetadata(
+      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK, int probes) {
+    this.wordEmbedding = wordEmbeddings;
+    this.topK = topK;
+    this.metric = metric;
+    this.probes = probes;
+    return Observable.fromSingle(this.postgresService.queryWithMetadata(this));
+  }
+
   public Observable<List<PostgresWordEmbeddings>> getSimilarMetadataChunk(String embeddingChunk) {
     this.embeddingChunk = embeddingChunk;
     return Observable.fromSingle(this.postgresService.getSimilarMetadataChunk(this));

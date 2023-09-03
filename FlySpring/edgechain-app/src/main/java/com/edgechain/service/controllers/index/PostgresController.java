@@ -65,6 +65,12 @@ public class PostgresController {
     return this.postgresClient.query(postgresEndpoint).toSingle();
   }
 
+  @PostMapping("/metadata/query")
+  public Single<List<PostgresWordEmbeddings>> queryWithMetadata(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.queryWithMetadata(postgresEndpoint).toSingle();
+  }
+
   @PostMapping("/chunks")
   public Single<List<PostgresWordEmbeddings>> getAllChunks(
       @RequestBody PostgresEndpoint postgresEndpoint) {
