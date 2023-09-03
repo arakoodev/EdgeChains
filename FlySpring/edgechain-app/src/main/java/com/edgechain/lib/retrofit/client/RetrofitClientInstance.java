@@ -28,7 +28,7 @@ import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class RetrofitClientInstance {
-  
+
   private RetrofitClientInstance() {
     // no
   }
@@ -40,7 +40,7 @@ public class RetrofitClientInstance {
 
   public static Retrofit getInstance() {
     if (retrofit == null) {
-      
+
       // tests may set this to a mock - do not overwrite it if present.
       if (securityUUID == null) {
         securityUUID = ApplicationContextHolder.getContext().getBean(SecurityUUID.class);
@@ -65,36 +65,33 @@ public class RetrofitClientInstance {
                               Request original = chain.request();
                               final String authKey = securityUUID.getAuthKey();
                               Request request =
-                                  original
-                                      .newBuilder()
-                                      .header("Authorization", authKey)
-                                      .build();
+                                  original.newBuilder().header("Authorization", authKey).build();
                               Response response = chain.proceed(request);
                               String body = response.body().string();
-  
+
                               String errorMessage = "";
-  
+
                               if (!response.isSuccessful()) {
                                 // Create a new Gson object
                                 Gson gson = new Gson();
-  
+
                                 // Define the type for the map
                                 Type type = new TypeToken<Map<String, String>>() {}.getType();
-  
+
                                 // Convert JSON string into a map
                                 Map<String, String> map = gson.fromJson(body, type);
-  
+
                                 if (Objects.nonNull(map)) {
                                   errorMessage = map.toString();
                                 }
                               }
-  
+
                               return response
                                   .newBuilder()
                                   .body(ResponseBody.create(body, response.body().contentType()))
                                   .message(errorMessage)
                                   .build();
-                            }catch(Exception e) {
+                            } catch (Exception e) {
                               // Interceptor can handle only IOException. Anything else = stall.
                               // Solution: wrap any exception in an IOException.
                               // Read more here: https://github.com/square/retrofit/issues/3453
