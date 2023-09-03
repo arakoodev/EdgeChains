@@ -231,13 +231,14 @@ public class PostgresEndpoint extends Endpoint {
   }
 
   public Observable<List<PostgresWordEmbeddings>> queryWithMetadata(
-          WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
+      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
     this.wordEmbedding = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;
     this.probes = 1;
     return Observable.fromSingle(this.postgresService.queryWithMetadata(this));
   }
+
   public Observable<List<PostgresWordEmbeddings>> queryWithMetadata(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK, int probes) {
     this.wordEmbedding = wordEmbeddings;

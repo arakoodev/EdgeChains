@@ -64,6 +64,7 @@ public class PostgresController {
       @RequestBody PostgresEndpoint postgresEndpoint) {
     return this.postgresClient.query(postgresEndpoint).toSingle();
   }
+
   @PostMapping("/metadata/query")
   public Single<List<PostgresWordEmbeddings>> queryWithMetadata(
       @RequestBody PostgresEndpoint postgresEndpoint) {
