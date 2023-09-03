@@ -84,7 +84,7 @@
 			<artifactId>hibernate-validator</artifactId>
 			<version>${hibernate-validator}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>
@@ -272,7 +272,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
-	</dependencies>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>
@@ -280,7 +285,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>${maven-shade.version}</version>
-				
+
 				<dependencies>
 					<dependency>
 						<groupId>org.springframework.boot</groupId>
@@ -288,7 +293,7 @@
 						<version>${spring-boot.version}</version>
 					</dependency>
 				</dependencies>
-				
+
 				<configuration>
 					<createDependencyReducedPom>false</createDependencyReducedPom>
 					<filters>
@@ -302,7 +307,7 @@
 						</filter>
 					</filters>
 				</configuration>
-				
+
 				<executions>
 					<execution>
 						<id>shade-jar-with-dependencies</id>
@@ -310,7 +315,7 @@
 						<goals>
 							<goal>shade</goal>
 						</goals>
-						
+
 						<configuration>
 							<finalName>edgechain</finalName>
 							<transformers>

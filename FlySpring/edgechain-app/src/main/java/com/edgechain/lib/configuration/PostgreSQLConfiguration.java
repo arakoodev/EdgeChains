@@ -17,7 +17,7 @@ public class PostgreSQLConfiguration {
   @Autowired private Environment env;
 
   @Bean
-  public DataSource dataSource() {
+  DataSource dataSource() {
 
     String dbHost = env.getProperty("postgres.db.host");
     String dbUsername = env.getProperty("postgres.db.username");
@@ -33,11 +33,8 @@ public class PostgreSQLConfiguration {
   }
 
   @Bean
-  public JdbcTemplate jdbcTemplate() {
+  JdbcTemplate jdbcTemplate() {
     return new JdbcTemplate(dataSource());
   }
 
-  private boolean nonNullAndNotEmpty(String val) {
-    return Objects.nonNull(val) && val.trim().isEmpty();
-  }
 }

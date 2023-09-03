@@ -12,6 +12,6 @@ public class ArkEmitter<T> extends SseEmitter implements ArkResponse {
   }
 
   public ArkEmitter(Observable<T> observable) {
-    this.observer = new ArkEmitterObserver<T>(observable, this);
+    this.observer = new ArkEmitterObserver<>(observable, this);
   }
 }

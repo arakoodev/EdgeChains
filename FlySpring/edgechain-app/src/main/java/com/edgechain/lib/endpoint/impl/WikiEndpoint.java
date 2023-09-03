@@ -19,7 +19,6 @@ public class WikiEndpoint extends Endpoint {
 
   public WikiEndpoint(RetryPolicy retryPolicy) {
     super(retryPolicy);
-    this.input = input;
   }
 
   public String getInput() {
