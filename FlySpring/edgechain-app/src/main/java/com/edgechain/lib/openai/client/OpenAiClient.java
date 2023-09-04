@@ -27,17 +27,8 @@ public class OpenAiClient {
   private final Logger logger = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate = new RestTemplate();
 
-  private OpenAiEndpoint endpoint;
-
-  public OpenAiEndpoint getEndpoint() {
-    return endpoint;
-  }
-
-  public void setEndpoint(OpenAiEndpoint endpoint) {
-    this.endpoint = endpoint;
-  }
-
-  public EdgeChain<ChatCompletionResponse> createChatCompletion(ChatCompletionRequest request) {
+  public EdgeChain<ChatCompletionResponse> createChatCompletion(
+      ChatCompletionRequest request, OpenAiEndpoint endpoint) {
 
     return new EdgeChain<>(
         Observable.create(
@@ -74,7 +65,7 @@ public class OpenAiClient {
   }
 
   public EdgeChain<ChatCompletionResponse> createChatCompletionStream(
-      ChatCompletionRequest request) {
+      ChatCompletionRequest request, OpenAiEndpoint endpoint) {
 
     try {
       logger.info("Logging ChatCompletion Stream....");
@@ -105,7 +96,8 @@ public class OpenAiClient {
     }
   }
 
-  public EdgeChain<CompletionResponse> createCompletion(CompletionRequest request) {
+  public EdgeChain<CompletionResponse> createCompletion(
+      CompletionRequest request, OpenAiEndpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -131,7 +123,8 @@ public class OpenAiClient {
         endpoint);
   }
 
-  public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(OpenAiEmbeddingRequest request) {
+  public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(
+      OpenAiEmbeddingRequest request, OpenAiEndpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {

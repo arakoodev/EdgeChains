@@ -84,31 +84,37 @@ public class PostgresClientRepository {
       String filename,
       String namespace) {
 
-    List<String> uuidList = new ArrayList<>();
+    Set<String> uuidSet = new HashSet<>();
 
     for (int i = 0; i < wordEmbeddingsList.size(); i++) {
+      WordEmbeddings wordEmbeddings = wordEmbeddingsList.get(i);
 
-      UUID id =
-          jdbcTemplate.queryForObject(
-              String.format(
-                  "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES"
-                      + " ('%s', '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE"
-                      + " SET embedding = EXCLUDED.embedding RETURNING id;",
-                  tableName,
-                  UuidCreator.getTimeOrderedEpoch(),
-                  wordEmbeddingsList.get(i).getId(),
-                  Arrays.toString(FloatUtils.toFloatArray(wordEmbeddingsList.get(i).getValues())),
-                  LocalDateTime.now(),
-                  namespace,
-                  filename),
-              UUID.class);
+      if (wordEmbeddings != null && wordEmbeddings.getValues() != null) {
 
-      if (Objects.nonNull(id)) {
-        uuidList.add(id.toString());
+        float[] floatArray = FloatUtils.toFloatArray(wordEmbeddings.getValues());
+
+        UUID id =
+            jdbcTemplate.queryForObject(
+                String.format(
+                    "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename)"
+                        + " VALUES ('%s', '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO"
+                        + " UPDATE SET embedding = EXCLUDED.embedding RETURNING id;",
+                    tableName,
+                    UuidCreator.getTimeOrderedEpoch(),
+                    wordEmbeddings.getId(),
+                    Arrays.toString(floatArray),
+                    LocalDateTime.now(),
+                    namespace,
+                    filename),
+                UUID.class);
+
+        if (id != null) {
+          uuidSet.add(id.toString());
+        }
       }
     }
 
-    return uuidList;
+    return new ArrayList<>(uuidSet);
   }
 
   @Transactional
@@ -156,7 +162,7 @@ public class PostgresClientRepository {
               tableName,
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(values)),
+              embeddings,
               topK));
 
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
@@ -170,7 +176,7 @@ public class PostgresClientRepository {
               tableName,
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(values)),
+              embeddings,
               topK));
     } else {
       return jdbcTemplate.queryForList(
@@ -182,7 +188,7 @@ public class PostgresClientRepository {
               tableName,
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
-              Arrays.toString(FloatUtils.toFloatArray(values)),
+              embeddings,
               topK));
     }
   }

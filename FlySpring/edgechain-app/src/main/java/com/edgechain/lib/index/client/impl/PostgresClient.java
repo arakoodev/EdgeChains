@@ -25,18 +25,18 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PostgresClient {
-  
+
   private static final Logger logger = LoggerFactory.getLogger(PostgresClient.class);
 
   private static final TypeReference<List<Float>> FLOAT_TYPE_REF = new TypeReference<>() {};
-  
+
   private final PostgresClientRepository repository =
       ApplicationContextHolder.getContext().getBean(PostgresClientRepository.class);
   private final PostgresClientMetadataRepository metadataRepository =
       ApplicationContextHolder.getContext().getBean(PostgresClientMetadataRepository.class);
 
   private final ObjectMapper objectMapper = new ObjectMapper();
-  
+
   public EdgeChain<StringResponse> createTable(PostgresEndpoint postgresEndpoint) {
     return new EdgeChain<>(
         Observable.create(
@@ -196,33 +196,49 @@ public class PostgresClient {
             emitter -> {
               try {
                 List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
-                if (postgresEndpoint.getMetadataTableNames() == null) {
-                  List<Map<String, Object>> rows =
-                      this.repository.query(
-                          postgresEndpoint.getTableName(),
-                          getNamespace(postgresEndpoint),
-                          postgresEndpoint.getProbes(),
-                          postgresEndpoint.getMetric(),
-                          postgresEndpoint.getWordEmbedding().getValues(),
-                          postgresEndpoint.getTopK());
+                List<Map<String, Object>> rows =
+                    this.repository.query(
+                        postgresEndpoint.getTableName(),
+                        getNamespace(postgresEndpoint),
+                        postgresEndpoint.getProbes(),
+                        postgresEndpoint.getMetric(),
+                        postgresEndpoint.getWordEmbedding().getValues(),
+                        postgresEndpoint.getTopK());
 
-                  for (Map<String, Object> row : rows) {
+                for (Map row : rows) {
 
-                    PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                    val.setId(row.get("id").toString());
-                    val.setRawText((String) row.get("raw_text"));
-                    val.setFilename((String) row.get("filename"));
-                    val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
-                    val.setNamespace((String) row.get("namespace"));
-                    val.setScore((Double) row.get("score"));
+                  PostgresWordEmbeddings val = new PostgresWordEmbeddings();
+                  val.setId(row.get("id").toString());
+                  val.setRawText((String) row.get("raw_text"));
+                  val.setFilename((String) row.get("filename"));
+                  val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
+                  val.setNamespace((String) row.get("namespace"));
+                  val.setScore((Double) row.get("score"));
 
-                    wordEmbeddingsList.add(val);
-                  }
-                } else { // If the metadata table exists, then we need to query with metadata
+                  wordEmbeddingsList.add(val);
+                }
+                emitter.onNext(wordEmbeddingsList);
+                emitter.onComplete();
 
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        postgresEndpoint);
+  }
+
+  public EdgeChain<List<PostgresWordEmbeddings>> queryWithMetadata(
+      PostgresEndpoint postgresEndpoint) {
+
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
+                List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
+                if (postgresEndpoint.getMetadataTableNames() != null) {
                   try {
-                    final List<String> metadataTableNames = postgresEndpoint.getMetadataTableNames();
-                    final int numberOfMetadataTables = metadataTableNames.size();
+                    List<String> metadataTableNames = postgresEndpoint.getMetadataTableNames();
+                    int numberOfMetadataTables = metadataTableNames.size();
 
                     /*
                      * This map will store the <id, titleMetadata> pairs
@@ -306,7 +322,6 @@ public class PostgresClient {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
-              
               try {
                 List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
                 List<Map<String, Object>> rows = this.repository.getAllChunks(postgresEndpoint);
