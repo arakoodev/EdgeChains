@@ -24,9 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class WebSecurityTest {
+class WebSecurityJwtNoRoleTest {
 
-  private static final String FULL_CONTEXT_PATH = WebConfiguration.CONTEXT_PATH + "/";
   private static final String FULL_NONCONTEXT_PATH = "/v0/endpoint/";
 
   private static String testJwt;
@@ -54,62 +53,9 @@ class WebSecurityTest {
 
   @Autowired
   private MockMvc mvc;
-
-  @Autowired
-  private SecurityUUID securityUUID;
   
   @Autowired
   private JwtHelper jwtHelper;
-
-  // ====== TEST CONTEXT-BASED SECURITY (uuid must be in header) ======
-
-  @Test
-  void getContextEndpoint() throws Exception {
-    mvc.perform(
-        get(FULL_CONTEXT_PATH)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", securityUUID.getAuthKey()))
-        .andExpect(status().isNotFound());
-  }
-
-  @Test
-  void postContextEndpoint() throws Exception {
-    mvc.perform(
-        post(FULL_CONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", securityUUID.getAuthKey()))
-        .andExpect(status().isNotFound());
-  }
-
-  @Test
-  void deleteContextEndpoint() throws Exception {
-    mvc.perform(
-        delete(FULL_CONTEXT_PATH)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", securityUUID.getAuthKey()))
-        .andExpect(status().isNotFound());
-  }
-
-  @Test
-  void patchContextEndpoint() throws Exception {
-    mvc.perform(
-        patch(FULL_CONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", securityUUID.getAuthKey()))
-        .andExpect(status().isNotFound());
-  }
-
-  @Test
-  void putContextEndpoint() throws Exception {
-    mvc.perform(
-        put(FULL_CONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", securityUUID.getAuthKey()))
-        .andExpect(status().isNotFound());
-  }
 
   // ====== TEST JWT-BASED SECURITY (bearer token must be in header) ======
   
