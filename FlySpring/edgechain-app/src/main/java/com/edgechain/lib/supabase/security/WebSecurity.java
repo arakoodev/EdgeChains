@@ -1,7 +1,10 @@
 package com.edgechain.lib.supabase.security;
 
+import com.edgechain.lib.configuration.WebConfiguration;
+import com.edgechain.lib.configuration.domain.AuthFilter;
 import java.util.Arrays;
 import java.util.Objects;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +18,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,8 +28,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-import com.edgechain.lib.configuration.WebConfiguration;
-import com.edgechain.lib.configuration.domain.AuthFilter;
 
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -37,37 +39,22 @@ public class WebSecurity {
   @Autowired private JwtFilter jwtFilter;
 
   @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+  AuthenticationManager authenticationManager(AuthenticationConfiguration config)
       throws Exception {
     return config.getAuthenticationManager();
   }
 
   @Bean
-  public PasswordEncoder passwordEncoder() {
+  PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
     http.cors(cors -> cors.configurationSource(corsConfiguration()))
         .csrf(csrf -> csrf.disable())
-        .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests())
-                    .permitAll()
-                    .requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests())
-                    .permitAll()
-                    .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
-                    .permitAll()
-                    .requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
-                    .permitAll()
-                    .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
-                    .permitAll()
-                    .anyRequest()
-                    .permitAll())
+        .authorizeHttpRequests(auth -> buildAuth(auth))
         .httpBasic(Customizer.withDefaults())
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
         .sessionManagement(
@@ -78,8 +65,53 @@ public class WebSecurity {
     return http.build();
   }
 
+  private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry buildAuth(
+      AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {    
+    AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry reg = auth
+        .requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**")
+        .permitAll();
+    
+    reg = applyAuth(
+        reg.requestMatchers(HttpMethod.POST, safeRequests(authFilter.getRequestPost().getRequests(), "POST")), 
+        authFilter.getRequestPost().getAuthorities());
+    reg = applyAuth(
+        reg.requestMatchers(HttpMethod.GET, safeRequests(authFilter.getRequestGet().getRequests(), "GET")), 
+        authFilter.getRequestGet().getAuthorities());
+    reg = applyAuth(
+        reg.requestMatchers(HttpMethod.DELETE, safeRequests(authFilter.getRequestDelete().getRequests(), "DELETE")), 
+        authFilter.getRequestDelete().getAuthorities());
+    reg = applyAuth(
+        reg.requestMatchers(HttpMethod.PUT, safeRequests(authFilter.getRequestPut().getRequests(), "PUT")), 
+        authFilter.getRequestPut().getAuthorities());
+    reg = applyAuth(
+        reg.requestMatchers(HttpMethod.PATCH, safeRequests(authFilter.getRequestPatch().getRequests(), "PATCH")), 
+        authFilter.getRequestPatch().getAuthorities());
+        
+    reg = reg
+        .anyRequest()
+        .permitAll();
+    return reg;
+  }
+  
+  private String[] safeRequests(String[] src, String method) {
+    if (src == null || src.length == 0 || (src.length == 1 && src[0].isEmpty())) {
+      LoggerFactory.getLogger(getClass()).warn("Http {} security request patterns outdated. Fixed to a list with one String \"**\" - please update your configuration", method);
+      return new String[] {"**"};
+    }else {
+      return src;
+    }
+  }
+  
+  private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry applyAuth(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl url, String[] auths) {
+    if (auths == null || auths.length == 0 || (auths.length == 1 && auths[0].isEmpty())) {
+      return url.permitAll();
+    }else {
+      return url.hasAnyAuthority(auths);
+    }
+  }
+
   @Bean
-  public CorsConfigurationSource corsConfiguration() {
+  CorsConfigurationSource corsConfiguration() {
 
     CorsConfiguration configuration = new CorsConfiguration();
 
@@ -112,7 +144,7 @@ public class WebSecurity {
   }
 
   @Bean
-  public FilterRegistrationBean<CorsFilter> corsFilter() {
+  FilterRegistrationBean<CorsFilter> corsFilter() {
     FilterRegistrationBean<CorsFilter> bean =
         new FilterRegistrationBean<>(new CorsFilter(corsConfiguration()));
     bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
@@ -120,7 +152,7 @@ public class WebSecurity {
   }
 
   @Bean
-  public FilterRegistrationBean<JwtFilter> jwtFilterFilterRegistrationBean(JwtFilter jwtFilter) {
+  FilterRegistrationBean<JwtFilter> jwtFilterFilterRegistrationBean(JwtFilter jwtFilter) {
     FilterRegistrationBean<JwtFilter> registrationBean = new FilterRegistrationBean<>(jwtFilter);
     registrationBean.setEnabled(false);
     return registrationBean;
