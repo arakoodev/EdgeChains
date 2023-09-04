@@ -205,7 +205,7 @@ public class PostgresClient {
                         postgresEndpoint.getWordEmbedding().getValues(),
                         postgresEndpoint.getTopK());
 
-                for (Map row : rows) {
+                for (Map<String, Object> row : rows) {
 
                   PostgresWordEmbeddings val = new PostgresWordEmbeddings();
                   val.setId(row.get("id").toString());

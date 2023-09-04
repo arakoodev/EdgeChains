@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -295,7 +294,7 @@ class PostgresClientTest {
     when(mockPe.getMetadataTableNames()).thenReturn(List.of("dogmeta", "catmeta"));
 
     final Data data = new Data();
-    EdgeChain<List<PostgresWordEmbeddings>> result = service.query(mockPe);
+    EdgeChain<List<PostgresWordEmbeddings>> result = service.queryWithMetadata(mockPe);
     result.toSingle().blockingSubscribe(
         s -> data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(",")),
         e -> data.error = e);
