@@ -77,6 +77,7 @@ public class PostgresClientRepository {
     }
   }
 
+  @Transactional
   public List<String> batchUpsertEmbeddings(
       String tableName,
       List<WordEmbeddings> wordEmbeddingsList,
@@ -186,6 +187,7 @@ public class PostgresClientRepository {
     }
   }
 
+  @Transactional(readOnly = true)
   public List<Map<String, Object>> getAllChunks(PostgresEndpoint endpoint) {
     return jdbcTemplate.queryForList(
         String.format(

@@ -10,14 +10,23 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
-import org.postgresql.util.PGobject;
-import org.springframework.stereotype.Service;
-
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import org.postgresql.util.PGobject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PostgresClient {
+  
+  private static final Logger logger = LoggerFactory.getLogger(PostgresClient.class);
 
   private final PostgresClientRepository repository =
       ApplicationContextHolder.getContext().getBean(PostgresClientRepository.class);
@@ -114,7 +123,7 @@ public class PostgresClient {
             emitter -> {
               try {
                 String metadata = postgresEndpoint.getMetadata();
-                String input = metadata.replaceAll("'", "");
+                String input = metadata.replace("'", "");
 
                 String metadataId =
                     this.metadataRepository.insertMetadata(
@@ -193,7 +202,7 @@ public class PostgresClient {
                           postgresEndpoint.getWordEmbedding().getValues(),
                           postgresEndpoint.getTopK());
 
-                  for (Map row : rows) {
+                  for (Map<String, Object> row : rows) {
 
                     PostgresWordEmbeddings val = new PostgresWordEmbeddings();
                     val.setId(row.get("id").toString());
@@ -208,8 +217,8 @@ public class PostgresClient {
                 } else { // If the metadata table exists, then we need to query with metadata
 
                   try {
-                    List<String> metadataTableNames = postgresEndpoint.getMetadataTableNames();
-                    int numberOfMetadataTables = metadataTableNames.size();
+                    final List<String> metadataTableNames = postgresEndpoint.getMetadataTableNames();
+                    final int numberOfMetadataTables = metadataTableNames.size();
 
                     /*
                      * This map will store the <id, titleMetadata> pairs
@@ -233,13 +242,14 @@ public class PostgresClient {
 
                       // To filter out duplicate context chunks
                       Set<String> contextChunkIds = new HashSet<>();
-                      for (Map row : rows) {
+                      for (Map<String, Object> row : rows) {
                         String metadataId = row.get("metadata_id").toString();
                         if (!metadataTableName.contains("_title_metadata")
                             && contextChunkIds.contains(metadataId)) continue;
 
                         PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                        val.setId(row.get("id").toString());
+                        final String idStr = row.get("id").toString();
+                        val.setId(idStr);
                         val.setRawText((String) row.get("raw_text"));
                         val.setFilename((String) row.get("filename"));
                         val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
@@ -248,10 +258,8 @@ public class PostgresClient {
 
                         // Add metadata fields in response
                         if (metadataTableName.contains("_title_metadata")) {
-                          titleMetadataMap.put(
-                              row.get("id").toString(), (String) row.get("metadata"));
-                          dateMetadataMap.put(
-                              row.get("id").toString(), (String) row.get("document_date"));
+                          titleMetadataMap.put(idStr, (String) row.get("metadata"));
+                          dateMetadataMap.put(idStr, (String) row.get("document_date"));
 
                           // For checking if only one metadata table is present which is the title
                           // table
@@ -276,7 +284,7 @@ public class PostgresClient {
                       }
                     }
                   } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("failed meta query", e);
                   }
                 }
 
@@ -330,7 +338,7 @@ public class PostgresClient {
                     this.metadataRepository.getSimilarMetadataChunk(
                         postgresEndpoint.getMetadataTableNames().get(0),
                         postgresEndpoint.getEmbeddingChunk());
-                for (Map row : rows) {
+                for (Map<String, Object> row : rows) {
 
                   PostgresWordEmbeddings val = new PostgresWordEmbeddings();
                   val.setMetadataId(row.get("metadata_id").toString());
@@ -354,8 +362,6 @@ public class PostgresClient {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
-              ;
-
               String namespace = getNamespace(postgresEndpoint);
               try {
                 this.repository.deleteAll(postgresEndpoint.getTableName(), namespace);

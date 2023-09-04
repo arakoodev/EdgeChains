@@ -38,6 +38,7 @@ public class PostgresClientMetadataRepository {
             metadataTable));
   }
 
+  @Transactional
   public List<String> batchInsertMetadata(String metadataTableName, List<String> metadataList) {
     List<String> uuidList = new ArrayList<>();
 

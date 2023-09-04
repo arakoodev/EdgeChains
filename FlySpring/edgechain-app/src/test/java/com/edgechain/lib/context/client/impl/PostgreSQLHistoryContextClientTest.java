@@ -2,6 +2,8 @@ package com.edgechain.lib.context.client.impl;
 
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import com.edgechain.testutil.PostgresTestContainer;
+import com.edgechain.testutil.PostgresTestContainer.DB;
 import com.zaxxer.hikari.HikariConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -11,9 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -26,9 +25,7 @@ class PostgreSQLHistoryContextClientTest {
   private static final Logger LOGGER =
       LoggerFactory.getLogger(PostgreSQLHistoryContextClientTest.class);
 
-  private static PostgresTestContainer instance = new PostgresTestContainer();
-
-  @Autowired private HikariConfig hikariConfig;
+  private static PostgresTestContainer instance = new PostgresTestContainer(DB.PLAIN);
 
   @BeforeAll
   static void baseSetupAll() {
@@ -40,18 +37,7 @@ class PostgreSQLHistoryContextClientTest {
     instance.stop();
   }
 
-  @DynamicPropertySource
-  static void baseSetProps(DynamicPropertyRegistry reg) {
-    String testUrl = instance.getJdbcUrl();
-
-    LOGGER.info("TEST with Docker PostgreSQL url={}", testUrl);
-
-    // inject typical settings based on Docker instance
-    reg.add("spring.datasource.url", () -> testUrl);
-    reg.add("spring.datasource.username", () -> instance.getUsername());
-    reg.add("spring.datasource.password", () -> instance.getPassword());
-  }
-
+  @Autowired private HikariConfig hikariConfig;
   @Autowired private PostgreSQLHistoryContextClient service;
 
   @Test
@@ -101,25 +87,4 @@ class PostgreSQLHistoryContextClientTest {
     public String val;
   }
 
-  public static class PostgresTestContainer extends PostgreSQLContainer<PostgresTestContainer> {
-
-    private static final String DOCKER_IMAGE =
-        PostgreSQLContainer.IMAGE + ":" + PostgreSQLContainer.DEFAULT_TAG;
-
-    public PostgresTestContainer() {
-      super(DOCKER_IMAGE);
-    }
-
-    @Override
-    public void start() {
-      LOGGER.info("starting container");
-      super.start();
-    }
-
-    @Override
-    public void stop() {
-      LOGGER.info("stopping container");
-      super.stop();
-    }
-  }
 }
