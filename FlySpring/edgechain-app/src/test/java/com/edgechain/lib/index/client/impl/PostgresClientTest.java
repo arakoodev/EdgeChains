@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.when;
 
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
+@DirtiesContext
 class PostgresClientTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresClientTest.class);
@@ -53,16 +55,13 @@ class PostgresClientTest {
   @Autowired
   private PostgresClient service;
 
-  @BeforeEach
-  void setupEach() {
+  @Test
+  void allMethods() {
     // hikari has own copy of properties so set these here
     hikariConfig.setJdbcUrl(instance.getJdbcUrl());
     hikariConfig.setUsername(instance.getUsername());
     hikariConfig.setPassword(instance.getPassword());
-  }
 
-  @Test
-  void allMethods() {
     createTable();
     createMetadataTable();
     deleteAll(); // check delete before we get foreign keys

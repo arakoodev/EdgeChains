@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
+@DirtiesContext
 class PostgreSQLHistoryContextClientTest {
 
   private static final Logger LOGGER =
@@ -41,7 +43,7 @@ class PostgreSQLHistoryContextClientTest {
   @Autowired private PostgreSQLHistoryContextClient service;
 
   @Test
-  void cycle() {
+  void allMethods() {
     // hikari has own copy of properties so set these here
     hikariConfig.setJdbcUrl(instance.getJdbcUrl());
     hikariConfig.setUsername(instance.getUsername());
