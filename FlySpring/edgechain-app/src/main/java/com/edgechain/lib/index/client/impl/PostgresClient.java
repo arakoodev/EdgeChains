@@ -288,7 +288,7 @@ public class PostgresClient {
                       }
                     }
                   } catch (Exception e) {
-                    logger.error("failed meta query", e);
+                    logger.warn("ignored query error", e);
                   }
                 }
 

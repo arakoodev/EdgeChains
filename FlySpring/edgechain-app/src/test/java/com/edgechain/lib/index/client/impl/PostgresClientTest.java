@@ -62,7 +62,7 @@ class PostgresClientTest {
   }
 
   @Test
-  void test() {
+  void allMethods() {
     createTable();
     createMetadataTable();
     deleteAll(); // check delete before we get foreign keys
@@ -81,10 +81,20 @@ class PostgresClientTest {
   }
 
   private void createTable() {
+    createTable_metric(PostgresDistanceMetric.L2, "testtableL2");
+    createTable_metric(PostgresDistanceMetric.COSINE, "testtableCOS");
+    createTable_metric(null, "testtable");
+
+    // create table again
+    createTable_metric(null, "testtable");
+}
+  
+  private void createTable_metric(PostgresDistanceMetric metric, String tableName) {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getTableName()).thenReturn("testtable");
+    when(mockPe.getTableName()).thenReturn(tableName);
     when(mockPe.getLists()).thenReturn(1);
     when(mockPe.getDimensions()).thenReturn(2);
+    when(mockPe.getMetric()).thenReturn(metric);
 
     final Data data = new Data();
     EdgeChain<StringResponse> result = service.createTable(mockPe);
@@ -92,7 +102,7 @@ class PostgresClientTest {
     if (data.error != null) {
       fail("createTable failed", data.error);
     }
-    LOGGER.info("createTable response: '{}'", data.val);
+    LOGGER.info("createTable (metric={}) response: '{}'", metric, data.val);
   }
 
   private void createMetadataTable() {
@@ -209,9 +219,15 @@ class PostgresClientTest {
   }
 
   private void deleteAll() {
+    deleteAll_namespace(null, "knowledge");
+    deleteAll_namespace("", "knowledge");
+    deleteAll_namespace("testns", "testns");
+  }
+  
+  private void deleteAll_namespace(String namespace, String expected) {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
     when(mockPe.getTableName()).thenReturn("testtable");
-    when(mockPe.getNamespace()).thenReturn("testns");
+    when(mockPe.getNamespace()).thenReturn(namespace);
 
     final Data data = new Data();
     EdgeChain<StringResponse> result = service.deleteAll(mockPe);
@@ -219,10 +235,17 @@ class PostgresClientTest {
     if (data.error != null) {
       fail("deleteAll failed", data.error);
     }
-    LOGGER.info("deleteAll response: '{}'", data.val);
+    LOGGER.info("deleteAll (namespace={}) response: '{}'", namespace, data.val);
+    assertTrue(data.val.endsWith(expected));
   }
 
   private void query_noMeta() {
+    query_noMeta_metric(PostgresDistanceMetric.COSINE);
+    query_noMeta_metric(PostgresDistanceMetric.IP);
+    query_noMeta_metric(PostgresDistanceMetric.L2);
+  }
+  
+  private void query_noMeta_metric(PostgresDistanceMetric metric) {
     WordEmbeddings we1 = new WordEmbeddings();
     we1.setId("WEQUERY");
     we1.setScore("104");
@@ -232,7 +255,7 @@ class PostgresClientTest {
     when(mockPe.getTableName()).thenReturn("testtable");
     when(mockPe.getNamespace()).thenReturn("testns");
     when(mockPe.getProbes()).thenReturn(5);
-    when(mockPe.getMetric()).thenReturn(PostgresDistanceMetric.IP);
+    when(mockPe.getMetric()).thenReturn(metric);
     when(mockPe.getWordEmbedding()).thenReturn(we1);
     when(mockPe.getTopK()).thenReturn(1000);
     when(mockPe.getMetadataTableNames()).thenReturn(null);
@@ -245,13 +268,19 @@ class PostgresClientTest {
     if (data.error != null) {
       fail("query (no meta) failed", data.error);
     }
-    LOGGER.info("query (no meta) response: '{}'", data.val);
+    LOGGER.info("query no meta (metric={}) response: '{}'", metric, data.val);
 
     // WE1 from single upsert, and WE2 from batch upsert
     assertTrue(data.val.contains("WE1") && data.val.contains("WE2"));
   }
 
   private void query_meta() {
+    query_meta_metric(PostgresDistanceMetric.COSINE);
+    query_meta_metric(PostgresDistanceMetric.IP);
+    query_meta_metric(PostgresDistanceMetric.L2);
+  }
+  
+  private void query_meta_metric(PostgresDistanceMetric metric) {
     WordEmbeddings we1 = new WordEmbeddings();
     we1.setId("WEQUERY");
     we1.setScore("104");
@@ -261,7 +290,7 @@ class PostgresClientTest {
     when(mockPe.getTableName()).thenReturn("testtable");
     when(mockPe.getNamespace()).thenReturn("testns");
     when(mockPe.getProbes()).thenReturn(5);
-    when(mockPe.getMetric()).thenReturn(PostgresDistanceMetric.IP);
+    when(mockPe.getMetric()).thenReturn(metric);
     when(mockPe.getWordEmbedding()).thenReturn(we1);
     when(mockPe.getTopK()).thenReturn(1000);
     when(mockPe.getMetadataTableNames()).thenReturn(List.of("dogmeta", "catmeta"));
@@ -274,7 +303,7 @@ class PostgresClientTest {
     if (data.error != null) {
       fail("query (meta) failed", data.error);
     }
-    LOGGER.info("query (meta) response: '{}'", data.val);
+    LOGGER.info("query with meta (metric={}) response: '{}'", metric, data.val);
 
     // WE1 from single joined upsert
     assertTrue(data.val.contains("WE1"));
@@ -311,13 +340,14 @@ class PostgresClientTest {
   private void getSimilarChunks() {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
     when(mockPe.getMetadataTableNames()).thenReturn(List.of("dogmeta", "catmeta"));
-    when(mockPe.getEmbeddingChunk()).thenReturn("WE");
+    when(mockPe.getEmbeddingChunk()).thenReturn("how to test this");
 
     final Data data = new Data();
     EdgeChain<List<PostgresWordEmbeddings>> result = service.getSimilarMetadataChunk(mockPe);
-    result.toSingle().blockingSubscribe(
-        s -> data.val = s.stream().map(r -> r.getMetadataId()).collect(Collectors.joining(",")),
-        e -> data.error = e);
+    result.toSingle().blockingSubscribe(s -> {
+      data.list = s;
+      data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(","));
+    }, e -> data.error = e);
     if (data.error != null) {
       fail("getSimilarMetadataChunk failed", data.error);
     }
