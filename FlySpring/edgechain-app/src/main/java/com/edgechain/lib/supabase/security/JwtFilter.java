@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
-
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -60,6 +60,9 @@ public class JwtFilter extends OncePerRequestFilter {
       try {
         claimsJws = jwtHelper.parseToken(token);
       } catch (final Exception e) {
+        // use Spring Security logger here instead of SLF4J
+        logger.info("JWT not accepted: %s".formatted(e.getMessage()));
+        
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().print(JsonUtils.convertToString(errorResponse));
@@ -70,6 +73,9 @@ public class JwtFilter extends OncePerRequestFilter {
       String email = (String) claimsJws.getBody().get("email");
       String role = (String) claimsJws.getBody().get("role");
 
+      // use Spring Security logger here instead of SLF4J
+      logger.info("JWT accepted email=%s role=%s".formatted(email, role));
+      
       User user = new User();
       user.setEmail(email);
       user.setAccessToken(token);

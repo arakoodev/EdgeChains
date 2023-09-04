@@ -70,30 +70,34 @@ public class WebSecurity {
         .requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**")
         .permitAll();
     
-    reg = reg
-        .requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests())
-        .hasAnyAuthority(authFilter.getRequestPost().getAuthorities());
-    
-    reg = reg
-        .requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests())
-        .hasAnyAuthority(authFilter.getRequestGet().getAuthorities());
-        
-    reg = reg
-        .requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests())
-        .hasAnyAuthority(authFilter.getRequestDelete().getAuthorities());
-        
-    reg = reg
-        .requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests())
-        .hasAnyAuthority(authFilter.getRequestPut().getAuthorities());
-        
-    reg = reg
-        .requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests())
-        .hasAnyAuthority(authFilter.getRequestPatch().getAuthorities());
+    reg = applyAuth(
+        reg.requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests()), 
+        authFilter.getRequestPost().getAuthorities());
+    reg = applyAuth(
+        reg.requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests()), 
+        authFilter.getRequestGet().getAuthorities());
+    reg = applyAuth(
+        reg.requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests()), 
+        authFilter.getRequestDelete().getAuthorities());
+    reg = applyAuth(
+        reg.requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests()), 
+        authFilter.getRequestPut().getAuthorities());
+    reg = applyAuth(
+        reg.requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests()), 
+        authFilter.getRequestPatch().getAuthorities());
         
     reg = reg
         .anyRequest()
         .permitAll();
     return reg;
+  }
+  
+  private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry applyAuth(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl url, String[] auths) {
+    if (auths == null || auths.length == 0 || (auths.length == 1 && auths[0].isEmpty())) {
+      return url.permitAll();
+    }else {
+      return url.hasAnyAuthority(auths);
+    }
   }
 
   @Bean
