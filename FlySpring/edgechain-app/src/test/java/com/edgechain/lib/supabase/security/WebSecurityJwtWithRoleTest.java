@@ -39,6 +39,7 @@ class WebSecurityJwtWithRoleTest {
   public static class AuthFilterTestConfig {
     @Bean
     AuthFilter authFilter() {
+      // provide an AuthFilter with roles to check we test the correct role for each method
       AuthFilter auth = new AuthFilter();
       auth.setRequestGet(new MethodAuthentication(List.of("**"), "ROLE_ADMIN1", "ROLE_AI1"));
       auth.setRequestDelete(new MethodAuthentication(List.of("**"), "ROLE_ADMIN2", "ROLE_AI2"));
