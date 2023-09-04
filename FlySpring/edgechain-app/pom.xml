@@ -273,20 +273,19 @@
 			<scope>runtime</scope>
 		</dependency>
 
-    <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>junit-jupiter</artifactId>
-        <scope>test</scope>
-    </dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
     
 		<dependency>
 			<groupId>com.auth0</groupId>
 			<artifactId>java-jwt</artifactId>
 			<version>${auth0-jwt.version}</version>
-      <scope>test</scope>
+			<scope>test</scope>
 		</dependency>
-    
-  </dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>

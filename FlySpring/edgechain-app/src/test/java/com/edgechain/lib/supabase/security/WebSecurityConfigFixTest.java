@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@ContextConfiguration(name = "contextWithBadPattersAuthFilter")
+@ContextConfiguration(name = "contextWithEmptyPatternsAuthFilter")
 class WebSecurityConfigFixTest {
 
   // ====== TEST JWT-BASED SECURITY WITH NO ROLES (bearer token must be in header) ======
