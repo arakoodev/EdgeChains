@@ -7,7 +7,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public class PostgresTestContainer extends PostgreSQLContainer<PostgresTestContainer> {
   
-  public enum DB {
+  public enum PostgresImage {
     PLAIN,
     VECTOR
   };
@@ -21,8 +21,8 @@ public class PostgresTestContainer extends PostgreSQLContainer<PostgresTestConta
   
   private static final DockerImageName VECTOR_IMAGE = DockerImageName.parse("ankane/pgvector").asCompatibleSubstituteFor("postgres");
 
-  public PostgresTestContainer(DB db) {
-    super(db == DB.VECTOR ? VECTOR_IMAGE : IMAGE);
+  public PostgresTestContainer(PostgresImage img) {
+    super(img == PostgresImage.VECTOR ? VECTOR_IMAGE : IMAGE);
   }
 
   @Override

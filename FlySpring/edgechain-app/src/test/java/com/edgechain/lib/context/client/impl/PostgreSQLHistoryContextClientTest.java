@@ -3,7 +3,7 @@ package com.edgechain.lib.context.client.impl;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.testutil.PostgresTestContainer;
-import com.edgechain.testutil.PostgresTestContainer.DB;
+import com.edgechain.testutil.PostgresTestContainer.PostgresImage;
 import com.zaxxer.hikari.HikariConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,7 +27,7 @@ class PostgreSQLHistoryContextClientTest {
   private static final Logger LOGGER =
       LoggerFactory.getLogger(PostgreSQLHistoryContextClientTest.class);
 
-  private static PostgresTestContainer instance = new PostgresTestContainer(DB.PLAIN);
+  private static PostgresTestContainer instance = new PostgresTestContainer(PostgresImage.PLAIN);
 
   @BeforeAll
   static void baseSetupAll() {

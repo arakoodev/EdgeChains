@@ -7,7 +7,7 @@ import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.testutil.PostgresTestContainer;
-import com.edgechain.testutil.PostgresTestContainer.DB;
+import com.edgechain.testutil.PostgresTestContainer.PostgresImage;
 import com.zaxxer.hikari.HikariConfig;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,7 +36,7 @@ class PostgresClientTest {
 
   private static final float FLOAT_ERROR_MARGIN = 0.0001f;
 
-  private static PostgresTestContainer instance = new PostgresTestContainer(DB.VECTOR);
+  private static PostgresTestContainer instance = new PostgresTestContainer(PostgresImage.VECTOR);
 
   @BeforeAll
   static void setupAll() {
