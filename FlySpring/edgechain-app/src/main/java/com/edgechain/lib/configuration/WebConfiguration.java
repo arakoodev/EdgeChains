@@ -37,11 +37,11 @@ public class WebConfiguration {
   @Bean
   AuthFilter authFilter() {
     AuthFilter filter = new AuthFilter();
-    filter.setRequestPost(new MethodAuthentication(List.of(""), ""));
-    filter.setRequestGet(new MethodAuthentication(List.of(""), ""));
-    filter.setRequestDelete(new MethodAuthentication(List.of(""), ""));
-    filter.setRequestPatch(new MethodAuthentication(List.of(""), ""));
-    filter.setRequestPut(new MethodAuthentication(List.of(""), ""));
+    filter.setRequestPost(new MethodAuthentication(List.of("**"), ""));
+    filter.setRequestGet(new MethodAuthentication(List.of("**"), ""));
+    filter.setRequestDelete(new MethodAuthentication(List.of("**"), ""));
+    filter.setRequestPatch(new MethodAuthentication(List.of("**"), ""));
+    filter.setRequestPut(new MethodAuthentication(List.of("**"), ""));
 
     return filter;
   }

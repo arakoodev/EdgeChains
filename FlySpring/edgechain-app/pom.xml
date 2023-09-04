@@ -16,6 +16,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
+		<auth0-jwt.version>4.4.0</auth0-jwt.version>
 		<djl.version>0.23.0</djl.version>
 		<exp4j.version>0.4.8</exp4j.version>
 		<hibernate-validator>6.0.23.Final</hibernate-validator>
@@ -272,12 +273,19 @@
 			<scope>runtime</scope>
 		</dependency>
 
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+    
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>${auth0-jwt.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
