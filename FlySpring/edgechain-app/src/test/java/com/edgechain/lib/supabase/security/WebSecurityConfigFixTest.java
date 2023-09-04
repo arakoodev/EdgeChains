@@ -54,11 +54,9 @@ class WebSecurityConfigFixTest {
     }
   }
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
-  @Autowired
-  private JwtHelper jwtHelper;
+  @Autowired private JwtHelper jwtHelper;
 
   @Test
   void validateJwt() {
@@ -70,9 +68,9 @@ class WebSecurityConfigFixTest {
   void getEndpoint() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_IGNORED");
     mvc.perform(
-        get(FULL_NONCONTEXT_PATH)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            get(FULL_NONCONTEXT_PATH)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
@@ -80,10 +78,10 @@ class WebSecurityConfigFixTest {
   void postEndpoint() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_IGNORED");
     mvc.perform(
-        post(FULL_NONCONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            post(FULL_NONCONTEXT_PATH)
+                .content("{}")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
@@ -91,9 +89,9 @@ class WebSecurityConfigFixTest {
   void deleteEndpoint() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_IGNORED");
     mvc.perform(
-        delete(FULL_NONCONTEXT_PATH)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            delete(FULL_NONCONTEXT_PATH)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
@@ -101,10 +99,10 @@ class WebSecurityConfigFixTest {
   void patchEndpoint() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_IGNORED");
     mvc.perform(
-        patch(FULL_NONCONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            patch(FULL_NONCONTEXT_PATH)
+                .content("{}")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
@@ -112,11 +110,10 @@ class WebSecurityConfigFixTest {
   void putEndpoint() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_IGNORED");
     mvc.perform(
-        put(FULL_NONCONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            put(FULL_NONCONTEXT_PATH)
+                .content("{}")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
-
 }

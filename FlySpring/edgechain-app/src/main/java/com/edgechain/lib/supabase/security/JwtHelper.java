@@ -38,9 +38,8 @@ public class JwtHelper {
     try {
       parseToken(accessToken);
       return true;
-    }catch(JwtException e) {
+    } catch (JwtException e) {
       return false;
     }
   }
-  
 }
