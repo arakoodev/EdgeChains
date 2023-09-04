@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -31,6 +32,8 @@ import static org.mockito.Mockito.when;
 class PostgresClientTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresClientTest.class);
+
+  private static final float FLOAT_ERROR_MARGIN = 0.0001f;
 
   private static PostgresTestContainer instance = new PostgresTestContainer(DB.VECTOR);
 
@@ -72,7 +75,7 @@ class PostgresClientTest {
     batchInsertMetadata();
     insertIntoJoinTable(uuid1, uuid2);
     query_meta();
-    
+
     getChunks();
     getSimilarChunks();
   }
@@ -247,7 +250,7 @@ class PostgresClientTest {
     // WE1 from single upsert, and WE2 from batch upsert
     assertTrue(data.val.contains("WE1") && data.val.contains("WE2"));
   }
-  
+
   private void query_meta() {
     WordEmbeddings we1 = new WordEmbeddings();
     we1.setId("WEQUERY");
@@ -275,7 +278,7 @@ class PostgresClientTest {
 
     // WE1 from single joined upsert
     assertTrue(data.val.contains("WE1"));
-  }  
+  }
 
   private void getChunks() {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
@@ -284,9 +287,10 @@ class PostgresClientTest {
 
     final Data data = new Data();
     EdgeChain<List<PostgresWordEmbeddings>> result = service.getAllChunks(mockPe);
-    result.toSingle().blockingSubscribe(
-        s -> data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(",")),
-        e -> data.error = e);
+    result.toSingle().blockingSubscribe(s -> {
+      data.list = s;
+      data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(","));
+    }, e -> data.error = e);
     if (data.error != null) {
       fail("getChunks failed", data.error);
     }
@@ -294,6 +298,14 @@ class PostgresClientTest {
 
     // WE1 from single upsert, and WE2 from batch upsert
     assertTrue(data.val.contains("WE1") && data.val.contains("WE2"));
+
+    PostgresWordEmbeddings first = data.list.get(0);
+    assertEquals(0.25f, first.getValues().get(0), FLOAT_ERROR_MARGIN);
+    assertEquals(0.5f, first.getValues().get(1), FLOAT_ERROR_MARGIN);
+
+    PostgresWordEmbeddings second = data.list.get(1);
+    assertEquals(0.75f, second.getValues().get(0), FLOAT_ERROR_MARGIN);
+    assertEquals(0.9f, second.getValues().get(1), FLOAT_ERROR_MARGIN);
   }
 
   private void getSimilarChunks() {
@@ -311,11 +323,11 @@ class PostgresClientTest {
     }
     LOGGER.info("getSimilarMetadataChunk response: '{}'", data.val);
   }
-  
-  
+
   private static class Data {
     public Throwable error;
     public String val;
+    public List<PostgresWordEmbeddings> list;
   }
 
 }

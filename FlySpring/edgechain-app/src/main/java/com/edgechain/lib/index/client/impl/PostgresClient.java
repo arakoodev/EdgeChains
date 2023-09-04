@@ -28,11 +28,15 @@ public class PostgresClient {
   
   private static final Logger logger = LoggerFactory.getLogger(PostgresClient.class);
 
+  private static final TypeReference<List<Float>> FLOAT_TYPE_REF = new TypeReference<>() {};
+  
   private final PostgresClientRepository repository =
       ApplicationContextHolder.getContext().getBean(PostgresClientRepository.class);
   private final PostgresClientMetadataRepository metadataRepository =
       ApplicationContextHolder.getContext().getBean(PostgresClientMetadataRepository.class);
 
+  private final ObjectMapper objectMapper = new ObjectMapper();
+  
   public EdgeChain<StringResponse> createTable(PostgresEndpoint postgresEndpoint) {
     return new EdgeChain<>(
         Observable.create(
@@ -299,10 +303,10 @@ public class PostgresClient {
   }
 
   public EdgeChain<List<PostgresWordEmbeddings>> getAllChunks(PostgresEndpoint postgresEndpoint) {
-    ObjectMapper objectMapper = new ObjectMapper();
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
+              
               try {
                 List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
                 List<Map<String, Object>> rows = this.repository.getAllChunks(postgresEndpoint);
@@ -313,7 +317,7 @@ public class PostgresClient {
                   val.setFilename((String) row.get("filename"));
                   PGobject pgObject = (PGobject) row.get("embedding");
                   String jsonString = pgObject.getValue();
-                  List<Float> values = objectMapper.readValue(jsonString, new TypeReference<>() {});
+                  List<Float> values = objectMapper.readerFor(FLOAT_TYPE_REF).readValue(jsonString);
                   val.setValues(values);
                   wordEmbeddingsList.add(val);
                 }
