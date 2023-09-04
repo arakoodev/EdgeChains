@@ -74,7 +74,7 @@ public class JwtFilter extends OncePerRequestFilter {
       String role = (String) claimsJws.getBody().get("role");
 
       // use Spring Security logger here instead of SLF4J
-      logger.info("JWT accepted email=%s role=%s".formatted(email, role));
+      logger.info("JWT email=%s role=%s".formatted(email, role));
       
       User user = new User();
       user.setEmail(email);

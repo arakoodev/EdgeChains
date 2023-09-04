@@ -1,10 +1,6 @@
 package com.edgechain.lib.supabase.security;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.edgechain.lib.configuration.WebConfiguration;
-import com.edgechain.lib.configuration.domain.SecurityUUID;
-import java.util.Date;
+import com.edgechain.testutil.TestJwtCreator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,90 +22,77 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class WebSecurityJwtNoRoleTest {
 
-  private static final String FULL_NONCONTEXT_PATH = "/v0/endpoint/";
+  // ====== TEST JWT-BASED SECURITY WITH NO ROLES (bearer token must be in header) ======
 
-  private static String testJwt;
-  private static String jwtHeaderVal;
+  private static final String FULL_NONCONTEXT_PATH = "/v0/endpoint/";
 
   @BeforeAll
   static void setupAll() {
     System.setProperty("jwt.secret", "edge-chain-unit-test-jwt-secret");
-    testJwt = generateJwt();
-    jwtHeaderVal = "Bearer " + testJwt;
-  }
-
-  private static String generateJwt() {
-    Algorithm algo = Algorithm.HMAC256(System.getProperty("jwt.secret").getBytes());
-    Date d = new Date();
-    return JWT.create()
-        .withSubject("example JWT for testing")
-        .withClaim("email", "admin@machine.local")
-        .withClaim("role", "ROLE_ANONYMOUS")
-        .withIssuer("edgechain-tester")
-        .withIssuedAt(d)
-        .withExpiresAt(new Date(d.getTime() + 25000))
-        .sign(algo);
   }
 
   @Autowired
   private MockMvc mvc;
-  
+
   @Autowired
   private JwtHelper jwtHelper;
 
-  // ====== TEST JWT-BASED SECURITY (bearer token must be in header) ======
-  
   @Test
   void validateJwt() {
-    assertTrue(jwtHelper.validate(testJwt));
+    String jwt = TestJwtCreator.generate("ROLE_IGNORED");
+    assertTrue(jwtHelper.validate(jwt));
   }
 
   @Test
-  void getNonContextEndpoint() throws Exception {
-    
+  void getEndpoint() throws Exception {
+    String jwt = TestJwtCreator.generate("ROLE_IGNORED");
     mvc.perform(
         get(FULL_NONCONTEXT_PATH)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", jwtHeaderVal))
+            .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  void postNonContextEndpoint() throws Exception {
+  void postEndpoint() throws Exception {
+    String jwt = TestJwtCreator.generate("ROLE_IGNORED");
     mvc.perform(
         post(FULL_NONCONTEXT_PATH)
             .content("{}")
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", jwtHeaderVal))
+            .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  void deleteNonContextEndpoint() throws Exception {
+  void deleteEndpoint() throws Exception {
+    String jwt = TestJwtCreator.generate("ROLE_IGNORED");
     mvc.perform(
         delete(FULL_NONCONTEXT_PATH)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", jwtHeaderVal))
+            .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  void patchNonContextEndpoint() throws Exception {
+  void patchEndpoint() throws Exception {
+    String jwt = TestJwtCreator.generate("ROLE_IGNORED");
     mvc.perform(
         patch(FULL_NONCONTEXT_PATH)
             .content("{}")
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", jwtHeaderVal))
+            .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  void putNonContextEndpoint() throws Exception {
+  void putEndpoint() throws Exception {
+    String jwt = TestJwtCreator.generate("ROLE_IGNORED");
     mvc.perform(
         put(FULL_NONCONTEXT_PATH)
             .content("{}")
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", jwtHeaderVal))
+            .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 

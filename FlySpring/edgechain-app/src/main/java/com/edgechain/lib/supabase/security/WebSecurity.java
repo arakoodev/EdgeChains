@@ -4,6 +4,7 @@ import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.configuration.domain.AuthFilter;
 import java.util.Arrays;
 import java.util.Objects;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -71,25 +72,34 @@ public class WebSecurity {
         .permitAll();
     
     reg = applyAuth(
-        reg.requestMatchers(HttpMethod.POST, authFilter.getRequestPost().getRequests()), 
+        reg.requestMatchers(HttpMethod.POST, safeRequests(authFilter.getRequestPost().getRequests(), "POST")), 
         authFilter.getRequestPost().getAuthorities());
     reg = applyAuth(
-        reg.requestMatchers(HttpMethod.GET, authFilter.getRequestGet().getRequests()), 
+        reg.requestMatchers(HttpMethod.GET, safeRequests(authFilter.getRequestGet().getRequests(), "GET")), 
         authFilter.getRequestGet().getAuthorities());
     reg = applyAuth(
-        reg.requestMatchers(HttpMethod.DELETE, authFilter.getRequestDelete().getRequests()), 
+        reg.requestMatchers(HttpMethod.DELETE, safeRequests(authFilter.getRequestDelete().getRequests(), "DELETE")), 
         authFilter.getRequestDelete().getAuthorities());
     reg = applyAuth(
-        reg.requestMatchers(HttpMethod.PUT, authFilter.getRequestPut().getRequests()), 
+        reg.requestMatchers(HttpMethod.PUT, safeRequests(authFilter.getRequestPut().getRequests(), "PUT")), 
         authFilter.getRequestPut().getAuthorities());
     reg = applyAuth(
-        reg.requestMatchers(HttpMethod.PATCH, authFilter.getRequestPatch().getRequests()), 
+        reg.requestMatchers(HttpMethod.PATCH, safeRequests(authFilter.getRequestPatch().getRequests(), "PATCH")), 
         authFilter.getRequestPatch().getAuthorities());
         
     reg = reg
         .anyRequest()
         .permitAll();
     return reg;
+  }
+  
+  private String[] safeRequests(String[] src, String method) {
+    if (src == null || src.length == 0 || (src.length == 1 && src[0].isEmpty())) {
+      LoggerFactory.getLogger(getClass()).warn("Http {} security request patterns outdated. Fixed to a list with one String \"**\" - please update your configuration", method);
+      return new String[] {"**"};
+    }else {
+      return src;
+    }
   }
   
   private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry applyAuth(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl url, String[] auths) {
