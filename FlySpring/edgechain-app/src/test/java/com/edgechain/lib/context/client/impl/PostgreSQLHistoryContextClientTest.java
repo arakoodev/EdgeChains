@@ -88,5 +88,4 @@ class PostgreSQLHistoryContextClientTest {
     public String id;
     public String val;
   }
-
 }

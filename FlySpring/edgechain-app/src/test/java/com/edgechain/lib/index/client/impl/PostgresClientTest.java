@@ -48,11 +48,9 @@ class PostgresClientTest {
     instance.stop();
   }
 
-  @Autowired
-  private HikariConfig hikariConfig;
+  @Autowired private HikariConfig hikariConfig;
 
-  @Autowired
-  private PostgresClient service;
+  @Autowired private PostgresClient service;
 
   @Test
   void allMethods() {
@@ -85,8 +83,8 @@ class PostgresClientTest {
 
     // create table again
     createTable_metric(null, "testtable");
-}
-  
+  }
+
   private void createTable_metric(PostgresDistanceMetric metric, String tableName) {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
     when(mockPe.getTableName()).thenReturn(tableName);
@@ -174,9 +172,11 @@ class PostgresClientTest {
 
     final Data data = new Data();
     EdgeChain<List<StringResponse>> result = service.batchUpsert(mockPe);
-    result.toSingle().blockingSubscribe(
-        s -> data.val = s.stream().map(r -> r.getResponse()).collect(Collectors.joining(",")),
-        e -> data.error = e);
+    result
+        .toSingle()
+        .blockingSubscribe(
+            s -> data.val = s.stream().map(r -> r.getResponse()).collect(Collectors.joining(",")),
+            e -> data.error = e);
     if (data.error != null) {
       fail("batchUpsert failed", data.error);
     }
@@ -190,9 +190,11 @@ class PostgresClientTest {
 
     final Data data = new Data();
     EdgeChain<List<StringResponse>> result = service.batchInsertMetadata(mockPe);
-    result.toSingle().blockingSubscribe(
-        s -> data.val = s.stream().map(r -> r.getResponse()).collect(Collectors.joining(",")),
-        e -> data.error = e);
+    result
+        .toSingle()
+        .blockingSubscribe(
+            s -> data.val = s.stream().map(r -> r.getResponse()).collect(Collectors.joining(",")),
+            e -> data.error = e);
     if (data.error != null) {
       fail("batchInsertMetadata failed", data.error);
     }
@@ -221,7 +223,7 @@ class PostgresClientTest {
     deleteAll_namespace("", "knowledge");
     deleteAll_namespace("testns", "testns");
   }
-  
+
   private void deleteAll_namespace(String namespace, String expected) {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
     when(mockPe.getTableName()).thenReturn("testtable");
@@ -242,7 +244,7 @@ class PostgresClientTest {
     query_noMeta_metric(PostgresDistanceMetric.IP);
     query_noMeta_metric(PostgresDistanceMetric.L2);
   }
-  
+
   private void query_noMeta_metric(PostgresDistanceMetric metric) {
     WordEmbeddings we1 = new WordEmbeddings();
     we1.setId("WEQUERY");
@@ -260,9 +262,11 @@ class PostgresClientTest {
 
     final Data data = new Data();
     EdgeChain<List<PostgresWordEmbeddings>> result = service.query(mockPe);
-    result.toSingle().blockingSubscribe(
-        s -> data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(",")),
-        e -> data.error = e);
+    result
+        .toSingle()
+        .blockingSubscribe(
+            s -> data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(",")),
+            e -> data.error = e);
     if (data.error != null) {
       fail("query (no meta) failed", data.error);
     }
@@ -277,7 +281,7 @@ class PostgresClientTest {
     query_meta_metric(PostgresDistanceMetric.IP);
     query_meta_metric(PostgresDistanceMetric.L2);
   }
-  
+
   private void query_meta_metric(PostgresDistanceMetric metric) {
     WordEmbeddings we1 = new WordEmbeddings();
     we1.setId("WEQUERY");
@@ -295,9 +299,11 @@ class PostgresClientTest {
 
     final Data data = new Data();
     EdgeChain<List<PostgresWordEmbeddings>> result = service.queryWithMetadata(mockPe);
-    result.toSingle().blockingSubscribe(
-        s -> data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(",")),
-        e -> data.error = e);
+    result
+        .toSingle()
+        .blockingSubscribe(
+            s -> data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(",")),
+            e -> data.error = e);
     if (data.error != null) {
       fail("query (meta) failed", data.error);
     }
@@ -314,10 +320,14 @@ class PostgresClientTest {
 
     final Data data = new Data();
     EdgeChain<List<PostgresWordEmbeddings>> result = service.getAllChunks(mockPe);
-    result.toSingle().blockingSubscribe(s -> {
-      data.list = s;
-      data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(","));
-    }, e -> data.error = e);
+    result
+        .toSingle()
+        .blockingSubscribe(
+            s -> {
+              data.list = s;
+              data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(","));
+            },
+            e -> data.error = e);
     if (data.error != null) {
       fail("getChunks failed", data.error);
     }
@@ -342,10 +352,14 @@ class PostgresClientTest {
 
     final Data data = new Data();
     EdgeChain<List<PostgresWordEmbeddings>> result = service.getSimilarMetadataChunk(mockPe);
-    result.toSingle().blockingSubscribe(s -> {
-      data.list = s;
-      data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(","));
-    }, e -> data.error = e);
+    result
+        .toSingle()
+        .blockingSubscribe(
+            s -> {
+              data.list = s;
+              data.val = s.stream().map(r -> r.getRawText()).collect(Collectors.joining(","));
+            },
+            e -> data.error = e);
     if (data.error != null) {
       fail("getSimilarMetadataChunk failed", data.error);
     }
@@ -357,5 +371,4 @@ class PostgresClientTest {
     public String val;
     public List<PostgresWordEmbeddings> list;
   }
-
 }
