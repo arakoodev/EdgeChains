@@ -22,5 +22,4 @@ public final class TestJwtCreator {
         .withExpiresAt(new Date(d.getTime() + 25000))
         .sign(algo);
   }
-
 }

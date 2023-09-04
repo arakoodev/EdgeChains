@@ -55,11 +55,9 @@ class WebSecurityJwtWithRoleTest {
     System.setProperty("jwt.secret", "edge-chain-unit-test-jwt-secret");
   }
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
-  @Autowired
-  private JwtHelper jwtHelper;
+  @Autowired private JwtHelper jwtHelper;
 
   @Test
   void validateJwt() {
@@ -71,9 +69,9 @@ class WebSecurityJwtWithRoleTest {
   void getEndpoint() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_ADMIN1");
     mvc.perform(
-        get(FULL_NONCONTEXT_PATH)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            get(FULL_NONCONTEXT_PATH)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
@@ -81,9 +79,9 @@ class WebSecurityJwtWithRoleTest {
   void getEndpoint_notAuth() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_NO_ACCESS");
     mvc.perform(
-        get(FULL_NONCONTEXT_PATH)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            get(FULL_NONCONTEXT_PATH)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isForbidden());
   }
 
@@ -91,10 +89,10 @@ class WebSecurityJwtWithRoleTest {
   void postEndpoint() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_ADMIN4");
     mvc.perform(
-        post(FULL_NONCONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            post(FULL_NONCONTEXT_PATH)
+                .content("{}")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
@@ -102,10 +100,10 @@ class WebSecurityJwtWithRoleTest {
   void postEndpoint_notAuth() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_NO_ACCESS");
     mvc.perform(
-        post(FULL_NONCONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            post(FULL_NONCONTEXT_PATH)
+                .content("{}")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isForbidden());
   }
 
@@ -113,9 +111,9 @@ class WebSecurityJwtWithRoleTest {
   void deleteEndpoint() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_ADMIN2");
     mvc.perform(
-        delete(FULL_NONCONTEXT_PATH)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            delete(FULL_NONCONTEXT_PATH)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
@@ -123,9 +121,9 @@ class WebSecurityJwtWithRoleTest {
   void deleteEndpoint_notAuth() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_NO_ACCESS");
     mvc.perform(
-        delete(FULL_NONCONTEXT_PATH)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            delete(FULL_NONCONTEXT_PATH)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isForbidden());
   }
 
@@ -133,10 +131,10 @@ class WebSecurityJwtWithRoleTest {
   void patchEndpoint() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_ADMIN3");
     mvc.perform(
-        patch(FULL_NONCONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            patch(FULL_NONCONTEXT_PATH)
+                .content("{}")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
@@ -144,10 +142,10 @@ class WebSecurityJwtWithRoleTest {
   void patchEndpoint_notAuth() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_NO_ACCESS");
     mvc.perform(
-        patch(FULL_NONCONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            patch(FULL_NONCONTEXT_PATH)
+                .content("{}")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isForbidden());
   }
 
@@ -155,10 +153,10 @@ class WebSecurityJwtWithRoleTest {
   void putEndpoint() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_ADMIN5");
     mvc.perform(
-        put(FULL_NONCONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            put(FULL_NONCONTEXT_PATH)
+                .content("{}")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isNotFound());
   }
 
@@ -166,11 +164,10 @@ class WebSecurityJwtWithRoleTest {
   void putEndpoint_notAuth() throws Exception {
     String jwt = TestJwtCreator.generate("ROLE_NO_ACCESS");
     mvc.perform(
-        put(FULL_NONCONTEXT_PATH)
-            .content("{}")
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header("Authorization", "Bearer " + jwt))
+            put(FULL_NONCONTEXT_PATH)
+                .content("{}")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization", "Bearer " + jwt))
         .andExpect(status().isForbidden());
   }
-
 }

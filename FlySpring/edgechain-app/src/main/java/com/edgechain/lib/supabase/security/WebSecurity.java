@@ -39,8 +39,7 @@ public class WebSecurity {
   @Autowired private JwtFilter jwtFilter;
 
   @Bean
-  AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-      throws Exception {
+  AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
     return config.getAuthenticationManager();
   }
 
@@ -65,47 +64,63 @@ public class WebSecurity {
     return http.build();
   }
 
-  private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry buildAuth(
-      AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {    
-    AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry reg = auth
-        .requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**")
-        .permitAll();
-    
-    reg = applyAuth(
-        reg.requestMatchers(HttpMethod.POST, safeRequests(authFilter.getRequestPost().getRequests(), "POST")), 
-        authFilter.getRequestPost().getAuthorities());
-    reg = applyAuth(
-        reg.requestMatchers(HttpMethod.GET, safeRequests(authFilter.getRequestGet().getRequests(), "GET")), 
-        authFilter.getRequestGet().getAuthorities());
-    reg = applyAuth(
-        reg.requestMatchers(HttpMethod.DELETE, safeRequests(authFilter.getRequestDelete().getRequests(), "DELETE")), 
-        authFilter.getRequestDelete().getAuthorities());
-    reg = applyAuth(
-        reg.requestMatchers(HttpMethod.PUT, safeRequests(authFilter.getRequestPut().getRequests(), "PUT")), 
-        authFilter.getRequestPut().getAuthorities());
-    reg = applyAuth(
-        reg.requestMatchers(HttpMethod.PATCH, safeRequests(authFilter.getRequestPatch().getRequests(), "PATCH")), 
-        authFilter.getRequestPatch().getAuthorities());
-        
-    reg = reg
-        .anyRequest()
-        .permitAll();
+  private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+      buildAuth(
+          AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+              auth) {
+    AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry reg =
+        auth.requestMatchers("" + WebConfiguration.CONTEXT_PATH + "/**").permitAll();
+
+    reg =
+        applyAuth(
+            reg.requestMatchers(
+                HttpMethod.POST, safeRequests(authFilter.getRequestPost().getRequests(), "POST")),
+            authFilter.getRequestPost().getAuthorities());
+    reg =
+        applyAuth(
+            reg.requestMatchers(
+                HttpMethod.GET, safeRequests(authFilter.getRequestGet().getRequests(), "GET")),
+            authFilter.getRequestGet().getAuthorities());
+    reg =
+        applyAuth(
+            reg.requestMatchers(
+                HttpMethod.DELETE,
+                safeRequests(authFilter.getRequestDelete().getRequests(), "DELETE")),
+            authFilter.getRequestDelete().getAuthorities());
+    reg =
+        applyAuth(
+            reg.requestMatchers(
+                HttpMethod.PUT, safeRequests(authFilter.getRequestPut().getRequests(), "PUT")),
+            authFilter.getRequestPut().getAuthorities());
+    reg =
+        applyAuth(
+            reg.requestMatchers(
+                HttpMethod.PATCH,
+                safeRequests(authFilter.getRequestPatch().getRequests(), "PATCH")),
+            authFilter.getRequestPatch().getAuthorities());
+
+    reg = reg.anyRequest().permitAll();
     return reg;
   }
-  
+
   private String[] safeRequests(String[] src, String method) {
     if (src == null || src.length == 0 || (src.length == 1 && src[0].isEmpty())) {
-      LoggerFactory.getLogger(getClass()).warn("Http {} security request patterns outdated. Fixed to a list with one String \"**\" - please update your configuration", method);
+      LoggerFactory.getLogger(getClass())
+          .warn(
+              "Http {} security request patterns outdated. Fixed to a list with one String \"**\" -"
+                  + " please update your configuration",
+              method);
       return new String[] {"**"};
-    }else {
+    } else {
       return src;
     }
   }
-  
-  private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry applyAuth(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl url, String[] auths) {
+
+  private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+      applyAuth(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl url, String[] auths) {
     if (auths == null || auths.length == 0 || (auths.length == 1 && auths[0].isEmpty())) {
       return url.permitAll();
-    }else {
+    } else {
       return url.hasAnyAuthority(auths);
     }
   }
