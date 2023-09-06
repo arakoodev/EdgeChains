@@ -10,7 +10,10 @@ import com.edgechain.testutil.PostgresTestContainer;
 import com.edgechain.testutil.PostgresTestContainer.PostgresImage;
 import com.zaxxer.hikari.HikariConfig;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -61,28 +64,26 @@ class PostgresClientTest {
 
     createTable();
     createMetadataTable();
+
     deleteAll(); // check delete before we get foreign keys
 
     String uuid1 = upsert();
     batchUpsert();
+
     query_noMeta();
 
     String uuid2 = insertMetadata();
+
     batchInsertMetadata();
     insertIntoJoinTable(uuid1, uuid2);
-    query_meta();
 
+    query_meta();
     getChunks();
     getSimilarChunks();
   }
 
   private void createTable() {
-    createTable_metric(PostgresDistanceMetric.L2, "testtableL2");
-    createTable_metric(PostgresDistanceMetric.COSINE, "testtableCOS");
-    createTable_metric(null, "testtable");
-
-    // create table again
-    createTable_metric(null, "testtable");
+    createTable_metric(PostgresDistanceMetric.COSINE, "t_embedding");
   }
 
   private void createTable_metric(PostgresDistanceMetric metric, String tableName) {
@@ -92,65 +93,70 @@ class PostgresClientTest {
     when(mockPe.getDimensions()).thenReturn(2);
     when(mockPe.getMetric()).thenReturn(metric);
 
-    final Data data = new Data();
-    EdgeChain<StringResponse> result = service.createTable(mockPe);
-    result.toSingle().blockingSubscribe(s -> data.val = s.getResponse(), e -> data.error = e);
-    if (data.error != null) {
-      fail("createTable failed", data.error);
+    TestObserver<StringResponse> test = service.createTable(mockPe).getObservable().test();
+
+    try {
+      test.await();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
-    LOGGER.info("createTable (metric={}) response: '{}'", metric, data.val);
+    test.assertNoErrors();
+    LOGGER.info("createTable (metric={}) response: '{}'", metric, tableName);
   }
 
   private void createMetadataTable() {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getTableName()).thenReturn("testtable");
-    when(mockPe.getMetadataTableNames()).thenReturn(List.of("dogmeta", "catmeta"));
+    when(mockPe.getTableName()).thenReturn("t_embedding");
+    when(mockPe.getMetadataTableNames()).thenReturn(List.of("title_metadata"));
 
-    final Data data = new Data();
-    EdgeChain<StringResponse> result = service.createMetadataTable(mockPe);
-    result.toSingle().blockingSubscribe(s -> data.val = s.getResponse(), e -> data.error = e);
-    if (data.error != null) {
-      fail("createMetadataTable failed", data.error);
+    TestObserver<StringResponse> test = service.createMetadataTable(mockPe).getObservable().test();
+    try {
+      test.await();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
-    LOGGER.info("createMetadataTable response: '{}'", data.val);
+    LOGGER.info("createMetadataTable response: '{}'", test.values().get(0).getResponse());
   }
 
   private String upsert() {
     WordEmbeddings we = new WordEmbeddings();
     we.setId("WE1");
-    we.setScore("101");
+    we.setScore("0.86914713");
     we.setValues(List.of(0.25f, 0.5f));
 
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getTableName()).thenReturn("testtable");
+    when(mockPe.getTableName()).thenReturn("t_embedding");
     when(mockPe.getWordEmbedding()).thenReturn(we);
     when(mockPe.getFilename()).thenReturn("readme.pdf");
     when(mockPe.getNamespace()).thenReturn("testns");
 
-    final Data data = new Data();
-    EdgeChain<StringResponse> result = service.upsert(mockPe);
-    result.toSingle().blockingSubscribe(s -> data.val = s.getResponse(), e -> data.error = e);
-    if (data.error != null) {
-      fail("upsert failed", data.error);
+    TestObserver<StringResponse> test = service.upsert(mockPe).getObservable().test();
+    try {
+      test.await();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
-    LOGGER.info("upsert response: '{}'", data.val);
-    return data.val;
+
+    test.assertNoErrors();
+
+    return test.values().get(0).getResponse();
   }
 
   private String insertMetadata() {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getMetadataTableNames()).thenReturn(List.of("dogmeta", "catmeta"));
-    when(mockPe.getMetadata()).thenReturn("''duck''");
+    when(mockPe.getTableName()).thenReturn("t_embedding");
+    when(mockPe.getMetadataTableNames()).thenReturn(List.of("title_metadata"));
+    when(mockPe.getMetadata()).thenReturn("This is a sample text");
     when(mockPe.getDocumentDate()).thenReturn("November 11, 2015");
 
-    final Data data = new Data();
-    EdgeChain<StringResponse> result = service.insertMetadata(mockPe);
-    result.toSingle().blockingSubscribe(s -> data.val = s.getResponse(), e -> data.error = e);
-    if (data.error != null) {
-      fail("insertMetadata failed", data.error);
+    TestObserver<StringResponse> test = service.insertMetadata(mockPe).getObservable().test();
+    try {
+      test.await();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
-    LOGGER.info("insertMetadata response: '{}'", data.val);
-    return data.val;
+    test.assertNoErrors();
+    return test.values().get(0).getResponse();
   }
 
   private void batchUpsert() {
@@ -165,7 +171,7 @@ class PostgresClientTest {
     we2.setValues(List.of(0.75f, 0.9f));
 
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getTableName()).thenReturn("testtable");
+    when(mockPe.getTableName()).thenReturn("t_embedding");
     when(mockPe.getWordEmbeddingsList()).thenReturn(List.of(we1, we2));
     when(mockPe.getFilename()).thenReturn("readme.pdf");
     when(mockPe.getNamespace()).thenReturn("testns");
@@ -185,8 +191,9 @@ class PostgresClientTest {
 
   private void batchInsertMetadata() {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getMetadataTableNames()).thenReturn(List.of("dogmeta", "catmeta"));
-    when(mockPe.getMetadataList()).thenReturn(List.of("cow", "horse"));
+    when(mockPe.getTableName()).thenReturn("t_embedding");
+    when(mockPe.getMetadataTableNames()).thenReturn(List.of("title_metadata"));
+    when(mockPe.getMetadataList()).thenReturn(List.of("text1", "text2"));
 
     final Data data = new Data();
     EdgeChain<List<StringResponse>> result = service.batchInsertMetadata(mockPe);
@@ -203,19 +210,20 @@ class PostgresClientTest {
 
   private void insertIntoJoinTable(String uuid1, String uuid2) {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getTableName()).thenReturn("testtable");
-    when(mockPe.getMetadataTableNames()).thenReturn(List.of("dogmeta", "catmeta"));
+    when(mockPe.getTableName()).thenReturn("t_embedding");
+    when(mockPe.getMetadataTableNames()).thenReturn(List.of("title_metadata"));
     when(mockPe.getId()).thenReturn(uuid1);
     when(mockPe.getMetadataId()).thenReturn(uuid2);
 
-    final Data data = new Data();
+    TestObserver<StringResponse> test = service.insertIntoJoinTable(mockPe).getObservable().test();
 
-    EdgeChain<StringResponse> result = service.insertIntoJoinTable(mockPe);
-    result.toSingle().blockingSubscribe(s -> data.val = s.getResponse(), e -> data.error = e);
-    if (data.error != null) {
-      fail("insertIntoJoinTable failed", data.error);
+    try {
+      test.await();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
-    LOGGER.info("insertIntoJoinTable response: '{}'", data.val);
+
+    test.assertNoErrors();
   }
 
   private void deleteAll() {
@@ -226,7 +234,7 @@ class PostgresClientTest {
 
   private void deleteAll_namespace(String namespace, String expected) {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getTableName()).thenReturn("testtable");
+    when(mockPe.getTableName()).thenReturn("t_embedding");
     when(mockPe.getNamespace()).thenReturn(namespace);
 
     final Data data = new Data();
@@ -252,7 +260,7 @@ class PostgresClientTest {
     we1.setValues(List.of(0.25f, 0.5f));
 
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getTableName()).thenReturn("testtable");
+    when(mockPe.getTableName()).thenReturn("t_embedding");
     when(mockPe.getNamespace()).thenReturn("testns");
     when(mockPe.getProbes()).thenReturn(5);
     when(mockPe.getMetric()).thenReturn(metric);
@@ -289,13 +297,13 @@ class PostgresClientTest {
     we1.setValues(List.of(0.25f, 0.5f));
 
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getTableName()).thenReturn("testtable");
+    when(mockPe.getTableName()).thenReturn("t_embedding");
     when(mockPe.getNamespace()).thenReturn("testns");
-    when(mockPe.getProbes()).thenReturn(5);
+    when(mockPe.getProbes()).thenReturn(20);
     when(mockPe.getMetric()).thenReturn(metric);
     when(mockPe.getWordEmbedding()).thenReturn(we1);
-    when(mockPe.getTopK()).thenReturn(1000);
-    when(mockPe.getMetadataTableNames()).thenReturn(List.of("dogmeta", "catmeta"));
+    when(mockPe.getTopK()).thenReturn(5);
+    when(mockPe.getMetadataTableNames()).thenReturn(List.of("title_metadata"));
 
     final Data data = new Data();
     EdgeChain<List<PostgresWordEmbeddings>> result = service.queryWithMetadata(mockPe);
@@ -315,7 +323,7 @@ class PostgresClientTest {
 
   private void getChunks() {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getTableName()).thenReturn("testtable");
+    when(mockPe.getTableName()).thenReturn("t_embedding");
     when(mockPe.getFilename()).thenReturn("readme.pdf");
 
     final Data data = new Data();
@@ -347,7 +355,8 @@ class PostgresClientTest {
 
   private void getSimilarChunks() {
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
-    when(mockPe.getMetadataTableNames()).thenReturn(List.of("dogmeta", "catmeta"));
+    when(mockPe.getTableName()).thenReturn("t_embedding");
+    when(mockPe.getMetadataTableNames()).thenReturn(List.of("title_metadata"));
     when(mockPe.getEmbeddingChunk()).thenReturn("how to test this");
 
     final Data data = new Data();

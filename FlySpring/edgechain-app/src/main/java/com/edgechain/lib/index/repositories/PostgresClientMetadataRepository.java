@@ -24,33 +24,37 @@ public class PostgresClientMetadataRepository {
         String.format(
             "CREATE TABLE IF NOT EXISTS %s (metadata_id UUID PRIMARY KEY, metadata TEXT NOT NULL,"
                 + " document_date DATE);",
-            metadataTable));
+            postgresEndpoint.getTableName() + "_" + metadataTable));
 
     // Create a JOIN table
     jdbcTemplate.execute(
         String.format(
-            "CREATE TABLE IF NOT EXISTS %s (id UUID, metadata_id UUID, "
+            "CREATE TABLE IF NOT EXISTS %s (id UUID UNIQUE NOT NULL, metadata_id UUID NOT NULL, "
                 + "FOREIGN KEY (id) REFERENCES %s(id), "
                 + "FOREIGN KEY (metadata_id) REFERENCES %s(metadata_id), "
                 + "PRIMARY KEY (id, metadata_id));",
             postgresEndpoint.getTableName() + "_join_" + metadataTable,
             postgresEndpoint.getTableName(),
-            metadataTable));
+            postgresEndpoint.getTableName() + "_" + metadataTable));
   }
 
   @Transactional
-  public List<String> batchInsertMetadata(String metadataTableName, List<String> metadataList) {
+  public List<String> batchInsertMetadata(
+      String table, String metadataTableName, List<String> metadataList) {
 
     Set<String> uuidSet = new HashSet<>();
 
     for (int i = 0; i < metadataList.size(); i++) {
+
+      String metadata = metadataList.get(i).replace("'", "");
+
       UUID metadataId =
           jdbcTemplate.queryForObject(
               String.format(
-                  "INSERT INTO %s (metadata_id, metadata) VALUES ('%s', '%s') RETURNING"
-                      + " metadata_id;",
-                  metadataTableName, UuidCreator.getTimeOrderedEpoch(), metadataList.get(i)),
-              UUID.class);
+                  "INSERT INTO %s (metadata_id, metadata) VALUES ('%s', ?) RETURNING metadata_id;",
+                  table.concat("_").concat(metadataTableName), UuidCreator.getTimeOrderedEpoch()),
+              UUID.class,
+              metadata);
 
       if (metadataId != null) {
         uuidSet.add(metadataId.toString());
@@ -61,15 +65,21 @@ public class PostgresClientMetadataRepository {
   }
 
   @Transactional
-  public String insertMetadata(String metadataTableName, String metadata, String documentDate) {
+  public String insertMetadata(
+      String table, String metadataTableName, String metadata, String documentDate) {
 
-    UUID uuid = UuidCreator.getTimeOrderedEpoch();
-    jdbcTemplate.update(
-        String.format(
-            "INSERT INTO %s (metadata_id, metadata, document_date) VALUES ('%s', '%s',"
-                + " TO_DATE(NULLIF('%s', ''), 'Month DD, YYYY'));",
-            metadataTableName, uuid, metadata, documentDate));
-    return uuid.toString();
+    metadata = metadata.replace("'", "");
+
+    UUID metadataId =
+        jdbcTemplate.queryForObject(
+            String.format(
+                "INSERT INTO %s (metadata_id, metadata, document_date) VALUES ('%s', ?, TO_DATE(NULLIF(?, ''), 'Month DD, YYYY')) RETURNING metadata_id;",
+                table.concat("_").concat(metadataTableName), UuidCreator.getTimeOrderedEpoch()),
+            UUID.class,
+            metadata,
+            documentDate);
+
+    return Objects.requireNonNull(metadataId).toString();
   }
 
   @Transactional
@@ -80,7 +90,7 @@ public class PostgresClientMetadataRepository {
             + postgresEndpoint.getMetadataTableNames().get(0);
     jdbcTemplate.execute(
         String.format(
-            "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s');",
+            "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s') ON CONFLICT (id) DO UPDATE SET metadata_id = EXCLUDED.metadata_id;",
             joinTableName,
             UUID.fromString(postgresEndpoint.getId()),
             UUID.fromString(postgresEndpoint.getMetadataId())));
@@ -112,7 +122,7 @@ public class PostgresClientMetadataRepository {
               embeddings,
               tableName,
               joinTable,
-              metadataTableName,
+              tableName.concat("_").concat(metadataTableName),
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
               embeddings,
@@ -129,7 +139,7 @@ public class PostgresClientMetadataRepository {
               embeddings,
               tableName,
               joinTable,
-              metadataTableName,
+              tableName.concat("_").concat(metadataTableName),
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
               embeddings,
@@ -145,7 +155,7 @@ public class PostgresClientMetadataRepository {
               embeddings,
               tableName,
               joinTable,
-              metadataTableName,
+              tableName.concat("_").concat(metadataTableName),
               namespace,
               PostgresDistanceMetric.getDistanceMetric(metric),
               embeddings,
@@ -156,10 +166,12 @@ public class PostgresClientMetadataRepository {
   // Full-text search
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
   public List<Map<String, Object>> getSimilarMetadataChunk(
-      String metadataTableName, String embeddingChunk) {
+      String table, String metadataTableName, String embeddingChunk) {
     // Remove special characters and replace with a space
     String cleanEmbeddingChunk =
         embeddingChunk.replaceAll("[^a-zA-Z0-9\\s]", " ").replaceAll("\\s+", " ").trim();
+
+    String tableName = table.concat("_").concat(metadataTableName);
 
     // Split the embeddingChunk into words and join them with the '|' (OR) operator
     String tsquery = String.join(" | ", cleanEmbeddingChunk.split("\\s+"));
@@ -168,6 +180,6 @@ public class PostgresClientMetadataRepository {
             "SELECT *, ts_rank(to_tsvector(%s.metadata), query) as rank_metadata "
                 + "FROM %s, to_tsvector(%s.metadata) document, to_tsquery('%s') query "
                 + "WHERE query @@ document ORDER BY rank_metadata DESC",
-            metadataTableName, metadataTableName, metadataTableName, tsquery));
+            tableName, tableName, tableName, tsquery));
   }
 }

@@ -54,6 +54,11 @@ public class PostgresEndpoint extends Endpoint {
     this.tableName = tableName;
   }
 
+  public PostgresEndpoint(String tableName, String namespace) {
+    this.tableName = tableName;
+    this.namespace = namespace;
+  }
+
   public PostgresEndpoint(String tableName, List<String> metadataTableNames) {
     this.tableName = tableName;
     this.metadataTableNames = metadataTableNames;
@@ -62,6 +67,12 @@ public class PostgresEndpoint extends Endpoint {
   public PostgresEndpoint(String tableName, RetryPolicy retryPolicy) {
     super(retryPolicy);
     this.tableName = tableName;
+  }
+
+  public PostgresEndpoint(String tableName, String namespace, RetryPolicy retryPolicy) {
+    super(retryPolicy);
+    this.tableName = tableName;
+    this.namespace = namespace;
   }
 
   public String getTableName() {
@@ -185,7 +196,8 @@ public class PostgresEndpoint extends Endpoint {
     return this.postgresService.createTable(this).blockingGet();
   }
 
-  public StringResponse createMetadataTable() {
+  public StringResponse createMetadataTable(String metadataTableName) {
+    this.metadataTableNames = List.of(metadataTableName);
     return this.postgresService.createMetadataTable(this).blockingGet();
   }
 
@@ -195,9 +207,11 @@ public class PostgresEndpoint extends Endpoint {
     return this.postgresService.batchUpsert(this).blockingGet();
   }
 
-  public StringResponse insertMetadata(String metadata, String documentDate) {
+  public StringResponse insertMetadata(
+      String metadataTableName, String metadata, String documentDate) {
     this.metadata = metadata;
     this.documentDate = documentDate;
+    this.metadataTableNames = List.of(metadataTableName);
     return this.postgresService.insertMetadata(this).blockingGet();
   }
 
@@ -206,9 +220,11 @@ public class PostgresEndpoint extends Endpoint {
     return this.postgresService.batchInsertMetadata(this).blockingGet();
   }
 
-  public StringResponse insertIntoJoinTable(String id, String metadataId) {
+  public StringResponse insertIntoJoinTable(
+      String metadataTableName, String id, String metadataId) {
     this.id = id;
     this.metadataId = metadataId;
+    this.metadataTableNames = List.of(metadataTableName);
     return this.postgresService.insertIntoJoinTable(this).blockingGet();
   }
 
@@ -231,7 +247,11 @@ public class PostgresEndpoint extends Endpoint {
   }
 
   public Observable<List<PostgresWordEmbeddings>> queryWithMetadata(
-      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
+      List<String> metadataTableNames,
+      WordEmbeddings wordEmbeddings,
+      PostgresDistanceMetric metric,
+      int topK) {
+    this.metadataTableNames = metadataTableNames;
     this.wordEmbedding = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;
@@ -240,7 +260,12 @@ public class PostgresEndpoint extends Endpoint {
   }
 
   public Observable<List<PostgresWordEmbeddings>> queryWithMetadata(
-      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK, int probes) {
+      List<String> metadataTableNames,
+      WordEmbeddings wordEmbeddings,
+      PostgresDistanceMetric metric,
+      int topK,
+      int probes) {
+    this.metadataTableNames = metadataTableNames;
     this.wordEmbedding = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;

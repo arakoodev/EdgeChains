@@ -69,11 +69,11 @@ public class PostgresClientRepository {
               "SELECT COUNT(*) FROM pg_indexes WHERE tablename = '%s' AND indexname = '%s';",
               postgresEndpoint.getTableName(), indexName);
 
-      int indexExists = jdbcTemplate.queryForObject(checkIndexQuery, Integer.class);
+      Integer indexExists = jdbcTemplate.queryForObject(checkIndexQuery, Integer.class);
 
-      if (indexExists != 1)
+      if (indexExists != null && indexExists != 1)
         throw new RuntimeException(
-            "No index is specifed therefore use the following SQL:\n" + indexQuery);
+            "No index is specified therefore use the following SQL:\n" + indexQuery);
     }
   }
 
@@ -92,21 +92,22 @@ public class PostgresClientRepository {
       if (wordEmbeddings != null && wordEmbeddings.getValues() != null) {
 
         float[] floatArray = FloatUtils.toFloatArray(wordEmbeddings.getValues());
+        String rawText = wordEmbeddings.getId();
 
         UUID id =
             jdbcTemplate.queryForObject(
                 String.format(
                     "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename)"
-                        + " VALUES ('%s', '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO"
+                        + " VALUES ('%s', ?, '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO"
                         + " UPDATE SET embedding = EXCLUDED.embedding RETURNING id;",
                     tableName,
                     UuidCreator.getTimeOrderedEpoch(),
-                    wordEmbeddings.getId(),
                     Arrays.toString(floatArray),
                     LocalDateTime.now(),
                     namespace,
                     filename),
-                UUID.class);
+                UUID.class,
+                rawText);
 
         if (id != null) {
           uuidSet.add(id.toString());
@@ -121,22 +122,25 @@ public class PostgresClientRepository {
   public String upsertEmbeddings(
       String tableName, WordEmbeddings wordEmbeddings, String filename, String namespace) {
 
-    UUID uuid = UuidCreator.getTimeOrderedEpoch();
+    float[] floatArray = FloatUtils.toFloatArray(wordEmbeddings.getValues());
+    String rawText = wordEmbeddings.getId();
 
-    jdbcTemplate.update(
-        String.format(
-            "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename) VALUES ('%s',"
-                + " '%s', '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO UPDATE SET embedding ="
-                + " EXCLUDED.embedding;",
-            tableName,
-            uuid,
-            wordEmbeddings.getId(),
-            Arrays.toString(FloatUtils.toFloatArray(wordEmbeddings.getValues())),
-            LocalDateTime.now(),
-            namespace,
-            filename));
+    UUID uuid =
+        jdbcTemplate.queryForObject(
+            String.format(
+                "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename)"
+                    + " VALUES ('%s', ?, '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO"
+                    + " UPDATE SET embedding = EXCLUDED.embedding RETURNING id;",
+                tableName,
+                UuidCreator.getTimeOrderedEpoch(),
+                Arrays.toString(floatArray),
+                LocalDateTime.now(),
+                namespace,
+                filename),
+            UUID.class,
+            rawText);
 
-    return uuid.toString();
+    return Objects.requireNonNull(uuid).toString();
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
@@ -156,40 +160,25 @@ public class PostgresClientRepository {
       return jdbcTemplate.queryForList(
           String.format(
               "SELECT id, raw_text, namespace, filename, timestamp, ( embedding <#>"
-                  + " '%s') * -1 AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s'"
+                  + " '%s') * -1 AS score FROM %s WHERE namespace='%s' ORDER BY embedding <#> '%s'"
                   + " LIMIT %s;",
-              embeddings,
-              tableName,
-              namespace,
-              PostgresDistanceMetric.getDistanceMetric(metric),
-              embeddings,
-              topK));
+              embeddings, tableName, namespace, embeddings, topK));
 
     } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
 
       return jdbcTemplate.queryForList(
           String.format(
               "SELECT id, raw_text, namespace, filename, timestamp, 1 - ( embedding"
-                  + " <=> '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s'"
+                  + " <=> '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding <=> '%s'"
                   + " LIMIT %s;",
-              embeddings,
-              tableName,
-              namespace,
-              PostgresDistanceMetric.getDistanceMetric(metric),
-              embeddings,
-              topK));
+              embeddings, tableName, namespace, embeddings, topK));
     } else {
       return jdbcTemplate.queryForList(
           String.format(
               "SELECT id, raw_text, namespace, filename, timestamp, (embedding <->"
-                  + " '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding %s '%s' ASC"
+                  + " '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding <-> '%s' ASC"
                   + " LIMIT %s;",
-              embeddings,
-              tableName,
-              namespace,
-              PostgresDistanceMetric.getDistanceMetric(metric),
-              embeddings,
-              topK));
+              embeddings, tableName, namespace, embeddings, topK));
     }
   }
 

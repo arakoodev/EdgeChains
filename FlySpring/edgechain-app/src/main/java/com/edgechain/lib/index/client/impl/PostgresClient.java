@@ -10,6 +10,7 @@ import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,6 +133,7 @@ public class PostgresClient {
 
                 String metadataId =
                     this.metadataRepository.insertMetadata(
+                        postgresEndpoint.getTableName(),
                         postgresEndpoint.getMetadataTableNames().get(0),
                         input,
                         postgresEndpoint.getDocumentDate());
@@ -155,6 +158,7 @@ public class PostgresClient {
                 // Insert metadata
                 List<String> strings =
                     this.metadataRepository.batchInsertMetadata(
+                        postgresEndpoint.getTableName(),
                         postgresEndpoint.getMetadataTableNames().get(0),
                         postgresEndpoint.getMetadataList());
 
@@ -208,12 +212,19 @@ public class PostgresClient {
                 for (Map<String, Object> row : rows) {
 
                   PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                  val.setId(row.get("id").toString());
-                  val.setRawText((String) row.get("raw_text"));
-                  val.setFilename((String) row.get("filename"));
-                  val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
-                  val.setNamespace((String) row.get("namespace"));
-                  val.setScore((Double) row.get("score"));
+                  val.setId(Objects.nonNull(row.get("id")) ? row.get("id").toString() : null);
+                  val.setRawText(
+                      Objects.nonNull(row.get("raw_text")) ? (String) row.get("raw_text") : null);
+                  val.setFilename(
+                      Objects.nonNull(row.get("filename")) ? (String) row.get("filename") : null);
+                  val.setTimestamp(
+                      Objects.nonNull(row.get("timestamp"))
+                          ? ((Timestamp) row.get("timestamp")).toLocalDateTime()
+                          : null);
+                  val.setNamespace(
+                      Objects.nonNull(row.get("namespace")) ? (String) row.get("namespace") : null);
+                  val.setScore(
+                      Objects.nonNull(row.get("score")) ? (Double) row.get("score") : null);
 
                   wordEmbeddingsList.add(val);
                 }
@@ -268,13 +279,27 @@ public class PostgresClient {
                             && contextChunkIds.contains(metadataId)) continue;
 
                         PostgresWordEmbeddings val = new PostgresWordEmbeddings();
-                        final String idStr = row.get("id").toString();
+                        final String idStr =
+                            Objects.nonNull(row.get("id")) ? row.get("id").toString() : null;
                         val.setId(idStr);
-                        val.setRawText((String) row.get("raw_text"));
-                        val.setFilename((String) row.get("filename"));
-                        val.setTimestamp(((Timestamp) row.get("timestamp")).toLocalDateTime());
-                        val.setNamespace((String) row.get("namespace"));
-                        val.setScore((Double) row.get("score"));
+                        val.setRawText(
+                            Objects.nonNull(row.get("raw_text"))
+                                ? (String) row.get("raw_text")
+                                : null);
+                        val.setFilename(
+                            Objects.nonNull(row.get("filename"))
+                                ? (String) row.get("filename")
+                                : null);
+                        val.setTimestamp(
+                            Objects.nonNull(row.get("timestamp"))
+                                ? ((Timestamp) row.get("timestamp")).toLocalDateTime()
+                                : null);
+                        val.setNamespace(
+                            Objects.nonNull(row.get("namespace"))
+                                ? (String) row.get("namespace")
+                                : null);
+                        val.setScore(
+                            Objects.nonNull(row.get("score")) ? (Double) row.get("score") : null);
 
                         // Add metadata fields in response
                         if (metadataTableName.contains("_title_metadata")) {
@@ -355,6 +380,7 @@ public class PostgresClient {
                 List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
                 List<Map<String, Object>> rows =
                     this.metadataRepository.getSimilarMetadataChunk(
+                        postgresEndpoint.getTableName(),
                         postgresEndpoint.getMetadataTableNames().get(0),
                         postgresEndpoint.getEmbeddingChunk());
                 for (Map<String, Object> row : rows) {
