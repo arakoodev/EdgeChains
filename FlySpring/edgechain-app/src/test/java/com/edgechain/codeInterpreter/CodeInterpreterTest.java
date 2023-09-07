@@ -1,13 +1,13 @@
 package com.edgechain.codeInterpreter;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -64,5 +64,15 @@ public class CodeInterpreterTest {
     String extractedValue = jsonnetLoader.get("extract");
     assertNotNull(extractedValue);
     assertFalse(extractedValue.contains(prompt));
+  }
+
+  @Test
+  @DisplayName("Test for empty input")
+  void test_emptyInput_ReturnedExpectedValue(){
+    String inputJsonnet = "";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+
+    assertThrows(Exception.class, () -> jsonnetLoader.load(inputStream));
   }
 }

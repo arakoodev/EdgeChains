@@ -1,15 +1,12 @@
 package com.edgechain.jsonnet;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.enums.DataType;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -19,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class JsonnetLoaderTest {
@@ -106,4 +105,37 @@ public class JsonnetLoaderTest {
     assertNotNull(externalVar);
     assertEquals(externalVar, "5");
   }
+
+  @Test
+  void jsonLoader_LoadJsonnet_WithInvalidJsonnet_ThrowsException(){
+    String inputJsonnet = "This is a test sentence.";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    assertThrows(Exception.class, () -> jsonnetLoader.load(inputStream));
+  }
+
+  @Test
+  void jsonLoader_LoadJsonnet_WithEmptyJsonnet_ThrowsExpcetion(){
+    String inputJsonnet = "{}";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    jsonnetLoader.load(inputStream);
+    assertThrows(Exception.class, () -> jsonnetLoader.get("jsonnet"));
+  }
+
+  @Test
+  void jsonLoader_LoadJsonnetWithArrayOfObjects_ReturnExpectedValue(TestInfo testInfo) {
+    String inputJsonnet = "{ \"objects\": [{ \"key\": \"value1\" }, { \"key\": \"value2\" }] }";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+
+    jsonnetLoader.load(inputStream);
+    JSONArray objects = jsonnetLoader.getArray("objects");
+
+    assertNotNull(objects);
+    assertEquals(2, objects.length());
+    assertEquals("value1", objects.getJSONObject(0).getString("key"));
+    assertEquals("value2", objects.getJSONObject(1).getString("key"));
+  }
+
 }
