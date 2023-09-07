@@ -2,6 +2,8 @@ package com.edgechain.lib.context.client.impl;
 
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import com.edgechain.testutil.PostgresTestContainer;
+import com.edgechain.testutil.PostgresTestContainer.PostgresImage;
 import com.zaxxer.hikari.HikariConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -11,9 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -21,14 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
+@DirtiesContext
 class PostgreSQLHistoryContextClientTest {
 
   private static final Logger LOGGER =
       LoggerFactory.getLogger(PostgreSQLHistoryContextClientTest.class);
 
-  private static PostgresTestContainer instance = new PostgresTestContainer();
-
-  @Autowired private HikariConfig hikariConfig;
+  private static PostgresTestContainer instance = new PostgresTestContainer(PostgresImage.PLAIN);
 
   @BeforeAll
   static void baseSetupAll() {
@@ -40,22 +39,11 @@ class PostgreSQLHistoryContextClientTest {
     instance.stop();
   }
 
-  @DynamicPropertySource
-  static void baseSetProps(DynamicPropertyRegistry reg) {
-    String testUrl = instance.getJdbcUrl();
-
-    LOGGER.info("TEST with Docker PostgreSQL url={}", testUrl);
-
-    // inject typical settings based on Docker instance
-    reg.add("spring.datasource.url", () -> testUrl);
-    reg.add("spring.datasource.username", () -> instance.getUsername());
-    reg.add("spring.datasource.password", () -> instance.getPassword());
-  }
-
+  @Autowired private HikariConfig hikariConfig;
   @Autowired private PostgreSQLHistoryContextClient service;
 
   @Test
-  void cycle() {
+  void allMethods() {
     // hikari has own copy of properties so set these here
     hikariConfig.setJdbcUrl(instance.getJdbcUrl());
     hikariConfig.setUsername(instance.getUsername());
@@ -99,27 +87,5 @@ class PostgreSQLHistoryContextClientTest {
     public boolean failed;
     public String id;
     public String val;
-  }
-
-  public static class PostgresTestContainer extends PostgreSQLContainer<PostgresTestContainer> {
-
-    private static final String DOCKER_IMAGE =
-        PostgreSQLContainer.IMAGE + ":" + PostgreSQLContainer.DEFAULT_TAG;
-
-    public PostgresTestContainer() {
-      super(DOCKER_IMAGE);
-    }
-
-    @Override
-    public void start() {
-      LOGGER.info("starting container");
-      super.start();
-    }
-
-    @Override
-    public void stop() {
-      LOGGER.info("stopping container");
-      super.stop();
-    }
   }
 }
