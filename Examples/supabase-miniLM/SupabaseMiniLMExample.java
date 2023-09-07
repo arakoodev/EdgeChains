@@ -7,6 +7,7 @@ import com.edgechain.lib.embeddings.miniLLM.enums.MiniLMModel;
 import com.edgechain.lib.endpoint.impl.*;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
@@ -159,7 +160,7 @@ public class SupabaseMiniLMExample {
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
       PostgresRetrieval retrieval =
-          new PostgresRetrieval(arr, miniLMEndpoint, postgresEndpoint, 1536, filename, arkRequest);
+          new PostgresRetrieval(arr, miniLMEndpoint, postgresEndpoint, 1536, filename, PostgresLanguage.ENGLISH, arkRequest);
 
       //   retrieval.setBatchSize(100); // Modifying batchSize....
 

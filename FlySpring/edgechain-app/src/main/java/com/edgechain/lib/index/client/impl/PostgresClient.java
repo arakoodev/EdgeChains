@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,11 +79,12 @@ public class PostgresClient {
 
                 // Upsert Embeddings
                 List<String> strings =
-                    this.repository.batchUpsertEmbeddings(
-                        postgresEndpoint.getTableName(),
-                        postgresEndpoint.getWordEmbeddingsList(),
-                        postgresEndpoint.getFilename(),
-                        getNamespace(postgresEndpoint));
+                        this.repository.batchUpsertEmbeddings(
+                                postgresEndpoint.getTableName(),
+                                postgresEndpoint.getWordEmbeddingsList(),
+                                postgresEndpoint.getFilename(),
+                                getNamespace(postgresEndpoint),
+                                postgresEndpoint.getPostgresLanguage());
 
                 List<StringResponse> stringResponseList =
                     strings.stream().map(StringResponse::new).toList();
@@ -110,7 +112,8 @@ public class PostgresClient {
                         postgresEndpoint.getTableName(),
                         postgresEndpoint.getWordEmbedding(),
                         postgresEndpoint.getFilename(),
-                        getNamespace(postgresEndpoint));
+                        getNamespace(postgresEndpoint),
+                        postgresEndpoint.getPostgresLanguage());
 
                 emitter.onNext(new StringResponse(embeddingId));
                 emitter.onComplete();
@@ -223,8 +226,60 @@ public class PostgresClient {
                           : null);
                   val.setNamespace(
                       Objects.nonNull(row.get("namespace")) ? (String) row.get("namespace") : null);
+
                   val.setScore(
                       Objects.nonNull(row.get("score")) ? (Double) row.get("score") : null);
+
+                    PGobject pgObject = (PGobject) row.get("embedding");
+                    String jsonString = pgObject.getValue();
+                    List<Float> values = objectMapper.readerFor(FLOAT_TYPE_REF).readValue(jsonString);
+                    val.setValues(values);
+
+                  wordEmbeddingsList.add(val);
+                }
+                emitter.onNext(wordEmbeddingsList);
+                emitter.onComplete();
+
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        postgresEndpoint);
+  }
+
+  public EdgeChain<List<PostgresWordEmbeddings>> queryRRF(PostgresEndpoint postgresEndpoint) {
+
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
+                List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
+                List<Map<String, Object>> rows =
+                    this.repository.queryRRF(
+                        postgresEndpoint.getTableName(),
+                        getNamespace(postgresEndpoint),
+                        postgresEndpoint.getMetadataTableNames().get(0),
+                        postgresEndpoint.getWordEmbedding().getValues(),
+                        postgresEndpoint.getTextRankWeight(),
+                        postgresEndpoint.getSimilarityWeight(),
+                        postgresEndpoint.getDateRankWeight(),
+                        postgresEndpoint.getSearchQuery(),
+                        postgresEndpoint.getPostgresLanguage(),
+                        postgresEndpoint.getMetric(),
+                        postgresEndpoint.getTopK());
+
+                for (Map<String, Object> row : rows) {
+
+                  PostgresWordEmbeddings val = new PostgresWordEmbeddings();
+                  val.setId(Objects.nonNull(row.get("id")) ? row.get("id").toString() : null);
+                  val.setRawText(
+                      Objects.nonNull(row.get("raw_text")) ? (String) row.get("raw_text") : null);
+
+                  BigDecimal bigDecimal =
+                      Objects.nonNull(row.get("rrf_score"))
+                          ? (BigDecimal) row.get("rrf_score")
+                          : null;
+                  val.setScore(bigDecimal.doubleValue());
 
                   wordEmbeddingsList.add(val);
                 }

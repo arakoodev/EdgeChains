@@ -4,6 +4,7 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.retrofit.PostgresService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
@@ -43,6 +44,14 @@ public class PostgresEndpoint extends Endpoint {
   private String metadataId;
   private List<String> metadataList;
   private String documentDate;
+
+  /** RRF **/
+  private double textRankWeight;
+  private double similarityWeight;
+  private double dateRankWeight;
+  private String searchQuery;
+
+  private PostgresLanguage postgresLanguage;
 
   public PostgresEndpoint() {}
 
@@ -177,6 +186,26 @@ public class PostgresEndpoint extends Endpoint {
     return documentDate;
   }
 
+  public double getTextRankWeight() {
+    return textRankWeight;
+  }
+
+  public double getSimilarityWeight() {
+    return similarityWeight;
+  }
+
+  public double getDateRankWeight() {
+    return dateRankWeight;
+  }
+
+  public String getSearchQuery() {
+    return searchQuery;
+  }
+
+  public PostgresLanguage getPostgresLanguage() {
+    return postgresLanguage;
+  }
+
   public StringResponse upsert(
       WordEmbeddings wordEmbeddings,
       String filename,
@@ -201,9 +230,10 @@ public class PostgresEndpoint extends Endpoint {
     return this.postgresService.createMetadataTable(this).blockingGet();
   }
 
-  public List<StringResponse> upsert(List<WordEmbeddings> wordEmbeddingsList, String filename) {
+  public List<StringResponse> upsert(List<WordEmbeddings> wordEmbeddingsList, String filename, PostgresLanguage postgresLanguage) {
     this.wordEmbeddingsList = wordEmbeddingsList;
     this.filename = filename;
+    this.postgresLanguage = postgresLanguage;
     return this.postgresService.batchUpsert(this).blockingGet();
   }
 
@@ -244,6 +274,20 @@ public class PostgresEndpoint extends Endpoint {
     this.metric = metric;
     this.probes = probes;
     return Observable.fromSingle(this.postgresService.query(this));
+  }
+
+  public Observable<List<PostgresWordEmbeddings>> queryRRF
+          (String metadataTable, WordEmbeddings wordEmbedding, double textRankWeight, double similarityWeight, double dateRankWeight, String searchQuery,PostgresLanguage postgresLanguage, PostgresDistanceMetric metric, int topK) {
+    this.metadataTableNames = List.of(metadataTable);
+    this.wordEmbedding = wordEmbedding;
+    this.textRankWeight = textRankWeight;
+    this.similarityWeight = similarityWeight;
+    this.dateRankWeight = dateRankWeight;
+    this.searchQuery = searchQuery;
+    this.postgresLanguage = postgresLanguage;
+    this.metric = metric;
+    this.topK = topK;
+    return Observable.fromSingle(this.postgresService.queryRRF(this));
   }
 
   public Observable<List<PostgresWordEmbeddings>> queryWithMetadata(

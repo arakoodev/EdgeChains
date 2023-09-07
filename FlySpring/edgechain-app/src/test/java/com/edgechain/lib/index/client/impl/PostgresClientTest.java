@@ -4,6 +4,7 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.testutil.PostgresTestContainer;
@@ -129,6 +130,7 @@ class PostgresClientTest {
     when(mockPe.getWordEmbedding()).thenReturn(we);
     when(mockPe.getFilename()).thenReturn("readme.pdf");
     when(mockPe.getNamespace()).thenReturn("testns");
+    when(mockPe.getPostgresLanguage()).thenReturn(PostgresLanguage.ENGLISH);
 
     TestObserver<StringResponse> test = service.upsert(mockPe).getObservable().test();
     try {
@@ -175,6 +177,7 @@ class PostgresClientTest {
     when(mockPe.getWordEmbeddingsList()).thenReturn(List.of(we1, we2));
     when(mockPe.getFilename()).thenReturn("readme.pdf");
     when(mockPe.getNamespace()).thenReturn("testns");
+    when(mockPe.getPostgresLanguage()).thenReturn(PostgresLanguage.ENGLISH);
 
     final Data data = new Data();
     EdgeChain<List<StringResponse>> result = service.batchUpsert(mockPe);

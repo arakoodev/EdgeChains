@@ -3,6 +3,7 @@ package com.edgechain.lib.index.repositories;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.utils.FloatUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ujson.Obj;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -23,6 +25,7 @@ public class PostgresClientRepository {
   public void createTable(PostgresEndpoint postgresEndpoint) {
 
     jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector;");
+    jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm;");
 
     String checkTableQuery =
         String.format(
@@ -51,16 +54,22 @@ public class PostgresClientRepository {
                 + " (lists = %s);",
             indexName, postgresEndpoint.getTableName(), vectorOps, postgresEndpoint.getLists());
 
+    String tsvIndexQuery =
+        String.format(
+            "CREATE INDEX IF NOT EXISTS %s ON %s USING GIN(tsv);",
+            postgresEndpoint.getTableName().concat("_tsv_idx"), postgresEndpoint.getTableName());
+
     if (tableExists == 0) {
 
       jdbcTemplate.execute(
           String.format(
               "CREATE TABLE IF NOT EXISTS %s (id UUID PRIMARY KEY, "
                   + " raw_text TEXT NOT NULL UNIQUE, embedding vector(%s), timestamp"
-                  + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255) );",
+                  + " TIMESTAMP NOT NULL, namespace TEXT, filename VARCHAR(255), tsv TSVECTOR);",
               postgresEndpoint.getTableName(), postgresEndpoint.getDimensions()));
 
       jdbcTemplate.execute(indexQuery);
+      jdbcTemplate.execute(tsvIndexQuery);
 
     } else {
 
@@ -82,7 +91,8 @@ public class PostgresClientRepository {
       String tableName,
       List<WordEmbeddings> wordEmbeddingsList,
       String filename,
-      String namespace) {
+      String namespace,
+      PostgresLanguage language) {
 
     Set<String> uuidSet = new HashSet<>();
 
@@ -97,15 +107,17 @@ public class PostgresClientRepository {
         UUID id =
             jdbcTemplate.queryForObject(
                 String.format(
-                    "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename)"
-                        + " VALUES ('%s', ?, '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO"
+                    "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename, tsv)"
+                        + " VALUES ('%s', ?, '%s', '%s', '%s', '%s', TO_TSVECTOR('%s', '%s'))  ON CONFLICT (raw_text) DO"
                         + " UPDATE SET embedding = EXCLUDED.embedding RETURNING id;",
                     tableName,
                     UuidCreator.getTimeOrderedEpoch(),
                     Arrays.toString(floatArray),
                     LocalDateTime.now(),
                     namespace,
-                    filename),
+                    filename,
+                    language.getValue(),
+                    rawText),
                 UUID.class,
                 rawText);
 
@@ -120,7 +132,11 @@ public class PostgresClientRepository {
 
   @Transactional
   public String upsertEmbeddings(
-      String tableName, WordEmbeddings wordEmbeddings, String filename, String namespace) {
+      String tableName,
+      WordEmbeddings wordEmbeddings,
+      String filename,
+      String namespace,
+      PostgresLanguage language) {
 
     float[] floatArray = FloatUtils.toFloatArray(wordEmbeddings.getValues());
     String rawText = wordEmbeddings.getId();
@@ -128,15 +144,17 @@ public class PostgresClientRepository {
     UUID uuid =
         jdbcTemplate.queryForObject(
             String.format(
-                "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename)"
-                    + " VALUES ('%s', ?, '%s', '%s', '%s', '%s')  ON CONFLICT (raw_text) DO"
+                "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename, tsv)"
+                    + " VALUES ('%s', ?, '%s', '%s', '%s', '%s', TO_TSVECTOR('%s', '%s'))  ON CONFLICT (raw_text) DO"
                     + " UPDATE SET embedding = EXCLUDED.embedding RETURNING id;",
                 tableName,
                 UuidCreator.getTimeOrderedEpoch(),
                 Arrays.toString(floatArray),
                 LocalDateTime.now(),
                 namespace,
-                filename),
+                filename,
+                language.getValue(),
+                rawText),
             UUID.class,
             rawText);
 
@@ -159,7 +177,7 @@ public class PostgresClientRepository {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, raw_text, namespace, filename, timestamp, ( embedding <#>"
+              "SELECT id, raw_text, embedding, namespace, filename, timestamp, ( embedding <#>"
                   + " '%s') * -1 AS score FROM %s WHERE namespace='%s' ORDER BY embedding <#> '%s'"
                   + " LIMIT %s;",
               embeddings, tableName, namespace, embeddings, topK));
@@ -168,18 +186,88 @@ public class PostgresClientRepository {
 
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, raw_text, namespace, filename, timestamp, 1 - ( embedding"
+              "SELECT id, raw_text, embedding, namespace, filename, timestamp, 1 - ( embedding"
                   + " <=> '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding <=> '%s'"
                   + " LIMIT %s;",
               embeddings, tableName, namespace, embeddings, topK));
     } else {
       return jdbcTemplate.queryForList(
           String.format(
-              "SELECT id, raw_text, namespace, filename, timestamp, (embedding <->"
+              "SELECT id, raw_text, embedding, namespace, filename, timestamp, (embedding <->"
                   + " '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding <-> '%s' ASC"
                   + " LIMIT %s;",
               embeddings, tableName, namespace, embeddings, topK));
     }
+  }
+
+  public List<Map<String, Object>> queryRRF(
+      String tableName,
+      String namespace,
+      String metadataTableName,
+      List<Float> values,
+      double textRankWeight,
+      double similarityWeight,
+      double dateRankWeight,
+      String searchQuery,
+      PostgresLanguage language,
+      PostgresDistanceMetric metric,
+      int topK) {
+
+    if (textRankWeight < 0
+        || textRankWeight > 1.0
+        || similarityWeight < 0
+        || similarityWeight > 1.0
+        || dateRankWeight < 0
+        || dateRankWeight > 1.0) {
+      throw new IllegalArgumentException("Weights must be between 0 and 1.");
+    }
+
+    String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
+
+    StringBuilder query = new StringBuilder();
+    query
+        .append("SELECT id, raw_text,")
+        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + %s) +", textRankWeight))
+        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + %s) +", similarityWeight))
+        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score ", dateRankWeight))
+        .append("FROM ( ")
+        .append("SELECT sv.id, sv.raw_text, ")
+        .append(String.format("ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ", language.getValue(), searchQuery));
+
+    switch (metric) {
+      case COSINE -> query.append(
+          String.format("1 - (sv.embedding <=> '%s') AS similarity, ", embeddings));
+      case IP -> query.append(
+          String.format("(sv.embedding <#> '%s') * -1 AS similarity, ", embeddings));
+      case L2 -> query.append(String.format("sv.embedding <-> '%s' AS similarity, ", embeddings));
+      default -> throw new IllegalArgumentException("Invalid similarity measure: " + metric);
+    }
+
+    query
+        .append("CASE ")
+        .append("WHEN svtm.document_date IS NULL THEN 0 ") // Null date handling
+        .append("ELSE EXTRACT(YEAR FROM svtm.document_date) * 365 + EXTRACT(DOY FROM svtm.document_date) ")
+        .append("END AS date_rank ")
+        .append("FROM ")
+        .append(tableName)
+        .append(" sv ")
+        .append("JOIN ")
+        .append(tableName.concat("_join_").concat(metadataTableName))
+        .append(" jtm ON sv.id = jtm.id ")
+        .append("JOIN ")
+        .append(tableName.concat("_").concat(metadataTableName))
+        .append(" svtm ON jtm.metadata_id = svtm.metadata_id ")
+        .append("WHERE namespace = ")
+        .append("'")
+        .append(namespace)
+        .append("'")
+        .append(") subquery ")
+        .append("ORDER BY rrf_score DESC")
+        .append(" LIMIT ")
+        .append(topK)
+        .append(";");
+
+    return jdbcTemplate.queryForList(query.toString());
   }
 
   @Transactional(readOnly = true)
