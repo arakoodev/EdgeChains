@@ -265,24 +265,13 @@ public class PostgresClientRepository {
     String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
 
     StringBuilder query = new StringBuilder();
-    query
-        .append("SELECT id, raw_text, document_date, metadata,")
-        .append(
-            String.format(
-                "1 / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + %s) +", textRankWeight))
-        .append(
-            String.format(
-                "1 / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + %s) +", similarityWeight))
-        .append(
-            String.format(
-                "1 / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score ",
-                dateRankWeight))
+    query.append("SELECT id, raw_text, document_date, metadata,")
+        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + %s) +", textRankWeight))
+        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + %s) +", similarityWeight))
+        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score ", dateRankWeight))
         .append("FROM ( ")
         .append("SELECT sv.id, sv.raw_text, svtm.document_date, svtm.metadata, ")
-        .append(
-            String.format(
-                "ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ",
-                language.getValue(), searchQuery));
+        .append(String.format("ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ", language.getValue(), searchQuery));
 
     switch (metric) {
       case COSINE -> query.append(
