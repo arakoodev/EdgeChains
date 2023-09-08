@@ -330,7 +330,7 @@ public class PostgresClient {
                       Set<String> contextChunkIds = new HashSet<>();
                       for (Map<String, Object> row : rows) {
                         String metadataId = row.get("metadata_id").toString();
-                        if (!metadataTableName.contains("_title_metadata")
+                        if (!metadataTableName.contains("title_metadata")
                             && contextChunkIds.contains(metadataId)) continue;
 
                         PostgresWordEmbeddings val = new PostgresWordEmbeddings();
@@ -357,7 +357,7 @@ public class PostgresClient {
                             Objects.nonNull(row.get("score")) ? (Double) row.get("score") : null);
 
                         // Add metadata fields in response
-                        if (metadataTableName.contains("_title_metadata")) {
+                        if (metadataTableName.contains("title_metadata")) {
                           titleMetadataMap.put(idStr, (String) row.get("metadata"));
                           dateMetadataMap.put(idStr, (String) row.get("document_date"));
 
