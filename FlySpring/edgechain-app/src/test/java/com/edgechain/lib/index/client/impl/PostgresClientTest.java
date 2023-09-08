@@ -267,8 +267,8 @@ class PostgresClientTest {
     when(mockPe.getNamespace()).thenReturn("testns");
     when(mockPe.getProbes()).thenReturn(5);
     when(mockPe.getMetric()).thenReturn(metric);
-    when(mockPe.getWordEmbedding()).thenReturn(we1);
-    when(mockPe.getTopK()).thenReturn(1000);
+    when(mockPe.getWordEmbeddingsList()).thenReturn(List.of(we1));
+    when(mockPe.getTopK()).thenReturn(5);
     when(mockPe.getMetadataTableNames()).thenReturn(null);
 
     final Data data = new Data();
