@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ujson.Obj;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -167,36 +166,77 @@ public class PostgresClientRepository {
       String namespace,
       int probes,
       PostgresDistanceMetric metric,
-      List<Float> values,
+      List<List<Float>> values,
       int topK) {
 
-    String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
-
     jdbcTemplate.execute(String.format("SET LOCAL ivfflat.probes = %s;", probes));
-    if (metric.equals(PostgresDistanceMetric.IP)) {
 
+    StringBuilder query = new StringBuilder();
+
+    for (int i = 0; i < values.size(); i++) {
+
+      String embeddings = Arrays.toString(FloatUtils.toFloatArray(values.get(i)));
+
+      query.append("(").append("SELECT id, raw_text, embedding, namespace, filename, timestamp,");
+
+      switch (metric) {
+        case COSINE -> query
+            .append(String.format("1 - (embedding <=> '%s') AS score ", embeddings))
+            .append(" FROM ")
+            .append(tableName)
+            .append(" WHERE namespace = ")
+            .append("'")
+            .append(namespace)
+            .append("'")
+            .append(" ORDER BY embedding <=> ")
+            .append("'")
+            .append(embeddings)
+            .append("'")
+            .append(" LIMIT ");
+        case IP -> query
+            .append(String.format("(embedding <#> '%s') * -1 AS score ", embeddings))
+            .append(" FROM ")
+            .append(tableName)
+            .append(" WHERE namespace = ")
+            .append("'")
+            .append(namespace)
+            .append("'")
+            .append(" ORDER BY embedding <#> ")
+            .append("'")
+            .append(embeddings)
+            .append("'")
+            .append(" LIMIT ");
+        case L2 -> query
+            .append(String.format("embedding <-> '%s' AS score ", embeddings))
+            .append(" FROM ")
+            .append(tableName)
+            .append(" WHERE namespace = ")
+            .append("'")
+            .append(namespace)
+            .append("'")
+            .append(" ORDER BY embedding <-> ")
+            .append("'")
+            .append(embeddings)
+            .append("'")
+            .append(" LIMIT ");
+        default -> throw new IllegalArgumentException("Invalid similarity measure: " + metric);
+      }
+
+      if (values.size() == 1) query.append(topK);
+      else query.append(1);
+
+      query.append(")");
+
+      if (i < values.size() - 1) {
+        query.append(" UNION ALL  ").append("\n");
+      }
+    }
+
+    if (values.size() > 1) {
       return jdbcTemplate.queryForList(
-          String.format(
-              "SELECT id, raw_text, embedding, namespace, filename, timestamp, ( embedding <#>"
-                  + " '%s') * -1 AS score FROM %s WHERE namespace='%s' ORDER BY embedding <#> '%s'"
-                  + " LIMIT %s;",
-              embeddings, tableName, namespace, embeddings, topK));
-
-    } else if (metric.equals(PostgresDistanceMetric.COSINE)) {
-
-      return jdbcTemplate.queryForList(
-          String.format(
-              "SELECT id, raw_text, embedding, namespace, filename, timestamp, 1 - ( embedding"
-                  + " <=> '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding <=> '%s'"
-                  + " LIMIT %s;",
-              embeddings, tableName, namespace, embeddings, topK));
+          String.format("SELECT DISTINCT ON (result.id) *\n" + "FROM ( %s ) result;", query));
     } else {
-      return jdbcTemplate.queryForList(
-          String.format(
-              "SELECT id, raw_text, embedding, namespace, filename, timestamp, (embedding <->"
-                  + " '%s') AS score FROM %s WHERE namespace='%s' ORDER BY embedding <-> '%s' ASC"
-                  + " LIMIT %s;",
-              embeddings, tableName, namespace, embeddings, topK));
+      return jdbcTemplate.queryForList(query.toString());
     }
   }
 
@@ -226,13 +266,23 @@ public class PostgresClientRepository {
 
     StringBuilder query = new StringBuilder();
     query
-        .append("SELECT id, raw_text,")
-        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + %s) +", textRankWeight))
-        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + %s) +", similarityWeight))
-        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score ", dateRankWeight))
+        .append("SELECT id, raw_text, document_date, metadata,")
+        .append(
+            String.format(
+                "1 / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + %s) +", textRankWeight))
+        .append(
+            String.format(
+                "1 / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + %s) +", similarityWeight))
+        .append(
+            String.format(
+                "1 / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score ",
+                dateRankWeight))
         .append("FROM ( ")
-        .append("SELECT sv.id, sv.raw_text, ")
-        .append(String.format("ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ", language.getValue(), searchQuery));
+        .append("SELECT sv.id, sv.raw_text, svtm.document_date, svtm.metadata, ")
+        .append(
+            String.format(
+                "ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ",
+                language.getValue(), searchQuery));
 
     switch (metric) {
       case COSINE -> query.append(
@@ -246,7 +296,8 @@ public class PostgresClientRepository {
     query
         .append("CASE ")
         .append("WHEN svtm.document_date IS NULL THEN 0 ") // Null date handling
-        .append("ELSE EXTRACT(YEAR FROM svtm.document_date) * 365 + EXTRACT(DOY FROM svtm.document_date) ")
+        .append(
+            "ELSE EXTRACT(YEAR FROM svtm.document_date) * 365 + EXTRACT(DOY FROM svtm.document_date) ")
         .append("END AS date_rank ")
         .append("FROM ")
         .append(tableName)

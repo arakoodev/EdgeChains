@@ -260,7 +260,7 @@ public class PostgresEndpoint extends Endpoint {
 
   public Observable<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
-    this.wordEmbedding = wordEmbeddings;
+    this.wordEmbeddingsList = List.of(wordEmbeddings);
     this.topK = topK;
     this.metric = metric;
     this.probes = 1;
@@ -269,8 +269,23 @@ public class PostgresEndpoint extends Endpoint {
 
   public Observable<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK, int probes) {
-    this.wordEmbedding = wordEmbeddings;
+    this.wordEmbeddingsList = List.of(wordEmbeddings);
     this.topK = topK;
+    this.metric = metric;
+    this.probes = probes;
+    return Observable.fromSingle(this.postgresService.query(this));
+  }
+  public Observable<List<PostgresWordEmbeddings>> query(
+          List<WordEmbeddings> wordEmbeddingsList, PostgresDistanceMetric metric) {
+    this.wordEmbeddingsList = wordEmbeddingsList;
+    this.metric = metric;
+    this.probes = 1;
+    return Observable.fromSingle(this.postgresService.query(this));
+  }
+
+  public Observable<List<PostgresWordEmbeddings>> query(
+          List<WordEmbeddings> wordEmbeddingsList, PostgresDistanceMetric metric, int probes) {
+    this.wordEmbeddingsList = wordEmbeddingsList;
     this.metric = metric;
     this.probes = probes;
     return Observable.fromSingle(this.postgresService.query(this));

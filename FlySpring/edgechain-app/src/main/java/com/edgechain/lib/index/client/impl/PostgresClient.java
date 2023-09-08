@@ -1,6 +1,7 @@
 package com.edgechain.lib.index.client.impl;
 
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
+import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.repositories.PostgresClientMetadataRepository;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
@@ -79,12 +82,12 @@ public class PostgresClient {
 
                 // Upsert Embeddings
                 List<String> strings =
-                        this.repository.batchUpsertEmbeddings(
-                                postgresEndpoint.getTableName(),
-                                postgresEndpoint.getWordEmbeddingsList(),
-                                postgresEndpoint.getFilename(),
-                                getNamespace(postgresEndpoint),
-                                postgresEndpoint.getPostgresLanguage());
+                    this.repository.batchUpsertEmbeddings(
+                        postgresEndpoint.getTableName(),
+                        postgresEndpoint.getWordEmbeddingsList(),
+                        postgresEndpoint.getFilename(),
+                        getNamespace(postgresEndpoint),
+                        postgresEndpoint.getPostgresLanguage());
 
                 List<StringResponse> stringResponseList =
                     strings.stream().map(StringResponse::new).toList();
@@ -203,13 +206,19 @@ public class PostgresClient {
             emitter -> {
               try {
                 List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
+
+                List<List<Float>> embeddings =
+                    postgresEndpoint.getWordEmbeddingsList().stream()
+                        .map(WordEmbeddings::getValues)
+                        .toList();
+
                 List<Map<String, Object>> rows =
                     this.repository.query(
                         postgresEndpoint.getTableName(),
                         getNamespace(postgresEndpoint),
                         postgresEndpoint.getProbes(),
                         postgresEndpoint.getMetric(),
-                        postgresEndpoint.getWordEmbedding().getValues(),
+                        embeddings,
                         postgresEndpoint.getTopK());
 
                 for (Map<String, Object> row : rows) {
@@ -230,10 +239,10 @@ public class PostgresClient {
                   val.setScore(
                       Objects.nonNull(row.get("score")) ? (Double) row.get("score") : null);
 
-                    PGobject pgObject = (PGobject) row.get("embedding");
-                    String jsonString = pgObject.getValue();
-                    List<Float> values = objectMapper.readerFor(FLOAT_TYPE_REF).readValue(jsonString);
-                    val.setValues(values);
+                  PGobject pgObject = (PGobject) row.get("embedding");
+                  String jsonString = pgObject.getValue();
+                  List<Float> values = objectMapper.readerFor(FLOAT_TYPE_REF).readValue(jsonString);
+                  val.setValues(values);
 
                   wordEmbeddingsList.add(val);
                 }
@@ -280,6 +289,14 @@ public class PostgresClient {
                           ? (BigDecimal) row.get("rrf_score")
                           : null;
                   val.setScore(bigDecimal.doubleValue());
+
+                  if(postgresEndpoint.getMetadataTableNames().get(0).contains("title")) {
+                      val.setTitleMetadata(Objects.nonNull(row.get("metadata")) ? (String) row.get("metadata") : null);
+                  }else {
+                      val.setMetadata(Objects.nonNull(row.get("metadata")) ? (String) row.get("metadata") : null);
+                  }
+                  Date documentDate = Objects.nonNull(row.get("document_date")) ? (Date) row.get("document_date"): null;
+                  val.setDocumentDate(documentDate.toString());
 
                   wordEmbeddingsList.add(val);
                 }
