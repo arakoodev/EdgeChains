@@ -66,7 +66,7 @@ public class CodeInterpreterTest {
 
   @Test
   @DisplayName("Test for empty input")
-  void test_emptyInput_ReturnedExpectedValue(){
+  void test_emptyInput_ReturnedExpectedValue() {
     String inputJsonnet = "";
     InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
     JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
