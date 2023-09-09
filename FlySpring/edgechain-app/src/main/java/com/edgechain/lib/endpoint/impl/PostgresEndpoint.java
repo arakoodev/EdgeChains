@@ -276,18 +276,11 @@ public class PostgresEndpoint extends Endpoint {
     return Observable.fromSingle(this.postgresService.query(this));
   }
   public Observable<List<PostgresWordEmbeddings>> query(
-          List<WordEmbeddings> wordEmbeddingsList, PostgresDistanceMetric metric) {
-    this.wordEmbeddingsList = wordEmbeddingsList;
-    this.metric = metric;
-    this.probes = 1;
-    return Observable.fromSingle(this.postgresService.query(this));
-  }
-
-  public Observable<List<PostgresWordEmbeddings>> query(
-          List<WordEmbeddings> wordEmbeddingsList, PostgresDistanceMetric metric, int probes) {
+          List<WordEmbeddings> wordEmbeddingsList, PostgresDistanceMetric metric, int topK, int probes) {
     this.wordEmbeddingsList = wordEmbeddingsList;
     this.metric = metric;
     this.probes = probes;
+    this.topK = topK;
     return Observable.fromSingle(this.postgresService.query(this));
   }
 

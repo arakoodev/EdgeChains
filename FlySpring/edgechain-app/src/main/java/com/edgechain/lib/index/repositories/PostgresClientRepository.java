@@ -221,11 +221,7 @@ public class PostgresClientRepository {
             .append(" LIMIT ");
         default -> throw new IllegalArgumentException("Invalid similarity measure: " + metric);
       }
-
-      if (values.size() == 1) query.append(topK);
-      else query.append(1);
-
-      query.append(")");
+      query.append(topK).append(")");
 
       if (i < values.size() - 1) {
         query.append(" UNION ALL  ").append("\n");
