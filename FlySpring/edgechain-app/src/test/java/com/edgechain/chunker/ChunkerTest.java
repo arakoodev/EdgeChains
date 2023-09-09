@@ -1,5 +1,7 @@
 package com.edgechain.chunker;
 
+import com.edgechain.lib.chunk.Chunker;
+import com.edgechain.lib.chunk.enums.LangType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -8,10 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.edgechain.lib.chunk.Chunker;
-import com.edgechain.lib.chunk.enums.LangType;
-
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
