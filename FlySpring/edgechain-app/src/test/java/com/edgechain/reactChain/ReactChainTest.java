@@ -110,7 +110,7 @@ public class ReactChainTest {
   @DisplayName("Test Mapper - Missing function")
   public void test_mapper_MissingFunction_ReturnedExpectedResult() {
     String inputJsonnet =
-            """
+        """
                     local config = {
                       "edgechains.config": {
                         "mapper": {},
