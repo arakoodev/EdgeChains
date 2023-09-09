@@ -107,7 +107,7 @@ public class JsonnetLoaderTest {
   }
 
   @Test
-  void jsonLoader_LoadJsonnet_WithInvalidJsonnet_ThrowsException(){
+  void jsonLoader_LoadJsonnet_WithInvalidJsonnet_ThrowsException() {
     String inputJsonnet = "This is a test sentence.";
     InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
     JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
@@ -115,7 +115,7 @@ public class JsonnetLoaderTest {
   }
 
   @Test
-  void jsonLoader_LoadJsonnet_WithEmptyJsonnet_ThrowsExpcetion(){
+  void jsonLoader_LoadJsonnet_WithEmptyJsonnet_ThrowsExpcetion() {
     String inputJsonnet = "{}";
     InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
     JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
@@ -137,5 +137,4 @@ public class JsonnetLoaderTest {
     assertEquals("value1", objects.getJSONObject(0).getString("key"));
     assertEquals("value2", objects.getJSONObject(1).getString("key"));
   }
-
 }
