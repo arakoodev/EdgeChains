@@ -269,13 +269,14 @@ public class PostgresClient {
                         getNamespace(postgresEndpoint),
                         postgresEndpoint.getMetadataTableNames().get(0),
                         postgresEndpoint.getWordEmbedding().getValues(),
-                        postgresEndpoint.getTextRankWeight(),
+                        postgresEndpoint.getTextWeight(),
                         postgresEndpoint.getSimilarityWeight(),
-                        postgresEndpoint.getDateRankWeight(),
+                        postgresEndpoint.getDateWeight(),
                         postgresEndpoint.getSearchQuery(),
                         postgresEndpoint.getPostgresLanguage(),
                         postgresEndpoint.getMetric(),
-                        postgresEndpoint.getTopK());
+                        postgresEndpoint.getTopK(),
+                        postgresEndpoint.getOrderRRFBy());
 
                 for (Map<String, Object> row : rows) {
 

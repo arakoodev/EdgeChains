@@ -2,6 +2,8 @@ package com.edgechain.lib.index.repositories;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
+import com.edgechain.lib.index.domain.RRFWeight;
+import com.edgechain.lib.index.enums.OrderRRFBy;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.utils.FloatUtils;
@@ -237,34 +239,27 @@ public class PostgresClientRepository {
   }
 
   public List<Map<String, Object>> queryRRF(
-      String tableName,
-      String namespace,
-      String metadataTableName,
-      List<Float> values,
-      double textRankWeight,
-      double similarityWeight,
-      double dateRankWeight,
-      String searchQuery,
-      PostgresLanguage language,
-      PostgresDistanceMetric metric,
-      int topK) {
+          String tableName,
+          String namespace,
+          String metadataTableName,
+          List<Float> values,
+          RRFWeight textWeight,
+          RRFWeight similarityWeight,
+          RRFWeight dateWeight,
+          String searchQuery,
+          PostgresLanguage language,
+          PostgresDistanceMetric metric,
+          int topK,
+          OrderRRFBy orderRRFBy) {
 
-    if (textRankWeight < 0
-        || textRankWeight > 1.0
-        || similarityWeight < 0
-        || similarityWeight > 1.0
-        || dateRankWeight < 0
-        || dateRankWeight > 1.0) {
-      throw new IllegalArgumentException("Weights must be between 0 and 1.");
-    }
 
     String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
 
     StringBuilder query = new StringBuilder();
-    query.append("SELECT id, raw_text, document_date, metadata,")
-        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + %s) +", textRankWeight))
-        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + %s) +", similarityWeight))
-        .append(String.format("1 / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score ", dateRankWeight))
+    query.append("SELECT id, raw_text, document_date, metadata,\n")
+        .append(String.format("%s / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + %s) + \n", textWeight.getBaseWeight().getValue(), textWeight.getFineTuneWeight()))
+        .append(String.format("%s / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + %s) + \n", similarityWeight.getBaseWeight().getValue(), similarityWeight.getFineTuneWeight()))
+        .append(String.format("%s / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score\n", dateWeight.getBaseWeight().getValue(), dateWeight.getFineTuneWeight()))
         .append("FROM ( ")
         .append("SELECT sv.id, sv.raw_text, svtm.document_date, svtm.metadata, ")
         .append(String.format("ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ", language.getValue(), searchQuery));
@@ -297,9 +292,17 @@ public class PostgresClientRepository {
         .append("'")
         .append(namespace)
         .append("'")
-        .append(") subquery ")
-        .append("ORDER BY rrf_score DESC")
-        .append(" LIMIT ")
+        .append(") subquery ");
+
+      switch (orderRRFBy) {
+          case TEXT_RANK -> query.append("ORDER BY text_rank DESC, rrf_score DESC");
+          case SIMILARITY -> query.append("ORDER BY similarity DESC, rrf_score DESC");
+          case DATE_RANK -> query.append("ORDER BY date_rank DESC, rrf_score DESC");
+          case DEFAULT -> query.append("ORDER BY rrf_score DESC");
+          default -> throw new IllegalArgumentException("Invalid orderRRFBy value");
+      }
+
+      query.append(" LIMIT ")
         .append(topK)
         .append(";");
 

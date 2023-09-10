@@ -3,6 +3,8 @@ package com.edgechain.lib.endpoint.impl;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
+import com.edgechain.lib.index.domain.RRFWeight;
+import com.edgechain.lib.index.enums.OrderRRFBy;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.response.StringResponse;
@@ -46,9 +48,11 @@ public class PostgresEndpoint extends Endpoint {
   private String documentDate;
 
   /** RRF **/
-  private double textRankWeight;
-  private double similarityWeight;
-  private double dateRankWeight;
+  private RRFWeight textWeight;
+  private RRFWeight similarityWeight;
+  private RRFWeight dateWeight;
+
+  private OrderRRFBy orderRRFBy;
   private String searchQuery;
 
   private PostgresLanguage postgresLanguage;
@@ -186,16 +190,20 @@ public class PostgresEndpoint extends Endpoint {
     return documentDate;
   }
 
-  public double getTextRankWeight() {
-    return textRankWeight;
+  public RRFWeight getTextWeight() {
+    return textWeight;
   }
 
-  public double getSimilarityWeight() {
+  public RRFWeight getSimilarityWeight() {
     return similarityWeight;
   }
 
-  public double getDateRankWeight() {
-    return dateRankWeight;
+  public RRFWeight getDateWeight() {
+    return dateWeight;
+  }
+
+  public OrderRRFBy getOrderRRFBy() {
+    return orderRRFBy;
   }
 
   public String getSearchQuery() {
@@ -285,12 +293,13 @@ public class PostgresEndpoint extends Endpoint {
   }
 
   public Observable<List<PostgresWordEmbeddings>> queryRRF
-          (String metadataTable, WordEmbeddings wordEmbedding, double textRankWeight, double similarityWeight, double dateRankWeight, String searchQuery,PostgresLanguage postgresLanguage, PostgresDistanceMetric metric, int topK) {
+          (String metadataTable, WordEmbeddings wordEmbedding, RRFWeight textWeight, RRFWeight similarityWeight, RRFWeight dateWeight, OrderRRFBy orderRRFBy, String searchQuery,PostgresLanguage postgresLanguage, PostgresDistanceMetric metric, int topK) {
     this.metadataTableNames = List.of(metadataTable);
     this.wordEmbedding = wordEmbedding;
-    this.textRankWeight = textRankWeight;
+    this.textWeight = textWeight;
     this.similarityWeight = similarityWeight;
-    this.dateRankWeight = dateRankWeight;
+    this.dateWeight = dateWeight;
+    this.orderRRFBy = orderRRFBy;
     this.searchQuery = searchQuery;
     this.postgresLanguage = postgresLanguage;
     this.metric = metric;

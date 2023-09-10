@@ -36,6 +36,12 @@ public class PostgresClientMetadataRepository {
             postgresEndpoint.getTableName() + "_join_" + metadataTable,
             postgresEndpoint.getTableName(),
             postgresEndpoint.getTableName() + "_" + metadataTable));
+
+    jdbcTemplate.execute(
+            String.format(
+                    "CREATE INDEX IF NOT EXISTS idx_%s ON %s (metadata_id);",
+                    postgresEndpoint.getTableName() + "_join_" + metadataTable,
+                    postgresEndpoint.getTableName() + "_join_" + metadataTable));
   }
 
   @Transactional
