@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.KeyHolder;
 
 import java.util.Collections;
 import java.util.List;
@@ -83,18 +82,19 @@ public class PostgresClientMetadataRepositoryTest {
 
     // Mock jdbcTemplate.queryForObject to return null
     when(jdbcTemplate.queryForObject(anyString(), eq(UUID.class), any(Object[].class)))
-            .thenReturn(null);
+        .thenReturn(null);
 
     // Act and Assert
-    assertThrows(NullPointerException.class, () -> {
-      repository.insertMetadata(tablename, metadataTableName, metadata, documentDate);
-    });
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          repository.insertMetadata(tablename, metadataTableName, metadata, documentDate);
+        });
 
     // Verify that jdbcTemplate.queryForObject was called with the correct SQL query and arguments
     verify(jdbcTemplate, times(1))
-            .queryForObject(sqlQueryCaptor.capture(), eq(UUID.class), any(Object[].class));
+        .queryForObject(sqlQueryCaptor.capture(), eq(UUID.class), any(Object[].class));
   }
-
 
   @Test
   @DisplayName("Insert entry into the join table")
@@ -122,7 +122,8 @@ public class PostgresClientMetadataRepositoryTest {
     String capturedQuery = sqlQueryCaptor.getValue();
     String expectedQuery =
         String.format(
-            "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s') ON CONFLICT (id) DO UPDATE SET metadata_id = EXCLUDED.metadata_id;",
+            "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s') ON CONFLICT (id) DO UPDATE SET"
+                + " metadata_id = EXCLUDED.metadata_id;",
             joinTable, postgresEndpoint.getId(), postgresEndpoint.getMetadataId());
     assertEquals(expectedQuery, capturedQuery);
   }

@@ -103,14 +103,15 @@ public class PostgresClientRepository {
       if (wordEmbeddings != null && wordEmbeddings.getValues() != null) {
 
         float[] floatArray = FloatUtils.toFloatArray(wordEmbeddings.getValues());
-        String rawText = wordEmbeddings.getId().replace("'","");
+        String rawText = wordEmbeddings.getId().replace("'", "");
 
         UUID id =
             jdbcTemplate.queryForObject(
                 String.format(
                     "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename, tsv)"
-                        + " VALUES ('%s', ?, '%s', '%s', '%s', '%s', TO_TSVECTOR('%s', '%s'))  ON CONFLICT (raw_text) DO"
-                        + " UPDATE SET embedding = EXCLUDED.embedding RETURNING id;",
+                        + " VALUES ('%s', ?, '%s', '%s', '%s', '%s', TO_TSVECTOR('%s', '%s'))  ON"
+                        + " CONFLICT (raw_text) DO UPDATE SET embedding = EXCLUDED.embedding"
+                        + " RETURNING id;",
                     tableName,
                     UuidCreator.getTimeOrderedEpoch(),
                     Arrays.toString(floatArray),
@@ -140,14 +141,15 @@ public class PostgresClientRepository {
       PostgresLanguage language) {
 
     float[] floatArray = FloatUtils.toFloatArray(wordEmbeddings.getValues());
-    String rawText = wordEmbeddings.getId().replace("'","");
+    String rawText = wordEmbeddings.getId().replace("'", "");
 
     UUID uuid =
         jdbcTemplate.queryForObject(
             String.format(
                 "INSERT INTO %s (id, raw_text, embedding, timestamp, namespace, filename, tsv)"
-                    + " VALUES ('%s', ?, '%s', '%s', '%s', '%s', TO_TSVECTOR('%s', '%s'))  ON CONFLICT (raw_text) DO"
-                    + " UPDATE SET embedding = EXCLUDED.embedding RETURNING id;",
+                    + " VALUES ('%s', ?, '%s', '%s', '%s', '%s', TO_TSVECTOR('%s', '%s'))  ON"
+                    + " CONFLICT (raw_text) DO UPDATE SET embedding = EXCLUDED.embedding RETURNING"
+                    + " id;",
                 tableName,
                 UuidCreator.getTimeOrderedEpoch(),
                 Arrays.toString(floatArray),
@@ -239,30 +241,42 @@ public class PostgresClientRepository {
   }
 
   public List<Map<String, Object>> queryRRF(
-          String tableName,
-          String namespace,
-          String metadataTableName,
-          List<Float> values,
-          RRFWeight textWeight,
-          RRFWeight similarityWeight,
-          RRFWeight dateWeight,
-          String searchQuery,
-          PostgresLanguage language,
-          PostgresDistanceMetric metric,
-          int topK,
-          OrderRRFBy orderRRFBy) {
-
+      String tableName,
+      String namespace,
+      String metadataTableName,
+      List<Float> values,
+      RRFWeight textWeight,
+      RRFWeight similarityWeight,
+      RRFWeight dateWeight,
+      String searchQuery,
+      PostgresLanguage language,
+      PostgresDistanceMetric metric,
+      int topK,
+      OrderRRFBy orderRRFBy) {
 
     String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
 
     StringBuilder query = new StringBuilder();
-    query.append("SELECT id, raw_text, document_date, metadata,\n")
-        .append(String.format("%s / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + %s) + \n", textWeight.getBaseWeight().getValue(), textWeight.getFineTuneWeight()))
-        .append(String.format("%s / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + %s) + \n", similarityWeight.getBaseWeight().getValue(), similarityWeight.getFineTuneWeight()))
-        .append(String.format("%s / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score\n", dateWeight.getBaseWeight().getValue(), dateWeight.getFineTuneWeight()))
+    query
+        .append("SELECT id, raw_text, document_date, metadata,\n")
+        .append(
+            String.format(
+                "%s / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + %s) + \n",
+                textWeight.getBaseWeight().getValue(), textWeight.getFineTuneWeight()))
+        .append(
+            String.format(
+                "%s / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + %s) + \n",
+                similarityWeight.getBaseWeight().getValue(), similarityWeight.getFineTuneWeight()))
+        .append(
+            String.format(
+                "%s / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score\n",
+                dateWeight.getBaseWeight().getValue(), dateWeight.getFineTuneWeight()))
         .append("FROM ( ")
         .append("SELECT sv.id, sv.raw_text, svtm.document_date, svtm.metadata, ")
-        .append(String.format("ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ", language.getValue(), searchQuery));
+        .append(
+            String.format(
+                "ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ",
+                language.getValue(), searchQuery));
 
     switch (metric) {
       case COSINE -> query.append(
@@ -277,7 +291,8 @@ public class PostgresClientRepository {
         .append("CASE ")
         .append("WHEN svtm.document_date IS NULL THEN 0 ") // Null date handling
         .append(
-            "ELSE EXTRACT(YEAR FROM svtm.document_date) * 365 + EXTRACT(DOY FROM svtm.document_date) ")
+            "ELSE EXTRACT(YEAR FROM svtm.document_date) * 365 + EXTRACT(DOY FROM"
+                + " svtm.document_date) ")
         .append("END AS date_rank ")
         .append("FROM ")
         .append(tableName)
@@ -294,17 +309,15 @@ public class PostgresClientRepository {
         .append("'")
         .append(") subquery ");
 
-      switch (orderRRFBy) {
-          case TEXT_RANK -> query.append("ORDER BY text_rank DESC, rrf_score DESC");
-          case SIMILARITY -> query.append("ORDER BY similarity DESC, rrf_score DESC");
-          case DATE_RANK -> query.append("ORDER BY date_rank DESC, rrf_score DESC");
-          case DEFAULT -> query.append("ORDER BY rrf_score DESC");
-          default -> throw new IllegalArgumentException("Invalid orderRRFBy value");
-      }
+    switch (orderRRFBy) {
+      case TEXT_RANK -> query.append("ORDER BY text_rank DESC, rrf_score DESC");
+      case SIMILARITY -> query.append("ORDER BY similarity DESC, rrf_score DESC");
+      case DATE_RANK -> query.append("ORDER BY date_rank DESC, rrf_score DESC");
+      case DEFAULT -> query.append("ORDER BY rrf_score DESC");
+      default -> throw new IllegalArgumentException("Invalid orderRRFBy value");
+    }
 
-      query.append(" LIMIT ")
-        .append(topK)
-        .append(";");
+    query.append(" LIMIT ").append(topK).append(";");
 
     return jdbcTemplate.queryForList(query.toString());
   }

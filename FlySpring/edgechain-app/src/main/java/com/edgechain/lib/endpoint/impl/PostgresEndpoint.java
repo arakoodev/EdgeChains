@@ -47,8 +47,9 @@ public class PostgresEndpoint extends Endpoint {
   private List<String> metadataList;
   private String documentDate;
 
-  /** RRF **/
+  /** RRF * */
   private RRFWeight textWeight;
+
   private RRFWeight similarityWeight;
   private RRFWeight dateWeight;
 
@@ -238,7 +239,8 @@ public class PostgresEndpoint extends Endpoint {
     return this.postgresService.createMetadataTable(this).blockingGet();
   }
 
-  public List<StringResponse> upsert(List<WordEmbeddings> wordEmbeddingsList, String filename, PostgresLanguage postgresLanguage) {
+  public List<StringResponse> upsert(
+      List<WordEmbeddings> wordEmbeddingsList, String filename, PostgresLanguage postgresLanguage) {
     this.wordEmbeddingsList = wordEmbeddingsList;
     this.filename = filename;
     this.postgresLanguage = postgresLanguage;
@@ -283,8 +285,12 @@ public class PostgresEndpoint extends Endpoint {
     this.probes = probes;
     return Observable.fromSingle(this.postgresService.query(this));
   }
+
   public Observable<List<PostgresWordEmbeddings>> query(
-          List<WordEmbeddings> wordEmbeddingsList, PostgresDistanceMetric metric, int topK, int probes) {
+      List<WordEmbeddings> wordEmbeddingsList,
+      PostgresDistanceMetric metric,
+      int topK,
+      int probes) {
     this.wordEmbeddingsList = wordEmbeddingsList;
     this.metric = metric;
     this.probes = probes;
@@ -292,8 +298,17 @@ public class PostgresEndpoint extends Endpoint {
     return Observable.fromSingle(this.postgresService.query(this));
   }
 
-  public Observable<List<PostgresWordEmbeddings>> queryRRF
-          (String metadataTable, WordEmbeddings wordEmbedding, RRFWeight textWeight, RRFWeight similarityWeight, RRFWeight dateWeight, OrderRRFBy orderRRFBy, String searchQuery,PostgresLanguage postgresLanguage, PostgresDistanceMetric metric, int topK) {
+  public Observable<List<PostgresWordEmbeddings>> queryRRF(
+      String metadataTable,
+      WordEmbeddings wordEmbedding,
+      RRFWeight textWeight,
+      RRFWeight similarityWeight,
+      RRFWeight dateWeight,
+      OrderRRFBy orderRRFBy,
+      String searchQuery,
+      PostgresLanguage postgresLanguage,
+      PostgresDistanceMetric metric,
+      int topK) {
     this.metadataTableNames = List.of(metadataTable);
     this.wordEmbedding = wordEmbedding;
     this.textWeight = textWeight;

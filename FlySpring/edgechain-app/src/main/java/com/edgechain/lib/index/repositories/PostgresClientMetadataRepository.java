@@ -38,10 +38,10 @@ public class PostgresClientMetadataRepository {
             postgresEndpoint.getTableName() + "_" + metadataTable));
 
     jdbcTemplate.execute(
-            String.format(
-                    "CREATE INDEX IF NOT EXISTS idx_%s ON %s (metadata_id);",
-                    postgresEndpoint.getTableName() + "_join_" + metadataTable,
-                    postgresEndpoint.getTableName() + "_join_" + metadataTable));
+        String.format(
+            "CREATE INDEX IF NOT EXISTS idx_%s ON %s (metadata_id);",
+            postgresEndpoint.getTableName() + "_join_" + metadataTable,
+            postgresEndpoint.getTableName() + "_join_" + metadataTable));
   }
 
   @Transactional
@@ -79,7 +79,8 @@ public class PostgresClientMetadataRepository {
     UUID metadataId =
         jdbcTemplate.queryForObject(
             String.format(
-                "INSERT INTO %s (metadata_id, metadata, document_date) VALUES ('%s', ?, TO_DATE(NULLIF(?, ''), 'Month DD, YYYY')) RETURNING metadata_id;",
+                "INSERT INTO %s (metadata_id, metadata, document_date) VALUES ('%s', ?,"
+                    + " TO_DATE(NULLIF(?, ''), 'Month DD, YYYY')) RETURNING metadata_id;",
                 table.concat("_").concat(metadataTableName), UuidCreator.getTimeOrderedEpoch()),
             UUID.class,
             metadata,
@@ -96,7 +97,8 @@ public class PostgresClientMetadataRepository {
             + postgresEndpoint.getMetadataTableNames().get(0);
     jdbcTemplate.execute(
         String.format(
-            "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s') ON CONFLICT (id) DO UPDATE SET metadata_id = EXCLUDED.metadata_id;",
+            "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s') ON CONFLICT (id) DO UPDATE SET"
+                + " metadata_id = EXCLUDED.metadata_id;",
             joinTableName,
             UUID.fromString(postgresEndpoint.getId()),
             UUID.fromString(postgresEndpoint.getMetadataId())));
