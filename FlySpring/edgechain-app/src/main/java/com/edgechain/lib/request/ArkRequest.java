@@ -98,9 +98,6 @@ public class ArkRequest {
     return Integer.parseInt(this.request.getParameter(key));
   }
 
-
-
-
   public JSONObject getBody() {
 
     StringBuilder jsonContent = new StringBuilder();
@@ -115,8 +112,6 @@ public class ArkRequest {
       throw new RuntimeException(e);
     }
   }
-
-
 
   public Cookie[] getCookies() {
     return this.request.getCookies();

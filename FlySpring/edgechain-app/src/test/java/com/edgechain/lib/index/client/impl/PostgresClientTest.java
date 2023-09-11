@@ -11,7 +11,6 @@ import com.edgechain.testutil.PostgresTestContainer;
 import com.edgechain.testutil.PostgresTestContainer.PostgresImage;
 import com.zaxxer.hikari.HikariConfig;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.observers.TestObserver;

@@ -37,7 +37,7 @@ public class PostgreSQLExample {
 
   private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
   private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
-  
+
   private static OpenAiEndpoint ada002Embedding;
   private static OpenAiEndpoint gpt3Endpoint;
   private static OpenAiEndpoint gpt3StreamEndpoint;
@@ -88,19 +88,20 @@ public class PostgreSQLExample {
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     gpt3StreamEndpoint =
-            new OpenAiEndpoint(
-                    OPENAI_CHAT_COMPLETION_API,
-                    OPENAI_AUTH_KEY,
-                    OPENAI_ORG_ID,
-                    "gpt-3.5-turbo",
-                    "user",
-                    0.85,
-                    true,
-                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.85,
+            true,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     // Defining tablename and namespace...
     postgresEndpoint =
-        new PostgresEndpoint("pg_vectors", "machine-learning", new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
+        new PostgresEndpoint(
+            "pg_vectors", "machine-learning", new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
     contextEndpoint = new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
   }
 
@@ -157,7 +158,14 @@ public class PostgreSQLExample {
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
       PostgresRetrieval retrieval =
-          new PostgresRetrieval(arr, ada002Embedding, postgresEndpoint, 1536, filename, PostgresLanguage.ENGLISH, arkRequest);
+          new PostgresRetrieval(
+              arr,
+              ada002Embedding,
+              postgresEndpoint,
+              1536,
+              filename,
+              PostgresLanguage.ENGLISH,
+              arkRequest);
 
       //   retrieval.setBatchSize(50); // Modifying batchSize....(Default is 30)
 
@@ -250,8 +258,8 @@ public class PostgreSQLExample {
 
         // Chain 5 ==> Pass the Prompt To Gpt3
         EdgeChain<ChatCompletionResponse> gpt3Chain =
-                new EdgeChain<>(
-                        gpt3Endpoint.chatCompletion(promptChain.get(), "PostgresChatChain", arkRequest));
+            new EdgeChain<>(
+                gpt3Endpoint.chatCompletion(promptChain.get(), "PostgresChatChain", arkRequest));
 
         // Chain 6
         EdgeChain<ChatCompletionResponse> historyUpdatedChain =
@@ -271,8 +279,9 @@ public class PostgreSQLExample {
 
         // Chain 5 ==> Pass the Prompt To Gpt3
         EdgeChain<ChatCompletionResponse> gpt3Chain =
-                new EdgeChain<>(
-                        gpt3StreamEndpoint.chatCompletion(promptChain.get(), "PostgresChatChain", arkRequest));
+            new EdgeChain<>(
+                gpt3StreamEndpoint.chatCompletion(
+                    promptChain.get(), "PostgresChatChain", arkRequest));
 
         /* As the response is in stream, so we will use StringBuilder to append the response
         and once GPT chain indicates that it is finished, we will save the following into Postgres

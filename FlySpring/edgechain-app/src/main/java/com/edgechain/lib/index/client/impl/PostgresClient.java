@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
@@ -291,12 +290,17 @@ public class PostgresClient {
                           : null;
                   val.setScore(bigDecimal.doubleValue());
 
-                  if(postgresEndpoint.getMetadataTableNames().get(0).contains("title")) {
-                      val.setTitleMetadata(Objects.nonNull(row.get("metadata")) ? (String) row.get("metadata") : null);
-                  }else {
-                      val.setMetadata(Objects.nonNull(row.get("metadata")) ? (String) row.get("metadata") : null);
+                  if (postgresEndpoint.getMetadataTableNames().get(0).contains("title")) {
+                    val.setTitleMetadata(
+                        Objects.nonNull(row.get("metadata")) ? (String) row.get("metadata") : null);
+                  } else {
+                    val.setMetadata(
+                        Objects.nonNull(row.get("metadata")) ? (String) row.get("metadata") : null);
                   }
-                  Date documentDate = Objects.nonNull(row.get("document_date")) ? (Date) row.get("document_date"): null;
+                  Date documentDate =
+                      Objects.nonNull(row.get("document_date"))
+                          ? (Date) row.get("document_date")
+                          : null;
                   val.setDocumentDate(documentDate.toString());
 
                   wordEmbeddingsList.add(val);

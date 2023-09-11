@@ -66,7 +66,7 @@ public class PineconeExample {
 
     // Redis Configuration
     properties.setProperty("redis.url", "");
-    properties.setProperty("redis.port","12285");
+    properties.setProperty("redis.port", "12285");
     properties.setProperty("redis.username", "default");
     properties.setProperty("redis.password", "");
     properties.setProperty("redis.ttl", "3600");
@@ -99,34 +99,39 @@ public class PineconeExample {
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     gpt3StreamEndpoint =
-            new OpenAiEndpoint(
-                    OPENAI_CHAT_COMPLETION_API,
-                    OPENAI_AUTH_KEY,
-                    OPENAI_ORG_ID,
-                    "gpt-3.5-turbo",
-                    "user",
-                    0.85,
-                    true,
-                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.85,
+            true,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     upsertPineconeEndpoint =
         new PineconeEndpoint(
             PINECONE_UPSERT_API,
             PINECONE_AUTH_KEY,
-            "machine-learning", // Passing namespace; read more on Pinecone documentation. You can pass empty string
+            "machine-learning", // Passing namespace; read more on Pinecone documentation. You can
+                                // pass empty string
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     queryPineconeEndpoint =
         new PineconeEndpoint(
-            PINECONE_QUERY_API, PINECONE_AUTH_KEY,
-                "machine-learning", // Passing namespace; read more on Pinecone documentation. You can pass empty string
-                new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+            PINECONE_QUERY_API,
+            PINECONE_AUTH_KEY,
+            "machine-learning", // Passing namespace; read more on Pinecone documentation. You can
+                                // pass empty string
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     deletePineconeEndpoint =
         new PineconeEndpoint(
-            PINECONE_DELETE, PINECONE_AUTH_KEY,
-                "machine-learning", // Passing namespace; read more on Pinecone documentation. You can pass empty string
-                new FixedDelay(4, 5, TimeUnit.SECONDS));
+            PINECONE_DELETE,
+            PINECONE_AUTH_KEY,
+            "machine-learning", // Passing namespace; read more on Pinecone documentation. You can
+                                // pass empty string
+            new FixedDelay(4, 5, TimeUnit.SECONDS));
 
     contextEndpoint =
         new RedisHistoryContextEndpoint(new ExponentialDelay(2, 2, 2, TimeUnit.SECONDS));
@@ -227,7 +232,6 @@ public class PineconeExample {
       String query = arkRequest.getBody().getString("query");
       boolean stream = arkRequest.getBooleanHeader("stream");
 
-
       // Get HistoryContext
       HistoryContext historyContext = contextEndpoint.get(contextId);
 
@@ -272,18 +276,18 @@ public class PineconeExample {
 
         // Chain 5 ==> Pass the Prompt To Gpt3
         EdgeChain<ChatCompletionResponse> gpt3Chain =
-                new EdgeChain<>(
-                        gpt3Endpoint.chatCompletion(promptChain.get(), "RedisChatChain", arkRequest));
+            new EdgeChain<>(
+                gpt3Endpoint.chatCompletion(promptChain.get(), "RedisChatChain", arkRequest));
 
         // Chain 6
         EdgeChain<ChatCompletionResponse> historyUpdatedChain =
-                gpt3Chain.doOnNext(
-                        chatResponse ->
-                                contextEndpoint.put(
-                                        historyContext.getId(),
-                                        query
-                                                + chatResponse.getChoices().get(0).getMessage().getContent()
-                                                + historyContext.getResponse()));
+            gpt3Chain.doOnNext(
+                chatResponse ->
+                    contextEndpoint.put(
+                        historyContext.getId(),
+                        query
+                            + chatResponse.getChoices().get(0).getMessage().getContent()
+                            + historyContext.getResponse()));
 
         return historyUpdatedChain.getArkResponse();
       }
@@ -293,8 +297,8 @@ public class PineconeExample {
 
         // Chain 5 ==> Pass the Prompt To Gpt3
         EdgeChain<ChatCompletionResponse> gpt3Chain =
-                new EdgeChain<>(
-                        gpt3StreamEndpoint.chatCompletion(promptChain.get(), "RedisChatChain", arkRequest));
+            new EdgeChain<>(
+                gpt3StreamEndpoint.chatCompletion(promptChain.get(), "RedisChatChain", arkRequest));
 
         /* As the response is in stream, so we will use StringBuilder to append the response
         and once GPT chain indicates that it is finished, we will save the following into Redis
@@ -305,19 +309,19 @@ public class PineconeExample {
 
         // Chain 7
         EdgeChain<ChatCompletionResponse> streamingOutputChain =
-                gpt3Chain.doOnNext(
-                        chatResponse -> {
-                          if (Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
-                            stringBuilder.append(
-                                    chatResponse.getChoices().get(0).getMessage().getContent());
-                          }
-                          // Now the streaming response is ended. Save it to DB i.e. HistoryContext
-                          else {
-                            contextEndpoint.put(
-                                    historyContext.getId(),
-                                    query + stringBuilder + historyContext.getResponse());
-                          }
-                        });
+            gpt3Chain.doOnNext(
+                chatResponse -> {
+                  if (Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
+                    stringBuilder.append(
+                        chatResponse.getChoices().get(0).getMessage().getContent());
+                  }
+                  // Now the streaming response is ended. Save it to DB i.e. HistoryContext
+                  else {
+                    contextEndpoint.put(
+                        historyContext.getId(),
+                        query + stringBuilder + historyContext.getResponse());
+                  }
+                });
 
         return streamingOutputChain.getArkStreamResponse();
       }
