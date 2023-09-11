@@ -57,7 +57,7 @@ public class PostgresClientMetadataRepositoryTest {
     repository.createTable(postgresEndpoint);
 
     // Assert
-    verify(jdbcTemplate, times(2)).execute(sqlQueryCaptor.capture());
+    verify(jdbcTemplate, times(3)).execute(sqlQueryCaptor.capture());
   }
 
   @Test

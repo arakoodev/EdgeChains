@@ -30,8 +30,8 @@ public class PostgresClientMetadataRepository {
     jdbcTemplate.execute(
         String.format(
             "CREATE TABLE IF NOT EXISTS %s (id UUID UNIQUE NOT NULL, metadata_id UUID NOT NULL, "
-                + "FOREIGN KEY (id) REFERENCES %s(id), "
-                + "FOREIGN KEY (metadata_id) REFERENCES %s(metadata_id), "
+                + "FOREIGN KEY (id) REFERENCES %s(id) ON DELETE CASCADE, "
+                + "FOREIGN KEY (metadata_id) REFERENCES %s(metadata_id) ON DELETE CASCADE, "
                 + "PRIMARY KEY (id, metadata_id));",
             postgresEndpoint.getTableName() + "_join_" + metadataTable,
             postgresEndpoint.getTableName(),

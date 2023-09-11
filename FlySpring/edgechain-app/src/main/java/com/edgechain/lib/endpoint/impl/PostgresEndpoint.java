@@ -345,7 +345,9 @@ public class PostgresEndpoint extends Endpoint {
     return Observable.fromSingle(this.postgresService.getAllChunks(this));
   }
 
-  public StringResponse deleteAll() {
+  public StringResponse deleteAll(String tableName, String namespace) {
+    this.tableName = tableName;
+    this.namespace = namespace;
     return this.postgresService.deleteAll(this).blockingGet();
   }
 }

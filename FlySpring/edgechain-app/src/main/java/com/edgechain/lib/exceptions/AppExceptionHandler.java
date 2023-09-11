@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class AppExceptionHandler {
 
-//  @ExceptionHandler(value = {Exception.class})
-//  public ResponseEntity<Object> handleException(Exception ex) {
-//    ErrorResponse response = new ErrorResponse(ex.getMessage());
-//    return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-//  }
+  @ExceptionHandler(value = {Exception.class})
+  public ResponseEntity<Object> handleException(Exception ex) {
+    ErrorResponse response = new ErrorResponse(ex.getMessage());
+    return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 
   @ExceptionHandler(value = {SupabaseUserExistException.class})
   public ResponseEntity<Object> handleSupabaseUserExistException(Exception ex) {
