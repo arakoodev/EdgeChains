@@ -300,11 +300,7 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
 
   @Override
   public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
-    //    ?this.input = input; // set Input
-
-    final String str = input.replaceAll("'", "");
-
-    setRawText(str);
+    setRawText(input);
 
     if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
     else this.callIdentifier = "URI wasn't provided";
@@ -314,7 +310,7 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
             .embeddings(this)
             .map(
                 embeddingResponse ->
-                    new WordEmbeddings(str, embeddingResponse.getData().get(0).getEmbedding())));
+                    new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
   }
 
   private Observable<ChatCompletionResponse> chatCompletion(ArkRequest arkRequest) {

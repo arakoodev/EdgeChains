@@ -103,7 +103,7 @@ public class PostgresClientRepository {
       if (wordEmbeddings != null && wordEmbeddings.getValues() != null) {
 
         float[] floatArray = FloatUtils.toFloatArray(wordEmbeddings.getValues());
-        String rawText = wordEmbeddings.getId();
+        String rawText = wordEmbeddings.getId().replace("'","");
 
         UUID id =
             jdbcTemplate.queryForObject(
@@ -140,7 +140,7 @@ public class PostgresClientRepository {
       PostgresLanguage language) {
 
     float[] floatArray = FloatUtils.toFloatArray(wordEmbeddings.getValues());
-    String rawText = wordEmbeddings.getId();
+    String rawText = wordEmbeddings.getId().replace("'","");
 
     UUID uuid =
         jdbcTemplate.queryForObject(
