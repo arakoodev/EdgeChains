@@ -258,7 +258,7 @@ public class PostgresClientRepository {
 
     StringBuilder query = new StringBuilder();
     query
-        .append("SELECT id, raw_text, document_date, metadata,\n")
+        .append("SELECT id, raw_text, document_date, metadata, namespace, filename, timestamp, \n")
         .append(
             String.format(
                 "%s / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + %s) + \n",
@@ -272,7 +272,7 @@ public class PostgresClientRepository {
                 "%s / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score\n",
                 dateWeight.getBaseWeight().getValue(), dateWeight.getFineTuneWeight()))
         .append("FROM ( ")
-        .append("SELECT sv.id, sv.raw_text, svtm.document_date, svtm.metadata, ")
+        .append("SELECT sv.id, sv.raw_text, sv.namespace, sv.filename, sv.timestamp, svtm.document_date, svtm.metadata, ")
         .append(
             String.format(
                 "ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ",
@@ -318,7 +318,6 @@ public class PostgresClientRepository {
     }
 
     query.append(" LIMIT ").append(topK).append(";");
-
     return jdbcTemplate.queryForList(query.toString());
   }
 
