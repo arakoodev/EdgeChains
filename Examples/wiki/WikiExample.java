@@ -27,11 +27,14 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 @SpringBootApplication
 public class WikiExample {
 
-  private static final String OPENAI_AUTH_KEY = "";
+  private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
   private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
 
   /* Step 3: Create OpenAiEndpoint to communicate with OpenAiServices; */
   private static OpenAiEndpoint gpt3Endpoint;
+
+  private static OpenAiEndpoint gpt3StreamEndpoint;
+
   private static WikiEndpoint wikiEndpoint;
 
   // There is a 70% chance that file1 is executed; 30% chance file2 is executed....
@@ -66,7 +69,17 @@ public class WikiExample {
             "gpt-3.5-turbo",
             "user",
             0.7,
-            false,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+
+    gpt3StreamEndpoint =
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.7,
+            true,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
   }
 
@@ -85,20 +98,11 @@ public class WikiExample {
       String query = arkRequest.getQueryParam("query");
       boolean stream = arkRequest.getBooleanHeader("stream");
 
-      // Configure GPT4Endpoint
-      gpt3Endpoint.setStream(stream);
-
       //  Chain 1 ==> WikiChain
       EdgeChain<WikiResponse> wikiChain = new EdgeChain<>(wikiEndpoint.getPageContent(query));
 
       //   Chain 2 ===> Creating Prompt Chain & Return ChatCompletion
       EdgeChain<String> promptChain = wikiChain.transform(this::fn);
-
-      // Chain 3 ==> Pass Prompt to ChatCompletion API & Return ArkResponseObservable
-      EdgeChain<ChatCompletionResponse> openAiChain =
-          new EdgeChain<>(
-              gpt3Endpoint.chatCompletion(promptChain.get(), "WikiChain", loader, arkRequest));
-
       /**
        * The best part is flexibility with just one method EdgeChainsSDK will return response either
        * in json or stream; The real magic happens here. Streaming happens only if your logic allows
@@ -107,8 +111,25 @@ public class WikiExample {
 
       // Note: When you call getArkResponse() or getArkStreamResponse() ==> Only then your streams
       // are executed...
-      if (stream) return openAiChain.getArkStreamResponse();
-      else return openAiChain.getArkResponse();
+      if (stream) {
+
+        // Chain 3 ==> Pass Prompt to ChatCompletion API & Return ArkResponseObservable
+        EdgeChain<ChatCompletionResponse> openAiChain =
+            new EdgeChain<>(
+                gpt3StreamEndpoint.chatCompletion(
+                    promptChain.get(), "WikiChain", loader, arkRequest));
+
+        return openAiChain.getArkStreamResponse();
+
+      } else {
+
+        // Chain 3 ==> Pass Prompt to ChatCompletion API & Return ArkResponseObservable
+        EdgeChain<ChatCompletionResponse> openAiChain =
+            new EdgeChain<>(
+                gpt3Endpoint.chatCompletion(promptChain.get(), "WikiChain", loader, arkRequest));
+
+        return openAiChain.getArkResponse();
+      }
     }
 
     private String fn(WikiResponse wiki) {

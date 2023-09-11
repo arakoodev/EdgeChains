@@ -46,10 +46,7 @@ public class MiniLMEndpoint extends EmbeddingEndpoint {
 
   @Override
   public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
-
-    final String str = input.replaceAll("'", "");
-
-    setRawText(str);
+    setRawText(input);
 
     if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
     else this.callIdentifier = "URI wasn't provided";
@@ -59,6 +56,6 @@ public class MiniLMEndpoint extends EmbeddingEndpoint {
     }
 
     return Observable.fromSingle(
-        miniLMService.embeddings(this).map(m -> new WordEmbeddings(str, m.getEmbedding())));
+        miniLMService.embeddings(this).map(m -> new WordEmbeddings(input, m.getEmbedding())));
   }
 }

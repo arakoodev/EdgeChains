@@ -7,6 +7,7 @@ import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
 import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.StringResponse;
 import io.reactivex.rxjava3.core.Completable;
@@ -30,6 +31,8 @@ public class PostgresRetrieval {
 
   private final String filename;
 
+  private final PostgresLanguage postgresLanguage;
+
   private final ArkRequest arkRequest;
 
   private final PostgresEndpoint postgresEndpoint;
@@ -47,12 +50,14 @@ public class PostgresRetrieval {
       PostgresDistanceMetric metric,
       int lists,
       String filename,
+      PostgresLanguage postgresLanguage,
       ArkRequest arkRequest) {
     this.arr = arr;
     this.filename = filename;
-    this.arkRequest = arkRequest;
     this.postgresEndpoint = postgresEndpoint;
     this.embeddingEndpoint = embeddingEndpoint;
+    this.postgresLanguage = postgresLanguage;
+    this.arkRequest = arkRequest;
 
     this.dimensions = dimensions;
     this.metric = metric;
@@ -72,10 +77,12 @@ public class PostgresRetrieval {
       PostgresEndpoint postgresEndpoint,
       int dimensions,
       String filename,
+      PostgresLanguage postgresLanguage,
       ArkRequest arkRequest) {
     this.arr = arr;
     this.filename = filename;
     this.arkRequest = arkRequest;
+    this.postgresLanguage = postgresLanguage;
     this.postgresEndpoint = postgresEndpoint;
     this.embeddingEndpoint = embeddingEndpoint;
 
@@ -129,15 +136,15 @@ public class PostgresRetrieval {
   }
 
   private List<String> executeBatchUpsert(List<WordEmbeddings> wordEmbeddingsList) {
-    return this.postgresEndpoint.upsert(wordEmbeddingsList, filename).stream()
+    return this.postgresEndpoint.upsert(wordEmbeddingsList, filename, postgresLanguage).stream()
         .map(StringResponse::getResponse)
         .collect(Collectors.toList());
   }
 
-  public List<String> insertMetadata() {
+  public List<String> insertMetadata(String metadataTableName) {
 
     // Create Table...
-    this.postgresEndpoint.createMetadataTable();
+    this.postgresEndpoint.createMetadataTable(metadataTableName);
 
     ConcurrentLinkedQueue<String> uuidQueue = new ConcurrentLinkedQueue<>();
 
@@ -154,10 +161,11 @@ public class PostgresRetrieval {
     return new ArrayList<>(uuidQueue);
   }
 
-  public StringResponse insertOneMetadata(String metadata, String documentDate) {
+  public StringResponse insertOneMetadata(
+      String metadataTableName, String metadata, String documentDate) {
     // Create Table...
-    this.postgresEndpoint.createMetadataTable();
-    return this.postgresEndpoint.insertMetadata(metadata, documentDate);
+    this.postgresEndpoint.createMetadataTable(metadataTableName);
+    return this.postgresEndpoint.insertMetadata(metadataTableName, metadata, documentDate);
   }
 
   private void insertMetadataAndCollectIds(
