@@ -98,6 +98,9 @@ public class ArkRequest {
     return Integer.parseInt(this.request.getParameter(key));
   }
 
+
+
+
   public JSONObject getBody() {
 
     StringBuilder jsonContent = new StringBuilder();
@@ -107,12 +110,13 @@ public class ArkRequest {
       while ((line = reader.readLine()) != null) {
         jsonContent.append(line);
       }
+      return new JSONObject(jsonContent.toString());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-
-    return new JSONObject(jsonContent.toString());
   }
+
+
 
   public Cookie[] getCookies() {
     return this.request.getCookies();

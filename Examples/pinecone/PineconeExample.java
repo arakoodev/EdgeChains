@@ -34,6 +34,7 @@ public class PineconeExample {
 
   private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
   private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
+
   private static final String PINECONE_AUTH_KEY = "";
   private static final String PINECONE_QUERY_API = "";
   private static final String PINECONE_UPSERT_API = "";
@@ -41,6 +42,7 @@ public class PineconeExample {
 
   private static OpenAiEndpoint ada002Embedding;
   private static OpenAiEndpoint gpt3Endpoint;
+  private static OpenAiEndpoint gpt3StreamEndpoint;
 
   private static PineconeEndpoint upsertPineconeEndpoint;
   private static PineconeEndpoint queryPineconeEndpoint;
@@ -64,7 +66,7 @@ public class PineconeExample {
 
     // Redis Configuration
     properties.setProperty("redis.url", "");
-    properties.setProperty("redis.port", "");
+    properties.setProperty("redis.port","12285");
     properties.setProperty("redis.username", "default");
     properties.setProperty("redis.password", "");
     properties.setProperty("redis.ttl", "3600");
@@ -96,19 +98,35 @@ public class PineconeExample {
             0.85,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
+    gpt3StreamEndpoint =
+            new OpenAiEndpoint(
+                    OPENAI_CHAT_COMPLETION_API,
+                    OPENAI_AUTH_KEY,
+                    OPENAI_ORG_ID,
+                    "gpt-3.5-turbo",
+                    "user",
+                    0.85,
+                    true,
+                    new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+
     upsertPineconeEndpoint =
         new PineconeEndpoint(
             PINECONE_UPSERT_API,
             PINECONE_AUTH_KEY,
+            "machine-learning", // Passing namespace; read more on Pinecone documentation. You can pass empty string
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     queryPineconeEndpoint =
         new PineconeEndpoint(
-            PINECONE_QUERY_API, PINECONE_AUTH_KEY, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+            PINECONE_QUERY_API, PINECONE_AUTH_KEY,
+                "machine-learning", // Passing namespace; read more on Pinecone documentation. You can pass empty string
+                new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     deletePineconeEndpoint =
         new PineconeEndpoint(
-            PINECONE_DELETE, PINECONE_AUTH_KEY, new FixedDelay(4, 5, TimeUnit.SECONDS));
+            PINECONE_DELETE, PINECONE_AUTH_KEY,
+                "machine-learning", // Passing namespace; read more on Pinecone documentation. You can pass empty string
+                new FixedDelay(4, 5, TimeUnit.SECONDS));
 
     contextEndpoint =
         new RedisHistoryContextEndpoint(new ExponentialDelay(2, 2, 2, TimeUnit.SECONDS));
@@ -158,12 +176,7 @@ public class PineconeExample {
     // Namespace is optional (if not provided, it will be using Empty String "")
     @PostMapping("/pinecone/upsert") // /v1/examples/openai/upsert?namespace=machine-learning
     public void upsertPinecone(ArkRequest arkRequest) throws IOException {
-
-      String namespace = arkRequest.getQueryParam("namespace");
       InputStream file = arkRequest.getMultiPart("file").getInputStream();
-
-      // Configure Pinecone
-      upsertPineconeEndpoint.setNamespace(namespace);
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
@@ -181,12 +194,8 @@ public class PineconeExample {
     @PostMapping(value = "/pinecone/query")
     public ArkResponse query(ArkRequest arkRequest) {
 
-      String namespace = arkRequest.getQueryParam("namespace");
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
-
-      // Configure Pinecone
-      queryPineconeEndpoint.setNamespace(namespace);
 
       // Step 1: Chain ==> Get Embeddings  From Input & Then Query To Pinecone
       EdgeChain<WordEmbeddings> embeddingsChain =
@@ -216,14 +225,8 @@ public class PineconeExample {
 
       String contextId = arkRequest.getQueryParam("id");
       String query = arkRequest.getBody().getString("query");
-      String namespace = arkRequest.getQueryParam("namespace");
       boolean stream = arkRequest.getBooleanHeader("stream");
 
-      // Configure Pinecone
-      queryPineconeEndpoint.setNamespace(namespace);
-
-      // Configure GPT3endpoint
-      gpt3Endpoint.setStream(stream);
 
       // Get HistoryContext
       HistoryContext historyContext = contextEndpoint.get(contextId);
@@ -262,25 +265,25 @@ public class PineconeExample {
       EdgeChain<String> promptChain =
           queryChain.transform(queries -> chatFn(historyContext.getResponse(), queries));
 
-      // Chain 5 ==> Pass the Prompt To Gpt3
-      EdgeChain<ChatCompletionResponse> gpt3Chain =
-          new EdgeChain<>(
-              gpt3Endpoint.chatCompletion(promptChain.get(), "PineconeChatChain", arkRequest));
-
       //  (FOR NON STREAMING)
       // If it's not stream ==>
       // Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
       if (!stream) {
 
+        // Chain 5 ==> Pass the Prompt To Gpt3
+        EdgeChain<ChatCompletionResponse> gpt3Chain =
+                new EdgeChain<>(
+                        gpt3Endpoint.chatCompletion(promptChain.get(), "RedisChatChain", arkRequest));
+
         // Chain 6
         EdgeChain<ChatCompletionResponse> historyUpdatedChain =
-            gpt3Chain.doOnNext(
-                chatResponse ->
-                    contextEndpoint.put(
-                        historyContext.getId(),
-                        query
-                            + chatResponse.getChoices().get(0).getMessage().getContent()
-                            + historyContext.getResponse()));
+                gpt3Chain.doOnNext(
+                        chatResponse ->
+                                contextEndpoint.put(
+                                        historyContext.getId(),
+                                        query
+                                                + chatResponse.getChoices().get(0).getMessage().getContent()
+                                                + historyContext.getResponse()));
 
         return historyUpdatedChain.getArkResponse();
       }
@@ -288,8 +291,13 @@ public class PineconeExample {
       // For STREAMING Version
       else {
 
+        // Chain 5 ==> Pass the Prompt To Gpt3
+        EdgeChain<ChatCompletionResponse> gpt3Chain =
+                new EdgeChain<>(
+                        gpt3StreamEndpoint.chatCompletion(promptChain.get(), "RedisChatChain", arkRequest));
+
         /* As the response is in stream, so we will use StringBuilder to append the response
-        and once GPT chain indicates that it is finished, we will save the following into Postgres
+        and once GPT chain indicates that it is finished, we will save the following into Redis
          Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
          */
 
@@ -297,19 +305,19 @@ public class PineconeExample {
 
         // Chain 7
         EdgeChain<ChatCompletionResponse> streamingOutputChain =
-            gpt3Chain.doOnNext(
-                chatResponse -> {
-                  if (Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
-                    stringBuilder.append(
-                        chatResponse.getChoices().get(0).getMessage().getContent());
-                  }
-                  // Now the streaming response is ended. Save it to DB i.e. HistoryContext
-                  else {
-                    contextEndpoint.put(
-                        historyContext.getId(),
-                        query + stringBuilder + historyContext.getResponse());
-                  }
-                });
+                gpt3Chain.doOnNext(
+                        chatResponse -> {
+                          if (Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
+                            stringBuilder.append(
+                                    chatResponse.getChoices().get(0).getMessage().getContent());
+                          }
+                          // Now the streaming response is ended. Save it to DB i.e. HistoryContext
+                          else {
+                            contextEndpoint.put(
+                                    historyContext.getId(),
+                                    query + stringBuilder + historyContext.getResponse());
+                          }
+                        });
 
         return streamingOutputChain.getArkStreamResponse();
       }
@@ -318,8 +326,6 @@ public class PineconeExample {
     // Namespace is optional (if not provided, it will be using Empty String "")
     @DeleteMapping("/pinecone/deleteAll")
     public ArkResponse deletePinecone(ArkRequest arkRequest) {
-      String namespace = arkRequest.getQueryParam("namespace");
-      deletePineconeEndpoint.setNamespace(namespace);
       return new EdgeChain<>(deletePineconeEndpoint.deleteAll()).getArkResponse();
     }
 

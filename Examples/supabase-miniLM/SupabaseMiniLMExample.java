@@ -7,6 +7,7 @@ import com.edgechain.lib.embeddings.miniLLM.enums.MiniLMModel;
 import com.edgechain.lib.endpoint.impl.*;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
@@ -39,7 +40,9 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 public class SupabaseMiniLMExample {
   private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
   private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
+
   private static OpenAiEndpoint gpt3Endpoint;
+  private static OpenAiEndpoint gpt3StreamEndpoint;
   private static PostgresEndpoint postgresEndpoint;
   private static PostgreSQLHistoryContextEndpoint contextEndpoint;
 
@@ -59,6 +62,9 @@ public class SupabaseMiniLMExample {
     properties.setProperty("supabase.url", "");
     properties.setProperty("supabase.annon.key", "");
 
+    // For JWT decode
+    properties.setProperty("jwt.secret", "");
+
     // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
     properties.setProperty("cors.origins", "http://localhost:4200");
 
@@ -68,11 +74,8 @@ public class SupabaseMiniLMExample {
 
     // For DB config
     properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "postgres");
+    properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
-
-    // For JWT decode
-    properties.setProperty("jwt.secret", "");
 
     new SpringApplicationBuilder(SupabaseMiniLMExample.class).properties(properties).run(args);
 
@@ -86,6 +89,17 @@ public class SupabaseMiniLMExample {
             0.85,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
+    gpt3StreamEndpoint =
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.85,
+            true,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+
     // Creating MiniLM Endpoint
     // When endpoint.embeddings() is called; it will look for the model; if not available, it will
     // download on fly.
@@ -96,7 +110,8 @@ public class SupabaseMiniLMExample {
     // Creating PostgresEndpoint ==> We create a new table because miniLM supports 384 dimensional
     // vectors;
     postgresEndpoint =
-        new PostgresEndpoint("minilm_vectors", new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
+        new PostgresEndpoint(
+            "minilm_vectors", "minilm-ns", new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
 
     contextEndpoint = new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
   }
@@ -149,19 +164,22 @@ public class SupabaseMiniLMExample {
     @PostMapping("/miniLM/upsert")
     @PreAuthorize("hasAnyAuthority('authenticated')")
     public void upsert(ArkRequest arkRequest) throws IOException {
-
-      String namespace = arkRequest.getQueryParam("namespace");
       String filename = arkRequest.getMultiPart("file").getSubmittedFileName();
       InputStream file = arkRequest.getMultiPart("file").getInputStream();
-
-      postgresEndpoint.setNamespace(namespace);
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
       PostgresRetrieval retrieval =
-          new PostgresRetrieval(arr, miniLMEndpoint, postgresEndpoint, 1536, filename, arkRequest);
+          new PostgresRetrieval(
+              arr,
+              miniLMEndpoint,
+              postgresEndpoint,
+              384,
+              filename,
+              PostgresLanguage.ENGLISH,
+              arkRequest);
 
-      //   retrieval.setBatchSize(100); // Modifying batchSize....
+      //   retrieval.setBatchSize(50); // Modifying batchSize....
 
       // Getting ids from upsertion... Internally, it automatically parallelizes the operation...
       List<String> ids = retrieval.upsert();
@@ -175,11 +193,8 @@ public class SupabaseMiniLMExample {
     @PreAuthorize("hasAnyAuthority('authenticated')")
     public ArkResponse queryPostgres(ArkRequest arkRequest) {
 
-      String namespace = arkRequest.getQueryParam("namespace");
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
-
-      postgresEndpoint.setNamespace(namespace);
 
       // Chain 1==> Get Embeddings From Input using MiniLM & Then Query To PostgreSQL
       EdgeChain<WordEmbeddings> embeddingsChain =
@@ -205,14 +220,8 @@ public class SupabaseMiniLMExample {
       String contextId = arkRequest.getQueryParam("id");
 
       String query = arkRequest.getBody().getString("query");
-      String namespace = arkRequest.getQueryParam("namespace");
 
       boolean stream = arkRequest.getBooleanHeader("stream");
-
-      // Configure PostgresEndpoint
-      postgresEndpoint.setNamespace(namespace);
-
-      gpt3Endpoint.setStream(stream);
 
       // Get HistoryContext
       HistoryContext historyContext = contextEndpoint.get(contextId);
@@ -252,16 +261,16 @@ public class SupabaseMiniLMExample {
       EdgeChain<String> promptChain =
           queryChain.transform(queries -> chatFn(historyContext.getResponse(), queries));
 
-      // Chain 5 ==> Pass the Prompt To Gpt3
-      EdgeChain<ChatCompletionResponse> gpt3Chain =
-          new EdgeChain<>(
-              gpt3Endpoint.chatCompletion(
-                  promptChain.get(), "MiniLMPostgresChatChain", arkRequest));
-
       //  (FOR NON STREAMING)
       // If it's not stream ==>
       // Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
       if (!stream) {
+
+        // Chain 5 ==> Pass the Prompt To Gpt3
+        EdgeChain<ChatCompletionResponse> gpt3Chain =
+            new EdgeChain<>(
+                gpt3Endpoint.chatCompletion(
+                    promptChain.get(), "MiniLMPostgresChatChain", arkRequest));
 
         // Chain 6
         EdgeChain<ChatCompletionResponse> historyUpdatedChain =
@@ -278,6 +287,12 @@ public class SupabaseMiniLMExample {
 
       // For STREAMING Version
       else {
+
+        // Chain 5 ==> Pass the Prompt To Gpt3
+        EdgeChain<ChatCompletionResponse> gpt3Chain =
+            new EdgeChain<>(
+                gpt3StreamEndpoint.chatCompletion(
+                    promptChain.get(), "MiniLMPostgresChatChain", arkRequest));
 
         /* As the response is in stream, so we will use StringBuilder to append the response
         and once GPT chain indicates that it is finished, we will save the following into Postgres

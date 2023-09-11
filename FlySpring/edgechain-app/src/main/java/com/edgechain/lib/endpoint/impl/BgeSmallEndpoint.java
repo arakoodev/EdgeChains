@@ -81,16 +81,13 @@ public class BgeSmallEndpoint extends EmbeddingEndpoint {
 
   @Override
   public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
-
-    final String str = input.replaceAll("'", "");
-
-    setRawText(str);
+    setRawText(input);
 
     if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
     else this.callIdentifier = "URI wasn't provided";
 
     return Observable.fromSingle(
-        bgeSmallService.embeddings(this).map(m -> new WordEmbeddings(str, m.getEmbedding())));
+        bgeSmallService.embeddings(this).map(m -> new WordEmbeddings(input, m.getEmbedding())));
   }
 
   private void downloadFile(String urlStr, String path) {
