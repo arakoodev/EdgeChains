@@ -272,7 +272,9 @@ public class PostgresClientRepository {
                 "%s / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + %s) AS rrf_score\n",
                 dateWeight.getBaseWeight().getValue(), dateWeight.getFineTuneWeight()))
         .append("FROM ( ")
-        .append("SELECT sv.id, sv.raw_text, sv.namespace, sv.filename, sv.timestamp, svtm.document_date, svtm.metadata, ")
+        .append(
+            "SELECT sv.id, sv.raw_text, sv.namespace, sv.filename, sv.timestamp,"
+                + " svtm.document_date, svtm.metadata, ")
         .append(
             String.format(
                 "ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ",

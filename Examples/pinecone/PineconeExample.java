@@ -114,7 +114,7 @@ public class PineconeExample {
             PINECONE_UPSERT_API,
             PINECONE_AUTH_KEY,
             "machine-learning", // Passing namespace; read more on Pinecone documentation. You can
-                                // pass empty string
+            // pass empty string
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     queryPineconeEndpoint =
@@ -122,7 +122,7 @@ public class PineconeExample {
             PINECONE_QUERY_API,
             PINECONE_AUTH_KEY,
             "machine-learning", // Passing namespace; read more on Pinecone documentation. You can
-                                // pass empty string
+            // pass empty string
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     deletePineconeEndpoint =
@@ -130,7 +130,7 @@ public class PineconeExample {
             PINECONE_DELETE,
             PINECONE_AUTH_KEY,
             "machine-learning", // Passing namespace; read more on Pinecone documentation. You can
-                                // pass empty string
+            // pass empty string
             new FixedDelay(4, 5, TimeUnit.SECONDS));
 
     contextEndpoint =
