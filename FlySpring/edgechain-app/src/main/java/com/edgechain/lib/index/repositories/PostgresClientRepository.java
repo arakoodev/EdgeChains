@@ -349,9 +349,6 @@ public class PostgresClientRepository {
     }
 
     query.append(" LIMIT ").append(topK).append(";");
-
-    System.out.println(query);
-
     return jdbcTemplate.queryForList(query.toString());
   }
 
