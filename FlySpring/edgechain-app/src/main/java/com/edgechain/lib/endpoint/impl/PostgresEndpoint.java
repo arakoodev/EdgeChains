@@ -3,7 +3,10 @@ package com.edgechain.lib.endpoint.impl;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
+import com.edgechain.lib.index.domain.RRFWeight;
+import com.edgechain.lib.index.enums.OrderRRFBy;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.retrofit.PostgresService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
@@ -44,6 +47,17 @@ public class PostgresEndpoint extends Endpoint {
   private List<String> metadataList;
   private String documentDate;
 
+  /** RRF * */
+  private RRFWeight textWeight;
+
+  private RRFWeight similarityWeight;
+  private RRFWeight dateWeight;
+
+  private OrderRRFBy orderRRFBy;
+  private String searchQuery;
+
+  private PostgresLanguage postgresLanguage;
+
   public PostgresEndpoint() {}
 
   public PostgresEndpoint(RetryPolicy retryPolicy) {
@@ -54,6 +68,11 @@ public class PostgresEndpoint extends Endpoint {
     this.tableName = tableName;
   }
 
+  public PostgresEndpoint(String tableName, String namespace) {
+    this.tableName = tableName;
+    this.namespace = namespace;
+  }
+
   public PostgresEndpoint(String tableName, List<String> metadataTableNames) {
     this.tableName = tableName;
     this.metadataTableNames = metadataTableNames;
@@ -62,6 +81,12 @@ public class PostgresEndpoint extends Endpoint {
   public PostgresEndpoint(String tableName, RetryPolicy retryPolicy) {
     super(retryPolicy);
     this.tableName = tableName;
+  }
+
+  public PostgresEndpoint(String tableName, String namespace, RetryPolicy retryPolicy) {
+    super(retryPolicy);
+    this.tableName = tableName;
+    this.namespace = namespace;
   }
 
   public String getTableName() {
@@ -166,6 +191,30 @@ public class PostgresEndpoint extends Endpoint {
     return documentDate;
   }
 
+  public RRFWeight getTextWeight() {
+    return textWeight;
+  }
+
+  public RRFWeight getSimilarityWeight() {
+    return similarityWeight;
+  }
+
+  public RRFWeight getDateWeight() {
+    return dateWeight;
+  }
+
+  public OrderRRFBy getOrderRRFBy() {
+    return orderRRFBy;
+  }
+
+  public String getSearchQuery() {
+    return searchQuery;
+  }
+
+  public PostgresLanguage getPostgresLanguage() {
+    return postgresLanguage;
+  }
+
   public StringResponse upsert(
       WordEmbeddings wordEmbeddings,
       String filename,
@@ -185,19 +234,24 @@ public class PostgresEndpoint extends Endpoint {
     return this.postgresService.createTable(this).blockingGet();
   }
 
-  public StringResponse createMetadataTable() {
+  public StringResponse createMetadataTable(String metadataTableName) {
+    this.metadataTableNames = List.of(metadataTableName);
     return this.postgresService.createMetadataTable(this).blockingGet();
   }
 
-  public List<StringResponse> upsert(List<WordEmbeddings> wordEmbeddingsList, String filename) {
+  public List<StringResponse> upsert(
+      List<WordEmbeddings> wordEmbeddingsList, String filename, PostgresLanguage postgresLanguage) {
     this.wordEmbeddingsList = wordEmbeddingsList;
     this.filename = filename;
+    this.postgresLanguage = postgresLanguage;
     return this.postgresService.batchUpsert(this).blockingGet();
   }
 
-  public StringResponse insertMetadata(String metadata, String documentDate) {
+  public StringResponse insertMetadata(
+      String metadataTableName, String metadata, String documentDate) {
     this.metadata = metadata;
     this.documentDate = documentDate;
+    this.metadataTableNames = List.of(metadataTableName);
     return this.postgresService.insertMetadata(this).blockingGet();
   }
 
@@ -206,15 +260,17 @@ public class PostgresEndpoint extends Endpoint {
     return this.postgresService.batchInsertMetadata(this).blockingGet();
   }
 
-  public StringResponse insertIntoJoinTable(String id, String metadataId) {
+  public StringResponse insertIntoJoinTable(
+      String metadataTableName, String id, String metadataId) {
     this.id = id;
     this.metadataId = metadataId;
+    this.metadataTableNames = List.of(metadataTableName);
     return this.postgresService.insertIntoJoinTable(this).blockingGet();
   }
 
   public Observable<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
-    this.wordEmbedding = wordEmbeddings;
+    this.wordEmbeddingsList = List.of(wordEmbeddings);
     this.topK = topK;
     this.metric = metric;
     this.probes = 1;
@@ -223,15 +279,55 @@ public class PostgresEndpoint extends Endpoint {
 
   public Observable<List<PostgresWordEmbeddings>> query(
       WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK, int probes) {
-    this.wordEmbedding = wordEmbeddings;
+    this.wordEmbeddingsList = List.of(wordEmbeddings);
     this.topK = topK;
     this.metric = metric;
     this.probes = probes;
     return Observable.fromSingle(this.postgresService.query(this));
   }
 
+  public Observable<List<PostgresWordEmbeddings>> query(
+      List<WordEmbeddings> wordEmbeddingsList,
+      PostgresDistanceMetric metric,
+      int topK,
+      int probes) {
+    this.wordEmbeddingsList = wordEmbeddingsList;
+    this.metric = metric;
+    this.probes = probes;
+    this.topK = topK;
+    return Observable.fromSingle(this.postgresService.query(this));
+  }
+
+  public Observable<List<PostgresWordEmbeddings>> queryRRF(
+      String metadataTable,
+      WordEmbeddings wordEmbedding,
+      RRFWeight textWeight,
+      RRFWeight similarityWeight,
+      RRFWeight dateWeight,
+      OrderRRFBy orderRRFBy,
+      String searchQuery,
+      PostgresLanguage postgresLanguage,
+      PostgresDistanceMetric metric,
+      int topK) {
+    this.metadataTableNames = List.of(metadataTable);
+    this.wordEmbedding = wordEmbedding;
+    this.textWeight = textWeight;
+    this.similarityWeight = similarityWeight;
+    this.dateWeight = dateWeight;
+    this.orderRRFBy = orderRRFBy;
+    this.searchQuery = searchQuery;
+    this.postgresLanguage = postgresLanguage;
+    this.metric = metric;
+    this.topK = topK;
+    return Observable.fromSingle(this.postgresService.queryRRF(this));
+  }
+
   public Observable<List<PostgresWordEmbeddings>> queryWithMetadata(
-      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK) {
+      List<String> metadataTableNames,
+      WordEmbeddings wordEmbeddings,
+      PostgresDistanceMetric metric,
+      int topK) {
+    this.metadataTableNames = metadataTableNames;
     this.wordEmbedding = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;
@@ -240,7 +336,12 @@ public class PostgresEndpoint extends Endpoint {
   }
 
   public Observable<List<PostgresWordEmbeddings>> queryWithMetadata(
-      WordEmbeddings wordEmbeddings, PostgresDistanceMetric metric, int topK, int probes) {
+      List<String> metadataTableNames,
+      WordEmbeddings wordEmbeddings,
+      PostgresDistanceMetric metric,
+      int topK,
+      int probes) {
+    this.metadataTableNames = metadataTableNames;
     this.wordEmbedding = wordEmbeddings;
     this.topK = topK;
     this.metric = metric;
@@ -259,7 +360,9 @@ public class PostgresEndpoint extends Endpoint {
     return Observable.fromSingle(this.postgresService.getAllChunks(this));
   }
 
-  public StringResponse deleteAll() {
+  public StringResponse deleteAll(String tableName, String namespace) {
+    this.tableName = tableName;
+    this.namespace = namespace;
     return this.postgresService.deleteAll(this).blockingGet();
   }
 }

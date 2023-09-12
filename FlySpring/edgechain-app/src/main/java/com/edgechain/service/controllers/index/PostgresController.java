@@ -65,6 +65,12 @@ public class PostgresController {
     return this.postgresClient.query(postgresEndpoint).toSingle();
   }
 
+  @PostMapping("/query-rrf")
+  public Single<List<PostgresWordEmbeddings>> queryRRF(
+      @RequestBody PostgresEndpoint postgresEndpoint) {
+    return this.postgresClient.queryRRF(postgresEndpoint).toSingle();
+  }
+
   @PostMapping("/metadata/query")
   public Single<List<PostgresWordEmbeddings>> queryWithMetadata(
       @RequestBody PostgresEndpoint postgresEndpoint) {
