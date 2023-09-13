@@ -48,8 +48,8 @@ public class PostgresEndpoint extends Endpoint {
   private String documentDate;
 
   /** RRF * */
-
   private int upperLimit;
+
   private RRFWeight textWeight;
 
   private RRFWeight similarityWeight;

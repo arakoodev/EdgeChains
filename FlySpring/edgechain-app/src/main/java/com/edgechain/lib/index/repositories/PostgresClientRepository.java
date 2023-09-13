@@ -277,7 +277,8 @@ public class PostgresClientRepository {
                 dateWeight.getBaseWeight().getValue(), dateWeight.getFineTuneWeight()))
         .append("FROM ( ")
         .append(
-            "SELECT sv.id, sv.raw_text, sv.namespace, sv.filename, sv.timestamp, svtm.document_date, svtm.metadata, ")
+            "SELECT sv.id, sv.raw_text, sv.namespace, sv.filename, sv.timestamp,"
+                + " svtm.document_date, svtm.metadata, ")
         .append(
             String.format(
                 "ts_rank_cd(sv.tsv, plainto_tsquery('%s', '%s')) AS text_rank, ",
@@ -302,7 +303,8 @@ public class PostgresClientRepository {
         .append("FROM ")
         .append(
             String.format(
-                "(SELECT id, raw_text, embedding, tsv, namespace, filename, timestamp from %s WHERE namespace = '%s'",
+                "(SELECT id, raw_text, embedding, tsv, namespace, filename, timestamp from %s WHERE"
+                    + " namespace = '%s'",
                 tableName, namespace));
 
     switch (metric) {

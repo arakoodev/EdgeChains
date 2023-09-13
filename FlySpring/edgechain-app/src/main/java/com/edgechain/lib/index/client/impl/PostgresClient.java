@@ -286,18 +286,14 @@ public class PostgresClient {
                   val.setRawText(
                       Objects.nonNull(row.get("raw_text")) ? (String) row.get("raw_text") : null);
 
-                    val.setFilename(
-                            Objects.nonNull(row.get("filename"))
-                                    ? (String) row.get("filename")
-                                    : null);
-                    val.setTimestamp(
-                            Objects.nonNull(row.get("timestamp"))
-                                    ? ((Timestamp) row.get("timestamp")).toLocalDateTime()
-                                    : null);
-                    val.setNamespace(
-                            Objects.nonNull(row.get("namespace"))
-                                    ? (String) row.get("namespace")
-                                    : null);
+                  val.setFilename(
+                      Objects.nonNull(row.get("filename")) ? (String) row.get("filename") : null);
+                  val.setTimestamp(
+                      Objects.nonNull(row.get("timestamp"))
+                          ? ((Timestamp) row.get("timestamp")).toLocalDateTime()
+                          : null);
+                  val.setNamespace(
+                      Objects.nonNull(row.get("namespace")) ? (String) row.get("namespace") : null);
 
                   BigDecimal bigDecimal =
                       Objects.nonNull(row.get("rrf_score"))
