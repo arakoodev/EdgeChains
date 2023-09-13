@@ -273,7 +273,9 @@ public class PostgresClient {
                         postgresEndpoint.getDateWeight(),
                         postgresEndpoint.getSearchQuery(),
                         postgresEndpoint.getPostgresLanguage(),
+                        postgresEndpoint.getProbes(),
                         postgresEndpoint.getMetric(),
+                        postgresEndpoint.getUpperLimit(),
                         postgresEndpoint.getTopK(),
                         postgresEndpoint.getOrderRRFBy());
 

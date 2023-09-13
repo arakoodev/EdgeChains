@@ -250,9 +250,13 @@ public class PostgresClientRepository {
       RRFWeight dateWeight,
       String searchQuery,
       PostgresLanguage language,
+      int probes,
       PostgresDistanceMetric metric,
+      int upperLimit,
       int topK,
       OrderRRFBy orderRRFBy) {
+
+    jdbcTemplate.execute(String.format("SET LOCAL ivfflat.probes = %s;", probes));
 
     String embeddings = Arrays.toString(FloatUtils.toFloatArray(values));
 
@@ -297,7 +301,38 @@ public class PostgresClientRepository {
                 + " svtm.document_date) ")
         .append("END AS date_rank ")
         .append("FROM ")
-        .append(tableName)
+        .append(
+            String.format(
+                "(SELECT id, raw_text, embedding, tsv, namespace, filename, timestamp from %s WHERE"
+                    + " namespace = '%s'",
+                tableName, namespace));
+
+    switch (metric) {
+      case COSINE -> query
+          .append(" ORDER BY embedding <=> ")
+          .append("'")
+          .append(embeddings)
+          .append("'")
+          .append(" LIMIT ")
+          .append(upperLimit);
+      case IP -> query
+          .append(" ORDER BY embedding <#> ")
+          .append("'")
+          .append(embeddings)
+          .append("'")
+          .append(" LIMIT ")
+          .append(upperLimit);
+      case L2 -> query
+          .append(" ORDER BY embedding <-> ")
+          .append("'")
+          .append(embeddings)
+          .append("'")
+          .append(" LIMIT ")
+          .append(upperLimit);
+      default -> throw new IllegalArgumentException("Invalid metric: " + metric);
+    }
+    query
+        .append(")")
         .append(" sv ")
         .append("JOIN ")
         .append(tableName.concat("_join_").concat(metadataTableName))
@@ -305,10 +340,6 @@ public class PostgresClientRepository {
         .append("JOIN ")
         .append(tableName.concat("_").concat(metadataTableName))
         .append(" svtm ON jtm.metadata_id = svtm.metadata_id ")
-        .append("WHERE namespace = ")
-        .append("'")
-        .append(namespace)
-        .append("'")
         .append(") subquery ");
 
     switch (orderRRFBy) {
