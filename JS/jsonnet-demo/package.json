@@ -1,0 +1,20 @@
+{
+  "name": "jsonnet-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@hanazuki/node-jsonnet": "^2.1.0",
+    "@rbicker/jsonnet": "^0.1.1-0.12.1",
+    "tap": "^16.3.8"
+  },
+  "scripts": {
+    "test": "tap --ts",
+    "test:cov": "tap --ts --coverage",
+    "test:dev": "tap --ts --watch --coverage"
+  }
+}

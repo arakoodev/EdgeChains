@@ -1,9 +1,0 @@
-{
-  "devDependencies": {
-    "jest": "^29.6.4",
-    "jsonnet": "^0.5.0-beta"
-  },
-  "scripts": {
-    "test": "node --experimental-vm-modules node_modules/.bin/jest --watchAll"
-  }
-}

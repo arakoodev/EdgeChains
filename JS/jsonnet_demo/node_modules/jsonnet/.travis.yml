@@ -1,4 +1,0 @@
-language: node_js
-node_js:
-  - "v0.11"
-  - "v0.10"
