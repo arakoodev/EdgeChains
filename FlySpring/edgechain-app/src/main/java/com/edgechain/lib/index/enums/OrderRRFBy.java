@@ -7,7 +7,6 @@ public enum OrderRRFBy {
   SIMILARITY, // First Ordered by Similarity; then ordered by rrf_score; (similarity preferred, then
   // relevance)
   DATE_RANK; // First Ordered by date_rank; then ordered by rrf_score; (freshness preferred, then
-
   // relevance)
 
   public static OrderRRFBy fromString(String value) {
