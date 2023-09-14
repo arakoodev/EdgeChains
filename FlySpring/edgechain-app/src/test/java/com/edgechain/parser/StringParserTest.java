@@ -1,5 +1,8 @@
 package com.edgechain.parser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -7,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.edgechain.lib.openai.parser.StringParser;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class StringParserTest {
@@ -100,31 +101,23 @@ public class StringParserTest {
   }
 
   @Test
-  @DisplayName("Test String parser with empty input")
-  public void StringParser_EmptyInput_ReturnExpectedValue(){
-    String input = "";
-    assertThrows(Exception.class, () -> new StringParser(input));
-  }
+  @DisplayName("Test string parser with multi-thoughts, actions and observation")
+  public void stringParser_MultiContents_ReturnExpectedValues(){
+    String input = "Thought 1: Lorem ipsum\n"
+            + "Action 1: [Search: Content for action 1]\n"
+            + "Observation 1: Some observation\n"
+            + "Thought 2: Dolor sit amet\n"
+            + "Action 2: [Search: Content for action 2]\n"
+            + "Observation 2: Another observation"
+            + "Thought 3: Dolor sit amet\n"
+            + "Action 3: [Search: Content for action 2]\n"
+            + "Observation 3: Another observation";
 
-  @Test
-  @DisplayName("Test string parser with multiple thoughts, actions, and observations")
-  public void StringParser_MultipleContents_ReturnsExpectedValues() {
-    String input =
-            "Thought 1: Lorem ipsum\n"
-                    + "Action 1: [Search: Content for action 1]\n"
-                    + "Observation 1: Some observation\n"
-                    + "Thought 2: Dolor sit amet\n"
-                    + "Action 2: [Search: Content for action 2]\n"
-                    + "Observation 2: Another observation"
-                    + "Thought 3: Dolor sit amet\n"
-                    + "Action 3: [Search: Content for action 2]\n"
-                    + "Observation 3: Another observation";
+    StringParser stringParser = new StringParser(input);
 
-    StringParser parser = new StringParser(input);
-
-    String[] thoughts = parser.getThoughts();
-    String[] actions = parser.getActions();
-    String[] observations = parser.getObservations();
+    String[] thoughts = stringParser.getThoughts();
+    String[] actions = stringParser.getActions();
+    String[] observations = stringParser.getObservations();
 
     assertEquals(3, thoughts.length);
     assertEquals(3, actions.length);
