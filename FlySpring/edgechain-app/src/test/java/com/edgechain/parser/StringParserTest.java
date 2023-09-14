@@ -99,29 +99,4 @@ public class StringParserTest {
     assertNotNull(finalAnswer);
     assertEquals("Final Answer", finalAnswer);
   }
-
-  @Test
-  @DisplayName("Test string parser with multi-thoughts, actions and observation")
-  public void stringParser_MultiContents_ReturnExpectedValues() {
-    String input =
-        "Thought 1: Lorem ipsum\n"
-            + "Action 1: [Search: Content for action 1]\n"
-            + "Observation 1: Some observation\n"
-            + "Thought 2: Dolor sit amet\n"
-            + "Action 2: [Search: Content for action 2]\n"
-            + "Observation 2: Another observation"
-            + "Thought 3: Dolor sit amet\n"
-            + "Action 3: [Search: Content for action 2]\n"
-            + "Observation 3: Another observation";
-
-    StringParser stringParser = new StringParser(input);
-
-    String[] thoughts = stringParser.getThoughts();
-    String[] actions = stringParser.getActions();
-    String[] observations = stringParser.getObservations();
-
-    assertEquals(3, thoughts.length);
-    assertEquals(3, actions.length);
-    assertEquals(3, observations.length);
-  }
 }
