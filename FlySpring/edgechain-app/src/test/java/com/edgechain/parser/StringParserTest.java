@@ -102,8 +102,9 @@ public class StringParserTest {
 
   @Test
   @DisplayName("Test string parser with multi-thoughts, actions and observation")
-  public void stringParser_MultiContents_ReturnExpectedValues(){
-    String input = "Thought 1: Lorem ipsum\n"
+  public void stringParser_MultiContents_ReturnExpectedValues() {
+    String input =
+        "Thought 1: Lorem ipsum\n"
             + "Action 1: [Search: Content for action 1]\n"
             + "Observation 1: Some observation\n"
             + "Thought 2: Dolor sit amet\n"
