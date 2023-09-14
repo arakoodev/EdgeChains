@@ -56,7 +56,7 @@ public class PostgresClientMetadataRepositoryTest {
     repository.createTable(postgresEndpoint);
 
     // Assert
-    verify(jdbcTemplate, times(2)).execute(sqlQueryCaptor.capture());
+    verify(jdbcTemplate, times(3)).execute(sqlQueryCaptor.capture());
   }
 
   @Test
@@ -71,21 +71,31 @@ public class PostgresClientMetadataRepositoryTest {
   }
 
   @Test
-  @DisplayName("Insert metadata should return metadata id after getting inserted")
-  public void testInsertMetadata_ReturnsMetadataId() {
+  @DisplayName("Insert metadata must throw NullPointerException when metadata ID is null")
+  public void testInsertMetadata_ThrowsNullPointerException() {
+
     // Arrange
+    String tablename = "table";
     String metadataTableName = "metadata_table";
     String metadata = "example_metadata";
     String documentDate = "Aug 01, 2023";
 
-    // Act
-    repository.insertMetadata(metadataTableName, metadata, documentDate);
+    // Mock jdbcTemplate.queryForObject to return null
+    when(jdbcTemplate.queryForObject(anyString(), eq(UUID.class), any(Object[].class)))
+        .thenReturn(null);
 
-    // Assert
-    verify(jdbcTemplate, times(1)).update(sqlQueryCaptor.capture());
+    // Act and Assert
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          repository.insertMetadata(tablename, metadataTableName, metadata, documentDate);
+        });
+
+    // Verify that jdbcTemplate.queryForObject was called with the correct SQL query and arguments
+    verify(jdbcTemplate, times(1))
+        .queryForObject(sqlQueryCaptor.capture(), eq(UUID.class), any(Object[].class));
   }
 
-  //
   @Test
   @DisplayName("Insert entry into the join table")
   public void testInsertIntoJoinTable() {
@@ -112,7 +122,8 @@ public class PostgresClientMetadataRepositoryTest {
     String capturedQuery = sqlQueryCaptor.getValue();
     String expectedQuery =
         String.format(
-            "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s');",
+            "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s') ON CONFLICT (id) DO UPDATE SET"
+                + " metadata_id = EXCLUDED.metadata_id;",
             joinTable, postgresEndpoint.getId(), postgresEndpoint.getMetadataId());
     assertEquals(expectedQuery, capturedQuery);
   }

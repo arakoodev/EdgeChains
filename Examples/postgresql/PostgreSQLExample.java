@@ -9,6 +9,7 @@ import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.*;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
@@ -39,6 +40,7 @@ public class PostgreSQLExample {
 
   private static OpenAiEndpoint ada002Embedding;
   private static OpenAiEndpoint gpt3Endpoint;
+  private static OpenAiEndpoint gpt3StreamEndpoint;
   private static PostgresEndpoint postgresEndpoint;
   private static PostgreSQLHistoryContextEndpoint contextEndpoint;
 
@@ -85,8 +87,21 @@ public class PostgreSQLExample {
             0.85,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
+    gpt3StreamEndpoint =
+        new OpenAiEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.85,
+            true,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+
+    // Defining tablename and namespace...
     postgresEndpoint =
-        new PostgresEndpoint("spring_vectors", new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
+        new PostgresEndpoint(
+            "pg_vectors", "machine-learning", new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
     contextEndpoint = new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
   }
 
@@ -137,19 +152,22 @@ public class PostgreSQLExample {
      */
     @PostMapping("/postgres/upsert")
     public void upsert(ArkRequest arkRequest) throws IOException {
-
-      String namespace = arkRequest.getQueryParam("namespace");
       String filename = arkRequest.getMultiPart("file").getSubmittedFileName();
       InputStream file = arkRequest.getMultiPart("file").getInputStream();
-
-      postgresEndpoint.setNamespace(namespace);
 
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
       PostgresRetrieval retrieval =
-          new PostgresRetrieval(arr, ada002Embedding, postgresEndpoint, 1536, filename, arkRequest);
+          new PostgresRetrieval(
+              arr,
+              ada002Embedding,
+              postgresEndpoint,
+              1536,
+              filename,
+              PostgresLanguage.ENGLISH,
+              arkRequest);
 
-      //   retrieval.setBatchSize(100); // Modifying batchSize....(Default is 50)
+      //   retrieval.setBatchSize(50); // Modifying batchSize....(Default is 30)
 
       // Getting ids from upsertion... Internally, it automatically parallelizes the operation...
       List<String> ids = retrieval.upsert();
@@ -162,11 +180,8 @@ public class PostgreSQLExample {
     @PostMapping(value = "/postgres/query")
     public ArkResponse query(ArkRequest arkRequest) {
 
-      String namespace = arkRequest.getQueryParam("namespace");
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
-
-      postgresEndpoint.setNamespace(namespace);
 
       // Chain 1==> Get Embeddings  From Input & Then Query To PostgreSQL
       EdgeChain<WordEmbeddings> embeddingsChain =
@@ -195,14 +210,8 @@ public class PostgreSQLExample {
       String contextId = arkRequest.getQueryParam("id");
 
       String query = arkRequest.getBody().getString("query");
-      String namespace = arkRequest.getQueryParam("namespace");
 
       boolean stream = arkRequest.getBooleanHeader("stream");
-
-      // Configure PostgresEndpoint
-      postgresEndpoint.setNamespace(namespace);
-
-      gpt3Endpoint.setStream(stream);
 
       // Get HistoryContext
       HistoryContext historyContext = contextEndpoint.get(contextId);
@@ -242,15 +251,15 @@ public class PostgreSQLExample {
       EdgeChain<String> promptChain =
           queryChain.transform(queries -> chatFn(historyContext.getResponse(), queries));
 
-      // Chain 5 ==> Pass the Prompt To Gpt3
-      EdgeChain<ChatCompletionResponse> gpt3Chain =
-          new EdgeChain<>(
-              gpt3Endpoint.chatCompletion(promptChain.get(), "PostgresChatChain", arkRequest));
-
       //  (FOR NON STREAMING)
       // If it's not stream ==>
       // Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
       if (!stream) {
+
+        // Chain 5 ==> Pass the Prompt To Gpt3
+        EdgeChain<ChatCompletionResponse> gpt3Chain =
+            new EdgeChain<>(
+                gpt3Endpoint.chatCompletion(promptChain.get(), "PostgresChatChain", arkRequest));
 
         // Chain 6
         EdgeChain<ChatCompletionResponse> historyUpdatedChain =
@@ -267,6 +276,12 @@ public class PostgreSQLExample {
 
       // For STREAMING Version
       else {
+
+        // Chain 5 ==> Pass the Prompt To Gpt3
+        EdgeChain<ChatCompletionResponse> gpt3Chain =
+            new EdgeChain<>(
+                gpt3StreamEndpoint.chatCompletion(
+                    promptChain.get(), "PostgresChatChain", arkRequest));
 
         /* As the response is in stream, so we will use StringBuilder to append the response
         and once GPT chain indicates that it is finished, we will save the following into Postgres

@@ -107,11 +107,10 @@ public class ArkRequest {
       while ((line = reader.readLine()) != null) {
         jsonContent.append(line);
       }
+      return new JSONObject(jsonContent.toString());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-
-    return new JSONObject(jsonContent.toString());
   }
 
   public Cookie[] getCookies() {
