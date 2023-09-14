@@ -23,68 +23,64 @@ import static org.junit.jupiter.api.Assertions.*;
 @Sql(scripts = {"classpath:schema.sql"})
 class PostgreSQLHistoryContextRepositoryTest {
 
-    Logger logger = LoggerFactory.getLogger(getClass());
+  Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private PostgreSQLHistoryContextRepository repository;
+  @Autowired private PostgreSQLHistoryContextRepository repository;
 
-    private static final PostgresTestContainer instance = new PostgresTestContainer(PostgresTestContainer.PostgresImage.VECTOR);
+  private static final PostgresTestContainer instance =
+      new PostgresTestContainer(PostgresTestContainer.PostgresImage.VECTOR);
 
-    @BeforeAll
-    static void setupAll(){
-        instance.start();
-    }
+  @BeforeAll
+  static void setupAll() {
+    instance.start();
+  }
 
-    @AfterAll
-    static void tearAll(){
-        instance.stop();
-    }
+  @AfterAll
+  static void tearAll() {
+    instance.stop();
+  }
 
-    @BeforeEach
-    void setUp() {
-        repository.deleteAll();
-    }
+  @BeforeEach
+  void setUp() {
+    repository.deleteAll();
+  }
 
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry){
-        registry.add("spring.datasource.url", instance::getJdbcUrl);
-        registry.add("spring.datasource.username", instance::getUsername);
-        registry.add("spring.datasource.password", instance::getPassword);
-    }
+  @DynamicPropertySource
+  static void setProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", instance::getJdbcUrl);
+    registry.add("spring.datasource.username", instance::getUsername);
+    registry.add("spring.datasource.password", instance::getPassword);
+  }
 
-    @Test
-    void test_Save_And_Retrieve_History_Context(){
-        HistoryContext historyContext = getHistoryContext();
-        repository.save(historyContext);
+  @Test
+  void test_Save_And_Retrieve_History_Context() {
+    HistoryContext historyContext = getHistoryContext();
+    repository.save(historyContext);
 
-        Optional<HistoryContext> result = repository.findById("1");
-        logger.info("history context {}", result);
+    Optional<HistoryContext> result = repository.findById("1");
+    logger.info("history context {}", result);
 
-        assertTrue(result.isPresent());
-    }
+    assertTrue(result.isPresent());
+  }
 
-    @Test
-    void test_Delete_History_Context(){
-        HistoryContext historyContext = getHistoryContext();
-        repository.save(historyContext);
+  @Test
+  void test_Delete_History_Context() {
+    HistoryContext historyContext = getHistoryContext();
+    repository.save(historyContext);
 
-        repository.deleteById("1");
-        Optional<HistoryContext> result = repository.findById("1");
+    repository.deleteById("1");
+    Optional<HistoryContext> result = repository.findById("1");
 
-        assertTrue(result.isEmpty());
-    }
+    assertTrue(result.isEmpty());
+  }
 
-    @Test
-    void test_Find_By_Non_Exist_Context(){
-        Optional<HistoryContext> result = repository.findById("10");
-        assertTrue(result.isEmpty());
-    }
+  @Test
+  void test_Find_By_Non_Exist_Context() {
+    Optional<HistoryContext> result = repository.findById("10");
+    assertTrue(result.isEmpty());
+  }
 
-    private HistoryContext getHistoryContext() {
-        return new HistoryContext(
-                "1",
-                "testing history context",
-                LocalDateTime.now()
-        );
-    }
+  private HistoryContext getHistoryContext() {
+    return new HistoryContext("1", "testing history context", LocalDateTime.now());
+  }
 }
