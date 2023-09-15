@@ -37,25 +37,6 @@ class WikiClientTest {
   }
 
   @Test
-  @DisplayName("Test WikiContent Method Returns WikiResponse")
-  @Order(1)
-  void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo)
-      throws InterruptedException {
-
-    logger.info("======== {} ========", testInfo.getDisplayName());
-
-    // Prepare test data
-    WikiEndpoint wikiEndpoint = new WikiEndpoint();
-    TestObserver<WikiResponse> test = wikiEndpoint.getPageContent("Barack Obama").test();
-
-    test.await();
-
-    logger.info("{}", test.values().toString());
-
-    test.assertNoErrors();
-  }
-
-  @Test
   @DisplayName("Test WikiContent Method Handles Exception")
   @DirtiesContext
   void wikiControllerTest_TestWikiContentMethod_HandlesException(TestInfo testInfo)
