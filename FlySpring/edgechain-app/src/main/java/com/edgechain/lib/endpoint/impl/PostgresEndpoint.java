@@ -60,7 +60,7 @@ public class PostgresEndpoint extends Endpoint {
 
   private PostgresLanguage postgresLanguage;
 
-  //Join Table
+  // Join Table
   private List<String> idList;
 
   public PostgresEndpoint() {}
@@ -280,6 +280,7 @@ public class PostgresEndpoint extends Endpoint {
     this.metadataTableNames = List.of(metadataTableName);
     return this.postgresService.insertIntoJoinTable(this).blockingGet();
   }
+
   public StringResponse batchInsertIntoJoinTable(
       String metadataTableName, List<String> idList, String metadataId) {
     this.idList = idList;
