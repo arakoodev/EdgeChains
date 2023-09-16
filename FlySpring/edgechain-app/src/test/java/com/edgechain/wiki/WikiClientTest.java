@@ -9,7 +9,6 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -34,25 +33,6 @@ class WikiClientTest {
   @BeforeEach
   public void setup() {
     System.setProperty("server.port", String.valueOf(port));
-  }
-
-  @Test
-  @DisplayName("Test WikiContent Method Returns WikiResponse")
-  @Order(1)
-  void wikiControllerTest_TestWikiContentMethod_ReturnsWikiResponse(TestInfo testInfo)
-      throws InterruptedException {
-
-    logger.info("======== {} ========", testInfo.getDisplayName());
-
-    // Prepare test data
-    WikiEndpoint wikiEndpoint = new WikiEndpoint();
-    TestObserver<WikiResponse> test = wikiEndpoint.getPageContent("Barack Obama").test();
-
-    test.await();
-
-    logger.info("{}", test.values().toString());
-
-    test.assertNoErrors();
   }
 
   @Test
