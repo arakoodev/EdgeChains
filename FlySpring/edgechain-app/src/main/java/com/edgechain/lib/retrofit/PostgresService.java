@@ -33,6 +33,9 @@ public interface PostgresService {
   @POST(value = "index/postgres/join/insert")
   Single<StringResponse> insertIntoJoinTable(@Body PostgresEndpoint postgresEndpoint);
 
+  @POST(value = "index/postgres/join/batch-insert")
+  Single<StringResponse> batchInsertIntoJoinTable(@Body PostgresEndpoint postgresEndpoint);
+
   @POST(value = "index/postgres/query")
   Single<List<PostgresWordEmbeddings>> query(@Body PostgresEndpoint postgresEndpoint);
 

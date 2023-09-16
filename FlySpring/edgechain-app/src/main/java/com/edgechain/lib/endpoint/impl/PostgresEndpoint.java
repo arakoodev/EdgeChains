@@ -60,6 +60,9 @@ public class PostgresEndpoint extends Endpoint {
 
   private PostgresLanguage postgresLanguage;
 
+  //Join Table
+  private List<String> idList;
+
   public PostgresEndpoint() {}
 
   public PostgresEndpoint(RetryPolicy retryPolicy) {
@@ -221,6 +224,10 @@ public class PostgresEndpoint extends Endpoint {
     return postgresLanguage;
   }
 
+  public List<String> getIdList() {
+    return idList;
+  }
+
   public StringResponse upsert(
       WordEmbeddings wordEmbeddings,
       String filename,
@@ -272,6 +279,13 @@ public class PostgresEndpoint extends Endpoint {
     this.metadataId = metadataId;
     this.metadataTableNames = List.of(metadataTableName);
     return this.postgresService.insertIntoJoinTable(this).blockingGet();
+  }
+  public StringResponse batchInsertIntoJoinTable(
+      String metadataTableName, List<String> idList, String metadataId) {
+    this.idList = idList;
+    this.metadataId = metadataId;
+    this.metadataTableNames = List.of(metadataTableName);
+    return this.postgresService.batchInsertIntoJoinTable(this).blockingGet();
   }
 
   public Observable<List<PostgresWordEmbeddings>> query(

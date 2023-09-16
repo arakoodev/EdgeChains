@@ -59,6 +59,13 @@ public class PostgresController {
     return edgeChain.toSingle();
   }
 
+  @PostMapping("/join/batch-insert")
+  public Single<StringResponse> batchInsertIntoJoinTable(
+          @RequestBody PostgresEndpoint postgresEndpoint) {
+    EdgeChain<StringResponse> edgeChain = this.postgresClient.batchInsertIntoJoinTable(postgresEndpoint);
+    return edgeChain.toSingle();
+  }
+
   @PostMapping("/query")
   public Single<List<PostgresWordEmbeddings>> query(
       @RequestBody PostgresEndpoint postgresEndpoint) {
