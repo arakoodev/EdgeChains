@@ -104,6 +104,26 @@ public class PostgresClientMetadataRepository {
             UUID.fromString(postgresEndpoint.getMetadataId())));
   }
 
+  @Transactional
+  public void batchInsertIntoJoinTable(
+          String tableName, String metadataTableName, List<String> idList, String metadataId) {
+    String joinTableName = tableName + "_join_" + metadataTableName;
+    List<String> sqlStatements = new ArrayList<>();
+    for(String id: idList) {
+      sqlStatements.add(
+              String.format(
+                      "INSERT INTO %s (id, metadata_id) VALUES ('%s', '%s') ON CONFLICT (id) DO UPDATE SET"
+                              + " metadata_id = EXCLUDED.metadata_id;",
+                      joinTableName,
+                      UUID.fromString(id),
+                      UUID.fromString(metadataId)
+              )
+      );
+    }
+    jdbcTemplate.batchUpdate(sqlStatements.toArray(new String[0]));
+  }
+
+
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
   public List<Map<String, Object>> queryWithMetadata(
       String tableName,

@@ -198,6 +198,28 @@ public class PostgresClient {
         postgresEndpoint);
   }
 
+    public EdgeChain<StringResponse> batchInsertIntoJoinTable(PostgresEndpoint postgresEndpoint) {
+        return new EdgeChain<>(
+                Observable.create(
+                        emitter -> {
+                            try {
+                                this.metadataRepository.batchInsertIntoJoinTable(
+                                        postgresEndpoint.getTableName(),
+                                        postgresEndpoint.getMetadataTableNames().get(0),
+                                        postgresEndpoint.getIdList(),
+                                        postgresEndpoint.getMetadataId()
+                                );
+
+                                emitter.onNext(new StringResponse("Inserted"));
+                                emitter.onComplete();
+
+                            } catch (final Exception e) {
+                                emitter.onError(e);
+                            }
+                        }),
+                postgresEndpoint);
+    }
+
   public EdgeChain<List<PostgresWordEmbeddings>> query(PostgresEndpoint postgresEndpoint) {
 
     return new EdgeChain<>(
