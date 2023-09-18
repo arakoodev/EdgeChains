@@ -31,3 +31,13 @@ jobs:
           commit_user_email: actions@github.com
           commit_author: GitHub Actions <actions@github.com>
           branch: ${{ github.head_ref }}
+      # - name: Run JSON Prettier
+      #   run: npx prettier --write "ts/**/*.json" --no-error-on-unmatched-pattern
+      # - name: Commit JSON Prettier cchanges
+      #   uses: stefanzweifel/git-auto-commit-action@v4
+      #   with:
+      #     commit_message: Format json via prettier
+      #     commit_user_name: GitHub Actions
+      #     commit_user_email: actions@github.com
+      #     commit_author: GitHub Actions <actions@github.com>
+      #     branch: ${{ github.head_ref }}
