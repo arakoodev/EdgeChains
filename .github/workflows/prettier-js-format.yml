@@ -2,7 +2,7 @@ name: Format
 
 on:
     push:
-     branches: [ main,ts ]
+     branches: [ ts ]
      paths:
       - 'ts/**'
 
