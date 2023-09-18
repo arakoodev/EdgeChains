@@ -21,83 +21,87 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class PineconeClientTest {
 
-    @LocalServerPort private int port;
+  @LocalServerPort private int port;
 
-    @Autowired private PineconeClient pineconeClient;
+  @Autowired private PineconeClient pineconeClient;
 
-    private PineconeEndpoint pineconeEndpoint;
+  private PineconeEndpoint pineconeEndpoint;
 
-    @BeforeEach
-    void setUp() {
-        System.setProperty("server.port", String.valueOf(port));
-        pineconeEndpoint = new PineconeEndpoint("https://arakoo.ai", "apiKey", "Pinecone");
-    }
+  @BeforeEach
+  void setUp() {
+    System.setProperty("server.port", String.valueOf(port));
+    pineconeEndpoint = new PineconeEndpoint("https://arakoo.ai", "apiKey", "Pinecone");
+  }
 
-    @Test
-    @DisplayName("Test Upsert")
-    public void test_Upsert(){
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        ResponseEntity<String> responseEntity = ResponseEntity.ok("some dummy data");
-        when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(responseEntity);
+  @Test
+  @DisplayName("Test Upsert")
+  public void test_Upsert() {
+    RestTemplate restTemplate = mock(RestTemplate.class);
+    ResponseEntity<String> responseEntity = ResponseEntity.ok("some dummy data");
+    when(restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
+        .thenReturn(responseEntity);
 
-        EdgeChain<StringResponse> result = pineconeClient.upsert(pineconeEndpoint);
+    EdgeChain<StringResponse> result = pineconeClient.upsert(pineconeEndpoint);
 
-        assertNotNull(result);
-    }
+    assertNotNull(result);
+  }
 
-    @Test
-    @DisplayName("Test Batch Upsert")
-    public void test_Batch_Upsert(){
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        ResponseEntity<String> responseEntity = ResponseEntity.ok("some dummy data");
-        when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(responseEntity);
+  @Test
+  @DisplayName("Test Batch Upsert")
+  public void test_Batch_Upsert() {
+    RestTemplate restTemplate = mock(RestTemplate.class);
+    ResponseEntity<String> responseEntity = ResponseEntity.ok("some dummy data");
+    when(restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
+        .thenReturn(responseEntity);
 
-        EdgeChain<StringResponse> result = pineconeClient.batchUpsert(pineconeEndpoint);
+    EdgeChain<StringResponse> result = pineconeClient.batchUpsert(pineconeEndpoint);
 
-        assertNotNull(result);
-    }
+    assertNotNull(result);
+  }
 
-    @Test
-    @DisplayName("Test Query")
-    public void test_Query(){
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        ResponseEntity<String> responseEntity = ResponseEntity.ok("some dummy data");
-        when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(responseEntity);
+  @Test
+  @DisplayName("Test Query")
+  public void test_Query() {
+    RestTemplate restTemplate = mock(RestTemplate.class);
+    ResponseEntity<String> responseEntity = ResponseEntity.ok("some dummy data");
+    when(restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
+        .thenReturn(responseEntity);
 
-        EdgeChain<StringResponse> queryResult = pineconeClient.batchUpsert(pineconeEndpoint);
+    EdgeChain<StringResponse> queryResult = pineconeClient.batchUpsert(pineconeEndpoint);
 
-        assertNotNull(queryResult);
-        assertNull(queryResult.get().getResponse());
-    }
+    assertNotNull(queryResult);
+    assertNull(queryResult.get().getResponse());
+  }
 
-    @Test
-    @DisplayName("Test Delete All")
-    public void test_Delete_All(){
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        ResponseEntity<String> responseEntity = ResponseEntity.ok("some dummy data");
-        when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(responseEntity);
+  @Test
+  @DisplayName("Test Delete All")
+  public void test_Delete_All() {
+    RestTemplate restTemplate = mock(RestTemplate.class);
+    ResponseEntity<String> responseEntity = ResponseEntity.ok("some dummy data");
+    when(restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
+        .thenReturn(responseEntity);
 
-        EdgeChain<StringResponse> deleteResult = pineconeClient.deleteAll(pineconeEndpoint);
+    EdgeChain<StringResponse> deleteResult = pineconeClient.deleteAll(pineconeEndpoint);
 
-        assertNotNull(deleteResult);
-        assertTrue(deleteResult.get().getResponse().endsWith("Pinecone"));
-    }
+    assertNotNull(deleteResult);
+    assertTrue(deleteResult.get().getResponse().endsWith("Pinecone"));
+  }
 
-    @Test
-    @DisplayName("Test Get Namespace")
-    public void test_GetNamespace(){
-        // Test for non-empty namespace
-        String nonEmptyNamespace = pineconeClient.getNamespace(pineconeEndpoint);
-        assertEquals("Pinecone", nonEmptyNamespace);
+  @Test
+  @DisplayName("Test Get Namespace")
+  public void test_GetNamespace() {
+    // Test for non-empty namespace
+    String nonEmptyNamespace = pineconeClient.getNamespace(pineconeEndpoint);
+    assertEquals("Pinecone", nonEmptyNamespace);
 
-        // Test for empty namespace
-        pineconeEndpoint.setNamespace("");
-        String emptyNamespace = pineconeClient.getNamespace(pineconeEndpoint);
-        assertEquals("", emptyNamespace);
+    // Test for empty namespace
+    pineconeEndpoint.setNamespace("");
+    String emptyNamespace = pineconeClient.getNamespace(pineconeEndpoint);
+    assertEquals("", emptyNamespace);
 
-        // Test for null namespace
-        pineconeEndpoint.setNamespace(null);
-        String nullNamespace = pineconeClient.getNamespace(pineconeEndpoint);
-        assertEquals("", nullNamespace);
-    }
+    // Test for null namespace
+    pineconeEndpoint.setNamespace(null);
+    String nullNamespace = pineconeClient.getNamespace(pineconeEndpoint);
+    assertEquals("", nullNamespace);
+  }
 }
