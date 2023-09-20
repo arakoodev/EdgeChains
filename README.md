@@ -22,13 +22,15 @@ Running an EdgeChains Generative AI application is exceedingly simple and 2 step
 
 ```bash
 # Step 1 - download edgechain.jar from [releases](https://github.com/arakoodev/EdgeChains/releases)
-wget
 
 # Step 2 - Go inside any of the examples and run a java command
 java -jar edgechain.jar jbang Hello.java
 
 # NOTE - please set the appropriate OpenAI, Supabase, Pinecone, etc keys inside the Hello.java file.
 ```
+
+**That's it. Nothing to install. No package dependencies, etc**
+
 ### [Stuck?? Try the Docs](https://www.arakoo.ai/doc/category/getting-started)
 
 
