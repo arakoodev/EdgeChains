@@ -1,9 +1,8 @@
-local maxTokens = if(payload.keepMaxTokens == 'True') then payload.maxTokens else 10000;
 local api_planner_selector = |||
                 You are a planner that plans a sequence of RESTful API calls to assist with user queries against an API.
                 
                 You should:
-                  1) evaluate whether the user query can be solved by the API documentated below. If no, say CAN'T_HELP_RIGHT_NOW.
+                  1) evaluate whether the user query can be solved by the API documentated below. If no, say NOT_APPICABLE.
                   2) if yes, generate a plan of API calls and say what they are doing step by step.
                 
                 You should only use API endpoints documented below ("actual endpoints you can use").
@@ -38,17 +37,10 @@ local api_planner_selector = |||
 
                 User query: {query}
                 Thought:
+                Result:
                |||;
-
-
-
 local query = "User query:" + payload.prompt;
-local context = if(payload.keepContext == "true") then payload.context else "";
-local prompt = std.join("\n", [query, api_planner_selector]);
+local prompt = std.join("\n", [api_planner_selector, query]);
 {
-  "apiPlannerSelector": api_planner_selector,
-  "query": query,
-  "context": context,
-  "maxTokens": maxTokens,
-  "prompt": if(std.length(prompt) > xtr.parseNum(maxTokens)) then std.substr(prompt, 0, xtr.parseNum(maxTokens)) else prompt
+  "prompt": prompt
 }

@@ -63,41 +63,44 @@ public class ChatBot {
 
 
     @RestController
-    @RequestMapping
+    @RequestMapping("/example/chatbot")
     public class Conversation {
-
         Logger logger = LoggerFactory.getLogger(getClass());
         private List<ChatMessage> messages;
 
         public Conversation() {
             messages = new ArrayList<>();
-//            messages.add(new ChatMessage("system", "You are a helpful, polite, old English assistant. Answer the user prompt with a bit of humor."));
-//            messages.add(
-//                    new ChatMessage("system", "You are planner bot that plans user prompts and returns " +
-//                            "back a plan on how to accomplish the request." +
-//                            "Try to answer in natural language.")
-//            );
+        }
+
+        @PostMapping("/ask")
+        public String askGPT(ArkRequest arkRequest) {
+            messages.add(new ChatMessage("system", "You are a English assistant. Answer the user prompt with a bit of humor."));
+            String prompt = arkRequest.getBody().getString("prompt");
+            updateMessageList("user", prompt);
+
+
+            String response = new EdgeChain<>(gpt3Endpoint.chatCompletion(messages, "askGpt", arkRequest))
+                    .get()
+                    .getChoices()
+                    .get(0)
+                    .getMessage()
+                    .getContent();
+
+
+            updateMessageList("assistant", response);
+
+            return response;
         }
 
         @PostMapping("/planner")
-        public ResponseEntity<String> ask(ArkRequest arkRequest) {
-            String query = arkRequest.getBody().getString("prompt");
-            logger.info("user query from POSTMAN {}", query);
-            JSONObject jsonObject = arkRequest.getBody();
-//             updateMessageList("user", prompt);
+        public ResponseEntity<String> planner(ArkRequest arkRequest) {
+            String prompt = arkRequest.getBody().getString("prompt");
 
+            loader.put("query", new JsonnetArgs(DataType.STRING, prompt))).loadOrReload();
+            logger.info(loader.get("prompt"));
 
-            loader.put("prompt", new JsonnetArgs(DataType.STRING, jsonObject.getString("prompt")))
-                    .loadOrReload();
-
-            String prompt = loader.get("prompt");
-
-            logger.info("jsonnet prompt {}", prompt);
-
-            messages.add(new ChatMessage("system", loader.get("apiPlannerSelector")));
-            updateMessageList("user", query);
-
-
+            messages.add(new ChatMessage("system", loader.get("prompt")));
+            updateMessageList("user", prompt);
 
             String response = new EdgeChain<>(gpt3Endpoint.chatCompletion(messages, "planner", loader, arkRequest))
                     .get()
@@ -105,9 +108,6 @@ public class ChatBot {
                     .get(0)
                     .getMessage()
                     .getContent();
-
-            logger.info("Response from OPENAI {}", response);
-
 
             updateMessageList("assistant", response);
 
