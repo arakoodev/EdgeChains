@@ -6,8 +6,8 @@ import { createConnection,getManager } from 'typeorm';
 
 const gpt3endpoint = {
   url: "https://api.openai.com/v1/chat/completions",
-  apikey : "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",
-  orgId : "org-ha7bPSLcoUnYzUMZ5xAogTgo",
+  apikey : "",
+  orgId : "",
   model : "gpt-3.5-turbo",
   role : "user",
   temprature : 0.7
@@ -163,7 +163,7 @@ async function gptFnChat(chatMessages,arkRequest) {
     'temperature' : gpt3endpoint.temprature
   },{
     headers : {
-      Authorization : 'Bearer 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' ,
+      Authorization : 'Bearer ' + gpt3Endpoint.apikey ,
       'content-type' : 'application/json'
     }
   })
@@ -190,7 +190,7 @@ async function embeddings(resp : string, arkRequest): Promise<Number[]> {
     "input" : resp
     },{
       headers : {
-        Authorization : 'Bearer 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' ,
+        Authorization : 'Bearer ' + gpt3Endpoint.apikey ,
         'content-type' : 'application/json'
       }
     })
