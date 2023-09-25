@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { hydeSearchAdaEmbedding } from './hydeExample/hydeExample';
 
@@ -14,6 +14,7 @@ export class AppController {
   }
 
   @Post("/hyde-search")
+  @HttpCode(200)
   hydeSearch(@Query() params:any, @Body('query') query: string){
     const arkRequest = {
       tableName : params.table,
@@ -22,7 +23,7 @@ export class AppController {
       topK : params.topK
     }
     
-    hydeSearchAdaEmbedding(arkRequest);
+    return hydeSearchAdaEmbedding(arkRequest);
 
   }
 }

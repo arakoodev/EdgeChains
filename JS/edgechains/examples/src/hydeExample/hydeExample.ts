@@ -32,9 +32,8 @@ export async function hydeSearchAdaEmbedding(arkRequest){
 
     // Getting ${summary} basePrompt
     const promptTemplate = JSON.parse(promptLoader).summary;
-    console.log(promptTemplate);
 
-    // // Getting the updated promptTemplate with query
+    // Getting the updated promptTemplate with query
     var hydeLoader = await jsonnet
                         .extString('promptTemplate',promptTemplate)
                         .extString('time',"")
@@ -53,7 +52,7 @@ export async function hydeSearchAdaEmbedding(arkRequest){
     // Chain 2 ==> Get Embeddings from OpenAI using Each Response
     const embeddingsListChain: Promise<Number[][]> = Promise.all(
       gpt3Responses.map(async (resp) => {
-        const embedding = await embeddings(resp, arkRequest);
+        const embedding = await embeddings(resp);
         return embedding;
       })
     );
@@ -72,10 +71,10 @@ export async function hydeSearchAdaEmbedding(arkRequest){
 
     for (const embeddings of queryResult) {
       retrievedDocs.push(
-        `${embeddings.getRawText()}\n score:${embeddings.getScore()}\n filename:${embeddings.getFilename()}\n`
+        `${embeddings.raw_text}\n score:${embeddings.score}\n filename:${embeddings.filename}\n`
       );
     }
-
+  
     if (retrievedDocs.join('').length > 4096) {
       retrievedDocs.length = 4096;
     }
@@ -104,18 +103,18 @@ export async function hydeSearchAdaEmbedding(arkRequest){
     const finalPromptUser = JSON.parse(hydeLoader).prompt;;
 
     const chatMessages = [
-      { 'sender': 'system', 'message': finalPromptSystem },
-      { 'sender': 'user', 'message': finalPromptUser },
+      { 'role': 'system', 'content': finalPromptSystem },
+      { 'role': 'user', 'content': finalPromptUser },
     ];
 
-    const finalAnswer = await gptFnChat(chatMessages, arkRequest);
+    const finalAnswer = await gptFnChat(chatMessages);
 
     const response = {
       wordEmbeddings: queryResult,
       finalAnswer: finalAnswer,
     };
 
-    // return response;
+    return response;
   } catch (error) {
     // Handle errors here
     console.error(error);
@@ -134,7 +133,7 @@ async function  gptFn(prompt:string) : Promise<string>{
       'temperature' : gpt3endpoint.temprature
     },{
       headers : {
-        Authorization : 'Bearer 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' ,
+        Authorization : 'Bearer ' + gpt3endpoint.apikey ,
         'content-type' : 'application/json'
       }
     })
@@ -156,14 +155,14 @@ async function  gptFn(prompt:string) : Promise<string>{
     return responce[0].message.content;
 }
 
-async function gptFnChat(chatMessages,arkRequest) {
+async function gptFnChat(chatMessages) {
   const responce = await axios.post('https://api.openai.com/v1/chat/completions', {
     'model' : gpt3endpoint.model,
     'messages' : chatMessages,
     'temperature' : gpt3endpoint.temprature
   },{
     headers : {
-      Authorization : 'Bearer ' + gpt3Endpoint.apikey ,
+      Authorization : 'Bearer ' + gpt3endpoint.apikey ,
       'content-type' : 'application/json'
     }
   })
@@ -182,15 +181,17 @@ async function gptFnChat(chatMessages,arkRequest) {
       console.log('Error creating request:', error.message);
     }
   });
+
+  return responce[0].message.content;
 }
 
-async function embeddings(resp : string, arkRequest): Promise<Number[]> {
+async function embeddings(resp : string): Promise<Number[]> {
   const responce = await axios.post('https://api.openai.com/v1/embeddings', {
     "model" : "text-embedding-ada-002",
     "input" : resp
     },{
       headers : {
-        Authorization : 'Bearer ' + gpt3Endpoint.apikey ,
+        Authorization : 'Bearer ' + gpt3endpoint.apikey ,
         'content-type' : 'application/json'
       }
     })
@@ -229,27 +230,25 @@ function meanFn(embeddingsList: Number[][], dimensions: number): Number[] {
 }
 
 
-async function dbQuery(wordEmbeddings, metric, topK, probes,tableName,namespace:string) {
+async function dbQuery(wordEmbeddings, metric, topK, probes, tableName, namespace:string) {
   const embedding = JSON.stringify(wordEmbeddings.score)
-  console.log(embedding)
   
-  const connection = await createConnection();
+  await createConnection();
   const entityManager = getManager();
   try {
     const query1 = `SET LOCAL ivfflat.probes = ${probes};`
     await entityManager.query(query1);
 
-    const query = `
-      SELECT id, raw_text, namespace, filename, timestamp, 
-      1 - (embedding <=> "${embedding.toString()}")  AS score 
+    const query = `SELECT id, raw_text, namespace, filename, timestamp, 
+      (embedding <#> '${embedding}') * -1  AS score 
       FROM ${tableName}
       WHERE namespace = '${namespace}'
-      ORDER BY embedding ${metric} ${embedding}
+      ORDER BY embedding <#> '${embedding}'
       LIMIT ${topK};
     `;
 
     const results = await entityManager.query(query);
-    console.log(results)
+    
     return results;
   } catch (error) {
     // Handle errors here
