@@ -14,13 +14,14 @@ export class AppController {
   }
 
   @Post("/hyde-search")
-  hydeSearch(@Query() params:any, @Body() query:string){
+  hydeSearch(@Query() params:any, @Body('query') query: string){
     const arkRequest = {
       tableName : params.table,
       nameSpace : params.namespace,
       query : query,
       topK : params.topK
     }
+    
     hydeSearchAdaEmbedding(arkRequest);
 
   }
