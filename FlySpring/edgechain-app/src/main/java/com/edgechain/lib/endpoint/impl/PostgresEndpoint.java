@@ -214,7 +214,6 @@ public class PostgresEndpoint extends Endpoint {
     return searchQuery;
   }
 
-
   public PostgresLanguage getPostgresLanguage() {
     return postgresLanguage;
   }
