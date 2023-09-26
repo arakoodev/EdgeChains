@@ -1,4 +1,5 @@
-class User {
+package com.edgechain;
+public class User {
   public String email;
   public String password;
 
