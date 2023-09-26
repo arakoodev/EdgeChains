@@ -283,12 +283,17 @@ public class PostgresClient {
             emitter -> {
               try {
                 List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
+                List<List<Float>> embeddings =
+                          postgresEndpoint.getWordEmbeddingsList().stream()
+                                  .map(WordEmbeddings::getValues)
+                                  .toList();
+
                 List<Map<String, Object>> rows =
                     this.repository.queryRRF(
                         postgresEndpoint.getTableName(),
                         getNamespace(postgresEndpoint),
                         postgresEndpoint.getMetadataTableNames().get(0),
-                        postgresEndpoint.getWordEmbedding().getValues(),
+                        embeddings,
                         postgresEndpoint.getTextWeight(),
                         postgresEndpoint.getSimilarityWeight(),
                         postgresEndpoint.getDateWeight(),
@@ -296,7 +301,6 @@ public class PostgresClient {
                         postgresEndpoint.getPostgresLanguage(),
                         postgresEndpoint.getProbes(),
                         postgresEndpoint.getMetric(),
-                        postgresEndpoint.getUpperLimit(),
                         postgresEndpoint.getTopK(),
                         postgresEndpoint.getOrderRRFBy());
 
