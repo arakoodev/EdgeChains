@@ -48,8 +48,6 @@ public class PostgresEndpoint extends Endpoint {
   private String documentDate;
 
   /** RRF * */
-  private int upperLimit;
-
   private RRFWeight textWeight;
 
   private RRFWeight similarityWeight;
@@ -216,9 +214,6 @@ public class PostgresEndpoint extends Endpoint {
     return searchQuery;
   }
 
-  public int getUpperLimit() {
-    return upperLimit;
-  }
 
   public PostgresLanguage getPostgresLanguage() {
     return postgresLanguage;
@@ -321,7 +316,7 @@ public class PostgresEndpoint extends Endpoint {
 
   public Observable<List<PostgresWordEmbeddings>> queryRRF(
       String metadataTable,
-      WordEmbeddings wordEmbedding,
+      List<WordEmbeddings> wordEmbeddingsList,
       RRFWeight textWeight,
       RRFWeight similarityWeight,
       RRFWeight dateWeight,
@@ -330,10 +325,9 @@ public class PostgresEndpoint extends Endpoint {
       PostgresLanguage postgresLanguage,
       int probes,
       PostgresDistanceMetric metric,
-      int upperLimit,
       int topK) {
     this.metadataTableNames = List.of(metadataTable);
-    this.wordEmbedding = wordEmbedding;
+    this.wordEmbeddingsList = wordEmbeddingsList;
     this.textWeight = textWeight;
     this.similarityWeight = similarityWeight;
     this.dateWeight = dateWeight;
@@ -342,7 +336,6 @@ public class PostgresEndpoint extends Endpoint {
     this.postgresLanguage = postgresLanguage;
     this.probes = probes;
     this.metric = metric;
-    this.upperLimit = upperLimit;
     this.topK = topK;
     return Observable.fromSingle(this.postgresService.queryRRF(this));
   }
