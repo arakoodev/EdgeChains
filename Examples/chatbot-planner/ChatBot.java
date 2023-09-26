@@ -32,9 +32,10 @@ public class ChatBot {
 
     private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI KEY
     private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI KEY
-    private static final String TMDB_TOKEN = ""; // TMDB_TOKEN
     private static OpenAiEndpoint gpt3Endpoint;
-    private static JsonnetLoader loader = new FileJsonnetLoader("./chatbot-planner/planner.jsonnet"); // JSONNET FILE PATH
+    private static PostgresEndpoint postgresEndpoint;
+    private static PostgreSQLHistoryContextEndpoint contextEndpoint;
+    private static JsonnetLoader loader = new FileJsonnetLoader("./chatbot-planner/store-planner.jsonnet"); // JSONNET FILE PATH
 
 
     public static void main(String[] args) {
@@ -42,6 +43,12 @@ public class ChatBot {
 
 
         Properties properties = new Properties();
+
+        properties.setProperty("spring.jpa.show-sql", "true");
+        properties.setProperty("spring.jpa.properties.hibernate.format_sql", "true");
+
+        // Adding Cors ==> You can configure multiple cors w.r.t your urls.;
+        properties.setProperty("cors.origins", "http://localhost:4200");
 
         properties.setProperty("postgres.db.host", "");
         properties.setProperty("postgres.db.username", "");
@@ -59,67 +66,93 @@ public class ChatBot {
                 0.7,
                 new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS)
         );
+
+        // Defining tablename and namespace...
+        postgresEndpoint =
+                new PostgresEndpoint(
+                        "pg_vectors", "movie",
+                        new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
+
+        contextEndpoint = new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
     }
 
 
     @RestController
-    @RequestMapping("/example/chatbot")
-    public class Conversation {
+    @RequestMapping
+    public class Bot {
         Logger logger = LoggerFactory.getLogger(getClass());
-        private List<ChatMessage> messages;
-
-        public Conversation() {
-            messages = new ArrayList<>();
-        }
-
-        @PostMapping("/ask")
-        public String askGPT(ArkRequest arkRequest) {
-            messages.add(new ChatMessage("system", "You are a English assistant. Answer the user prompt with a bit of humor."));
-            String prompt = arkRequest.getBody().getString("prompt");
-            updateMessageList("user", prompt);
-
-
-            String response = new EdgeChain<>(gpt3Endpoint.chatCompletion(messages, "askGpt", arkRequest))
-                    .get()
-                    .getChoices()
-                    .get(0)
-                    .getMessage()
-                    .getContent();
-
-
-            updateMessageList("assistant", response);
-
-            return response;
-        }
 
         @PostMapping("/planner")
-        public ResponseEntity<String> planner(ArkRequest arkRequest) {
+        public ResponseEntity<String> chatBotPlanner(ArkRequest arkRequest) {
+            String resourceURL = "";
+            boolean delete = false;
+            String contextId = arkRequest.getQueryParam("id");
             String prompt = arkRequest.getBody().getString("prompt");
 
-            loader.put("query", new JsonnetArgs(DataType.STRING, prompt))).loadOrReload();
-            logger.info(loader.get("prompt"));
+            HistoryContext historyContext = contextEndpoint.get(contextId);
 
-            messages.add(new ChatMessage("system", loader.get("prompt")));
-            updateMessageList("user", prompt);
+            plannerLoader.put("query", new JsonnetArgs(DataType.STRING, prompt))
+                    .put("gptResponse", new JsonnetArgs(DataType.STRING, ""))
+                    .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "false"))
+                    .loadOrReload();
 
-            String response = new EdgeChain<>(gpt3Endpoint.chatCompletion(messages, "planner", loader, arkRequest))
+            String chatPrompt = chatFn(historyContext.getResponse(), prompt);
+
+            contextEndpoint.put(historyContext.getId(), prompt + historyContext.getResponse());
+
+            String gptResponse = getGptResponse(chatPrompt, arkRequest);
+
+            if (gptResponse.contains("delete")) {
+                delete = true;
+            }
+
+            logger.info("GPT Response {} ", gptResponse);
+
+            plannerLoader.put("gptResponse", new JsonnetArgs(DataType.STRING, gptResponse)).loadOrReload();
+
+            String gptResult = plannerLoader.get("result");
+            logger.info("Extracted result from GPT result {} ", gptResult);
+            if (!gptResult.contains("NOT_APPLICABLE")) {
+                return doApiCalls(resourceURL, gptResult, delete);
+            }
+
+            return ResponseEntity.ok(gptResult);
+        }
+
+        private ResponseEntity<String> doApiCalls(String resourceURL, String result, boolean delete) {
+            String finalURL = resourceURL + result;
+
+            logger.info("GPT response final URI {} ", finalURL);
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            if (!delete) {
+                return restTemplate
+                        .getForEntity(finalURL, String.class);
+            } else {
+                restTemplate.delete(finalURL);
+                return ResponseEntity.ok("Deleted");
+            }
+        }
+
+        private String getGptResponse(String prompt, ArkRequest arkRequest) {
+            return new EdgeChain<>(gpt3Endpoint.chatCompletion(prompt, "planner", arkRequest))
                     .get()
                     .getChoices()
                     .get(0)
                     .getMessage()
                     .getContent();
-
-            updateMessageList("assistant", response);
-
-            return ResponseEntity.ok(response);
         }
 
-        private void updateMessageList(String role, String content) {
-            messages.add(new ChatMessage(role, content));
+        public String chatFn(String chatHistory, String queries) {
+            plannerLoader
+                    .put("keepHistory", new JsonnetArgs(DataType.BOOLEAN, "true"))
+                    .put("history", new JsonnetArgs(DataType.STRING, chatHistory)) // Getting ChatHistory from Mapper
+                    .put("keepContext", new JsonnetArgs(DataType.BOOLEAN, "true"))
+                    .put("context", new JsonnetArgs(DataType.STRING, queries)) // Getting Queries from Mapper
+                    .loadOrReload(); // Step 5: Pass the Args & Reload Jsonnet
 
-            if (messages.size() > 20) {
-                messages.remove(0);
-            }
+            return plannerLoader.get("prompt");
         }
     }
 }
