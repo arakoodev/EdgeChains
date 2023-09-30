@@ -1,11 +1,11 @@
 package com.edgechain.lib.chains;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.EmbeddingEndpoint;
-import com.edgechain.lib.endpoint.impl.BgeSmallEndpoint;
-import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
-import com.edgechain.lib.endpoint.impl.RedisEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.BgeSmallEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.MiniLMEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.EmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.OpenAiEmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.index.RedisEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.request.ArkRequest;
 import io.reactivex.rxjava3.core.Completable;
@@ -19,7 +19,6 @@ import java.util.List;
 public class RedisRetrieval {
   private final RedisEndpoint redisEndpoint;
   private final ArkRequest arkRequest;
-  private final EmbeddingEndpoint embeddingEndpoint;
   private final String[] arr;
   private final int dimension;
   private final RedisDistanceMetric metric;
@@ -27,24 +26,22 @@ public class RedisRetrieval {
 
   public RedisRetrieval(
       String[] arr,
-      EmbeddingEndpoint embeddingEndpoint,
       RedisEndpoint redisEndpoint,
       int dimension,
       RedisDistanceMetric metric,
       ArkRequest arkRequest) {
     this.redisEndpoint = redisEndpoint;
-    this.embeddingEndpoint = embeddingEndpoint;
     this.dimension = dimension;
     this.metric = metric;
     this.arkRequest = arkRequest;
     this.arr = arr;
 
     Logger logger = LoggerFactory.getLogger(getClass());
-    if (embeddingEndpoint instanceof OpenAiEndpoint openAiEndpoint)
+    if (redisEndpoint.getEmbeddingEndpoint() instanceof OpenAiEmbeddingEndpoint openAiEndpoint)
       logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
-    else if (embeddingEndpoint instanceof MiniLMEndpoint miniLMEndpoint)
+    else if (redisEndpoint.getEmbeddingEndpoint() instanceof MiniLMEndpoint miniLMEndpoint)
       logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
-    else if (embeddingEndpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
+    else if (redisEndpoint.getEmbeddingEndpoint() instanceof BgeSmallEndpoint bgeSmallEndpoint)
       logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
   }
 
@@ -70,7 +67,7 @@ public class RedisRetrieval {
   }
 
   private WordEmbeddings generateEmbeddings(String input) {
-    return embeddingEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
+    return redisEndpoint.getEmbeddingEndpoint().embeddings(input, arkRequest).firstOrError().blockingGet();
   }
 
   private void executeBatchUpsert(List<WordEmbeddings> wordEmbeddingsList) {

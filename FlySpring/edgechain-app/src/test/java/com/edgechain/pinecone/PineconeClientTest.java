@@ -1,6 +1,6 @@
 package com.edgechain.pinecone;
 
-import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
+import com.edgechain.lib.endpoint.impl.index.PineconeEndpoint;
 import com.edgechain.lib.index.client.impl.PineconeClient;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
@@ -30,7 +30,7 @@ public class PineconeClientTest {
   @BeforeEach
   void setUp() {
     System.setProperty("server.port", String.valueOf(port));
-    pineconeEndpoint = new PineconeEndpoint("https://arakoo.ai", "apiKey", "Pinecone");
+    pineconeEndpoint = new PineconeEndpoint("https://arakoo.ai", "apiKey", "Pinecone",null);
   }
 
   @Test

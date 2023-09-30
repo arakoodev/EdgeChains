@@ -1,6 +1,6 @@
 package com.edgechain.lib.controllers;
 
-import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
+import com.edgechain.lib.endpoint.impl.index.PostgresEndpoint;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;

@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 @SpringBootApplication
-@EnableScheduling
 public class EdgeChainApplication {
 
   private static final Logger logger = LoggerFactory.getLogger(EdgeChainApplication.class);

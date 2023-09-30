@@ -7,7 +7,10 @@ import com.edgechain.lib.chains.RedisRetrieval;
 import com.edgechain.lib.chunk.enums.LangType;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.impl.*;
+import com.edgechain.lib.endpoint.impl.context.RedisHistoryContextEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.OpenAiEmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.index.RedisEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
@@ -35,10 +38,9 @@ public class RedisExample {
 
   private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
   private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
-  private static OpenAiEndpoint ada002Embedding;
-  private static OpenAiEndpoint gpt3Endpoint;
+  private static OpenAiChatEndpoint gpt3Endpoint;
 
-  private static OpenAiEndpoint gpt3StreamEndpoint;
+  private static OpenAiChatEndpoint gpt3StreamEndpoint;
 
   private static RedisEndpoint redisEndpoint;
   private static RedisHistoryContextEndpoint contextEndpoint;
@@ -59,30 +61,23 @@ public class RedisExample {
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
-    properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "");
+    properties.setProperty(
+            "postgres.db.host", "");
+    properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
+
 
     // Redis Configuration
     properties.setProperty("redis.url", "");
-    properties.setProperty("redis.port", "12285");
+    properties.setProperty("redis.port","12285");
     properties.setProperty("redis.username", "default");
     properties.setProperty("redis.password", "");
     properties.setProperty("redis.ttl", "3600");
 
     new SpringApplicationBuilder(RedisExample.class).properties(properties).run(args);
 
-    // Variables Initialization ==> Endpoints must be intialized in main method...
-    ada002Embedding =
-        new OpenAiEndpoint(
-            OPENAI_EMBEDDINGS_API,
-            OPENAI_AUTH_KEY,
-            OPENAI_ORG_ID,
-            "text-embedding-ada-002",
-            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
     gpt3Endpoint =
-        new OpenAiEndpoint(
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,
@@ -92,7 +87,7 @@ public class RedisExample {
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     gpt3StreamEndpoint =
-        new OpenAiEndpoint(
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,
@@ -102,9 +97,18 @@ public class RedisExample {
             true,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
+    OpenAiEmbeddingEndpoint ada002Endpoint =
+            new OpenAiEmbeddingEndpoint(
+                    OPENAI_EMBEDDINGS_API,
+                    OPENAI_AUTH_KEY,
+                    OPENAI_ORG_ID,
+                    "text-embedding-ada-002",
+                    new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
     redisEndpoint =
         new RedisEndpoint(
-            "vector_index", "machine-learning", new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+            "vector_index", "machine-learning", ada002Endpoint, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
     contextEndpoint =
         new RedisHistoryContextEndpoint(new ExponentialDelay(2, 2, 2, TimeUnit.SECONDS));
   }
@@ -163,7 +167,7 @@ public class RedisExample {
        */
       RedisRetrieval retrieval =
           new RedisRetrieval(
-              arr, ada002Embedding, redisEndpoint, 1536, RedisDistanceMetric.COSINE, arkRequest);
+              arr, redisEndpoint, 1536, RedisDistanceMetric.COSINE, arkRequest);
       retrieval.upsert();
     }
 
@@ -179,13 +183,8 @@ public class RedisExample {
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
 
-      // Chain 1 ==> Generate Embeddings Using Ada002
-      EdgeChain<WordEmbeddings> ada002Chain =
-          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
-
-      // Chain 2 ==> Pass those embeddings to Redis & Return Score/values (Similarity search)
-      EdgeChain<List<WordEmbeddings>> redisQueries =
-          new EdgeChain<>(redisEndpoint.query(ada002Chain.get(), topK));
+      // Chain 1 ==> Pass those embeddings to Redis & Return Score/values (Similarity search)
+      EdgeChain<List<WordEmbeddings>> redisQueries = new EdgeChain<>(redisEndpoint.query(query, topK, arkRequest));
 
       return redisQueries.getArkResponse();
     }
@@ -196,13 +195,8 @@ public class RedisExample {
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
 
-      // Chain 1==> Get Embeddings  From Input & Then Query To Redis
-      EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
-
-      //  Chain 2 ==> Query Embeddings from Redis
-      EdgeChain<List<WordEmbeddings>> queryChain =
-          new EdgeChain<>(redisEndpoint.query(embeddingsChain.get(), topK));
+      //  Chain 1 ==> Query Embeddings from Redis
+      EdgeChain<List<WordEmbeddings>> queryChain = new EdgeChain<>(redisEndpoint.query(query, topK, arkRequest));
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI
@@ -233,22 +227,21 @@ public class RedisExample {
       // Extract topK value from JsonnetLoader;
       int topK = chatLoader.getInt("topK");
 
-      // Chain 1 ==> Get Embeddings From Input
-      EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
 
-      // Chain 2 ==> Query Embeddings from Redis & Then concatenate it (preparing for prompt)
-      // let's say topK=5; then we concatenate List into a string using String.join method
+      // Chain 1==> Query Embeddings from Redis & Then concatenate it (preparing for prompt)
+
       EdgeChain<List<WordEmbeddings>> redisChain =
-          new EdgeChain<>(redisEndpoint.query(embeddingsChain.get(), topK));
+          new EdgeChain<>(redisEndpoint.query(query, topK, arkRequest));
 
       // Chain 3 ===> Transform String of Queries into List<Queries>
+      // let's say topK=5; then we concatenate List into a string using String.join method
       EdgeChain<String> queryChain =
           new EdgeChain<>(redisChain)
               .transform(
                   redisResponse -> {
+                    List<WordEmbeddings> wordEmbeddings = redisResponse.get();
                     List<String> queryList = new ArrayList<>();
-                    redisResponse.get().forEach(q -> queryList.add(q.getId()));
+                    wordEmbeddings.forEach(q -> queryList.add(q.getId()));
                     return String.join("\n", queryList);
                   });
 

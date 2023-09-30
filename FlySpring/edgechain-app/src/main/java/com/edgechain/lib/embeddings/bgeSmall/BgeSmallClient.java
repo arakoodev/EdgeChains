@@ -16,7 +16,7 @@ import ai.djl.translate.Batchifier;
 import ai.djl.translate.Translator;
 import ai.djl.translate.TranslatorContext;
 import com.edgechain.lib.embeddings.bgeSmall.response.BgeSmallResponse;
-import com.edgechain.lib.endpoint.impl.BgeSmallEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.BgeSmallEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
 import java.io.IOException;

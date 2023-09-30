@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.StringJoiner;
 
 public class PostgresWordEmbeddings implements ArkObject {
 

@@ -3,7 +3,8 @@ package com.edgechain.lib.openai.client;
 import com.edgechain.lib.constants.EndpointConstants;
 import com.edgechain.lib.embeddings.request.OpenAiEmbeddingRequest;
 import com.edgechain.lib.embeddings.response.OpenAiEmbeddingResponse;
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.OpenAiEmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
 import com.edgechain.lib.openai.request.CompletionRequest;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
@@ -24,130 +25,130 @@ import java.util.Objects;
 @Service
 public class OpenAiClient {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
-  private final RestTemplate restTemplate = new RestTemplate();
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final RestTemplate restTemplate = new RestTemplate();
 
-  public EdgeChain<ChatCompletionResponse> createChatCompletion(
-      ChatCompletionRequest request, OpenAiEndpoint endpoint) {
+    public EdgeChain<ChatCompletionResponse> createChatCompletion(
+            ChatCompletionRequest request, OpenAiChatEndpoint endpoint) {
 
-    return new EdgeChain<>(
-        Observable.create(
-            emitter -> {
-              try {
+        return new EdgeChain<>(
+                Observable.create(
+                        emitter -> {
+                            try {
 
-                logger.info("Logging ChatCompletion....");
+                                logger.info("Logging ChatCompletion....");
 
-                // Create headers
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.setBearerAuth(endpoint.getApiKey());
+                                // Create headers
+                                HttpHeaders headers = new HttpHeaders();
+                                headers.setContentType(MediaType.APPLICATION_JSON);
+                                headers.setBearerAuth(endpoint.getApiKey());
 
-                if (Objects.nonNull(endpoint.getOrgId()) && !endpoint.getOrgId().isEmpty()) {
-                  headers.set("OpenAI-Organization", endpoint.getOrgId());
-                }
-                HttpEntity<ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
+                                if (Objects.nonNull(endpoint.getOrgId()) && !endpoint.getOrgId().isEmpty()) {
+                                    headers.set("OpenAI-Organization", endpoint.getOrgId());
+                                }
+                                HttpEntity<ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
 
-                logger.info(String.valueOf(entity.getBody()));
+                                logger.info(String.valueOf(entity.getBody()));
 
-                // Send the POST request
-                ResponseEntity<ChatCompletionResponse> response =
-                    restTemplate.exchange(
-                        endpoint.getUrl(), HttpMethod.POST, entity, ChatCompletionResponse.class);
+                                // Send the POST request
+                                ResponseEntity<ChatCompletionResponse> response =
+                                        restTemplate.exchange(
+                                                endpoint.getUrl(), HttpMethod.POST, entity, ChatCompletionResponse.class);
 
-                emitter.onNext(Objects.requireNonNull(response.getBody()));
-                emitter.onComplete();
+                                emitter.onNext(Objects.requireNonNull(response.getBody()));
+                                emitter.onComplete();
 
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
-  }
-
-  public EdgeChain<ChatCompletionResponse> createChatCompletionStream(
-      ChatCompletionRequest request, OpenAiEndpoint endpoint) {
-
-    try {
-      logger.info("Logging ChatCompletion Stream....");
-      logger.info(request.toString());
-
-      return new EdgeChain<>(
-          RxJava3Adapter.fluxToObservable(
-              WebClient.builder()
-                  .build()
-                  .post()
-                  .uri(EndpointConstants.OPENAI_CHAT_COMPLETION_API)
-                  .accept(MediaType.TEXT_EVENT_STREAM)
-                  .headers(
-                      httpHeaders -> {
-                        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-                        httpHeaders.setBearerAuth(endpoint.getApiKey());
-                        if (Objects.nonNull(endpoint.getOrgId())
-                            && !endpoint.getOrgId().isEmpty()) {
-                          httpHeaders.set("OpenAI-Organization", endpoint.getOrgId());
-                        }
-                      })
-                  .bodyValue(new ObjectMapper().writeValueAsString(request))
-                  .retrieve()
-                  .bodyToFlux(ChatCompletionResponse.class)),
-          endpoint);
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
+                            } catch (final Exception e) {
+                                emitter.onError(e);
+                            }
+                        }),
+                endpoint);
     }
-  }
 
-  public EdgeChain<CompletionResponse> createCompletion(
-      CompletionRequest request, OpenAiEndpoint endpoint) {
-    return new EdgeChain<>(
-        Observable.create(
-            emitter -> {
-              try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.setBearerAuth(endpoint.getApiKey());
-                if (Objects.nonNull(endpoint.getOrgId()) && !endpoint.getOrgId().isEmpty()) {
-                  headers.set("OpenAI-Organization", endpoint.getOrgId());
-                }
-                HttpEntity<CompletionRequest> entity = new HttpEntity<>(request, headers);
+    public EdgeChain<ChatCompletionResponse> createChatCompletionStream(
+            ChatCompletionRequest request, OpenAiChatEndpoint endpoint) {
 
-                ResponseEntity<CompletionResponse> response =
-                    this.restTemplate.exchange(
-                        endpoint.getUrl(), HttpMethod.POST, entity, CompletionResponse.class);
-                emitter.onNext(Objects.requireNonNull(response.getBody()));
-                emitter.onComplete();
+        try {
+            logger.info("Logging ChatCompletion Stream....");
+            logger.info(request.toString());
 
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
-  }
+            return new EdgeChain<>(
+                    RxJava3Adapter.fluxToObservable(
+                            WebClient.builder()
+                                    .build()
+                                    .post()
+                                    .uri(EndpointConstants.OPENAI_CHAT_COMPLETION_API)
+                                    .accept(MediaType.TEXT_EVENT_STREAM)
+                                    .headers(
+                                            httpHeaders -> {
+                                                httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                                                httpHeaders.setBearerAuth(endpoint.getApiKey());
+                                                if (Objects.nonNull(endpoint.getOrgId())
+                                                        && !endpoint.getOrgId().isEmpty()) {
+                                                    httpHeaders.set("OpenAI-Organization", endpoint.getOrgId());
+                                                }
+                                            })
+                                    .bodyValue(new ObjectMapper().writeValueAsString(request))
+                                    .retrieve()
+                                    .bodyToFlux(ChatCompletionResponse.class)),
+                    endpoint);
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-  public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(
-      OpenAiEmbeddingRequest request, OpenAiEndpoint endpoint) {
-    return new EdgeChain<>(
-        Observable.create(
-            emitter -> {
-              try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.setBearerAuth(endpoint.getApiKey());
-                if (Objects.nonNull(endpoint.getOrgId()) && !endpoint.getOrgId().isEmpty()) {
-                  headers.set("OpenAI-Organization", endpoint.getOrgId());
-                }
-                HttpEntity<OpenAiEmbeddingRequest> entity = new HttpEntity<>(request, headers);
+    public EdgeChain<CompletionResponse> createCompletion(
+            CompletionRequest request, OpenAiChatEndpoint endpoint) {
+        return new EdgeChain<>(
+                Observable.create(
+                        emitter -> {
+                            try {
+                                HttpHeaders headers = new HttpHeaders();
+                                headers.setContentType(MediaType.APPLICATION_JSON);
+                                headers.setBearerAuth(endpoint.getApiKey());
+                                if (Objects.nonNull(endpoint.getOrgId()) && !endpoint.getOrgId().isEmpty()) {
+                                    headers.set("OpenAI-Organization", endpoint.getOrgId());
+                                }
+                                HttpEntity<CompletionRequest> entity = new HttpEntity<>(request, headers);
 
-                ResponseEntity<OpenAiEmbeddingResponse> response =
-                    this.restTemplate.exchange(
-                        endpoint.getUrl(), HttpMethod.POST, entity, OpenAiEmbeddingResponse.class);
+                                ResponseEntity<CompletionResponse> response =
+                                        this.restTemplate.exchange(
+                                                endpoint.getUrl(), HttpMethod.POST, entity, CompletionResponse.class);
+                                emitter.onNext(Objects.requireNonNull(response.getBody()));
+                                emitter.onComplete();
 
-                emitter.onNext(Objects.requireNonNull(response.getBody()));
-                emitter.onComplete();
+                            } catch (final Exception e) {
+                                emitter.onError(e);
+                            }
+                        }),
+                endpoint);
+    }
 
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
-  }
+    public EdgeChain<OpenAiEmbeddingResponse> createEmbeddings(
+            OpenAiEmbeddingRequest request, OpenAiEmbeddingEndpoint endpoint) {
+        return new EdgeChain<>(
+                Observable.create(
+                        emitter -> {
+                            try {
+                                HttpHeaders headers = new HttpHeaders();
+                                headers.setContentType(MediaType.APPLICATION_JSON);
+                                headers.setBearerAuth(endpoint.getApiKey());
+                                if (Objects.nonNull(endpoint.getOrgId()) && !endpoint.getOrgId().isEmpty()) {
+                                    headers.set("OpenAI-Organization", endpoint.getOrgId());
+                                }
+                                HttpEntity<OpenAiEmbeddingRequest> entity = new HttpEntity<>(request, headers);
+
+                                ResponseEntity<OpenAiEmbeddingResponse> response =
+                                        this.restTemplate.exchange(
+                                                endpoint.getUrl(), HttpMethod.POST, entity, OpenAiEmbeddingResponse.class);
+
+                                emitter.onNext(Objects.requireNonNull(response.getBody()));
+                                emitter.onComplete();
+
+                            } catch (final Exception e) {
+                                emitter.onError(e);
+                            }
+                        }),
+                endpoint);
+    }
 }

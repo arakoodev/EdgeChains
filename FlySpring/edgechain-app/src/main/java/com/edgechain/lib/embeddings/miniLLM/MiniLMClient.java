@@ -9,7 +9,7 @@ import ai.djl.repository.zoo.ZooModel;
 import ai.djl.training.util.ProgressBar;
 import com.edgechain.lib.embeddings.miniLLM.enums.MiniLMModel;
 import com.edgechain.lib.embeddings.miniLLM.response.MiniLMResponse;
-import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.MiniLMEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
 import org.springframework.stereotype.Service;

@@ -3,7 +3,7 @@ package com.edgechain.service.controllers.miniLM;
 import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.embeddings.miniLLM.MiniLMClient;
 import com.edgechain.lib.embeddings.miniLLM.response.MiniLMResponse;
-import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.MiniLMEndpoint;
 import com.edgechain.lib.logger.entities.EmbeddingLog;
 import com.edgechain.lib.logger.services.EmbeddingLogService;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
