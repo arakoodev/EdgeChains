@@ -18,12 +18,14 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PineconeClientTest {
 
-  @LocalServerPort private int port;
+  @LocalServerPort
+  private int port;
 
-  @Autowired private PineconeClient pineconeClient;
+  @Autowired
+  private PineconeClient pineconeClient;
 
   private PineconeEndpoint pineconeEndpoint;
 
