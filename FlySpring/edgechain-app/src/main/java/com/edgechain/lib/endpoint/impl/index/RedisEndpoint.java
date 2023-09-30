@@ -1,6 +1,5 @@
 package com.edgechain.lib.endpoint.impl.index;
 
-import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.endpoint.impl.embeddings.EmbeddingEndpoint;
@@ -51,7 +50,8 @@ public class RedisEndpoint extends Endpoint {
     this.embeddingEndpoint = embeddingEndpoint;
   }
 
-  public RedisEndpoint(String indexName, EmbeddingEndpoint embeddingEndpoint, RetryPolicy retryPolicy) {
+  public RedisEndpoint(
+      String indexName, EmbeddingEndpoint embeddingEndpoint, RetryPolicy retryPolicy) {
     super(retryPolicy);
     this.indexName = indexName;
     this.embeddingEndpoint = embeddingEndpoint;
@@ -63,7 +63,11 @@ public class RedisEndpoint extends Endpoint {
     this.embeddingEndpoint = embeddingEndpoint;
   }
 
-  public RedisEndpoint(String indexName, String namespace, EmbeddingEndpoint embeddingEndpoint, RetryPolicy retryPolicy) {
+  public RedisEndpoint(
+      String indexName,
+      String namespace,
+      EmbeddingEndpoint embeddingEndpoint,
+      RetryPolicy retryPolicy) {
     super(retryPolicy);
     this.indexName = indexName;
     this.namespace = namespace;
@@ -169,7 +173,8 @@ public class RedisEndpoint extends Endpoint {
 
   public Observable<List<WordEmbeddings>> query(String input, int topK, ArkRequest arkRequest) {
 
-    WordEmbeddings wordEmbedding = new EdgeChain<>(embeddingEndpoint.embeddings(input,arkRequest)).get();
+    WordEmbeddings wordEmbedding =
+        new EdgeChain<>(embeddingEndpoint.embeddings(input, arkRequest)).get();
 
     RedisEndpoint mapper = modelMapper.map(this, RedisEndpoint.class);
     mapper.setTopK(topK);

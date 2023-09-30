@@ -1,6 +1,5 @@
 package com.edgechain.lib.endpoint.impl.embeddings;
 
-import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.retrofit.BgeSmallService;

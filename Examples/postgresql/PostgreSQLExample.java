@@ -90,7 +90,8 @@ public class PostgreSQLExample {
             true,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
-    OpenAiEmbeddingEndpoint adaEmbedding = new OpenAiEmbeddingEndpoint(
+    OpenAiEmbeddingEndpoint adaEmbedding =
+        new OpenAiEmbeddingEndpoint(
             OPENAI_EMBEDDINGS_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,
@@ -100,7 +101,10 @@ public class PostgreSQLExample {
     // Defining tablename and namespace...
     postgresEndpoint =
         new PostgresEndpoint(
-            "pg_vectors", "machine-learning", adaEmbedding, new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
+            "pg_vectors",
+            "machine-learning",
+            adaEmbedding,
+            new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
 
     contextEndpoint = new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
   }
@@ -159,12 +163,7 @@ public class PostgreSQLExample {
 
       PostgresRetrieval retrieval =
           new PostgresRetrieval(
-              arr,
-              postgresEndpoint,
-              1536,
-              filename,
-              PostgresLanguage.ENGLISH,
-              arkRequest);
+              arr, postgresEndpoint, 1536, filename, PostgresLanguage.ENGLISH, arkRequest);
 
       //   retrieval.setBatchSize(50); // Modifying batchSize....(Default is 30)
 
@@ -186,12 +185,7 @@ public class PostgreSQLExample {
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
           new EdgeChain<>(
               postgresEndpoint.query(
-                  List.of(query),
-                  PostgresDistanceMetric.COSINE,
-                  topK,
-                  topK,
-                  10,
-                  arkRequest));
+                  List.of(query), PostgresDistanceMetric.COSINE, topK, topK, 10, arkRequest));
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI
@@ -227,7 +221,8 @@ public class PostgreSQLExample {
 
       EdgeChain<List<PostgresWordEmbeddings>> postgresChain =
           new EdgeChain<>(
-              postgresEndpoint.query(List.of(query), PostgresDistanceMetric.COSINE, topK, topK, arkRequest));
+              postgresEndpoint.query(
+                  List.of(query), PostgresDistanceMetric.COSINE, topK, topK, arkRequest));
 
       // Chain 3 ===> Transform String of Queries into List<Queries>
       // let's say topK=5; then we concatenate List into a string using String.join method
@@ -235,7 +230,8 @@ public class PostgreSQLExample {
           new EdgeChain<>(postgresChain)
               .transform(
                   postgresResponse -> {
-                    List<PostgresWordEmbeddings> postgresWordEmbeddingsList = postgresResponse.get();
+                    List<PostgresWordEmbeddings> postgresWordEmbeddingsList =
+                        postgresResponse.get();
                     List<String> queryList = new ArrayList<>();
                     postgresWordEmbeddingsList.forEach(q -> queryList.add(q.getRawText()));
                     return String.join("\n", queryList);

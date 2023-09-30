@@ -61,7 +61,7 @@ public class PineconeExample {
 
     // Redis Configuration
     properties.setProperty("redis.url", "");
-    properties.setProperty("redis.port","");
+    properties.setProperty("redis.port", "");
     properties.setProperty("redis.username", "default");
     properties.setProperty("redis.password", "");
     properties.setProperty("redis.ttl", "3600");
@@ -72,12 +72,11 @@ public class PineconeExample {
     properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
 
-
     new SpringApplicationBuilder(PineconeExample.class).properties(properties).run(args);
 
     gpt3Endpoint =
         new OpenAiChatEndpoint(
-             OPENAI_CHAT_COMPLETION_API,
+            OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,
             "gpt-3.5-turbo",
@@ -96,7 +95,8 @@ public class PineconeExample {
             true,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
-    OpenAiEmbeddingEndpoint ada002 = new OpenAiEmbeddingEndpoint(
+    OpenAiEmbeddingEndpoint ada002 =
+        new OpenAiEmbeddingEndpoint(
             OPENAI_EMBEDDINGS_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,

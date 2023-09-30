@@ -1,6 +1,5 @@
 package com.edgechain.lib.endpoint.impl.embeddings;
 
-import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.embeddings.miniLLM.enums.MiniLMModel;
 import com.edgechain.lib.request.ArkRequest;
@@ -11,8 +10,6 @@ import java.util.Objects;
 
 import io.reactivex.rxjava3.core.Observable;
 import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import retrofit2.Retrofit;
 
 public class MiniLMEndpoint extends EmbeddingEndpoint {

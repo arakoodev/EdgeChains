@@ -118,7 +118,11 @@ public class PostgresRetrieval {
   }
 
   private WordEmbeddings generateEmbeddings(String input) {
-    return postgresEndpoint.getEmbeddingEndpoint().embeddings(input, arkRequest).firstOrError().blockingGet();
+    return postgresEndpoint
+        .getEmbeddingEndpoint()
+        .embeddings(input, arkRequest)
+        .firstOrError()
+        .blockingGet();
   }
 
   private void upsertAndCollectIds(

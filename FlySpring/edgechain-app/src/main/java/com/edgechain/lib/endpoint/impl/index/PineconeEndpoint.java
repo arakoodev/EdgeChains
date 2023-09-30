@@ -39,27 +39,33 @@ public class PineconeEndpoint extends Endpoint {
 
   public PineconeEndpoint() {}
 
-
   public PineconeEndpoint(String url, String apiKey, EmbeddingEndpoint embeddingEndpoint) {
     super(url, apiKey);
     this.originalUrl = url;
     this.embeddingEndpoint = embeddingEndpoint;
   }
 
-  public PineconeEndpoint(String url, String apiKey, EmbeddingEndpoint embeddingEndpoint, RetryPolicy retryPolicy) {
+  public PineconeEndpoint(
+      String url, String apiKey, EmbeddingEndpoint embeddingEndpoint, RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.embeddingEndpoint = embeddingEndpoint;
     this.originalUrl = url;
   }
 
-  public PineconeEndpoint(String url, String apiKey, String namespace, EmbeddingEndpoint embeddingEndpoint) {
+  public PineconeEndpoint(
+      String url, String apiKey, String namespace, EmbeddingEndpoint embeddingEndpoint) {
     super(url, apiKey);
     this.originalUrl = url;
     this.namespace = namespace;
     this.embeddingEndpoint = embeddingEndpoint;
   }
 
-  public PineconeEndpoint(String url, String apiKey, String namespace, EmbeddingEndpoint embeddingEndpoint, RetryPolicy retryPolicy) {
+  public PineconeEndpoint(
+      String url,
+      String apiKey,
+      String namespace,
+      EmbeddingEndpoint embeddingEndpoint,
+      RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.originalUrl = url;
     this.namespace = namespace;
@@ -134,8 +140,10 @@ public class PineconeEndpoint extends Endpoint {
     return this.pineconeService.batchUpsert(mapper).blockingGet();
   }
 
-  public Observable<List<WordEmbeddings>> query(String query, String namespace,  int topK, ArkRequest arkRequest) {
-    WordEmbeddings wordEmbeddings = new EdgeChain<>(getEmbeddingEndpoint().embeddings(query, arkRequest)).get();
+  public Observable<List<WordEmbeddings>> query(
+      String query, String namespace, int topK, ArkRequest arkRequest) {
+    WordEmbeddings wordEmbeddings =
+        new EdgeChain<>(getEmbeddingEndpoint().embeddings(query, arkRequest)).get();
 
     PineconeEndpoint mapper = modelMapper.map(this, PineconeEndpoint.class);
     mapper.setWordEmbedding(wordEmbeddings);

@@ -24,15 +24,11 @@ public class PineconeRetrieval {
   private int batchSize = 30;
 
   public PineconeRetrieval(
-      String[] arr,
-      PineconeEndpoint pineconeEndpoint,
-      String namespace,
-      ArkRequest arkRequest) {
+      String[] arr, PineconeEndpoint pineconeEndpoint, String namespace, ArkRequest arkRequest) {
     this.pineconeEndpoint = pineconeEndpoint;
     this.arkRequest = arkRequest;
     this.arr = arr;
     this.namespace = namespace;
-
 
     Logger logger = LoggerFactory.getLogger(getClass());
     if (pineconeEndpoint.getEmbeddingEndpoint() instanceof OpenAiEmbeddingEndpoint openAiEndpoint)
@@ -62,7 +58,11 @@ public class PineconeRetrieval {
   }
 
   private WordEmbeddings generateEmbeddings(String input) {
-    return pineconeEndpoint.getEmbeddingEndpoint().embeddings(input, arkRequest).firstOrError().blockingGet();
+    return pineconeEndpoint
+        .getEmbeddingEndpoint()
+        .embeddings(input, arkRequest)
+        .firstOrError()
+        .blockingGet();
   }
 
   private void executeBatchUpsert(List<WordEmbeddings> wordEmbeddingsList) {

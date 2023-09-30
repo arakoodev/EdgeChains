@@ -21,18 +21,16 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PineconeClientTest {
 
-  @LocalServerPort
-  private int port;
+  @LocalServerPort private int port;
 
-  @Autowired
-  private PineconeClient pineconeClient;
+  @Autowired private PineconeClient pineconeClient;
 
   private PineconeEndpoint pineconeEndpoint;
 
   @BeforeEach
   void setUp() {
     System.setProperty("server.port", String.valueOf(port));
-    pineconeEndpoint = new PineconeEndpoint("https://arakoo.ai", "apiKey", "Pinecone",null);
+    pineconeEndpoint = new PineconeEndpoint("https://arakoo.ai", "apiKey", "Pinecone", null);
   }
 
   @Test

@@ -49,9 +49,9 @@ public class SupabaseMiniLMExample {
   private static PostgreSQLHistoryContextEndpoint contextEndpoint;
 
   private JsonnetLoader queryLoader =
-          new FileJsonnetLoader("./supabase-miniLM/postgres-query.jsonnet");
+      new FileJsonnetLoader("./supabase-miniLM/postgres-query.jsonnet");
   private JsonnetLoader chatLoader =
-          new FileJsonnetLoader("./supabase-miniLM/postgres-chat.jsonnet");
+      new FileJsonnetLoader("./supabase-miniLM/postgres-chat.jsonnet");
 
   public static void main(String[] args) {
 
@@ -76,7 +76,6 @@ public class SupabaseMiniLMExample {
     properties.setProperty("postgres.db.host", "");
     properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
-
 
     new SpringApplicationBuilder(SupabaseMiniLMExample.class).properties(properties).run(args);
 
@@ -112,7 +111,10 @@ public class SupabaseMiniLMExample {
     // vectors;
     postgresEndpoint =
         new PostgresEndpoint(
-            "minilm_vectors", "minilm-ns", miniLMEndpoint, new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
+            "minilm_vectors",
+            "minilm-ns",
+            miniLMEndpoint,
+            new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
 
     contextEndpoint = new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
   }
@@ -172,12 +174,7 @@ public class SupabaseMiniLMExample {
 
       PostgresRetrieval retrieval =
           new PostgresRetrieval(
-              arr,
-              postgresEndpoint,
-              384,
-              filename,
-              PostgresLanguage.ENGLISH,
-              arkRequest);
+              arr, postgresEndpoint, 384, filename, PostgresLanguage.ENGLISH, arkRequest);
 
       //   retrieval.setBatchSize(50); // Modifying batchSize....
 
@@ -199,7 +196,8 @@ public class SupabaseMiniLMExample {
       //  Chain 2 ==> Query Embeddings from PostgreSQL
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
           new EdgeChain<>(
-              postgresEndpoint.query(List.of(query), PostgresDistanceMetric.L2, topK, topK,arkRequest));
+              postgresEndpoint.query(
+                  List.of(query), PostgresDistanceMetric.L2, topK, topK, arkRequest));
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI
@@ -237,14 +235,16 @@ public class SupabaseMiniLMExample {
       // let's say topK=5; then we concatenate List into a string using String.join method
       EdgeChain<List<PostgresWordEmbeddings>> postgresChain =
           new EdgeChain<>(
-              postgresEndpoint.query(List.of(query), PostgresDistanceMetric.L2, topK, topK, arkRequest));
+              postgresEndpoint.query(
+                  List.of(query), PostgresDistanceMetric.L2, topK, topK, arkRequest));
 
       // Chain 3 ===> Transform String of Queries into List<Queries>
       EdgeChain<String> queryChain =
           new EdgeChain<>(postgresChain)
               .transform(
                   postgresResponse -> {
-                    List<PostgresWordEmbeddings> postgresWordEmbeddingsList = postgresResponse.get();
+                    List<PostgresWordEmbeddings> postgresWordEmbeddingsList =
+                        postgresResponse.get();
                     List<String> queryList = new ArrayList<>();
                     postgresWordEmbeddingsList.forEach(q -> queryList.add(q.getRawText()));
                     return String.join("\n", queryList);
