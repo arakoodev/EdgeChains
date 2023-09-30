@@ -36,6 +36,14 @@ public class Endpoint implements Serializable {
     this.retryPolicy = retryPolicy;
   }
 
+  public void setUrl(String url) {
+    this.url = url;
+  }
+
+  public void setApiKey(String apiKey) {
+    this.apiKey = apiKey;
+  }
+
   public String getApiKey() {
     return this.apiKey;
   }

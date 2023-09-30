@@ -47,7 +47,7 @@ public abstract class JsonnetLoader implements Serializable {
     if (threshold >= 1 && threshold < 100) {
       this.threshold = threshold;
       this.splitSize =
-          String.valueOf(threshold).concat("-").concat(String.valueOf((100 - threshold)));
+              String.valueOf(threshold).concat("-").concat(String.valueOf((100 - threshold)));
     } else throw new RuntimeException("Threshold has to be b/w 1 and 100");
   }
 
@@ -70,7 +70,7 @@ public abstract class JsonnetLoader implements Serializable {
 
       // Create Temp File With Unique Name
       String filename =
-          RandomStringUtils.randomAlphanumeric(12) + "_" + System.currentTimeMillis() + ".jsonnet";
+              RandomStringUtils.randomAlphanumeric(12) + "_" + System.currentTimeMillis() + ".jsonnet";
       File file = new File(System.getProperty("java.io.tmpdir") + File.separator + filename);
 
       BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
@@ -98,16 +98,16 @@ public abstract class JsonnetLoader implements Serializable {
           xtraArgsMap.put(entry.getKey(), entry.getValue().getVal().replaceAll(regex, ""));
 
         } else if (entry.getValue().getDataType().equals(DataType.INTEGER)
-            || entry.getValue().getDataType().equals(DataType.BOOLEAN)) {
+                || entry.getValue().getDataType().equals(DataType.BOOLEAN)) {
           xtraArgsMap.put(entry.getKey(), entry.getValue().getVal());
         }
       }
 
       var res =
-          Transformer.builder(text)
-              .withLibrary(new XtraSonnetCustomFunc())
-              .build()
-              .transform(serializeXtraArgs(xtraArgsMap));
+              Transformer.builder(text)
+                      .withLibrary(new XtraSonnetCustomFunc())
+                      .build()
+                      .transform(serializeXtraArgs(xtraArgsMap));
       // Get the String Output & Transform it into JsonnetSchema
 
       this.metadata = res;

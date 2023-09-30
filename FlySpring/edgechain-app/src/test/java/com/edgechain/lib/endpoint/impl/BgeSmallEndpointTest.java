@@ -1,8 +1,10 @@
 package com.edgechain.lib.endpoint.impl;
 
 import com.edgechain.lib.configuration.domain.SecurityUUID;
+import com.edgechain.lib.endpoint.impl.embeddings.BgeSmallEndpoint;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import java.io.File;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -13,6 +15,7 @@ class BgeSmallEndpointTest {
 
   @Test
   @DirtiesContext
+
   void downloadFiles() {
     // Retrofit needs a port
     System.setProperty("server.port", "8888");
@@ -41,6 +44,7 @@ class BgeSmallEndpointTest {
       // reset the Retrofit instance
       ReflectionTestUtils.setField(RetrofitClientInstance.class, "securityUUID", null);
       ReflectionTestUtils.setField(RetrofitClientInstance.class, "retrofit", null);
+
 
       deleteFiles(); // make sure we clean up files afterwards
     }

@@ -2,7 +2,7 @@ package com.edgechain.lib.context.client.impl;
 
 import com.edgechain.lib.context.client.HistoryContextClient;
 import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
+import com.edgechain.lib.endpoint.impl.context.RedisHistoryContextEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
 import java.time.LocalDateTime;

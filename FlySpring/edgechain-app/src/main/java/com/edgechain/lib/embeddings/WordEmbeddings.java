@@ -12,7 +12,7 @@ public class WordEmbeddings implements ArkObject, Serializable {
   private static final long serialVersionUID = 2210956496609994219L;
   private String id;
   private List<Float> values;
-  private String score;
+  private Double score;
 
   public WordEmbeddings() {}
 
@@ -26,13 +26,13 @@ public class WordEmbeddings implements ArkObject, Serializable {
     this.values = values;
   }
 
-  public WordEmbeddings(String id, List<Float> values, String score) {
+  public WordEmbeddings(String id, List<Float> values, Double score) {
     this.id = id;
     this.values = values;
     this.score = score;
   }
 
-  public WordEmbeddings(String id, String score) {
+  public WordEmbeddings(String id, Double score) {
     this.id = id;
     this.score = score;
   }
@@ -49,7 +49,7 @@ public class WordEmbeddings implements ArkObject, Serializable {
     this.values = values;
   }
 
-  public String getScore() {
+  public Double getScore() {
     return score;
   }
 
@@ -57,7 +57,7 @@ public class WordEmbeddings implements ArkObject, Serializable {
     this.id = id;
   }
 
-  public void setScore(String score) {
+  public void setScore(Double score) {
     this.score = score;
   }
 

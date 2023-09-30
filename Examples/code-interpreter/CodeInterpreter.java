@@ -4,6 +4,7 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 
 import java.util.concurrent.TimeUnit;
 
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.edgechain.lib.codeInterpreter.Eval;
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class CodeInterpreter {
 
   private static final String OPENAI_AUTH_KEY = "";
-  private static OpenAiEndpoint userChatEndpoint;
+  private static OpenAiChatEndpoint userChatEndpoint;
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static JsonnetLoader loader =
       new FileJsonnetLoader("./code-interpreter/code-interpreter.jsonnet");
@@ -48,7 +48,7 @@ public class CodeInterpreter {
       JSONObject json = arkRequest.getBody();
 
       userChatEndpoint =
-          new OpenAiEndpoint(
+          new OpenAiChatEndpoint(
               OPENAI_CHAT_COMPLETION_API,
               OPENAI_AUTH_KEY,
               "gpt-3.5-turbo",

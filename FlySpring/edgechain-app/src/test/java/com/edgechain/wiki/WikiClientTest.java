@@ -1,7 +1,7 @@
 package com.edgechain.wiki;
 
 import com.edgechain.lib.configuration.domain.SecurityUUID;
-import com.edgechain.lib.endpoint.impl.WikiEndpoint;
+import com.edgechain.lib.endpoint.impl.wiki.WikiEndpoint;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.wiki.response.WikiResponse;
 import io.reactivex.rxjava3.observers.TestObserver;

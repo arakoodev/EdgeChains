@@ -1,7 +1,7 @@
 package com.edgechain.lib.index.client.impl;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.impl.RedisEndpoint;
+import com.edgechain.lib.endpoint.impl.index.RedisEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.index.responses.RedisDocument;
 import com.edgechain.lib.index.responses.RedisProperty;
@@ -142,8 +142,7 @@ public class RedisClient {
                   ArrayList<RedisProperty> properties = iterator.next().getProperties();
                   words2VecList.add(
                       new WordEmbeddings(
-                          properties.get(1).getId(),
-                          String.valueOf(properties.get(0).get__values_score())));
+                          properties.get(1).getId(), properties.get(0).get__values_score()));
                 }
 
                 emitter.onNext(words2VecList);
