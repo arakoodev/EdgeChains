@@ -1,4 +1,5 @@
 # EdgeChains : LLM chains on-the-edge
+
 <div align="center">
 
   <img src="https://img.shields.io/github/repo-size/arakoodev/EdgeChains?style=for-the-badge" />
@@ -11,9 +12,11 @@
   <img src="https://img.shields.io/github/contributors/arakoodev/EdgeChains?style=for-the-badge" />
   <img src="https://img.shields.io/github/last-commit/arakoodev/EdgeChains?style=for-the-badge" />
   </div>
-  
 
----
+### 
+### Join our [Discord](https://discord.gg/aehBPdPqf5) - we are one of the friendliest and nicest dev groups in Generative AI !
+
+
 ## Installation and Usage Quickstart
 
 **Edgechains works on Java. Javascript is upcoming**
