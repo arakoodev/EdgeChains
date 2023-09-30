@@ -2,7 +2,7 @@ package com.edgechain.lib.index.client.impl;
 
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
+import com.edgechain.lib.endpoint.impl.index.PostgresEndpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.repositories.PostgresClientMetadataRepository;
 import com.edgechain.lib.index.repositories.PostgresClientRepository;
@@ -239,7 +239,8 @@ public class PostgresClient {
                         postgresEndpoint.getProbes(),
                         postgresEndpoint.getMetric(),
                         embeddings,
-                        postgresEndpoint.getTopK());
+                        postgresEndpoint.getTopK(),
+                         postgresEndpoint.getUpperLimit());
 
                 for (Map<String, Object> row : rows) {
 
@@ -284,9 +285,9 @@ public class PostgresClient {
               try {
                 List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
                 List<List<Float>> embeddings =
-                    postgresEndpoint.getWordEmbeddingsList().stream()
-                        .map(WordEmbeddings::getValues)
-                        .toList();
+                          postgresEndpoint.getWordEmbeddingsList().stream()
+                                  .map(WordEmbeddings::getValues)
+                                  .toList();
 
                 List<Map<String, Object>> rows =
                     this.repository.queryRRF(
@@ -302,6 +303,7 @@ public class PostgresClient {
                         postgresEndpoint.getProbes(),
                         postgresEndpoint.getMetric(),
                         postgresEndpoint.getTopK(),
+                        postgresEndpoint.getUpperLimit(),
                         postgresEndpoint.getOrderRRFBy());
 
                 for (Map<String, Object> row : rows) {

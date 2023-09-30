@@ -1,15 +1,15 @@
 package com.edgechain.lib.openai.providers;
 
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.openai.request.CompletionRequest;
 import com.edgechain.lib.response.StringResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 
 /** Going to be removed * */
 public class OpenAiCompletionProvider {
-  private final OpenAiEndpoint endpoint;
+  private final OpenAiChatEndpoint endpoint;
 
-  public OpenAiCompletionProvider(OpenAiEndpoint endpoint) {
+  public OpenAiCompletionProvider(OpenAiChatEndpoint endpoint) {
     this.endpoint = endpoint;
   }
 

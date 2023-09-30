@@ -114,7 +114,6 @@ public class RetrofitClientInstance {
     objectMapper.registerModule(new Jdk8Module());
     objectMapper.registerModule(new PageJacksonModule());
     objectMapper.registerModule(new SortJacksonModule());
-
     objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     return JacksonConverterFactory.create(objectMapper);
   }

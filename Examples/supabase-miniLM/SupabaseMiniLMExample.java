@@ -2,9 +2,11 @@ package com.edgechain;
 
 import com.edgechain.lib.chains.PostgresRetrieval;
 import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.embeddings.miniLLM.enums.MiniLMModel;
-import com.edgechain.lib.endpoint.impl.*;
+import com.edgechain.lib.endpoint.impl.context.PostgreSQLHistoryContextEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.MiniLMEndpoint;
+import com.edgechain.lib.endpoint.impl.index.PostgresEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.index.enums.PostgresLanguage;
@@ -41,17 +43,15 @@ public class SupabaseMiniLMExample {
   private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
   private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
 
-  private static OpenAiEndpoint gpt3Endpoint;
-  private static OpenAiEndpoint gpt3StreamEndpoint;
+  private static OpenAiChatEndpoint gpt3Endpoint;
+  private static OpenAiChatEndpoint gpt3StreamEndpoint;
   private static PostgresEndpoint postgresEndpoint;
   private static PostgreSQLHistoryContextEndpoint contextEndpoint;
 
-  private static MiniLMEndpoint miniLMEndpoint;
-
   private JsonnetLoader queryLoader =
-      new FileJsonnetLoader("./supabase-miniLM/postgres-query.jsonnet");
+          new FileJsonnetLoader("./supabase-miniLM/postgres-query.jsonnet");
   private JsonnetLoader chatLoader =
-      new FileJsonnetLoader("./supabase-miniLM/postgres-chat.jsonnet");
+          new FileJsonnetLoader("./supabase-miniLM/postgres-chat.jsonnet");
 
   public static void main(String[] args) {
 
@@ -74,13 +74,14 @@ public class SupabaseMiniLMExample {
 
     // For DB config
     properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "");
+    properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
+
 
     new SpringApplicationBuilder(SupabaseMiniLMExample.class).properties(properties).run(args);
 
     gpt3Endpoint =
-        new OpenAiEndpoint(
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,
@@ -90,7 +91,7 @@ public class SupabaseMiniLMExample {
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     gpt3StreamEndpoint =
-        new OpenAiEndpoint(
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,
@@ -105,13 +106,13 @@ public class SupabaseMiniLMExample {
     // download on fly.
     // All the requests will wait until the model is download & loaded once into the application...
     // As you can see, the model is not download; so it will download on fly...
-    miniLMEndpoint = new MiniLMEndpoint(MiniLMModel.ALL_MINILM_L12_V2);
+    MiniLMEndpoint miniLMEndpoint = new MiniLMEndpoint(MiniLMModel.ALL_MINILM_L12_V2);
 
     // Creating PostgresEndpoint ==> We create a new table because miniLM supports 384 dimensional
     // vectors;
     postgresEndpoint =
         new PostgresEndpoint(
-            "minilm_vectors", "minilm-ns", new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
+            "minilm_vectors", "minilm-ns", miniLMEndpoint, new ExponentialDelay(2, 3, 2, TimeUnit.SECONDS));
 
     contextEndpoint = new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
   }
@@ -172,7 +173,6 @@ public class SupabaseMiniLMExample {
       PostgresRetrieval retrieval =
           new PostgresRetrieval(
               arr,
-              miniLMEndpoint,
               postgresEndpoint,
               384,
               filename,
@@ -196,14 +196,10 @@ public class SupabaseMiniLMExample {
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
 
-      // Chain 1==> Get Embeddings From Input using MiniLM & Then Query To PostgreSQL
-      EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(miniLMEndpoint.embeddings(query, arkRequest));
-
       //  Chain 2 ==> Query Embeddings from PostgreSQL
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
           new EdgeChain<>(
-              postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK));
+              postgresEndpoint.query(List.of(query), PostgresDistanceMetric.L2, topK, topK,arkRequest));
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI
@@ -237,23 +233,20 @@ public class SupabaseMiniLMExample {
       // Extract topK value from JsonnetLoader;
       int topK = chatLoader.getInt("topK");
 
-      // Chain 1 ==> Get Embeddings From Input using MiniLM
-      EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(miniLMEndpoint.embeddings(query, arkRequest));
-
-      // Chain 2 ==> Query Embeddings from PostgreSQL & Then concatenate it (preparing for prompt)
+      // Chain 1 ==> Query Embeddings from PostgreSQL & Then concatenate it (preparing for prompt)
       // let's say topK=5; then we concatenate List into a string using String.join method
       EdgeChain<List<PostgresWordEmbeddings>> postgresChain =
           new EdgeChain<>(
-              postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK));
+              postgresEndpoint.query(List.of(query), PostgresDistanceMetric.L2, topK, topK, arkRequest));
 
       // Chain 3 ===> Transform String of Queries into List<Queries>
       EdgeChain<String> queryChain =
           new EdgeChain<>(postgresChain)
               .transform(
                   postgresResponse -> {
+                    List<PostgresWordEmbeddings> postgresWordEmbeddingsList = postgresResponse.get();
                     List<String> queryList = new ArrayList<>();
-                    postgresResponse.get().forEach(q -> queryList.add(q.getRawText()));
+                    postgresWordEmbeddingsList.forEach(q -> queryList.add(q.getRawText()));
                     return String.join("\n", queryList);
                   });
 

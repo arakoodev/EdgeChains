@@ -5,8 +5,10 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_AP
 
 import com.edgechain.lib.chains.PostgresRetrieval;
 import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.impl.*;
+import com.edgechain.lib.endpoint.impl.context.PostgreSQLHistoryContextEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.OpenAiEmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.index.PostgresEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.index.enums.PostgresLanguage;
@@ -37,13 +39,12 @@ public class PostgreSQLExample {
 
   private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
   private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
-
-  private static OpenAiEndpoint ada002Embedding;
-  private static OpenAiEndpoint gpt3Endpoint;
-  private static OpenAiEndpoint gpt3StreamEndpoint;
+  private static OpenAiChatEndpoint gpt3Endpoint;
+  private static OpenAiChatEndpoint gpt3StreamEndpoint;
   private static PostgresEndpoint postgresEndpoint;
   private static PostgreSQLHistoryContextEndpoint contextEndpoint;
 
+  // For thread safe, instantitate it in methods...
   private JsonnetLoader queryLoader = new FileJsonnetLoader("./postgres/postgres-query.jsonnet");
   private JsonnetLoader chatLoader = new FileJsonnetLoader("./postgres/postgres-chat.jsonnet");
 
@@ -68,17 +69,8 @@ public class PostgreSQLExample {
 
     new SpringApplicationBuilder(PostgreSQLExample.class).properties(properties).run(args);
 
-    // Variables Initialization ==> Endpoints must be intialized in main method...
-    ada002Embedding =
-        new OpenAiEndpoint(
-            OPENAI_EMBEDDINGS_API,
-            OPENAI_AUTH_KEY,
-            OPENAI_ORG_ID,
-            "text-embedding-ada-002",
-            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
-
     gpt3Endpoint =
-        new OpenAiEndpoint(
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,
@@ -88,7 +80,7 @@ public class PostgreSQLExample {
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     gpt3StreamEndpoint =
-        new OpenAiEndpoint(
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,
@@ -98,10 +90,18 @@ public class PostgreSQLExample {
             true,
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
+    OpenAiEmbeddingEndpoint adaEmbedding = new OpenAiEmbeddingEndpoint(
+            OPENAI_EMBEDDINGS_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "text-embedding-ada-002",
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
     // Defining tablename and namespace...
     postgresEndpoint =
         new PostgresEndpoint(
-            "pg_vectors", "machine-learning", new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
+            "pg_vectors", "machine-learning", adaEmbedding, new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
+
     contextEndpoint = new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
   }
 
@@ -160,7 +160,6 @@ public class PostgreSQLExample {
       PostgresRetrieval retrieval =
           new PostgresRetrieval(
               arr,
-              ada002Embedding,
               postgresEndpoint,
               1536,
               filename,
@@ -183,18 +182,16 @@ public class PostgreSQLExample {
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
 
-      // Chain 1==> Get Embeddings  From Input & Then Query To PostgreSQL
-      EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
-
-      //  Chain 2 ==> Query Embeddings from PostgreSQL
+      //  Chain 1==> Query Embeddings from PostgreSQL
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
           new EdgeChain<>(
               postgresEndpoint.query(
-                  embeddingsChain.get(),
+                  List.of(query),
                   PostgresDistanceMetric.COSINE,
                   topK,
-                  10)); // defining probes
+                  topK,
+                  10,
+                  arkRequest));
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI
@@ -226,24 +223,21 @@ public class PostgreSQLExample {
 
       // Extract topK value from JsonnetLoader;
       int topK = chatLoader.getInt("topK");
-
-      // Chain 1 ==> Get Embeddings From Input
-      EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
-
       // Chain 2 ==> Query Embeddings from PostgreSQL & Then concatenate it (preparing for prompt)
-      // let's say topK=5; then we concatenate List into a string using String.join method
+
       EdgeChain<List<PostgresWordEmbeddings>> postgresChain =
           new EdgeChain<>(
-              postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.COSINE, topK));
+              postgresEndpoint.query(List.of(query), PostgresDistanceMetric.COSINE, topK, topK, arkRequest));
 
       // Chain 3 ===> Transform String of Queries into List<Queries>
+      // let's say topK=5; then we concatenate List into a string using String.join method
       EdgeChain<String> queryChain =
           new EdgeChain<>(postgresChain)
               .transform(
                   postgresResponse -> {
+                    List<PostgresWordEmbeddings> postgresWordEmbeddingsList = postgresResponse.get();
                     List<String> queryList = new ArrayList<>();
-                    postgresResponse.get().forEach(q -> queryList.add(q.getRawText()));
+                    postgresWordEmbeddingsList.forEach(q -> queryList.add(q.getRawText()));
                     return String.join("\n", queryList);
                   });
 

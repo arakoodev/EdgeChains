@@ -3,7 +3,7 @@ package com.edgechain.lib.context.client.impl;
 import com.edgechain.lib.context.client.HistoryContextClient;
 import com.edgechain.lib.context.client.repositories.PostgreSQLHistoryContextRepository;
 import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.endpoint.impl.PostgreSQLHistoryContextEndpoint;
+import com.edgechain.lib.endpoint.impl.context.PostgreSQLHistoryContextEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Observable;
 import java.time.LocalDateTime;

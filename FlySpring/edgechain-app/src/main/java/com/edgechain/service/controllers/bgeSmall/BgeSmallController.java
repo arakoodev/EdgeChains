@@ -3,7 +3,7 @@ package com.edgechain.service.controllers.bgeSmall;
 import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.embeddings.bgeSmall.BgeSmallClient;
 import com.edgechain.lib.embeddings.bgeSmall.response.BgeSmallResponse;
-import com.edgechain.lib.endpoint.impl.BgeSmallEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.BgeSmallEndpoint;
 import com.edgechain.lib.logger.entities.EmbeddingLog;
 import com.edgechain.lib.logger.services.EmbeddingLogService;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;

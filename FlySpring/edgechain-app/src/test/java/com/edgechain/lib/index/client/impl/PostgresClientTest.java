@@ -1,7 +1,7 @@
 package com.edgechain.lib.index.client.impl;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
+import com.edgechain.lib.endpoint.impl.index.PostgresEndpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.index.enums.PostgresLanguage;
@@ -121,7 +121,7 @@ class PostgresClientTest {
   private String upsert() {
     WordEmbeddings we = new WordEmbeddings();
     we.setId("WE1");
-    we.setScore("0.86914713");
+    we.setScore(0.86914713);
     we.setValues(List.of(0.25f, 0.5f));
 
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
@@ -163,12 +163,12 @@ class PostgresClientTest {
   private void batchUpsert() {
     WordEmbeddings we1 = new WordEmbeddings();
     we1.setId("WE1");
-    we1.setScore("101");
+    we1.setScore(1.05689);
     we1.setValues(List.of(0.25f, 0.5f));
 
     WordEmbeddings we2 = new WordEmbeddings();
     we2.setId("WE2");
-    we2.setScore("202");
+    we2.setScore(2.02689);
     we2.setValues(List.of(0.75f, 0.9f));
 
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
@@ -258,7 +258,7 @@ class PostgresClientTest {
   private void query_noMeta_metric(PostgresDistanceMetric metric) {
     WordEmbeddings we1 = new WordEmbeddings();
     we1.setId("WEQUERY");
-    we1.setScore("104");
+    we1.setScore(1.05589);
     we1.setValues(List.of(0.25f, 0.5f));
 
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
@@ -268,6 +268,7 @@ class PostgresClientTest {
     when(mockPe.getMetric()).thenReturn(metric);
     when(mockPe.getWordEmbeddingsList()).thenReturn(List.of(we1));
     when(mockPe.getTopK()).thenReturn(5);
+    when(mockPe.getUpperLimit()).thenReturn(5);
     when(mockPe.getMetadataTableNames()).thenReturn(null);
 
     final Data data = new Data();
@@ -295,7 +296,7 @@ class PostgresClientTest {
   private void query_meta_metric(PostgresDistanceMetric metric) {
     WordEmbeddings we1 = new WordEmbeddings();
     we1.setId("WEQUERY");
-    we1.setScore("104");
+    we1.setScore(1.258);
     we1.setValues(List.of(0.25f, 0.5f));
 
     PostgresEndpoint mockPe = mock(PostgresEndpoint.class);
@@ -305,6 +306,7 @@ class PostgresClientTest {
     when(mockPe.getMetric()).thenReturn(metric);
     when(mockPe.getWordEmbedding()).thenReturn(we1);
     when(mockPe.getTopK()).thenReturn(5);
+    when(mockPe.getUpperLimit()).thenReturn(5);
     when(mockPe.getMetadataTableNames()).thenReturn(List.of("title_metadata"));
 
     final Data data = new Data();

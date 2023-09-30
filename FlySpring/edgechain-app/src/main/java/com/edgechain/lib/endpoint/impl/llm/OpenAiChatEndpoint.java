@@ -1,10 +1,10 @@
-package com.edgechain.lib.endpoint.impl;
+package com.edgechain.lib.endpoint.impl.llm;
 
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
-import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.EmbeddingEndpoint;
+import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.openai.request.ChatMessage;
+import com.edgechain.lib.openai.response.CompletionResponse;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.retrofit.client.OpenAiStreamService;
 import com.edgechain.lib.retrofit.OpenAiService;
@@ -12,19 +12,22 @@ import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
+import org.modelmapper.ModelMapper;
 import retrofit2.Retrofit;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class OpenAiEndpoint extends EmbeddingEndpoint {
+public class OpenAiChatEndpoint extends Endpoint {
 
   private final OpenAiStreamService openAiStreamService =
       ApplicationContextHolder.getContext().getBean(OpenAiStreamService.class);
 
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
   private final OpenAiService openAiService = retrofit.create(OpenAiService.class);
+
+  private ModelMapper modelMapper = new ModelMapper();
 
   private String orgId;
   private String model;
@@ -42,6 +45,8 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
 
   private String role;
 
+  private String input;
+
   /** Log fields * */
   private String chainName;
 
@@ -49,22 +54,23 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
 
   private JsonnetLoader jsonnetLoader;
 
-  public OpenAiEndpoint() {}
+  public OpenAiChatEndpoint() {}
 
-  public OpenAiEndpoint(String url, String apiKey, String model) {
+
+  public OpenAiChatEndpoint(String url, String apiKey, String model) {
     super(url, apiKey, null);
     this.model = model;
   }
 
   // For Embeddings....
-  public OpenAiEndpoint(
+  public OpenAiChatEndpoint(
       String url, String apiKey, String orgId, String model, RetryPolicy retryPolicy) {
     super(url, apiKey, retryPolicy);
     this.orgId = orgId;
     this.model = model;
   }
 
-  public OpenAiEndpoint(
+  public OpenAiChatEndpoint(
       String url,
       String apiKey,
       String model,
@@ -77,7 +83,7 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
     this.temperature = temperature;
   }
 
-  public OpenAiEndpoint(
+  public OpenAiChatEndpoint(
       String url, String apiKey, String model, String role, Double temperature, Boolean stream) {
     super(url, apiKey, null);
     this.model = model;
@@ -86,7 +92,7 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
     this.stream = stream;
   }
 
-  public OpenAiEndpoint(
+  public OpenAiChatEndpoint(
       String url,
       String apiKey,
       String orgId,
@@ -101,22 +107,7 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
     this.orgId = orgId;
   }
 
-  public OpenAiEndpoint(
-      String url,
-      String apiKey,
-      String model,
-      String role,
-      Double temperature,
-      Boolean stream,
-      RetryPolicy retryPolicy) {
-    super(url, apiKey, retryPolicy);
-    this.model = model;
-    this.role = role;
-    this.temperature = temperature;
-    this.stream = stream;
-  }
-
-  public OpenAiEndpoint(
+  public OpenAiChatEndpoint(
       String url,
       String apiKey,
       String orgId,
@@ -132,7 +123,7 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
     this.stream = stream;
   }
 
-  public OpenAiEndpoint(
+  public OpenAiChatEndpoint(
       String url,
       String apiKey,
       String orgId,
@@ -147,6 +138,18 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
     this.role = role;
     this.temperature = temperature;
     this.stream = stream;
+  }
+
+  public String getRole() {
+    return role;
+  }
+
+  public void setRole(String role) {
+    this.role = role;
+  }
+
+  public void setInput(String input) {
+    this.input = input;
   }
 
   public String getModel() {
@@ -201,6 +204,10 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
     return stop;
   }
 
+  public String getInput() {
+    return input;
+  }
+
   public void setStop(List<String> stop) {
     this.stop = stop;
   }
@@ -245,6 +252,10 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
     return chatMessages;
   }
 
+  public void setChatMessages(List<ChatMessage> chatMessages) {
+    this.chatMessages = chatMessages;
+  }
+
   public void setJsonnetLoader(JsonnetLoader jsonnetLoader) {
     this.jsonnetLoader = jsonnetLoader;
   }
@@ -267,24 +278,31 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
 
   public Observable<ChatCompletionResponse> chatCompletion(
       String input, String chainName, ArkRequest arkRequest) {
-    this.chatMessages = List.of(new ChatMessage(this.role, input));
-    this.chainName = chainName;
-    return chatCompletion(arkRequest);
+
+    OpenAiChatEndpoint mapper = modelMapper.map(this, OpenAiChatEndpoint.class);
+    mapper.setChatMessages(List.of(new ChatMessage(this.role, input)));
+    mapper.setChainName(chainName);
+
+    return chatCompletion(mapper,arkRequest);
   }
 
   public Observable<ChatCompletionResponse> chatCompletion(
       String input, String chainName, JsonnetLoader loader, ArkRequest arkRequest) {
-    this.chatMessages = List.of(new ChatMessage(this.role, input));
-    this.chainName = chainName;
-    this.jsonnetLoader = loader;
-    return chatCompletion(arkRequest);
+
+    OpenAiChatEndpoint mapper = modelMapper.map(this, OpenAiChatEndpoint.class);
+    mapper.setChatMessages(List.of(new ChatMessage(this.role, input)));
+    mapper.setChainName(chainName);
+    mapper.setJsonnetLoader(loader);
+
+    return chatCompletion(mapper,arkRequest);
   }
 
   public Observable<ChatCompletionResponse> chatCompletion(
       List<ChatMessage> chatMessages, String chainName, ArkRequest arkRequest) {
-    this.chainName = chainName;
-    this.chatMessages = chatMessages;
-    return chatCompletion(arkRequest);
+    OpenAiChatEndpoint mapper = modelMapper.map(this, OpenAiChatEndpoint.class);
+    mapper.setChatMessages(chatMessages);
+    mapper.setChainName(chainName);
+    return chatCompletion(mapper,arkRequest);
   }
 
   public Observable<ChatCompletionResponse> chatCompletion(
@@ -292,35 +310,23 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
       String chainName,
       JsonnetLoader loader,
       ArkRequest arkRequest) {
-    this.chainName = chainName;
-    this.chatMessages = chatMessages;
-    this.jsonnetLoader = loader;
-    return chatCompletion(arkRequest);
+
+    OpenAiChatEndpoint mapper = modelMapper.map(this, OpenAiChatEndpoint.class);
+    mapper.setChatMessages(chatMessages);
+    mapper.setChainName(chainName);
+    mapper.setJsonnetLoader(loader);
+
+    return chatCompletion(mapper, arkRequest);
   }
 
-  @Override
-  public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
-    setRawText(input);
+  private Observable<ChatCompletionResponse> chatCompletion(OpenAiChatEndpoint mapper, ArkRequest arkRequest) {
 
-    if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
-    else this.callIdentifier = "URI wasn't provided";
-
-    return Observable.fromSingle(
-        openAiService
-            .embeddings(this)
-            .map(
-                embeddingResponse ->
-                    new WordEmbeddings(input, embeddingResponse.getData().get(0).getEmbedding())));
-  }
-
-  private Observable<ChatCompletionResponse> chatCompletion(ArkRequest arkRequest) {
-
-    if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
-    else this.callIdentifier = "URI wasn't provided";
+    if (Objects.nonNull(arkRequest)) mapper.setCallIdentifier(arkRequest.getRequestURI());
+    else mapper.setCallIdentifier("URI wasn't provided");
 
     if (Objects.nonNull(getStream()) && getStream())
       return this.openAiStreamService
-          .chatCompletion(this)
+          .chatCompletion(mapper)
           .map(
               chatResponse -> {
                 if (!Objects.isNull(chatResponse.getChoices().get(0).getFinishReason())) {
@@ -328,6 +334,14 @@ public class OpenAiEndpoint extends EmbeddingEndpoint {
                   return chatResponse;
                 } else return chatResponse;
               });
-    else return Observable.fromSingle(this.openAiService.chatCompletion(this));
+    else return Observable.fromSingle(this.openAiService.chatCompletion(mapper));
+  }
+
+  public Observable<CompletionResponse> completion(String input, ArkRequest arkRequest) {
+    if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
+    else this.callIdentifier = "URI wasn't provided";
+
+    this.input  = input;
+    return Observable.fromSingle(this.openAiService.completion(this));
   }
 }

@@ -1,4 +1,4 @@
-package com.edgechain.lib.endpoint.impl;
+package com.edgechain.lib.endpoint.impl.supabase;
 
 import com.edgechain.lib.endpoint.Endpoint;
 import com.edgechain.lib.retrofit.SupabaseService;

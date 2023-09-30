@@ -1,6 +1,7 @@
 package com.edgechain;
 
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
+
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
@@ -24,7 +25,7 @@ public class ReactChainApplication {
 
   private static final String OPENAI_AUTH_KEY = "";
   private static final String OPENAI_ORG_ID = "";
-  private static OpenAiEndpoint userChatEndpoint;
+  private static OpenAiChatEndpoint userChatEndpoint;
   private static JsonnetLoader loader = new FileJsonnetLoader("./react-chain/react-chain.jsonnet");
 
   public static void main(String[] args) {
@@ -47,7 +48,7 @@ public class ReactChainApplication {
     new SpringApplicationBuilder(ReactChainApplication.class).properties(properties).run(args);
 
     userChatEndpoint =
-        new OpenAiEndpoint(
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,

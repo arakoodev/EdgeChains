@@ -1,7 +1,7 @@
 package com.edgechain;
 
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
-import com.edgechain.lib.endpoint.impl.WikiEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
+import com.edgechain.lib.endpoint.impl.wiki.WikiEndpoint;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
@@ -31,9 +31,9 @@ public class WikiExample {
   private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
 
   /* Step 3: Create OpenAiEndpoint to communicate with OpenAiServices; */
-  private static OpenAiEndpoint gpt3Endpoint;
+  private static OpenAiChatEndpoint gpt3Endpoint;
 
-  private static OpenAiEndpoint gpt3StreamEndpoint;
+  private static OpenAiChatEndpoint gpt3StreamEndpoint;
 
   private static WikiEndpoint wikiEndpoint;
 
@@ -62,7 +62,7 @@ public class WikiExample {
     wikiEndpoint = new WikiEndpoint();
 
     gpt3Endpoint =
-        new OpenAiEndpoint(
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,
@@ -72,7 +72,7 @@ public class WikiExample {
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     gpt3StreamEndpoint =
-        new OpenAiEndpoint(
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             OPENAI_AUTH_KEY,
             OPENAI_ORG_ID,

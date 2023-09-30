@@ -1,11 +1,10 @@
 package com.edgechain.lib.chains;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.EmbeddingEndpoint;
-import com.edgechain.lib.endpoint.impl.BgeSmallEndpoint;
-import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
-import com.edgechain.lib.endpoint.impl.PostgresEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.BgeSmallEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.MiniLMEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.OpenAiEmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.index.PostgresEndpoint;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
 import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.request.ArkRequest;
@@ -36,15 +35,12 @@ public class PostgresRetrieval {
   private final ArkRequest arkRequest;
 
   private final PostgresEndpoint postgresEndpoint;
-  private final EmbeddingEndpoint embeddingEndpoint;
-
   private final int dimensions;
   private final PostgresDistanceMetric metric;
   private final int lists;
 
   public PostgresRetrieval(
       String[] arr,
-      EmbeddingEndpoint embeddingEndpoint,
       PostgresEndpoint postgresEndpoint,
       int dimensions,
       PostgresDistanceMetric metric,
@@ -55,7 +51,6 @@ public class PostgresRetrieval {
     this.arr = arr;
     this.filename = filename;
     this.postgresEndpoint = postgresEndpoint;
-    this.embeddingEndpoint = embeddingEndpoint;
     this.postgresLanguage = postgresLanguage;
     this.arkRequest = arkRequest;
 
@@ -63,17 +58,16 @@ public class PostgresRetrieval {
     this.metric = metric;
     this.lists = lists;
 
-    if (embeddingEndpoint instanceof OpenAiEndpoint openAiEndpoint)
+    if (postgresEndpoint.getEmbeddingEndpoint() instanceof OpenAiEmbeddingEndpoint openAiEndpoint)
       logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
-    else if (embeddingEndpoint instanceof MiniLMEndpoint miniLMEndpoint)
+    else if (postgresEndpoint.getEmbeddingEndpoint() instanceof MiniLMEndpoint miniLMEndpoint)
       logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
-    else if (embeddingEndpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
+    else if (postgresEndpoint.getEmbeddingEndpoint() instanceof BgeSmallEndpoint bgeSmallEndpoint)
       logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
   }
 
   public PostgresRetrieval(
       String[] arr,
-      EmbeddingEndpoint embeddingEndpoint,
       PostgresEndpoint postgresEndpoint,
       int dimensions,
       String filename,
@@ -81,20 +75,18 @@ public class PostgresRetrieval {
       ArkRequest arkRequest) {
     this.arr = arr;
     this.filename = filename;
-    this.arkRequest = arkRequest;
     this.postgresLanguage = postgresLanguage;
     this.postgresEndpoint = postgresEndpoint;
-    this.embeddingEndpoint = embeddingEndpoint;
-
     this.dimensions = dimensions;
     this.metric = PostgresDistanceMetric.COSINE;
     this.lists = 1000;
+    this.arkRequest = arkRequest;
 
-    if (embeddingEndpoint instanceof OpenAiEndpoint openAiEndpoint)
+    if (postgresEndpoint.getEmbeddingEndpoint() instanceof OpenAiEmbeddingEndpoint openAiEndpoint)
       logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
-    else if (embeddingEndpoint instanceof MiniLMEndpoint miniLMEndpoint)
+    else if (postgresEndpoint.getEmbeddingEndpoint() instanceof MiniLMEndpoint miniLMEndpoint)
       logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
-    else if (embeddingEndpoint instanceof BgeSmallEndpoint bgeSmallEndpoint)
+    else if (postgresEndpoint.getEmbeddingEndpoint() instanceof BgeSmallEndpoint bgeSmallEndpoint)
       logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
   }
 
@@ -126,7 +118,7 @@ public class PostgresRetrieval {
   }
 
   private WordEmbeddings generateEmbeddings(String input) {
-    return embeddingEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
+    return postgresEndpoint.getEmbeddingEndpoint().embeddings(input, arkRequest).firstOrError().blockingGet();
   }
 
   private void upsertAndCollectIds(

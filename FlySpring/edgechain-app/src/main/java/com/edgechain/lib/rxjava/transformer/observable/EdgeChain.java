@@ -172,10 +172,12 @@ public class EdgeChain<T> extends AbstractEdgeChain<T> implements Serializable {
 
     if (RetryUtils.available(endpoint))
       return this.observable
-          .subscribeOn(Schedulers.io())
-          .retryWhen(endpoint.getRetryPolicy())
-          .firstOrError();
+              .subscribeOn(Schedulers.io())
+              .retryWhen(endpoint.getRetryPolicy())
+              .firstOrError();
+
     else return this.observable.subscribeOn(Schedulers.io()).firstOrError();
+
   }
 
   public Single<T> toSingleWithoutScheduler() {

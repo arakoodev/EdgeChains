@@ -2,6 +2,7 @@ package com.edgechain.testutil;
 
 import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import retrofit2.Retrofit;
@@ -51,6 +52,15 @@ public final class TestConfigSupport {
     System.setProperty("server.port", "8888");
 
     return mockRetrofit;
+  }
+
+  private ModelMapper setupModelMapper() {
+    ModelMapper mockModelMapper = mock(ModelMapper.class);
+    ReflectionTestUtils.setField(ModelMapper.class,"modelMapper", mockModelMapper);
+    // Retrofit needs a valid port
+    prevServerPort = System.getProperty("server.port");
+    System.setProperty("server.port", "8888");
+    return mockModelMapper;
   }
 
   /**

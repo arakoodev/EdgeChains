@@ -1,8 +1,8 @@
-package com.edgechain.lib.endpoint.impl;
+package com.edgechain.lib.endpoint.impl.embeddings;
 
+import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.embeddings.miniLLM.enums.MiniLMModel;
-import com.edgechain.lib.endpoint.EmbeddingEndpoint;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.retrofit.MiniLMService;
 import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
@@ -10,20 +10,18 @@ import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import java.util.Objects;
 
 import io.reactivex.rxjava3.core.Observable;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import retrofit2.Retrofit;
 
 public class MiniLMEndpoint extends EmbeddingEndpoint {
 
-  private Logger logger = LoggerFactory.getLogger(MiniLMEndpoint.class);
-
   private final Retrofit retrofit = RetrofitClientInstance.getInstance();
   private final MiniLMService miniLMService = retrofit.create(MiniLMService.class);
+  private ModelMapper modelMapper = new ModelMapper();
 
   private MiniLMModel miniLMModel;
-
-  private String callIdentifier;
 
   public MiniLMEndpoint() {}
 
@@ -31,12 +29,12 @@ public class MiniLMEndpoint extends EmbeddingEndpoint {
     this.miniLMModel = miniLMModel;
   }
 
-  public MiniLMModel getMiniLMModel() {
-    return miniLMModel;
+  public void setMiniLMModel(MiniLMModel miniLMModel) {
+    this.miniLMModel = miniLMModel;
   }
 
-  public String getCallIdentifier() {
-    return callIdentifier;
+  public MiniLMModel getMiniLMModel() {
+    return miniLMModel;
   }
 
   public MiniLMEndpoint(RetryPolicy retryPolicy, MiniLMModel miniLMModel) {
@@ -46,16 +44,14 @@ public class MiniLMEndpoint extends EmbeddingEndpoint {
 
   @Override
   public Observable<WordEmbeddings> embeddings(String input, ArkRequest arkRequest) {
-    setRawText(input);
 
-    if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
-    else this.callIdentifier = "URI wasn't provided";
+    MiniLMEndpoint mapper = modelMapper.map(this, MiniLMEndpoint.class);
+    mapper.setRawText(input);
 
-    if (Objects.nonNull(arkRequest)) {
-      this.callIdentifier = arkRequest.getRequestURI();
-    }
+    if (Objects.nonNull(arkRequest)) mapper.setCallIdentifier(arkRequest.getRequestURI());
+    else mapper.setCallIdentifier("URI wasn't provided");
 
     return Observable.fromSingle(
-        miniLMService.embeddings(this).map(m -> new WordEmbeddings(input, m.getEmbedding())));
+        miniLMService.embeddings(mapper).map(m -> new WordEmbeddings(input, m.getEmbedding())));
   }
 }

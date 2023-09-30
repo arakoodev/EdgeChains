@@ -1,4 +1,4 @@
-package com.edgechain.lib.endpoint.impl;
+package com.edgechain.lib.endpoint.impl.context;
 
 import com.edgechain.lib.context.domain.ContextPutRequest;
 import com.edgechain.lib.context.domain.HistoryContext;

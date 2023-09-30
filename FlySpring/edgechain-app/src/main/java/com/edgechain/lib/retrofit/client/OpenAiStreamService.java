@@ -2,7 +2,7 @@ package com.edgechain.lib.retrofit.client;
 
 import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.configuration.domain.SecurityUUID;
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.utils.JsonUtils;
 import io.reactivex.rxjava3.core.Observable;
@@ -21,7 +21,7 @@ public class OpenAiStreamService {
 
   @Autowired private SecurityUUID securityUUID;
 
-  public Observable<ChatCompletionResponse> chatCompletion(OpenAiEndpoint openAiEndpoint) {
+  public Observable<ChatCompletionResponse> chatCompletion(OpenAiChatEndpoint endpoint) {
 
     return RxJava3Adapter.fluxToObservable(
         WebClient.builder()
@@ -39,8 +39,10 @@ public class OpenAiStreamService {
                   httpHeaders.set("stream", "true");
                   httpHeaders.set("Authorization", securityUUID.getAuthKey());
                 })
-            .bodyValue(JsonUtils.convertToString(openAiEndpoint))
+            .bodyValue(JsonUtils.convertToString(endpoint))
             .retrieve()
             .bodyToFlux(ChatCompletionResponse.class));
   }
+
+
 }
