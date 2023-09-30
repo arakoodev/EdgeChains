@@ -15,7 +15,6 @@ class BgeSmallEndpointTest {
 
   @Test
   @DirtiesContext
-
   void downloadFiles() {
     // Retrofit needs a port
     System.setProperty("server.port", "8888");
@@ -44,7 +43,6 @@ class BgeSmallEndpointTest {
       // reset the Retrofit instance
       ReflectionTestUtils.setField(RetrofitClientInstance.class, "securityUUID", null);
       ReflectionTestUtils.setField(RetrofitClientInstance.class, "retrofit", null);
-
 
       deleteFiles(); // make sure we clean up files afterwards
     }

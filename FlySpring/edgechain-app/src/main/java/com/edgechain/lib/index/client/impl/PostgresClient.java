@@ -240,7 +240,7 @@ public class PostgresClient {
                         postgresEndpoint.getMetric(),
                         embeddings,
                         postgresEndpoint.getTopK(),
-                         postgresEndpoint.getUpperLimit());
+                        postgresEndpoint.getUpperLimit());
 
                 for (Map<String, Object> row : rows) {
 
@@ -285,9 +285,9 @@ public class PostgresClient {
               try {
                 List<PostgresWordEmbeddings> wordEmbeddingsList = new ArrayList<>();
                 List<List<Float>> embeddings =
-                          postgresEndpoint.getWordEmbeddingsList().stream()
-                                  .map(WordEmbeddings::getValues)
-                                  .toList();
+                    postgresEndpoint.getWordEmbeddingsList().stream()
+                        .map(WordEmbeddings::getValues)
+                        .toList();
 
                 List<Map<String, Object>> rows =
                     this.repository.queryRRF(

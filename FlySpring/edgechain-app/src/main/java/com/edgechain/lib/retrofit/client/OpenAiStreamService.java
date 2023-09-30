@@ -43,6 +43,4 @@ public class OpenAiStreamService {
             .retrieve()
             .bodyToFlux(ChatCompletionResponse.class));
   }
-
-
 }

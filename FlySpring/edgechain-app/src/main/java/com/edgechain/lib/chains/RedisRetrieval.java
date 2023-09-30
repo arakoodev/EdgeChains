@@ -3,7 +3,6 @@ package com.edgechain.lib.chains;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.embeddings.BgeSmallEndpoint;
 import com.edgechain.lib.endpoint.impl.embeddings.MiniLMEndpoint;
-import com.edgechain.lib.endpoint.impl.embeddings.EmbeddingEndpoint;
 import com.edgechain.lib.endpoint.impl.embeddings.OpenAiEmbeddingEndpoint;
 import com.edgechain.lib.endpoint.impl.index.RedisEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
@@ -67,7 +66,11 @@ public class RedisRetrieval {
   }
 
   private WordEmbeddings generateEmbeddings(String input) {
-    return redisEndpoint.getEmbeddingEndpoint().embeddings(input, arkRequest).firstOrError().blockingGet();
+    return redisEndpoint
+        .getEmbeddingEndpoint()
+        .embeddings(input, arkRequest)
+        .firstOrError()
+        .blockingGet();
   }
 
   private void executeBatchUpsert(List<WordEmbeddings> wordEmbeddingsList) {

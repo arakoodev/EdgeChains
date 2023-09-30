@@ -56,7 +56,6 @@ public class OpenAiChatEndpoint extends Endpoint {
 
   public OpenAiChatEndpoint() {}
 
-
   public OpenAiChatEndpoint(String url, String apiKey, String model) {
     super(url, apiKey, null);
     this.model = model;
@@ -283,7 +282,7 @@ public class OpenAiChatEndpoint extends Endpoint {
     mapper.setChatMessages(List.of(new ChatMessage(this.role, input)));
     mapper.setChainName(chainName);
 
-    return chatCompletion(mapper,arkRequest);
+    return chatCompletion(mapper, arkRequest);
   }
 
   public Observable<ChatCompletionResponse> chatCompletion(
@@ -294,7 +293,7 @@ public class OpenAiChatEndpoint extends Endpoint {
     mapper.setChainName(chainName);
     mapper.setJsonnetLoader(loader);
 
-    return chatCompletion(mapper,arkRequest);
+    return chatCompletion(mapper, arkRequest);
   }
 
   public Observable<ChatCompletionResponse> chatCompletion(
@@ -302,7 +301,7 @@ public class OpenAiChatEndpoint extends Endpoint {
     OpenAiChatEndpoint mapper = modelMapper.map(this, OpenAiChatEndpoint.class);
     mapper.setChatMessages(chatMessages);
     mapper.setChainName(chainName);
-    return chatCompletion(mapper,arkRequest);
+    return chatCompletion(mapper, arkRequest);
   }
 
   public Observable<ChatCompletionResponse> chatCompletion(
@@ -319,7 +318,8 @@ public class OpenAiChatEndpoint extends Endpoint {
     return chatCompletion(mapper, arkRequest);
   }
 
-  private Observable<ChatCompletionResponse> chatCompletion(OpenAiChatEndpoint mapper, ArkRequest arkRequest) {
+  private Observable<ChatCompletionResponse> chatCompletion(
+      OpenAiChatEndpoint mapper, ArkRequest arkRequest) {
 
     if (Objects.nonNull(arkRequest)) mapper.setCallIdentifier(arkRequest.getRequestURI());
     else mapper.setCallIdentifier("URI wasn't provided");
@@ -341,7 +341,7 @@ public class OpenAiChatEndpoint extends Endpoint {
     if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
     else this.callIdentifier = "URI wasn't provided";
 
-    this.input  = input;
+    this.input = input;
     return Observable.fromSingle(this.openAiService.completion(this));
   }
 }

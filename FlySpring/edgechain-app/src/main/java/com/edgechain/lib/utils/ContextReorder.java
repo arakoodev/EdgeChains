@@ -11,37 +11,40 @@ import java.util.List;
 @Component
 public class ContextReorder {
 
-    public List<WordEmbeddings> reorderWordEmbeddings(List<WordEmbeddings> wordEmbeddingsList) {
+  public List<WordEmbeddings> reorderWordEmbeddings(List<WordEmbeddings> wordEmbeddingsList) {
 
-        wordEmbeddingsList.sort(Comparator.comparingDouble(WordEmbeddings::getScore).reversed());
+    wordEmbeddingsList.sort(Comparator.comparingDouble(WordEmbeddings::getScore).reversed());
 
-        int mid = wordEmbeddingsList.size() / 2;
+    int mid = wordEmbeddingsList.size() / 2;
 
-        List<WordEmbeddings> modifiedList = new ArrayList<>(wordEmbeddingsList.subList(0, mid));
+    List<WordEmbeddings> modifiedList = new ArrayList<>(wordEmbeddingsList.subList(0, mid));
 
-        List<WordEmbeddings> secondHalfList = wordEmbeddingsList.subList(mid, wordEmbeddingsList.size());
-        secondHalfList.sort(Comparator.comparingDouble(WordEmbeddings::getScore));
+    List<WordEmbeddings> secondHalfList =
+        wordEmbeddingsList.subList(mid, wordEmbeddingsList.size());
+    secondHalfList.sort(Comparator.comparingDouble(WordEmbeddings::getScore));
 
-        modifiedList.addAll(secondHalfList);
+    modifiedList.addAll(secondHalfList);
 
-        return modifiedList;
-    }
+    return modifiedList;
+  }
 
-    public List<PostgresWordEmbeddings> reorderPostgresWordEmbeddings(List<PostgresWordEmbeddings> postgresWordEmbeddings) {
+  public List<PostgresWordEmbeddings> reorderPostgresWordEmbeddings(
+      List<PostgresWordEmbeddings> postgresWordEmbeddings) {
 
-        postgresWordEmbeddings.sort(Comparator.comparingDouble(PostgresWordEmbeddings::getScore).reversed());
+    postgresWordEmbeddings.sort(
+        Comparator.comparingDouble(PostgresWordEmbeddings::getScore).reversed());
 
-        int mid =  postgresWordEmbeddings.size() / 2;
+    int mid = postgresWordEmbeddings.size() / 2;
 
-        List<PostgresWordEmbeddings> modifiedList = new ArrayList<>( postgresWordEmbeddings.subList(0, mid));
+    List<PostgresWordEmbeddings> modifiedList =
+        new ArrayList<>(postgresWordEmbeddings.subList(0, mid));
 
-        List<PostgresWordEmbeddings> secondHalfList =  postgresWordEmbeddings.subList(mid,  postgresWordEmbeddings.size());
-        secondHalfList.sort(Comparator.comparingDouble(PostgresWordEmbeddings::getScore));
+    List<PostgresWordEmbeddings> secondHalfList =
+        postgresWordEmbeddings.subList(mid, postgresWordEmbeddings.size());
+    secondHalfList.sort(Comparator.comparingDouble(PostgresWordEmbeddings::getScore));
 
-        modifiedList.addAll(secondHalfList);
+    modifiedList.addAll(secondHalfList);
 
-        return modifiedList;
-    }
-
+    return modifiedList;
+  }
 }
-

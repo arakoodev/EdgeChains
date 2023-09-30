@@ -61,15 +61,13 @@ public class RedisExample {
 
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
-    properties.setProperty(
-            "postgres.db.host", "");
+    properties.setProperty("postgres.db.host", "");
     properties.setProperty("postgres.db.username", "postgres");
     properties.setProperty("postgres.db.password", "");
 
-
     // Redis Configuration
     properties.setProperty("redis.url", "");
-    properties.setProperty("redis.port","12285");
+    properties.setProperty("redis.port", "12285");
     properties.setProperty("redis.username", "default");
     properties.setProperty("redis.password", "");
     properties.setProperty("redis.ttl", "3600");
@@ -98,16 +96,19 @@ public class RedisExample {
             new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
 
     OpenAiEmbeddingEndpoint ada002Endpoint =
-            new OpenAiEmbeddingEndpoint(
-                    OPENAI_EMBEDDINGS_API,
-                    OPENAI_AUTH_KEY,
-                    OPENAI_ORG_ID,
-                    "text-embedding-ada-002",
-                    new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+        new OpenAiEmbeddingEndpoint(
+            OPENAI_EMBEDDINGS_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "text-embedding-ada-002",
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     redisEndpoint =
         new RedisEndpoint(
-            "vector_index", "machine-learning", ada002Endpoint, new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+            "vector_index",
+            "machine-learning",
+            ada002Endpoint,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
     contextEndpoint =
         new RedisHistoryContextEndpoint(new ExponentialDelay(2, 2, 2, TimeUnit.SECONDS));
@@ -166,8 +167,7 @@ public class RedisExample {
        * asynchronously...;
        */
       RedisRetrieval retrieval =
-          new RedisRetrieval(
-              arr, redisEndpoint, 1536, RedisDistanceMetric.COSINE, arkRequest);
+          new RedisRetrieval(arr, redisEndpoint, 1536, RedisDistanceMetric.COSINE, arkRequest);
       retrieval.upsert();
     }
 
@@ -184,7 +184,8 @@ public class RedisExample {
       int topK = arkRequest.getIntQueryParam("topK");
 
       // Chain 1 ==> Pass those embeddings to Redis & Return Score/values (Similarity search)
-      EdgeChain<List<WordEmbeddings>> redisQueries = new EdgeChain<>(redisEndpoint.query(query, topK, arkRequest));
+      EdgeChain<List<WordEmbeddings>> redisQueries =
+          new EdgeChain<>(redisEndpoint.query(query, topK, arkRequest));
 
       return redisQueries.getArkResponse();
     }
@@ -196,7 +197,8 @@ public class RedisExample {
       int topK = arkRequest.getIntQueryParam("topK");
 
       //  Chain 1 ==> Query Embeddings from Redis
-      EdgeChain<List<WordEmbeddings>> queryChain = new EdgeChain<>(redisEndpoint.query(query, topK, arkRequest));
+      EdgeChain<List<WordEmbeddings>> queryChain =
+          new EdgeChain<>(redisEndpoint.query(query, topK, arkRequest));
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI
@@ -226,7 +228,6 @@ public class RedisExample {
 
       // Extract topK value from JsonnetLoader;
       int topK = chatLoader.getInt("topK");
-
 
       // Chain 1==> Query Embeddings from Redis & Then concatenate it (preparing for prompt)
 

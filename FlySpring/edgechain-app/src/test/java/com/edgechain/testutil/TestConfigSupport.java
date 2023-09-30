@@ -56,7 +56,7 @@ public final class TestConfigSupport {
 
   private ModelMapper setupModelMapper() {
     ModelMapper mockModelMapper = mock(ModelMapper.class);
-    ReflectionTestUtils.setField(ModelMapper.class,"modelMapper", mockModelMapper);
+    ReflectionTestUtils.setField(ModelMapper.class, "modelMapper", mockModelMapper);
     // Retrofit needs a valid port
     prevServerPort = System.getProperty("server.port");
     System.setProperty("server.port", "8888");

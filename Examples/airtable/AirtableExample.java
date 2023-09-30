@@ -17,11 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Properties;
 
 /**
- * For the purpose, of this example, create a simple table using AirTable i.e, "Speakers"
- * Following are some basic fields: "speaker_name", "designation", "organization", "biography", "speaker_photo", "rating
- * To get, your BASE_ID of specific database; use the following API https://api.airtable.com/v0/meta/bases
- * --header 'Authorization: Bearer YOUR_PERSONAL_ACCESS_TOKEN'
- * You can create, complex tables using Airtable; also define relationships b/w tables via lookups.
+ * For the purpose, of this example, create a simple table using AirTable i.e, "Speakers" Following
+ * are some basic fields: "speaker_name", "designation", "organization", "biography",
+ * "speaker_photo", "rating To get, your BASE_ID of specific database; use the following API
+ * https://api.airtable.com/v0/meta/bases --header 'Authorization: Bearer
+ * YOUR_PERSONAL_ACCESS_TOKEN' You can create, complex tables using Airtable; also define
+ * relationships b/w tables via lookups.
  */
 @SpringBootApplication
 public class AirtableExample {
@@ -123,11 +124,11 @@ public class AirtableExample {
       return new EdgeChain<>(airtableEndpoint.update("Speakers", record)).getArkResponse();
     }
 
-      @DeleteMapping("/delete")
-      public ArkResponse delete(ArkRequest arkRequest) {
-          JSONObject body = arkRequest.getBody();
-          String id = body.getString("id");
-          return new EdgeChain<>(airtableEndpoint.delete("Speakers", id)).getArkResponse();
-      }
+    @DeleteMapping("/delete")
+    public ArkResponse delete(ArkRequest arkRequest) {
+      JSONObject body = arkRequest.getBody();
+      String id = body.getString("id");
+      return new EdgeChain<>(airtableEndpoint.delete("Speakers", id)).getArkResponse();
+    }
   }
 }
