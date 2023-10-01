@@ -1,6 +1,5 @@
 package com.edgechain.lib.index.client.impl;
 
-import com.edgechain.lib.configuration.context.ApplicationContextHolder;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.endpoint.impl.index.PostgresEndpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
@@ -26,6 +25,7 @@ import java.util.Set;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,10 +35,11 @@ public class PostgresClient {
 
   private static final TypeReference<List<Float>> FLOAT_TYPE_REF = new TypeReference<>() {};
 
-  private final PostgresClientRepository repository =
-      ApplicationContextHolder.getContext().getBean(PostgresClientRepository.class);
-  private final PostgresClientMetadataRepository metadataRepository =
-      ApplicationContextHolder.getContext().getBean(PostgresClientMetadataRepository.class);
+  @Autowired
+  private PostgresClientRepository repository;
+
+  @Autowired
+  private PostgresClientMetadataRepository metadataRepository;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
