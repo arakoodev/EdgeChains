@@ -35,11 +35,9 @@ public class PostgresClient {
 
   private static final TypeReference<List<Float>> FLOAT_TYPE_REF = new TypeReference<>() {};
 
-  @Autowired
-  private PostgresClientRepository repository;
+  @Autowired private PostgresClientRepository repository;
 
-  @Autowired
-  private PostgresClientMetadataRepository metadataRepository;
+  @Autowired private PostgresClientMetadataRepository metadataRepository;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
