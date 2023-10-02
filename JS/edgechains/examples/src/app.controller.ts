@@ -13,16 +13,19 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Post("/hyde-search")
+  @Post("/hyde-search/query-rrf")
   @HttpCode(200)
-  hydeSearch(@Query() params:any, @Body('query') query: string){
+  hydeSearch(@Query() params:any, @Body() query: any){
     const arkRequest = {
-      tableName : params.table,
-      nameSpace : params.namespace,
-      query : query,
-      topK : params.topK
+      topK : params.topK,
+      metadataTable : query.metadataTable,
+      query : query.query,
+      textWeight : query.textWeight,
+      similarityWeight : query.similarityWeight,
+      dateWeight : query.dateWeight,
+      orderRRF : query.orderRRF
     }
-    
+    console.log(arkRequest)
     return hydeSearchAdaEmbedding(arkRequest);
 
   }
