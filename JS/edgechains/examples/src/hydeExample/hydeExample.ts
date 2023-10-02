@@ -4,6 +4,13 @@ import * as path from 'path';
 import { createConnection,getManager } from 'typeorm';
 
 
+enum PostgresDistanceMetric {
+  COSINE = 'COSINE',
+  IP = 'IP',
+  L2 = 'L2'
+}
+
+
 const gpt3endpoint = {
   url: "https://api.openai.com/v1/chat/completions",
   apikey : "",
@@ -16,8 +23,8 @@ const gpt3endpoint = {
 export async function hydeSearchAdaEmbedding(arkRequest){
   try {
     // Get required params from API...
-    const table = arkRequest.tableName;
-    const namespace = arkRequest.nameSpace;
+    const table = 'ada_hyde_prod';
+    const namespace = '360_docs';
     const query = arkRequest.query;
     const topK = Number(arkRequest.topK);
 
@@ -56,15 +63,9 @@ export async function hydeSearchAdaEmbedding(arkRequest){
         return embedding;
       })
     );
-    // // Chain 4 ==> Calculate Mean from EmbeddingList & Pass to WordEmbedding Object
-    const meanEmbedding = await meanFn(await embeddingsListChain, 1536);
-    const wordEmbeddings = {
-      id : gptResponse,
-      score : meanEmbedding
-    }
 
     // // Chain 5 ==> Query via EmbeddingChain
-    const queryResult = await dbQuery(wordEmbeddings, "<=>", topK, 20,table,namespace);
+    const queryResult = await dbQuery(await embeddingsListChain, PostgresDistanceMetric.IP, topK, 20,table,namespace,arkRequest,15);
 
     // // Chain 6 ==> Create Prompt using Embeddings
     const retrievedDocs: string[] = [];
@@ -214,41 +215,71 @@ async function embeddings(resp : string): Promise<Number[]> {
     return responce;
 }
 
-function meanFn(embeddingsList: Number[][], dimensions: number): Number[] {
-  const mean: Number[] = [];
-
-  for (let i = 0; i < dimensions; i++) {
-    let sum = 0;
-
-    for (let j = 0; j < embeddingsList.length; j++) {
-      sum = sum.valueOf() + embeddingsList[j][i].valueOf();
-    }
-
-    mean.push(sum / embeddingsList.length);
-  }
-  return mean;
-}
 
 
-async function dbQuery(wordEmbeddings, metric, topK, probes, tableName, namespace:string) {
-  const embedding = JSON.stringify(wordEmbeddings.score)
-  
+async function dbQuery(wordEmbeddings: Number[][], metric, topK, probes, tableName, namespace:string, arkRequest: any, upperLimit) {
   await createConnection();
   const entityManager = getManager();
   try {
     const query1 = `SET LOCAL ivfflat.probes = ${probes};`
     await entityManager.query(query1);
 
-    const query = `SELECT id, raw_text, namespace, filename, timestamp, 
-      (embedding <#> '${embedding}') * -1  AS score 
-      FROM ${tableName}
-      WHERE namespace = '${namespace}'
-      ORDER BY embedding <#> '${embedding}'
-      LIMIT ${topK};
-    `;
+    let query: string = '';
 
+    for (let i = 0; i < wordEmbeddings.length; i++) {
+        const embedding: string = JSON.stringify(wordEmbeddings[i]);
+
+        query += `( SELECT id, raw_text, document_date, metadata, namespace, filename, timestamp, 
+          ${arkRequest.textWeight.baseWeight} / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + ${arkRequest.textWeight.fineTuneWeight}) +
+          ${arkRequest.similarityWeight.baseWeight} / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + ${arkRequest.similarityWeight.fineTuneWeight}) +
+          ${arkRequest.dateWeight.baseWeight} / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + ${arkRequest.dateWeight.fineTuneWeight}) AS rrf_score
+          FROM ( SELECT sv.id, sv.raw_text, sv.namespace, sv.filename, sv.timestamp, svtm.document_date, svtm.metadata, ts_rank_cd(sv.tsv, plainto_tsquery('${'english'}', '${arkRequest.query}')) AS text_rank, `
+
+        if(metric === PostgresDistanceMetric.COSINE)
+          query += `1 - (sv.embedding <=> '${embedding}') AS similarity, `
+        if(metric === PostgresDistanceMetric.IP)
+          query += `(sv.embedding <#> '${embedding}') * -1 AS similarity, `
+        if(metric === PostgresDistanceMetric.L2)
+          query += `sv.embedding <-> '${embedding}' AS similarity, `
+
+        query += `CASE WHEN svtm.document_date IS NULL THEN 0 ELSE EXTRACT(YEAR FROM svtm.document_date) * 365 + EXTRACT(DOY FROM svtm.document_date) END AS date_rank FROM (SELECT id, raw_text, embedding, tsv, namespace, filename, timestamp from ${tableName} WHERE namespace = '${namespace}'`
+          
+        if(metric === PostgresDistanceMetric.COSINE)
+          query += ` ORDER BY embedding <=> '${embedding}'  LIMIT ${topK}`
+        if(metric === PostgresDistanceMetric.IP)
+          query += ` ORDER BY embedding <#> '${embedding}'  LIMIT ${topK}`
+        if(metric === PostgresDistanceMetric.L2)
+          query += ` ORDER BY embedding <-> '${embedding}'  LIMIT ${topK}`
+
+        query += `) sv JOIN ${tableName}_join_${arkRequest.metadataTable} jtm ON sv.id = jtm.id JOIN ${tableName}_${arkRequest.metadataTable} svtm ON jtm.metadata_id = svtm.metadata_id) subquery `
+        
+        switch (arkRequest.orderRRF) {
+          case 'text_rank':
+            query += `ORDER BY text_rank DESC, rrf_score DESC`
+            break;
+          case 'similarity':
+            query += `ORDER BY similarity DESC, rrf_score DESC`
+            break;
+          case 'date_rank':
+            query += `ORDER BY date_rank DESC, rrf_score DESC`
+            break;
+          case 'default':
+            query += `ORDER BY rrf_score DESC`
+            break;
+        }
+
+        query += ` LIMIT ${topK})`
+        if (i < wordEmbeddings.length - 1) {
+          query += ' UNION ALL \n';
+        }
+    }
+
+    if (wordEmbeddings.length > 1) {
+        query = `SELECT * FROM (SELECT DISTINCT ON (result.id) * FROM ( ${query} ) result) subquery ORDER BY rrf_score DESC LIMIT ${upperLimit};`;
+    } else {
+        query += ` ORDER BY rrf_score DESC LIMIT ${topK};`;
+    }
     const results = await entityManager.query(query);
-    
     return results;
   } catch (error) {
     // Handle errors here
