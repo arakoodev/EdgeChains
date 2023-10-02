@@ -1,0 +1,14 @@
+{
+  "catalogs": {
+    "example": {
+      "catalog-ref": "C:\\Users\\santo\\Git-projects\\core-edge-chains\\EdgeChains\\Examples\\jbang-catalog.json"
+    }
+  },
+  "aliases": {
+    "wikis": {
+      "script-ref": "wiki\\WikiExample.java",
+      "java-agents": []
+    }
+  },
+  "templates": {}
+}
