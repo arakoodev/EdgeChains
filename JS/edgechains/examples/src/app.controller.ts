@@ -25,7 +25,6 @@ export class AppController {
       dateWeight : query.dateWeight,
       orderRRF : query.orderRRF
     }
-    console.log(arkRequest)
     return hydeSearchAdaEmbedding(arkRequest);
 
   }
