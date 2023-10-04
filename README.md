@@ -128,4 +128,4 @@ We would like to express our sincere gratitude to the following individuals and 
 
 ## License
 
-EdgeChains is licensed under the MIT license.
+EdgeChains is licensed under the MIT license. For copyright & trademark information of the "Arakoo" or "EdgeChains" names, please click [here](https://github.com/arakoodev/.github/blob/main/COPYRIGHT.md) 
