@@ -1,7 +1,7 @@
 package com.edgechain.lib.endpoint.impl.llama2;
 
 import com.edgechain.lib.endpoint.Endpoint;
-import com.edgechain.lib.openai.request.ChatMessage;
+import com.edgechain.lib.llama2.response.Llama2ChatCompletionResponse;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.retrofit.Llama2Service;
@@ -9,6 +9,7 @@ import com.edgechain.lib.retrofit.client.RetrofitClientInstance;
 import com.edgechain.lib.rxjava.retry.RetryPolicy;
 import io.reactivex.rxjava3.core.Observable;
 import org.json.JSONObject;
+import org.modelmapper.ModelMapper;
 import retrofit2.Retrofit;
 
 import java.util.List;
@@ -18,20 +19,9 @@ public class Llama2Endpoint extends Endpoint {
     private final Retrofit retrofit = RetrofitClientInstance.getInstance();
     private final Llama2Service llama2Service = retrofit.create(Llama2Service.class);
 
-//      "# hyperparameters for llm\n",
-//              "payload = {\n",
-//              "  \"inputs\":  prompt,\n",
-//              "  \"parameters\": {\n",
-//              "    \"do_sample\": True,\n",
-//              "    \"top_p\": 0.6,\n",
-//              "    \"temperature\": 0.7,\n",
-//              "    \"top_k\": 50,\n",
-//              "    \"max_new_tokens\": 512,\n",
-//              "    \"repetition_penalty\": 1.2,\n",
-//              "    \"stop\": [\"</s>\"]\n",
-//              "  }\n",
+    private ModelMapper modelMapper = new ModelMapper();
 
-    private List<ChatMessage> inputs;
+    private String inputs;
     private JSONObject parameters;
     private Double temperature;
     private Integer topK;
@@ -44,13 +34,11 @@ public class Llama2Endpoint extends Endpoint {
     private String chainName;
     private String callIdentifier;
 
-    public Llama2Endpoint(String url, RetryPolicy retryPolicy, List<ChatMessage> inputs, JSONObject parameters,
+    public Llama2Endpoint(String url, RetryPolicy retryPolicy,
                           Double temperature, Integer topK, Double topP,
                           Boolean doSample, Integer maxNewTokens, Double repetitionPenalty,
-                          List<String> stop, String chainName, String callIdentifier) {
+                          List<String> stop) {
         super(url, retryPolicy);
-        this.inputs = inputs;
-        this.parameters = parameters;
         this.temperature = temperature;
         this.topK = topK;
         this.topP = topP;
@@ -58,15 +46,19 @@ public class Llama2Endpoint extends Endpoint {
         this.maxNewTokens = maxNewTokens;
         this.repetitionPenalty = repetitionPenalty;
         this.stop = stop;
-        this.chainName = chainName;
-        this.callIdentifier = callIdentifier;
     }
 
-    public List<ChatMessage> getInputs() {
+    public Llama2Endpoint(String url, RetryPolicy retryPolicy) {
+        super(url, retryPolicy);
+        this.temperature = 0.7;
+        this.topP = 0.6;
+    }
+
+    public String getInputs() {
         return inputs;
     }
 
-    public void setInputs(List<ChatMessage> inputs) {
+    public void setInputs(String inputs) {
         this.inputs = inputs;
     }
 
@@ -150,18 +142,20 @@ public class Llama2Endpoint extends Endpoint {
         this.callIdentifier = callIdentifier;
     }
 
-    public Observable<ChatCompletionResponse> chatCompletion(
-            List<ChatMessage> inputs, String chainName, ArkRequest arkRequest) {
-        this.chainName = chainName;
-        this.inputs = inputs;
-        return chatCompletion(arkRequest);
+    public Observable<Llama2ChatCompletionResponse> chatCompletion(
+            String inputs, String chainName, ArkRequest arkRequest) {
+
+        Llama2Endpoint mapper = modelMapper.map(this, Llama2Endpoint.class);
+        mapper.setChainName(chainName);
+        mapper.setInputs(inputs);
+        return chatCompletion(mapper, arkRequest);
     }
-    private Observable<ChatCompletionResponse> chatCompletion(ArkRequest arkRequest) {
 
-        if (Objects.nonNull(arkRequest)) this.callIdentifier = arkRequest.getRequestURI();
-        else this.callIdentifier = "URI wasn't provided";
+    private Observable<Llama2ChatCompletionResponse> chatCompletion(Llama2Endpoint mapper, ArkRequest arkRequest) {
 
+        if (Objects.nonNull(arkRequest)) mapper.setCallIdentifier(arkRequest.getRequestURI());
+        else mapper.setCallIdentifier("URI wasn't provided");
 
-        return Observable.fromSingle(this.llama2Service.chatCompletion(this));
+        return Observable.fromSingle(this.llama2Service.chatCompletion(mapper));
     }
 }

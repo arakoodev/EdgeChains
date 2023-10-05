@@ -12,8 +12,7 @@ import com.edgechain.lib.configuration.domain.AuthFilter;
 import com.edgechain.lib.configuration.domain.MethodAuthentication;
 import com.edgechain.lib.endpoint.impl.embeddings.BgeSmallEndpoint;
 import com.edgechain.lib.endpoint.impl.index.PostgresEndpoint;
-import com.edgechain.lib.endpoint.impl.llm.Llama2Endpoint;
-import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
+import com.edgechain.lib.endpoint.impl.llama2.Llama2Endpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.domain.RRFWeight;
 import com.edgechain.lib.index.enums.BaseWeight;
@@ -24,7 +23,6 @@ import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
-import com.edgechain.lib.openai.request.ChatMessage;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.response.ArkResponse;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
@@ -59,8 +57,8 @@ public class LlamaSearchExample {
 
     private static final String LLAMA2_URL = "https://mgitlon397.execute-api.eu-north-1.amazonaws.com/default/LLaMARequest"; // llama2 API
 
-    private static final String PROMPTS_FILE = "prompts.jsonnet";
-    private static final String LLAMA_FILE = "llama.jsonnet";
+    private static final String PROMPTS_FILE = "E:\\projects\\arakoo\\EdgeChains\\FlySpring\\edgechain-app\\src\\main\\java\\com\\edgechain\\prompts.jsonnet";
+    private static final String LLAMA_FILE = "E:\\projects\\arakoo\\EdgeChains\\FlySpring\\edgechain-app\\src\\main\\java\\com\\edgechain\\llama.jsonnet";
 
     /**
      * LLM Endpoints
@@ -103,17 +101,6 @@ public class LlamaSearchExample {
                         1.2,
                         List.of("</s>")
                 );
-
-//        gpt3WithNParams =
-//                new OpenAiChatEndpoint(
-//                        OPENAI_CHAT_COMPLETION_API,
-//                        OPENAI_AUTH_KEY,
-//                        OPENAI_ORG_ID,
-//                        "gpt-3.5-turbo",
-//                        "user",
-//                        0.7,
-//                        new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
-//        gpt3WithNParams.setN(nParams);
 
         BgeSmallEndpoint bgeSmallEndpoint = new BgeSmallEndpoint(
                 "https://huggingface.co/Supabase/bge-small-en/resolve/main/onnx/model.onnx",

@@ -13,7 +13,7 @@ local TITLE_EXTRACTION = |||
                             {}
                         |||;
 local LLAMA2_SYSTEM_PROMPT = |||
-                                <<SYS>>\n\n
+                                \<\<SYS\>\>\n\n
                                 You answer questions truthfully based on provided context.\n
                                 Your answers are friendly, clear, and conversational.\n
                                 For each context check whether it is related to the question.\n
@@ -23,7 +23,7 @@ local LLAMA2_SYSTEM_PROMPT = |||
                                 Only answer based on the context provided. Don't make things up.\n
                                 Context (with relevance score): \n
                                 {}
-                                <</SYS>>
+                                \<\</SYS\>\>
                            |||;
 
 {
