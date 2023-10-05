@@ -1,7 +1,7 @@
 package com.edgechain.lib.llama2;
 
 
-import com.edgechain.lib.endpoint.impl.llama2.Llama2Endpoint;
+import com.edgechain.lib.endpoint.impl.llm.Llama2Endpoint;
 import com.edgechain.lib.llama2.request.Llama2ChatCompletionRequest;
 import com.edgechain.lib.llama2.response.Llama2ChatCompletionResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
@@ -29,6 +29,11 @@ public class Llama2Client {
 
                                 logger.info("Logging ChatCompletion....");
 
+                                request.setInputs(setSys(request.getInputs()));
+
+                                logger.info("sys prompt printing in llama client {} ", request.getInputs());
+                                logger.info("parameters printing in llama client {} ", request.getParameters());
+
                                 // Create headers
                                 HttpHeaders headers = new HttpHeaders();
                                 headers.setContentType(MediaType.APPLICATION_JSON);
@@ -55,4 +60,16 @@ public class Llama2Client {
                         }),
                 endpoint);
     }
+
+    private String setSys(String inputs) {
+        StringBuilder stringBuilder = new StringBuilder(inputs.length());
+
+        stringBuilder.append("<<SYS>>");
+        stringBuilder.append(inputs);
+        stringBuilder.append("<</SYS>>");
+
+        return stringBuilder.toString();
+    }
+
+
 }

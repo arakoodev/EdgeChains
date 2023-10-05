@@ -1,13 +1,12 @@
 package com.edgechain.service.controllers.llama2;
 
 import com.edgechain.lib.configuration.WebConfiguration;
-import com.edgechain.lib.endpoint.impl.llama2.Llama2Endpoint;
+import com.edgechain.lib.endpoint.impl.llm.Llama2Endpoint;
 import com.edgechain.lib.llama2.Llama2Client;
 import com.edgechain.lib.llama2.request.Llama2ChatCompletionRequest;
 import com.edgechain.lib.llama2.response.Llama2ChatCompletionResponse;
 import com.edgechain.lib.logger.services.ChatCompletionLogService;
 import com.edgechain.lib.logger.services.JsonnetLogService;
-import com.edgechain.lib.openai.response.ChatCompletionResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.reactivex.rxjava3.core.Single;
 import org.json.JSONObject;

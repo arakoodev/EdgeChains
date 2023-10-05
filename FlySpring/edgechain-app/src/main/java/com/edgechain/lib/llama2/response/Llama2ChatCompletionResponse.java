@@ -3,13 +3,13 @@ package com.edgechain.lib.llama2.response;
 import java.util.List;
 
 public class Llama2ChatCompletionResponse {
-    private List<GeneratedText> responses;
+    private GeneratedText responses;
 
-    public List<GeneratedText> getResponses() {
+    public GeneratedText getResponses() {
         return responses;
     }
 
-    public void setResponses(List<GeneratedText> responses) {
+    public void setResponses(GeneratedText responses) {
         this.responses = responses;
     }
 }

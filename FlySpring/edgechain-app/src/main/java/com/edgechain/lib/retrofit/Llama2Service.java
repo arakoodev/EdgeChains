@@ -1,6 +1,6 @@
 package com.edgechain.lib.retrofit;
 
-import com.edgechain.lib.endpoint.impl.llama2.Llama2Endpoint;
+import com.edgechain.lib.endpoint.impl.llm.Llama2Endpoint;
 import com.edgechain.lib.llama2.response.Llama2ChatCompletionResponse;
 import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.Body;
