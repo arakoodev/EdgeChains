@@ -18,9 +18,9 @@ public class Llama2ChatCompletionRequest {
 
   @Override
   public String toString() {
-    return new StringJoiner(", ", Llama2ChatCompletionRequest.class.getSimpleName() + "[{", "}]")
-        .add("\"inputs:\"" + inputs)
-        .add("\"parameters:\"" + parameters)
+    return new StringJoiner(", ", Llama2ChatCompletionRequest.class.getSimpleName() + "{", "}")
+        .add("\"inputs\":" + inputs)
+        .add("\"parameters\":" + parameters)
         .toString();
   }
 
