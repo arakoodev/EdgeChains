@@ -37,6 +37,10 @@ public class Llama2Client {
 
                                 logger.info("==============REQUEST DATA================");
                                 logger.info(request.toString());
+                                logger.info("==============REQUEST DATA INPUTS================");
+                                logger.info(request.getInputs());
+                                logger.info("==============REQUEST DATA PARAMETERS================");
+                                logger.info(request.getParameters().toString());
 
 //                                Llama2ChatCompletionRequest llamaRequest = new Llama2ChatCompletionRequest();
 //
@@ -54,6 +58,10 @@ public class Llama2Client {
 
                                 List<Llama2ChatCompletionResponse> chatCompletionResponse =
                                         objectMapper.readValue(response, new TypeReference<List<Llama2ChatCompletionResponse>>() {});
+
+                                logger.info("========chat completion response=========");
+                                logger.info(chatCompletionResponse.get(0).getGeneratedText()    );
+
                                 emitter.onNext(chatCompletionResponse);
                                 emitter.onComplete();
 
