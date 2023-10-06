@@ -23,36 +23,41 @@ import java.util.List;
 @RestController("Service Llama2Controller")
 @RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/llama2")
 public class Llama2Controller {
-    @Autowired
-    private ChatCompletionLogService chatCompletionLogService;
+  @Autowired private ChatCompletionLogService chatCompletionLogService;
 
-    @Autowired private JsonnetLogService jsonnetLogService;
+  @Autowired private JsonnetLogService jsonnetLogService;
 
-    @Autowired private Environment env;
-    @Autowired private Llama2Client llama2Client;
+  @Autowired private Environment env;
+  @Autowired private Llama2Client llama2Client;
 
-    @PostMapping(value = "/chat-completion")
-    public Single<List<Llama2ChatCompletionResponse>> chatCompletion(@RequestBody Llama2Endpoint llama2Endpoint) {
+  @PostMapping(value = "/chat-completion")
+  public Single<List<Llama2ChatCompletionResponse>> chatCompletion(
+      @RequestBody Llama2Endpoint llama2Endpoint) {
 
-        System.out.println("\nI'm in controller class\n");
+    System.out.println("\nI'm in controller class\n");
 
-        JSONObject parameters = new JSONObject();
-        parameters.put("do_sample", llama2Endpoint.getDoSample());
-        parameters.put("top_p", llama2Endpoint.getTopP());
-        parameters.put("temperature", llama2Endpoint.getTemperature());
-        parameters.put("top_k", llama2Endpoint.getTopK());
-        parameters.put("max_new_tokens", llama2Endpoint.getMaxNewTokens());
-        parameters.put("repetition_penalty", llama2Endpoint.getRepetitionPenalty());
-        parameters.put("stop", llama2Endpoint.getStop() != null ? llama2Endpoint.getStop() : Collections.emptyList());
+    JSONObject parameters = new JSONObject();
+    parameters.put("do_sample", llama2Endpoint.getDoSample());
+    parameters.put("top_p", llama2Endpoint.getTopP());
+    parameters.put("temperature", llama2Endpoint.getTemperature());
+    parameters.put("top_k", llama2Endpoint.getTopK());
+    parameters.put("max_new_tokens", llama2Endpoint.getMaxNewTokens());
+    parameters.put("repetition_penalty", llama2Endpoint.getRepetitionPenalty());
+    parameters.put(
+        "stop",
+        llama2Endpoint.getStop() != null ? llama2Endpoint.getStop() : Collections.emptyList());
 
-        System.out.println("\nI'm in controller class after json object\n");
+    System.out.println("\nI'm in controller class after json object\n");
 
-        Llama2ChatCompletionRequest llama2ChatCompletionRequest =
-                Llama2ChatCompletionRequest.builder().inputs(llama2Endpoint.getInputs()).parameters(parameters).build();
+    Llama2ChatCompletionRequest llama2ChatCompletionRequest =
+        Llama2ChatCompletionRequest.builder()
+            .inputs(llama2Endpoint.getInputs())
+            .parameters(parameters)
+            .build();
 
-        EdgeChain<List<Llama2ChatCompletionResponse>> edgeChain =
-                llama2Client.createChatCompletion(llama2ChatCompletionRequest, llama2Endpoint);
+    EdgeChain<List<Llama2ChatCompletionResponse>> edgeChain =
+        llama2Client.createChatCompletion(llama2ChatCompletionRequest, llama2Endpoint);
 
-            return edgeChain.toSingle();
-    }
+    return edgeChain.toSingle();
+  }
 }
