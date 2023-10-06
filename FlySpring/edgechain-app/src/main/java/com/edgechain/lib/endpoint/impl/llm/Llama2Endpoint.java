@@ -151,15 +151,16 @@ public class Llama2Endpoint extends Endpoint {
         this.callIdentifier = callIdentifier;
     }
 
-    public Observable<Llama2ChatCompletionResponse> chatCompletion(
-            String inputs, ArkRequest arkRequest) {
+    public Observable<List<Llama2ChatCompletionResponse>> chatCompletion(
+            String inputs,String chainName, ArkRequest arkRequest) {
 
         Llama2Endpoint mapper = modelMapper.map(this, Llama2Endpoint.class);
         mapper.setInputs(inputs);
+        mapper.setChainName(chainName);
         return chatCompletion(mapper, arkRequest);
     }
 
-    private Observable<Llama2ChatCompletionResponse> chatCompletion(Llama2Endpoint mapper, ArkRequest arkRequest) {
+    private Observable<List<Llama2ChatCompletionResponse>> chatCompletion(Llama2Endpoint mapper, ArkRequest arkRequest) {
 
         if (Objects.nonNull(arkRequest)) mapper.setCallIdentifier(arkRequest.getRequestURI());
         else mapper.setCallIdentifier("URI wasn't provided");

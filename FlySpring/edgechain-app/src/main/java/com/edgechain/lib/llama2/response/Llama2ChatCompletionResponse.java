@@ -1,15 +1,18 @@
 package com.edgechain.lib.llama2.response;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Llama2ChatCompletionResponse {
-    private GeneratedText responses;
+    @JsonProperty("generated_text")
+    private String generatedText;
 
-    public GeneratedText getResponses() {
-        return responses;
+    public Llama2ChatCompletionResponse() {}
+
+    public String getGeneratedText() {
+        return generatedText;
     }
 
-    public void setResponses(GeneratedText responses) {
-        this.responses = responses;
+    public void setGeneratedText(String generatedText) {
+        this.generatedText = generatedText;
     }
 }

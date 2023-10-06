@@ -18,16 +18,16 @@ public class Llama2ChatCompletionRequest {
     public Llama2ChatCompletionRequest() {
     }
 
-    public Llama2ChatCompletionRequest(String inputs, JSONObject parameters
-    ) {
+    public Llama2ChatCompletionRequest(String inputs, JSONObject parameters) {
         this.inputs = inputs;
         this.parameters = parameters;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", Llama2ChatCompletionRequest.class.getSimpleName() + "[", "]")
-                .add("inputs=" + inputs)
+        return new StringJoiner(", ", Llama2ChatCompletionRequest.class.getSimpleName() + "[{", "}]")
+                .add("\"inputs:\"" + inputs)
+                .add("\"parameters:\"" + parameters)
                 .toString();
     }
 
@@ -57,7 +57,8 @@ public class Llama2ChatCompletionRequest {
         private String inputs;
         private JSONObject parameters;
 
-        private Llama2ChatCompletionRequestBuilder() {}
+        private Llama2ChatCompletionRequestBuilder() {
+        }
 
 
         public Llama2ChatCompletionRequestBuilder inputs(String inputs) {

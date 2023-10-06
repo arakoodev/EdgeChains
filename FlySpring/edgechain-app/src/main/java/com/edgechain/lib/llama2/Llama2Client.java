@@ -5,23 +5,29 @@ import com.edgechain.lib.endpoint.impl.llm.Llama2Endpoint;
 import com.edgechain.lib.llama2.request.Llama2ChatCompletionRequest;
 import com.edgechain.lib.llama2.response.Llama2ChatCompletionResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
+import com.edgechain.lib.utils.JsonUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.Observable;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
 public class Llama2Client {
+    @Autowired
+    private ObjectMapper objectMapper;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final RestTemplate restTemplate = new RestTemplate();
-
-    public EdgeChain<Llama2ChatCompletionResponse> createChatCompletion(
+    public EdgeChain<List<Llama2ChatCompletionResponse>> createChatCompletion(
             Llama2ChatCompletionRequest request, Llama2Endpoint endpoint) {
-
         return new EdgeChain<>(
                 Observable.create(
                         emitter -> {
@@ -29,29 +35,26 @@ public class Llama2Client {
 
                                 logger.info("Logging ChatCompletion....");
 
-                                request.setInputs(setSys(request.getInputs()));
+                                logger.info("==============REQUEST DATA================");
+                                logger.info(request.toString());
 
-                                logger.info("sys prompt printing in llama client {} ", request.getInputs());
-                                logger.info("parameters printing in llama client {} ", request.getParameters());
+//                                Llama2ChatCompletionRequest llamaRequest = new Llama2ChatCompletionRequest();
+//
+//                                llamaRequest.setInputs(request.getInputs());
+//                                llamaRequest.setParameters(request.getParameters());
 
-                                // Create headers
+
+
+                                //  Create headers
                                 HttpHeaders headers = new HttpHeaders();
                                 headers.setContentType(MediaType.APPLICATION_JSON);
-//                                headers.setBearerAuth(endpoint.getApiKey());
+                                HttpEntity<Llama2ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
+//
+                                String response = restTemplate.postForObject(endpoint.getUrl(), entity, String.class);
 
-//                                if (Objects.nonNull(endpoint.getOrgId()) && !endpoint.getOrgId().isEmpty()) {
-//                                    headers.set("OpenAI-Organization", endpoint.getOrgId());
-//                                }
-                                HttpEntity<Llama2ChatCompletionRequest> entity = new HttpEntity<>(request);
-
-                                logger.info(String.valueOf(entity.getBody()));
-
-                                // Send the POST request
-                                ResponseEntity<Llama2ChatCompletionResponse> response =
-                                        restTemplate.exchange(
-                                                endpoint.getUrl(), HttpMethod.POST, entity, Llama2ChatCompletionResponse.class);
-
-                                emitter.onNext(Objects.requireNonNull(response.getBody()));
+                                List<Llama2ChatCompletionResponse> chatCompletionResponse =
+                                        objectMapper.readValue(response, new TypeReference<List<Llama2ChatCompletionResponse>>() {});
+                                emitter.onNext(chatCompletionResponse);
                                 emitter.onComplete();
 
                             } catch (final Exception e) {
@@ -60,16 +63,5 @@ public class Llama2Client {
                         }),
                 endpoint);
     }
-
-    private String setSys(String inputs) {
-        StringBuilder stringBuilder = new StringBuilder(inputs.length());
-
-        stringBuilder.append("<<SYS>>");
-        stringBuilder.append(inputs);
-        stringBuilder.append("<</SYS>>");
-
-        return stringBuilder.toString();
-    }
-
 
 }
