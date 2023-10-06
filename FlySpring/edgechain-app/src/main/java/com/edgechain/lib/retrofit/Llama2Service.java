@@ -9,6 +9,6 @@ import retrofit2.http.POST;
 import java.util.List;
 
 public interface Llama2Service {
-    @POST(value = "llama2/chat-completion")
-    Single<List<Llama2ChatCompletionResponse>> chatCompletion(@Body Llama2Endpoint llama2Endpoint);
+  @POST(value = "llama2/chat-completion")
+  Single<List<Llama2ChatCompletionResponse>> chatCompletion(@Body Llama2Endpoint llama2Endpoint);
 }
