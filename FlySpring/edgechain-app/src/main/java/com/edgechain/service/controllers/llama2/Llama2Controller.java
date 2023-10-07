@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RestController("Service Llama2Controller")
-@RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/llama2")
+@RequestMapping(value = WebConfiguration.CONTEXT_PATH + "/llama")
 public class Llama2Controller {
   @Autowired private ChatCompletionLogService chatCompletionLogService;
 
