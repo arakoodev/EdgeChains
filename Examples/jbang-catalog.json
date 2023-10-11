@@ -1,7 +1,7 @@
 {
   "catalogs": {
     "example": {
-      "catalog-ref": "C:\\Users\\santo\\Git-projects\\core-edge-chains\\EdgeChains\\Examples\\jbang-catalog.json"
+      "catalog-ref": "https://github.com/arakoodev/EdgeChains/tree/main/Examples/jbang-catalog.json"
     }
   },
   "aliases": {
