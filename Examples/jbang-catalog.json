@@ -6,11 +6,11 @@
   },
   "aliases": {
     "wikis": {
-      "script-ref": "wiki\\WikiExample.java",
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/wiki/WikiExample.java",
       "java-agents": []
     },
     "airtable": {
-      "script-ref": "airtable\\AirtableExample.java",
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/airtable/AirtableExample.java",
       "java-agents": []
     },
     "codeinterpreter": {
