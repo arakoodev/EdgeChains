@@ -34,13 +34,6 @@ public class Llama2Client {
                 logger.info("==============REQUEST DATA================");
                 logger.info(request.toString());
 
-                //                                Llama2ChatCompletionRequest llamaRequest = new
-                // Llama2ChatCompletionRequest();
-                //
-                //                                llamaRequest.setInputs(request.getInputs());
-                //
-                // llamaRequest.setParameters(request.getParameters());
-
                 //  Create headers
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
@@ -51,7 +44,8 @@ public class Llama2Client {
 
                 List<Llama2ChatCompletionResponse> chatCompletionResponse =
                     objectMapper.readValue(
-                        response, new TypeReference<List<Llama2ChatCompletionResponse>>() {});
+                        response, new TypeReference<>() {
+                            });
                 emitter.onNext(chatCompletionResponse);
                 emitter.onComplete();
 
