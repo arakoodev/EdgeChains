@@ -1,8 +1,10 @@
 package com.edgechain.lib.llama2;
 
+import com.edgechain.lib.endpoint.impl.llm.LLamaQuickstart;
 import com.edgechain.lib.endpoint.impl.llm.Llama2Endpoint;
 import com.edgechain.lib.llama2.request.Llama2ChatCompletionRequest;
 import com.edgechain.lib.llama2.response.Llama2ChatCompletionResponse;
+import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,51 +16,79 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class Llama2Client {
-  @Autowired private ObjectMapper objectMapper;
-  private final Logger logger = LoggerFactory.getLogger(getClass());
-  private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private ObjectMapper objectMapper;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final RestTemplate restTemplate = new RestTemplate();
 
-  public EdgeChain<List<Llama2ChatCompletionResponse>> createChatCompletion(
-      Llama2ChatCompletionRequest request, Llama2Endpoint endpoint) {
-    return new EdgeChain<>(
-        Observable.create(
-            emitter -> {
-              try {
+    public EdgeChain<List<Llama2ChatCompletionResponse>> createChatCompletion(
+            Llama2ChatCompletionRequest request, Llama2Endpoint endpoint) {
+        return new EdgeChain<>(
+                Observable.create(
+                        emitter -> {
+                            try {
 
-                logger.info("Logging ChatCompletion....");
+                                logger.info("Logging ChatCompletion....");
 
-                logger.info("==============REQUEST DATA================");
-                logger.info(request.toString());
+                                logger.info("==============REQUEST DATA================");
+                                logger.info(request.toString());
 
-                //                                Llama2ChatCompletionRequest llamaRequest = new
-                // Llama2ChatCompletionRequest();
-                //
-                //                                llamaRequest.setInputs(request.getInputs());
-                //
-                // llamaRequest.setParameters(request.getParameters());
+                                //  Create headers
+                                HttpHeaders headers = new HttpHeaders();
+                                headers.setContentType(MediaType.APPLICATION_JSON);
+                                HttpEntity<Llama2ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
+                                //
+                                String response =
+                                        restTemplate.postForObject(endpoint.getUrl(), entity, String.class);
 
-                //  Create headers
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                HttpEntity<Llama2ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
-                //
-                String response =
-                    restTemplate.postForObject(endpoint.getUrl(), entity, String.class);
+                                List<Llama2ChatCompletionResponse> chatCompletionResponse =
+                                        objectMapper.readValue(
+                                                response, new TypeReference<>() {
+                                                });
+                                emitter.onNext(chatCompletionResponse);
+                                emitter.onComplete();
 
-                List<Llama2ChatCompletionResponse> chatCompletionResponse =
-                    objectMapper.readValue(
-                        response, new TypeReference<List<Llama2ChatCompletionResponse>>() {});
-                emitter.onNext(chatCompletionResponse);
-                emitter.onComplete();
+                            } catch (final Exception e) {
+                                emitter.onError(e);
+                            }
+                        }),
+                endpoint);
+    }
 
-              } catch (final Exception e) {
-                emitter.onError(e);
-              }
-            }),
-        endpoint);
-  }
+    public EdgeChain<List<String>> createGetChatCompletion(
+            LLamaQuickstart endpoint, ArkRequest arkRequest) {
+        return new EdgeChain<>(
+                Observable.create(
+                        emitter -> {
+                            try {
+
+                                //  Create headers
+                                HttpHeaders headers = new HttpHeaders();
+                                headers.set("User-Agent", "insomnia/8.2.0");
+                                HttpEntity<?> entity = new HttpEntity<>(headers);
+
+                                Map<String, String> param = Collections.singletonMap("query", arkRequest.getQueryParam("query"));
+
+                                String endpointUrl = endpoint.getUrl() + "?query={query}";
+
+                                ResponseEntity<String> response = restTemplate.exchange(endpointUrl, HttpMethod.GET, entity, String.class, param);
+
+                                logger.info("\nresponse data {}\n", response.getBody());
+
+//                                List<Llama2ChatCompletionResponse> chatCompletionResponse = (List<Llama2ChatCompletionResponse>) response;
+                                emitter.onNext(Collections.singletonList(response.getBody()));
+                                emitter.onComplete();
+
+                            } catch (final Exception e) {
+                                emitter.onError(e);
+                            }
+                        }),
+                endpoint);
+    }
 }
