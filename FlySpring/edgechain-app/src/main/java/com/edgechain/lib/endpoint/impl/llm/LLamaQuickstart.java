@@ -10,38 +10,38 @@ import org.modelmapper.ModelMapper;
 import retrofit2.Retrofit;
 
 public class LLamaQuickstart extends Endpoint {
-    private final Retrofit retrofit = RetrofitClientInstance.getInstance();
-    private final Llama2Service llama2Service = retrofit.create(Llama2Service.class);
-    private final ModelMapper modelMapper = new ModelMapper();
-    private String query;
-    public LLamaQuickstart() {
-    }
+  private final Retrofit retrofit = RetrofitClientInstance.getInstance();
+  private final Llama2Service llama2Service = retrofit.create(Llama2Service.class);
+  private final ModelMapper modelMapper = new ModelMapper();
+  private String query;
 
-    public LLamaQuickstart(String url, RetryPolicy retryPolicy) {
-        super(url, retryPolicy);
-    }
+  public LLamaQuickstart() {}
 
-    public LLamaQuickstart(String url, RetryPolicy retryPolicy, String query) {
-        super(url, retryPolicy);
-        this.query = query;
-    }
+  public LLamaQuickstart(String url, RetryPolicy retryPolicy) {
+    super(url, retryPolicy);
+  }
 
-    public String getQuery() {
-        return query;
-    }
+  public LLamaQuickstart(String url, RetryPolicy retryPolicy, String query) {
+    super(url, retryPolicy);
+    this.query = query;
+  }
 
-    public void setQuery(String query) {
-        this.query = query;
-    }
+  public String getQuery() {
+    return query;
+  }
 
+  public void setQuery(String query) {
+    this.query = query;
+  }
 
-    public Observable<String> chatCompletion(String query, ArkRequest arkRequest) {
-        LLamaQuickstart mapper = modelMapper.map(this, LLamaQuickstart.class);
-        mapper.setQuery(query);
-        return chatCompletion(mapper, arkRequest);
-    }
+  public Observable<String> chatCompletion(String query, ArkRequest arkRequest) {
+    LLamaQuickstart mapper = modelMapper.map(this, LLamaQuickstart.class);
+    mapper.setQuery(query);
+    return chatCompletion(mapper, arkRequest);
+  }
 
-    private Observable<String> chatCompletion(LLamaQuickstart lLamaQuickstart, ArkRequest arkRequest) {
-        return Observable.fromSingle(this.llama2Service.llamaCompletion(lLamaQuickstart));
-    }
+  private Observable<String> chatCompletion(
+      LLamaQuickstart lLamaQuickstart, ArkRequest arkRequest) {
+    return Observable.fromSingle(this.llama2Service.llamaCompletion(lLamaQuickstart));
+  }
 }

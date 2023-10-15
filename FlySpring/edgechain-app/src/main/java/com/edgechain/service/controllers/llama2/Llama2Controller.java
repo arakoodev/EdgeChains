@@ -24,8 +24,7 @@ public class Llama2Controller {
   @PostMapping(value = "/chat-completion")
   public Single<String> getChatCompletion(@RequestBody LLamaQuickstart endpoint) {
 
-    EdgeChain<String> edgeChain =
-        llama2Client.createGetChatCompletion(endpoint);
+    EdgeChain<String> edgeChain = llama2Client.createGetChatCompletion(endpoint);
     return edgeChain.toSingle();
   }
 }
