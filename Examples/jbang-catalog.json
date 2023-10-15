@@ -1,0 +1,50 @@
+{
+  "catalogs": {
+    "example": {
+      "catalog-ref": "https://github.com/arakoodev/EdgeChains/tree/main/Examples/jbang-catalog.json"
+    }
+  },
+  "aliases": {
+    "wikis": {
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/wiki/WikiExample.java",
+      "java-agents": []
+    },
+    "airtable": {
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/airtable/AirtableExample.java",
+      "java-agents": []
+    },
+    "codeinterpreter": {
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/code-interpreter/CodeInterpreter.java",
+      "java-agents": []
+    },
+    "json": {
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/json/JsonFormat.java",
+      "java-agents": []
+    },
+    "pinecone": {
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/pinecone/PineconeExample.java",
+      "java-agents": []
+    },
+    "postgresql": {
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/postgresql/PostgreSQLExample.java",
+      "java-agents": []
+    },
+    "reactchain": {
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/react-chain/ReactChainApplication.java",
+      "java-agents": []
+    },
+    "redis": {
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/redis/RedisExample.java",
+      "java-agents": []
+    },
+    "supabaseminilm": {
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/supabase-miniLM/SupabaseMiniLMExample.java",
+      "java-agents": []
+    },
+    "zapier": {
+      "script-ref": "https://github.com/arakoodev/EdgeChains/blob/main/Examples/zapier/ZapierExample.java",
+      "java-agents": []
+    }
+  },
+  "templates": {}
+}
