@@ -1,10 +1,7 @@
 package com.edgechain.lib.llama2;
 
 import com.edgechain.lib.endpoint.impl.llm.LLamaQuickstart;
-import com.edgechain.lib.endpoint.impl.llm.Llama2Endpoint;
 import com.edgechain.lib.llama2.request.LLamaCompletionRequest;
-import com.edgechain.lib.llama2.request.Llama2ChatCompletionRequest;
-import com.edgechain.lib.llama2.response.Llama2ChatCompletionResponse;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +24,7 @@ public class LLamaClient {
   private final RestTemplate restTemplate = new RestTemplate();
 
   public EdgeChain<List<String>> createChatCompletion(
-          LLamaCompletionRequest request, LLamaQuickstart endpoint) {
+      LLamaCompletionRequest request, LLamaQuickstart endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
@@ -47,8 +44,7 @@ public class LLamaClient {
                     restTemplate.postForObject(endpoint.getUrl(), entity, String.class);
 
                 List<String> chatCompletionResponse =
-                    objectMapper.readValue(
-                        response, new TypeReference<>() {});
+                    objectMapper.readValue(response, new TypeReference<>() {});
                 emitter.onNext(chatCompletionResponse);
                 emitter.onComplete();
 

@@ -21,71 +21,69 @@ import java.util.Map;
 
 @Service
 public class Llama2Client {
-    @Autowired
-    private ObjectMapper objectMapper;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final RestTemplate restTemplate = new RestTemplate();
+  @Autowired private ObjectMapper objectMapper;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
+  private final RestTemplate restTemplate = new RestTemplate();
 
-    public EdgeChain<List<Llama2ChatCompletionResponse>> createChatCompletion(
-            Llama2ChatCompletionRequest request, Llama2Endpoint endpoint) {
-        return new EdgeChain<>(
-                Observable.create(
-                        emitter -> {
-                            try {
+  public EdgeChain<List<Llama2ChatCompletionResponse>> createChatCompletion(
+      Llama2ChatCompletionRequest request, Llama2Endpoint endpoint) {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
 
-                                logger.info("Logging ChatCompletion....");
+                logger.info("Logging ChatCompletion....");
 
-                                logger.info("==============REQUEST DATA================");
-                                logger.info(request.toString());
+                logger.info("==============REQUEST DATA================");
+                logger.info(request.toString());
 
-                                //  Create headers
-                                HttpHeaders headers = new HttpHeaders();
-                                headers.setContentType(MediaType.APPLICATION_JSON);
-                                HttpEntity<Llama2ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
-                                //
-                                String response =
-                                        restTemplate.postForObject(endpoint.getUrl(), entity, String.class);
+                //  Create headers
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Llama2ChatCompletionRequest> entity = new HttpEntity<>(request, headers);
+                //
+                String response =
+                    restTemplate.postForObject(endpoint.getUrl(), entity, String.class);
 
-                                List<Llama2ChatCompletionResponse> chatCompletionResponse =
-                                        objectMapper.readValue(
-                                                response, new TypeReference<>() {
-                                                });
-                                emitter.onNext(chatCompletionResponse);
-                                emitter.onComplete();
+                List<Llama2ChatCompletionResponse> chatCompletionResponse =
+                    objectMapper.readValue(response, new TypeReference<>() {});
+                emitter.onNext(chatCompletionResponse);
+                emitter.onComplete();
 
-                            } catch (final Exception e) {
-                                emitter.onError(e);
-                            }
-                        }),
-                endpoint);
-    }
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
+  }
 
-    public EdgeChain<String> createGetChatCompletion(LLamaQuickstart endpoint) {
-        return new EdgeChain<>(
-                Observable.create(
-                        emitter -> {
-                            try {
+  public EdgeChain<String> createGetChatCompletion(LLamaQuickstart endpoint) {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
 
-                                //  Create headers
-                                HttpHeaders headers = new HttpHeaders();
-                                headers.set("User-Agent", "insomnia/8.2.0");
-                                HttpEntity<?> entity = new HttpEntity<>(headers);
+                //  Create headers
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("User-Agent", "insomnia/8.2.0");
+                HttpEntity<?> entity = new HttpEntity<>(headers);
 
-                                Map<String, String> param = Collections.singletonMap("query", endpoint.getQuery());
+                Map<String, String> param = Collections.singletonMap("query", endpoint.getQuery());
 
-                                String endpointUrl = endpoint.getUrl() + "?query={query}";
+                String endpointUrl = endpoint.getUrl() + "?query={query}";
 
-                                ResponseEntity<String> response = restTemplate.exchange(endpointUrl, HttpMethod.GET, entity, String.class, param);
+                ResponseEntity<String> response =
+                    restTemplate.exchange(endpointUrl, HttpMethod.GET, entity, String.class, param);
 
-                                logger.info("\nRESPONSE DATA {}\n", response.getBody());
+                logger.info("\nRESPONSE DATA {}\n", response.getBody());
 
-                                emitter.onNext(response.getBody());
-                                emitter.onComplete();
+                emitter.onNext(response.getBody());
+                emitter.onComplete();
 
-                            } catch (final Exception e) {
-                                emitter.onError(e);
-                            }
-                        }),
-                endpoint);
-    }
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
+  }
 }

@@ -7,10 +7,13 @@ import java.util.StringJoiner;
 public class LLamaCompletionRequest {
   @JsonProperty("text_inputs")
   private String textInputs;
+
   @JsonProperty("return_full_text")
   private Boolean returnFullText;
+
   @JsonProperty("top_k")
   private Integer topK;
+
   public LLamaCompletionRequest() {}
 
   public LLamaCompletionRequest(String textInputs, Boolean returnFullText, Integer topK) {
@@ -73,7 +76,7 @@ public class LLamaCompletionRequest {
       return this;
     }
 
-    public LlamaSupportChatCompletionRequestBuilder topK(Integer topK){
+    public LlamaSupportChatCompletionRequestBuilder topK(Integer topK) {
       this.topK = topK;
       return this;
     }
