@@ -4,7 +4,6 @@ import com.edgechain.lib.endpoint.impl.llm.LLamaQuickstart;
 import com.edgechain.lib.endpoint.impl.llm.Llama2Endpoint;
 import com.edgechain.lib.llama2.request.Llama2ChatCompletionRequest;
 import com.edgechain.lib.llama2.response.Llama2ChatCompletionResponse;
-import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,8 +60,7 @@ public class Llama2Client {
                 endpoint);
     }
 
-    public EdgeChain<List<String>> createGetChatCompletion(
-            LLamaQuickstart endpoint, ArkRequest arkRequest) {
+    public EdgeChain<String> createGetChatCompletion(LLamaQuickstart endpoint) {
         return new EdgeChain<>(
                 Observable.create(
                         emitter -> {
@@ -73,16 +71,15 @@ public class Llama2Client {
                                 headers.set("User-Agent", "insomnia/8.2.0");
                                 HttpEntity<?> entity = new HttpEntity<>(headers);
 
-                                Map<String, String> param = Collections.singletonMap("query", arkRequest.getQueryParam("query"));
+                                Map<String, String> param = Collections.singletonMap("query", endpoint.getQuery());
 
                                 String endpointUrl = endpoint.getUrl() + "?query={query}";
 
                                 ResponseEntity<String> response = restTemplate.exchange(endpointUrl, HttpMethod.GET, entity, String.class, param);
 
-                                logger.info("\nresponse data {}\n", response.getBody());
+                                logger.info("\nRESPONSE DATA {}\n", response.getBody());
 
-//                                List<Llama2ChatCompletionResponse> chatCompletionResponse = (List<Llama2ChatCompletionResponse>) response;
-                                emitter.onNext(Collections.singletonList(response.getBody()));
+                                emitter.onNext(response.getBody());
                                 emitter.onComplete();
 
                             } catch (final Exception e) {

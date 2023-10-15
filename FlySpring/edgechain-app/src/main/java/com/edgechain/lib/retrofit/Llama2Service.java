@@ -8,12 +8,13 @@ import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 import java.util.List;
 
 public interface Llama2Service {
   @POST(value = "llama/chat-completion")
   Single<List<Llama2ChatCompletionResponse>> chatCompletion(@Body Llama2Endpoint llama2Endpoint);
-  @GET(value = "llama/chat-completion")
-  Single<List<String>> llamaCompletion(@Body LLamaQuickstart lLamaQuickstart, ArkRequest arkRequest);
+  @POST(value = "llama/chat-completion")
+  Single<String> llamaCompletion(@Body LLamaQuickstart lLamaQuickstart);
 }
