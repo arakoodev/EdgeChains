@@ -1,8 +1,7 @@
-import axios from 'axios';
 import { Jsonnet } from "@hanazuki/node-jsonnet";
 import * as path from 'path';
-import { createConnection,getManager } from 'typeorm';
-
+import { OpenAiEndpoint } from 'src/lib/OpenAiEndpoint';
+import { PostgresClient } from 'src/lib/PostgresClient';
 
 enum PostgresDistanceMetric {
   COSINE = 'COSINE',
@@ -10,15 +9,12 @@ enum PostgresDistanceMetric {
   L2 = 'L2'
 }
 
-
-const gpt3endpoint = {
-  url: "https://api.openai.com/v1/chat/completions",
-  apikey : "",
-  orgId : "",
-  model : "gpt-3.5-turbo",
-  role : "user",
-  temprature : 0.7
-}
+const gpt3endpoint = new OpenAiEndpoint("https://api.openai.com/v1/chat/completions",
+                                        "",
+                                        "",
+                                        "gpt-3.5-turbo",
+                                        "user",
+                                        0.7);
 
 export async function hydeSearchAdaEmbedding(arkRequest){
   try {
@@ -51,7 +47,7 @@ export async function hydeSearchAdaEmbedding(arkRequest){
     const prompt = JSON.parse(hydeLoader).prompt;
 
     // Block and get the response from GPT3
-    const gptResponse = await gptFn(prompt);
+    const gptResponse = await gpt3endpoint.gptFn(prompt);
 
     // Chain 1 ==> Get Gpt3Response & split
     const gpt3Responses = gptResponse.split('\n');
@@ -59,15 +55,16 @@ export async function hydeSearchAdaEmbedding(arkRequest){
     // Chain 2 ==> Get Embeddings from OpenAI using Each Response
     const embeddingsListChain: Promise<Number[][]> = Promise.all(
       gpt3Responses.map(async (resp) => {
-        const embedding = await embeddings(resp);
+        const embedding = await gpt3endpoint.embeddings(resp);
         return embedding;
       })
     );
 
-    // // Chain 5 ==> Query via EmbeddingChain
-    const queryResult = await dbQuery(await embeddingsListChain, PostgresDistanceMetric.IP, topK, 20,table,namespace,arkRequest,15);
+    // Chain 5 ==> Query via EmbeddingChain
+    const dbClient = new PostgresClient(await embeddingsListChain, PostgresDistanceMetric.IP, topK, 20,table,namespace,arkRequest,15);
+    const queryResult = await dbClient.dbQuery();
 
-    // // Chain 6 ==> Create Prompt using Embeddings
+    // Chain 6 ==> Create Prompt using Embeddings
     const retrievedDocs: string[] = [];
 
     for (const embeddings of queryResult) {
@@ -108,7 +105,7 @@ export async function hydeSearchAdaEmbedding(arkRequest){
       { 'role': 'user', 'content': finalPromptUser },
     ];
 
-    const finalAnswer = await gptFnChat(chatMessages);
+    const finalAnswer = await gpt3endpoint.gptFnChat(chatMessages);
 
     const response = {
       wordEmbeddings: queryResult,
@@ -116,171 +113,6 @@ export async function hydeSearchAdaEmbedding(arkRequest){
     };
 
     return response;
-  } catch (error) {
-    // Handle errors here
-    console.error(error);
-    throw error;
-  }
-}
-
-async function  gptFn(prompt:string) : Promise<string>{
-
-    const responce = await axios.post('https://api.openai.com/v1/chat/completions', {
-      'model' : gpt3endpoint.model,
-      'messages' : [{
-        'role' : gpt3endpoint.role,
-        'content' : prompt
-      }],
-      'temperature' : gpt3endpoint.temprature
-    },{
-      headers : {
-        Authorization : 'Bearer ' + gpt3endpoint.apikey ,
-        'content-type' : 'application/json'
-      }
-    })
-    .then(function(response){
-      return response.data.choices
-    }
-      
-    )
-    .catch(function (error) {
-      if (error.response) {
-        console.log('Server responded with status code:', error.response.status);
-        console.log('Response data:', error.response.data);
-      } else if (error.request) {
-        console.log('No response received:', error.request);
-      } else {
-        console.log('Error creating request:', error.message);
-      }
-    });
-    return responce[0].message.content;
-}
-
-async function gptFnChat(chatMessages) {
-  const responce = await axios.post('https://api.openai.com/v1/chat/completions', {
-    'model' : gpt3endpoint.model,
-    'messages' : chatMessages,
-    'temperature' : gpt3endpoint.temprature
-  },{
-    headers : {
-      Authorization : 'Bearer ' + gpt3endpoint.apikey ,
-      'content-type' : 'application/json'
-    }
-  })
-  .then(function(response){
-    return response.data.choices
-  }
-    
-  )
-  .catch(function (error) {
-    if (error.response) {
-      console.log('Server responded with status code:', error.response.status);
-      console.log('Response data:', error.response.data);
-    } else if (error.request) {
-      console.log('No response received:', error.request);
-    } else {
-      console.log('Error creating request:', error.message);
-    }
-  });
-
-  return responce[0].message.content;
-}
-
-async function embeddings(resp : string): Promise<Number[]> {
-  const responce = await axios.post('https://api.openai.com/v1/embeddings', {
-    "model" : "text-embedding-ada-002",
-    "input" : resp
-    },{
-      headers : {
-        Authorization : 'Bearer ' + gpt3endpoint.apikey ,
-        'content-type' : 'application/json'
-      }
-    })
-    .then(function(response){
-      return response.data.data[0].embedding;
-    }
-      
-    )
-    .catch(function (error) {
-      if (error.response) {
-        console.log('Server responded with status code:', error.response.status);
-        console.log('Response data:', error.response.data);
-      } else if (error.request) {
-        console.log('No response received:', error.request);
-      } else {
-        console.log('Error creating request:', error.message);
-      }
-    });
-
-    return responce;
-}
-
-
-
-async function dbQuery(wordEmbeddings: Number[][], metric, topK, probes, tableName, namespace:string, arkRequest: any, upperLimit) {
-  await createConnection();
-  const entityManager = getManager();
-  try {
-    const query1 = `SET LOCAL ivfflat.probes = ${probes};`
-    await entityManager.query(query1);
-
-    let query: string = '';
-
-    for (let i = 0; i < wordEmbeddings.length; i++) {
-        const embedding: string = JSON.stringify(wordEmbeddings[i]);
-
-        query += `( SELECT id, raw_text, document_date, metadata, namespace, filename, timestamp, 
-          ${arkRequest.textWeight.baseWeight} / (ROW_NUMBER() OVER (ORDER BY text_rank DESC) + ${arkRequest.textWeight.fineTuneWeight}) +
-          ${arkRequest.similarityWeight.baseWeight} / (ROW_NUMBER() OVER (ORDER BY similarity DESC) + ${arkRequest.similarityWeight.fineTuneWeight}) +
-          ${arkRequest.dateWeight.baseWeight} / (ROW_NUMBER() OVER (ORDER BY date_rank DESC) + ${arkRequest.dateWeight.fineTuneWeight}) AS rrf_score
-          FROM ( SELECT sv.id, sv.raw_text, sv.namespace, sv.filename, sv.timestamp, svtm.document_date, svtm.metadata, ts_rank_cd(sv.tsv, plainto_tsquery('${'english'}', '${arkRequest.query}')) AS text_rank, `
-
-        if(metric === PostgresDistanceMetric.COSINE)
-          query += `1 - (sv.embedding <=> '${embedding}') AS similarity, `
-        if(metric === PostgresDistanceMetric.IP)
-          query += `(sv.embedding <#> '${embedding}') * -1 AS similarity, `
-        if(metric === PostgresDistanceMetric.L2)
-          query += `sv.embedding <-> '${embedding}' AS similarity, `
-
-        query += `CASE WHEN svtm.document_date IS NULL THEN 0 ELSE EXTRACT(YEAR FROM svtm.document_date) * 365 + EXTRACT(DOY FROM svtm.document_date) END AS date_rank FROM (SELECT id, raw_text, embedding, tsv, namespace, filename, timestamp from ${tableName} WHERE namespace = '${namespace}'`
-          
-        if(metric === PostgresDistanceMetric.COSINE)
-          query += ` ORDER BY embedding <=> '${embedding}'  LIMIT ${topK}`
-        if(metric === PostgresDistanceMetric.IP)
-          query += ` ORDER BY embedding <#> '${embedding}'  LIMIT ${topK}`
-        if(metric === PostgresDistanceMetric.L2)
-          query += ` ORDER BY embedding <-> '${embedding}'  LIMIT ${topK}`
-
-        query += `) sv JOIN ${tableName}_join_${arkRequest.metadataTable} jtm ON sv.id = jtm.id JOIN ${tableName}_${arkRequest.metadataTable} svtm ON jtm.metadata_id = svtm.metadata_id) subquery `
-        
-        switch (arkRequest.orderRRF) {
-          case 'text_rank':
-            query += `ORDER BY text_rank DESC, rrf_score DESC`
-            break;
-          case 'similarity':
-            query += `ORDER BY similarity DESC, rrf_score DESC`
-            break;
-          case 'date_rank':
-            query += `ORDER BY date_rank DESC, rrf_score DESC`
-            break;
-          case 'default':
-            query += `ORDER BY rrf_score DESC`
-            break;
-        }
-
-        query += ` LIMIT ${topK})`
-        if (i < wordEmbeddings.length - 1) {
-          query += ' UNION ALL \n';
-        }
-    }
-
-    if (wordEmbeddings.length > 1) {
-        query = `SELECT * FROM (SELECT DISTINCT ON (result.id) * FROM ( ${query} ) result) subquery ORDER BY rrf_score DESC LIMIT ${upperLimit};`;
-    } else {
-        query += ` ORDER BY rrf_score DESC LIMIT ${topK};`;
-    }
-    const results = await entityManager.query(query);
-    return results;
   } catch (error) {
     // Handle errors here
     console.error(error);
