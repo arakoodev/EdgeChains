@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!--<div class="chat-item" th:fragement="messageItem(item)">-->
+<!--    <div class="row align-items-end justify-content-end">-->
+<!--        <div class="col col-lg-6">-->
+<!--            <div class="chat-bubble chat-bubble-me">-->
+<!--                <div class="chat-bubble-body">-->
+<!--                    <p class="user-query-data rounded-3 bg-gray-700 p-3" th:text="${item}">-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<div th:fragment="messageItem(item)">
+    <div class="row align-items-end justify-content-end">
+        <div id="userQueryData" class="col-6">
+            <div class="hr-text hr-text-right mb-2">You</div>
+            <div class="bg-azure-lt text-dark p-3 mb-2" th:text="${item.user}">
+                Are we meeting today?
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <div class="mb-2 hr-text hr-text-left">Assistant</div>
+            <div class="bg-azure-lt text-dark p-3 mb-2" th:text="${item.aiResponse}">
+                Yes, when you'll free?
+            </div>
+        </div>
+    </div>
+</div>
+<!--<div class="row" th:fragment="messageItem(item)" >-->
+<!--    <div class="message col-6">-->
+<!--&lt;!&ndash;         th:classappend="${item.isReceived?'other-message float-right':'my-message'}"&ndash;&gt;-->
+<!--&lt;!&ndash;         hx-ext="sse" th:attrappend="sse-connect=${item.isReceived}? '/sse':'3'">&ndash;&gt;-->
+<!--        <div class="mb-2"><strong>AI</strong></div>-->
+<!--        <div class="bg-green-lt text-dark p-3 mb-2" th:text="${item.aiResponse}">-->
+<!--            Are we meeting today?-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    <div class="message col-6">-->
+<!--&lt;!&ndash;         th:classappend="${item.isReceived?'other-message float-right':'my-message'}"&ndash;&gt;-->
+<!--&lt;!&ndash;         hx-ext="sse" th:attrappend="sse-connect=${item.isReceived}? '/sse':'3'">&ndash;&gt;-->
+<!--        <div class="mb-2"><strong>You</strong></div>-->
+<!--        <div class="bg-azure-lt text-dark p-3 mb-2" th:text="${item.user}">-->
+<!--            Are we meeting today?-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+</body>
+</html>
