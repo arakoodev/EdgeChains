@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/htmx.org@1.9.6"
+            integrity="sha384-FhXw7b6AlE/jyjlZH5iHa/tTe9EpJ1Y55RjcgPbjeWMskSxZt1v9qkxLJWNJaGni"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css">
+    <title>AI</title>
+</head>
+
+<body>
+<div class="page bg-dark-lt">
+    <header class="navbar navbar-expand-sm navbar-light d-print-none">
+        <div class="container-xl">
+            <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">Your AI Assistant
+            </h1>
+
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown"
+                   aria-label="Open user menu">
+                        <span class="avatar avatar-sm rounded-circle">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24"
+                                 height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+                                <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+                            </svg>
+                        </span>
+                    <div class="d-none d-xl-block ps-2">
+                        <div>User</div>
+                    </div>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="page-wrapper bg-dark-lt">
+        <div class="container-xl mt-4 px-5">
+            <div class="card">
+                <div class="card-body p-1 scrollable" style="height: 35rem;">
+                    <div id="chat-container"  class="container-xl">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="mb-2 hr-text hr-text-left">Assistant</div>
+                                <div class="bg-azure-lt text-dark p-3 mb-2">
+                                    Hello!, How can I assist you today?
+                                </div>
+                            </div>
+                        </div>
+                            <div id="indicator" class="htmx-indicator justify-content-center d-flex my-2">
+                                <div class="spinner-border"></div>
+                            </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <form class="d-flex" hx-get="/query" hx-swap="beforeend" hx-trigger="submit"
+                          hx-target="#chat-container" hx-indicator="#indicator">
+                        <input type="text" class="form-control" name="query" id="query" placeholder="Input..." autofocus/>
+                        <button type="submit" class="btn">
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>
