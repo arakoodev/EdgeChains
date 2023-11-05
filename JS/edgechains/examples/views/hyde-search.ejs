@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChatGPT Query</title>
+    <script src="https://unpkg.com/htmx.org@1.5.0/dist/htmx.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+</head>
+<body>
+    <h1>ChatGPT Query</h1>
+    <form hx-post="/hyde-search/query-rrf?topK=5" hx-trigger="submit" hx-target="#result" hx-include="[name='jsonData']" hx-indicator="#loading-indicator">
+        <form class="htmx-request" hx-post="/hyde-search/query-rrf?topK=5" hx-trigger="submit" hx-target="#result" hx-vals="prepareData">
+            <label for="jsonData">Enter query details:</label>
+            <textarea id="jsonData" name="jsonData" required></textarea>
+            <br><br>
+            <button type="submit">Submit</button>
+        </form>
+    </form>
+
+    <div id="result">
+        <!-- EJS template will render the results here -->
+    </div>
+
+    <script id="result-template" type="text/template">
+        <p>Result: <%= result %></p>
+    </script>
+</body>
+</html>
