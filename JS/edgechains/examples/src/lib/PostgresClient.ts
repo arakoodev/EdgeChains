@@ -1,5 +1,5 @@
 import { createConnection, getManager } from 'typeorm';
-
+import DatabaseConnection from '../config/db';
 export class PostgresClient {
   wordEmbeddings: number[][];
   metric: PostgresDistanceMetric;
@@ -12,13 +12,13 @@ export class PostgresClient {
 
   constructor(
     wordEmbeddings: number[][],
-    metric,
-    topK,
-    probes,
-    tableName,
+    metric: PostgresDistanceMetric,
+    topK: number,
+    probes: number,
+    tableName: string,
     namespace: string,
     arkRequest: any,
-    upperLimit,
+    upperLimit: number,
   ) {
     this.wordEmbeddings = wordEmbeddings;
     this.metric = metric;
@@ -31,8 +31,7 @@ export class PostgresClient {
   }
 
   async dbQuery() {
-    await createConnection();
-    const entityManager = getManager();
+    const entityManager = await DatabaseConnection.getEntityManager();
     try {
       const query1 = `SET LOCAL ivfflat.probes = ${this.probes};`;
       await entityManager.query(query1);

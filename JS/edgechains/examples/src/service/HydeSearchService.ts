@@ -31,15 +31,14 @@ export async function hydeSearchAdaEmbedding(arkRequest: ArkRequest) {
 
     const promptPath = path.join(
       process.cwd(),
-      './src/hydeExample/prompts.jsonnet',
+      './src/jsonnet/prompts.jsonnet',
     );
-    const hydePath = path.join(process.cwd(), './src/hydeExample/hyde.jsonnet');
+    const hydePath = path.join(process.cwd(), './src/jsonnet/hyde.jsonnet');
     // Load Jsonnet to extract args..
     const promptLoader = await jsonnet.evaluateFile(promptPath);
 
     // Getting ${summary} basePrompt
     const promptTemplate = JSON.parse(promptLoader).summary;
-
     // Getting the updated promptTemplate with query
     let hydeLoader = await jsonnet
       .extString('promptTemplate', promptTemplate)
@@ -75,6 +74,7 @@ export async function hydeSearchAdaEmbedding(arkRequest: ArkRequest) {
       arkRequest,
       15,
     );
+
     const queryResult = await dbClient.dbQuery();
 
     // Chain 6 ==> Create Prompt using Embeddings
@@ -124,7 +124,6 @@ export async function hydeSearchAdaEmbedding(arkRequest: ArkRequest) {
       wordEmbeddings: queryResult,
       finalAnswer: finalAnswer,
     };
-
     return response;
   } catch (error) {
     // Handle errors here
