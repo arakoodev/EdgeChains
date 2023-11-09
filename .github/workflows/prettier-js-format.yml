@@ -42,7 +42,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-eslintcache-
       - name: Run ESLint
-        run: npx eslint .
+        run: npx eslint JS
           --fix
           --cache
           --config JS/.eslintrc.js
