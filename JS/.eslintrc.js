@@ -19,5 +19,13 @@ module.exports = {
     parserOptions: {
         ecmaVersion: "latest",
     },
-    rules: {},
+    rules: {
+            'array-callback-return': 'error',
+    'no-undef': 'off',
+    'no-empty': 'off',
+    'no-func-assign': 'off',
+    'no-cond-assign': 'off',
+    'no-constant-binary-expression': 'error',
+    'no-constructor-return': 'error'
+    },
 };
