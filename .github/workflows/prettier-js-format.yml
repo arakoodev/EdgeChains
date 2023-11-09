@@ -4,7 +4,7 @@ on:
     push:
      branches: [ ts ]
      paths:
-      - ts/**
+      - JS/**
 
 permissions:
   contents: write
@@ -22,7 +22,7 @@ jobs:
       - name: Install Prettier
         run: npm install prettier
       - name: Run Prettiers
-        run: npx prettier --tab-width 4 --print-width 100 --trailing-comma es5  --ignore-path "$(CURDIR)/node_modules/*" --write ts/
+        run: npx prettier --tab-width 4 --print-width 100 --trailing-comma es5  --ignore-path "$(CURDIR)/node_modules/*" --write JS/
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
