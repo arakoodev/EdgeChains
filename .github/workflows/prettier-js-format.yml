@@ -1,4 +1,4 @@
-name: Format
+name: Prettier JS
 
 on:
     push:
