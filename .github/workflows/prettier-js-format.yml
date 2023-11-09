@@ -5,6 +5,11 @@ on:
      branches: [ ts ]
      paths:
       - JS/**
+      - .github/workflows/prettier-js-format.yml
+    pull_request:
+     paths:
+       - JS/**
+       - ".github/workflows/linter.yml"
 
 permissions:
   contents: write
@@ -21,6 +26,35 @@ jobs:
           node-version: '18'
       - name: Install Prettier
         run: npm install prettier
+      - name: Install ESLint
+        run: |
+          npm install eslint@latest
+          npm install @microsoft/eslint-formatter-sarif@latest
+      - name: Get cache date
+        id: get-date
+        run: echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
+        shell: bash
+      - name: ESLint Cache
+        uses: actions/cache@v3
+        with:
+          path: ./.eslintcache
+          key: ${{ runner.os }}-eslintcache-${{ hashFiles('./eslintcache') }}
+          restore-keys: |
+            ${{ runner.os }}-eslintcache-
+      - name: Run ESLint
+        run: npx eslint .
+          --fix
+          --cache
+          --config .eslintrc.js
+          --ext .js,.jsx,.ts,.tsx
+          --format @microsoft/eslint-formatter-sarif
+          --output-file eslint-results.sarif
+        continue-on-error: false
+      - name: Upload analysis results to GitHub
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: eslint-results.sarif
+          wait-for-processing: true
       - name: Run Prettiers
         run: npx prettier --tab-width 4 --print-width 100 --trailing-comma es5  --ignore-path "$(CURDIR)/node_modules/*" --write JS/
       - name: Commit changes
