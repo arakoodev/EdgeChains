@@ -1,10 +1,15 @@
-name: Format
+name: Prettier JS
 
 on:
     push:
      branches: [ ts ]
      paths:
-      - 'ts/**'
+      - JS/**
+      - .github/workflows/prettier-js-format.yml
+    pull_request:
+     paths:
+       - JS/**
+       - ".github/workflows/linter.yml"
 
 permissions:
   contents: write
@@ -21,8 +26,35 @@ jobs:
           node-version: '18'
       - name: Install Prettier
         run: npm install prettier
-      - name: Run Prettier
-        run: npx prettier --tab-width 4 --print-width 100 --trailing-comma es5  --ignore-path "$(CURDIR)/node_modules/*" --write ts/
+      - name: Install ESLint
+        run: >
+          npm install eslint@latest && 
+          npm install @microsoft/eslint-formatter-sarif@latest eslint-config-google@latest eslint-plugin-import@latest @typescript-eslint/eslint-plugin@latest @typescript-eslint/parser@latest eslint-config-prettier@latest eslint-plugin-prettier@latest
+      - name: Get cache date
+        id: get-date
+        run: echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
+        shell: bash
+      - name: ESLint Cache
+        uses: actions/cache@v3
+        with:
+          path: ./.eslintcache
+          key: ${{ runner.os }}-eslintcache-${{ hashFiles('./eslintcache') }}
+          restore-keys: |
+            ${{ runner.os }}-eslintcache-
+      - name: Run ESLint
+        run: npx eslint JS
+          --fix
+          --cache
+          --config JS/.eslintrc.js
+          --ext .js,.jsx,.ts,.tsx
+        continue-on-error: true
+      # - name: Upload analysis results to GitHub
+      #   uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: eslint-results.sarif
+      #     wait-for-processing: true
+      - name: Run Prettiers
+        run: npx prettier --tab-width 4 --print-width 100 --trailing-comma es5  --ignore-path "$(CURDIR)/node_modules/*" --write JS/
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:

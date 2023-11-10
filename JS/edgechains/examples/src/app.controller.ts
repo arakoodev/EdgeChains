@@ -12,12 +12,12 @@ import { hydeSearchAdaEmbedding } from './hydeExample/hydeExample';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+    constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
+    @Get()
+    getHello(): string {
+        return this.appService.getHello();
+    }
 
   @Post('/hyde-search/query-rrf')
   @HttpCode(200)
