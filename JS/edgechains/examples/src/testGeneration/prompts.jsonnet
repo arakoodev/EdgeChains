@@ -8,13 +8,21 @@ local prompt = |||
                     - First,
                 |||;
 
-local test_package = std.extVar("testPackage");
-local test_class = std.extVar("testClass");
+local prompt_to_explain_a_plan =|||
+                                    A good unit test suite should aim to:
+                                    - Test the function's behavior for a wide range of possible inputs
+                                    - Test edge cases that the author may not have foreseen
+                                    - Take advantage of the features of {test_package} to make the tests easy to write and maintain
+                                    - Be easy to read and understand, with clean code and descriptive names
+                                    - Be deterministic, so that the tests always pass or fail in the same way
 
+                                    {test_package} has many convenient features that make it easy to write and maintain unit tests. We'll use them to write unit tests for the function above.
 
+                                    For this particular function, we'll want our unit tests to handle the following diverse scenarios (and under each scenario, we include a few examples as sub-bullets):
+                                    -
+                                |||;
 
 {
-    "testpackage" : test_package,
-    "testclass" : test_class,
+    "promptPlan" : prompt_to_explain_a_plan,
     "prompt" : prompt
 }
