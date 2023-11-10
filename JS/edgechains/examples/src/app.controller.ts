@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { hydeSearchAdaEmbedding } from './hydeExample/hydeExample';
+import { getContent } from './testGeneration/TestGenerator';
 
 @Controller()
 export class AppController {
@@ -24,5 +25,11 @@ export class AppController {
             orderRRF: query.orderRRF,
         };
         return hydeSearchAdaEmbedding(arkRequest);
+    }
+
+    @Post('/testcase/generate')
+    @HttpCode(200)
+    testGenerator(){
+        return getContent();
     }
 }
