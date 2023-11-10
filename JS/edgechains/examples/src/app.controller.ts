@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { hydeSearchAdaEmbedding } from './hydeExample/hydeExample';
+import { getContent } from './testGeneration/TestGenerator';
 
 @Controller()
 export class AppController {
@@ -43,4 +44,11 @@ export class AppController {
       result: '',
     };
   }
+
+
+   @Post('/testcase/generate')
+   @HttpCode(200)
+   testGenerator(){
+       return getContent();
+   }
 }

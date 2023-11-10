@@ -1,4 +1,4 @@
-import { createConnection, getManager } from 'typeorm';
+import { createConnection } from 'typeorm';
 
 export class PostgresClient {
     wordEmbeddings: number[][];
@@ -31,8 +31,8 @@ export class PostgresClient {
     }
 
     async dbQuery() {
-        await createConnection();
-        const entityManager = getManager();
+        const con = await createConnection();
+        const entityManager = con.createEntityManager();
         try {
             const query1 = `SET LOCAL ivfflat.probes = ${this.probes};`;
             await entityManager.query(query1);
@@ -107,6 +107,7 @@ export class PostgresClient {
                 query += ` ORDER BY rrf_score DESC LIMIT ${this.topK};`;
             }
             const results = await entityManager.query(query);
+            await con.destroy();
             return results;
         } catch (error) {
             // Handle errors here
