@@ -1,14 +1,14 @@
 import { createConnection, getManager } from 'typeorm';
 import DatabaseConnection from '../config/db';
 export class PostgresClient {
-    wordEmbeddings: number[][];
-    metric: PostgresDistanceMetric;
-    topK: number;
-    probes: number;
-    tableName: string;
-    namespace: string;
-    arkRequest: any;
-    upperLimit: number;
+  wordEmbeddings: number[][];
+  metric: PostgresDistanceMetric;
+  topK: number;
+  probes: number;
+  tableName: string;
+  namespace: string;
+  arkRequest: any;
+  upperLimit: number;
 
   constructor(
     wordEmbeddings: number[][],
@@ -116,7 +116,7 @@ export class PostgresClient {
 }
 
 enum PostgresDistanceMetric {
-  COSINE = 'COSINE',
-  IP = 'IP',
-  L2 = 'L2',
+    COSINE = 'COSINE',
+    IP = 'IP',
+    L2 = 'L2',
 }
