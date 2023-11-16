@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "start": "tsx src/index.tsx"
+    "build": "node esbuild.build.js",
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.2.0",

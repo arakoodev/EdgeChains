@@ -14,10 +14,18 @@ const dist_path = path.join(process.cwd(), "dist");
 fs.promises.mkdir(dist_path, { recursive: true });
 
 esbuild.build({
-  entryPoints: ['./src/index.tsx'],
+  entryPoints: ['./src/index.ts'],
   bundle: true,
   platform: 'node',
-  outfile: './dist/bundle.js',
+  outdir: './dist',
   tsconfig: './tsconfig.json',
+  sourcemap: true,
+  target: 'node21.1.0',
+  external: ['express', 'tsx', 'typescipt', 'typeorm', 'react', 'react-dom', 'pg', 'jsdom', 'hono', '@hanazuki/node-jsonnet'],
+  format: 'cjs',
+  loader: {
+    '.html': 'text',
+    '.css': 'css',
+  },
 },)
   .catch(() => process.exit(1));

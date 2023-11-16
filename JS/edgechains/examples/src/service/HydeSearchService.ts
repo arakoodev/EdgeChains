@@ -62,7 +62,6 @@ export async function hydeSearchAdaEmbedding(arkRequest: ArkRequest) {
         return embedding;
       }),
     );
-
     // Chain 5 ==> Query via EmbeddingChain
     const dbClient = new PostgresClient(
       await embeddingsListChain,
@@ -74,7 +73,6 @@ export async function hydeSearchAdaEmbedding(arkRequest: ArkRequest) {
       arkRequest,
       15,
     );
-
     const queryResult = await dbClient.dbQuery();
 
     // Chain 6 ==> Create Prompt using Embeddings
