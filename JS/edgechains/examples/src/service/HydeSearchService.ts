@@ -9,10 +9,13 @@ enum PostgresDistanceMetric {
   L2 = 'L2',
 }
 
+const OpenAIKey = process.env.OPEN_AI_API_KEY!;
+const OpenAIOrgId = process.env.OPEN_AI_ORG_ID!;
+
 const gpt3endpoint = new OpenAiEndpoint(
   'https://api.openai.com/v1/chat/completions',
-  '',
-  '',
+  OpenAIKey,
+  OpenAIOrgId,
   'gpt-3.5-turbo',
   'user',
   0.7,
