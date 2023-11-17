@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { hydeSearchAdaEmbedding } from '../service/HydeSearchService';
-
+import { HydeFragmentData } from '../types/HydeFragmentData';
 const HydeSearch = new Hono();
 
 HydeSearch.get('/hyde-search/query-rrf', (c) => {
@@ -295,7 +295,35 @@ HydeSearch.get('/search', async (c) => {
         orderRRF: query.orderRRF,
       };
     const answer = await hydeSearchAdaEmbedding(arkRequest);
-    return c.text(answer.finalAnswer);
+    const final_answer = answer.finalAnswer;
+    const responses = answer.wordEmbeddings;
+    const data: HydeFragmentData = { responses, final_answer}
+    return c.html(`
+    <html lang="en">
+    <div>
+        <div class="card card-active">
+            <div class="card-body">${data.final_answer}</div>
+        </div>
+            <ul class="list-unstyled mb-0">
+              ${data.responses.map(
+                (item) => `
+                  <li>
+                    <div class="card">
+                      <div class="card-body">
+                        ${item.rawText != null
+                          ? `<div class="card card-body">${item.rawText}</div>`
+                          : `<div class="card card-body">${item.metadata}</div>`}
+                        ${item.filename != null ? `<div class="card card-body" style="color: blue;">${item.filename}</div>` : ''}
+                        ${item.titleMetadata != null ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>` : ''}
+                        ${item.documentDate != null ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>` : ''}
+                      </div>
+                    </div>
+                  </li>
+                `
+              )}
+            </ul>
+  </html>
+    `);
 })
 
 export default HydeSearch;
