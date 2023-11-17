@@ -93,7 +93,7 @@ export class OpenAiEndpoint {
         return responce;
     }
 
-    async gptFnChat(chatMessages) {
+    async gptFnChat(chatMessages: any) {
         const responce = await axios
             .post(
                 'https://api.openai.com/v1/chat/completions',
