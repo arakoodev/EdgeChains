@@ -1,4 +1,9 @@
-import { createConnection, Connection, getManager, EntityManager } from 'typeorm';
+import {
+  createConnection,
+  Connection,
+  getManager,
+  EntityManager,
+} from "typeorm";
 
 class DatabaseConnection {
   private static connection: Connection | undefined;

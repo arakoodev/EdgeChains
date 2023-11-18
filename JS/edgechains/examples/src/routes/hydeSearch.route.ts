@@ -1,9 +1,9 @@
-import { Hono } from 'hono';
-import { hydeSearchAdaEmbedding } from '../service/HydeSearchService';
-import { HydeFragmentData } from '../types/HydeFragmentData';
+import { Hono } from "hono";
+import { HydeSearchService } from "../service/HydeSearchService";
+import { HydeFragmentData } from "../types/HydeFragmentData";
 const HydeSearch = new Hono();
 
-HydeSearch.get('/hyde-search/query-rrf', (c) => {
+HydeSearch.get("/hyde-search/query-rrf", (c) => {
   return c.html(
     `<!DOCTYPE html>
     <html xmlns="http://www.w3.org/1999/xhtml"
@@ -279,26 +279,36 @@ HydeSearch.get('/hyde-search/query-rrf', (c) => {
     </script>
     </script>
     </body>
-    </html>`
-  )
-})
+    </html>`,
+  );
+});
 
-HydeSearch.get('/search', async (c) => {
-    const query= await c.req.query();
-    const arkRequest = {
-        topK: parseInt(query.topK ?? "5"),
-        metadataTable: query.metadataTable,
-        query: query.query,
-        textWeight: { baseWeight : query.textBaseWeight, fineTuneWeight: query.textFineTuneWeight },
-        similarityWeight: { baseWeight : query.similarityBaseWeight, fineTuneWeight: query.similarityFineTuneWeight},
-        dateWeight: { baseWeight : query.dateBaseWeight, fineTuneWeight: query.dateFineTuneWeight},
-        orderRRF: query.orderRRF,
-      };
-    const answer = await hydeSearchAdaEmbedding(arkRequest);
-    const final_answer = answer.finalAnswer;
-    const responses = answer.wordEmbeddings;
-    const data: HydeFragmentData = { responses, final_answer}
-    return c.html(`
+HydeSearch.get("/search", async (c) => {
+  const query = await c.req.query();
+  const arkRequest = {
+    topK: parseInt(query.topK ?? "5"),
+    metadataTable: query.metadataTable,
+    query: query.query,
+    textWeight: {
+      baseWeight: query.textBaseWeight,
+      fineTuneWeight: query.textFineTuneWeight,
+    },
+    similarityWeight: {
+      baseWeight: query.similarityBaseWeight,
+      fineTuneWeight: query.similarityFineTuneWeight,
+    },
+    dateWeight: {
+      baseWeight: query.dateBaseWeight,
+      fineTuneWeight: query.dateFineTuneWeight,
+    },
+    orderRRF: query.orderRRF,
+  };
+  const answer =
+    await HydeSearchService.request().hydeSearchAdaEmbedding(arkRequest);
+  const final_answer = answer.finalAnswer;
+  const responses = answer.wordEmbeddings;
+  const data: HydeFragmentData = { responses, final_answer };
+  return c.html(`
     <html lang="en">
     <div>
         <div class="card card-active">
@@ -310,20 +320,34 @@ HydeSearch.get('/search', async (c) => {
                   <li>
                     <div class="card">
                       <div class="card-body">
-                        ${item.rawText != null
-                          ? `<div class="card card-body">${item.rawText}</div>`
-                          : `<div class="card card-body">${item.metadata}</div>`}
-                        ${item.filename != null ? `<div class="card card-body" style="color: blue;">${item.filename}</div>` : ''}
-                        ${item.titleMetadata != null ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>` : ''}
-                        ${item.documentDate != null ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>` : ''}
+                        ${
+                          item.rawText != null
+                            ? `<div class="card card-body">${item.rawText}</div>`
+                            : `<div class="card card-body">${item.metadata}</div>`
+                        }
+                        ${
+                          item.filename != null
+                            ? `<div class="card card-body" style="color: blue;">${item.filename}</div>`
+                            : ""
+                        }
+                        ${
+                          item.titleMetadata != null
+                            ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>`
+                            : ""
+                        }
+                        ${
+                          item.documentDate != null
+                            ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>`
+                            : ""
+                        }
                       </div>
                     </div>
                   </li>
-                `
+                `,
               )}
             </ul>
   </html>
     `);
-})
+});
 
 export default HydeSearch;
