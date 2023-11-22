@@ -3,6 +3,7 @@ import * as path from "path";
 import { OpenAiEndpoint } from "../lib/OpenAiEndpoint";
 import { PostgresClient } from "../lib/PostgresClient";
 import { ArkRequest } from "../types/ArkRequest";
+
 enum PostgresDistanceMetric {
   COSINE = "COSINE",
   IP = "IP",
@@ -12,16 +13,16 @@ enum PostgresDistanceMetric {
 export class HydeSearchService {
   private gpt3endpoint = new OpenAiEndpoint(
     process.env.CHAT_COMPLETION_ENDPOINT!,
-    process.env.OPEN_AI_API_KEY!,
-    process.env.OPEN_AI_ORG_ID!,
-    process.env.OPEN_AI_MODEL!,
-    process.env.OPEN_AI_ROLE!,
-    parseInt(process.env.OPEN_AI_TEMP!),
-  );
-  static request() {
-    return new HydeSearchService();
-  }
-  async hydeSearchAdaEmbedding(arkRequest: ArkRequest) {
+    process.env.OPENAI_API_KEY!,
+    process.env.OPENAI_ORG_ID!,
+    process.env.OPENAI_MODEL!,
+    process.env.OPENAI_ROLE!,
+    parseInt(process.env.OPENAI_TEMP!),
+    );
+    static request() {
+      return new HydeSearchService();
+    }
+    async hydeSearchAdaEmbedding(arkRequest: ArkRequest) {
     try {
       // Get required params from API...
       const table = "ada_hyde_prod";

@@ -1,10 +1,16 @@
 {
+  "name": "edgechains",
+  "version": "1.0.0",
+  "main": "dist/index.js",
   "scripts": {
     "build": "node esbuild.build.js",
     "start": "node dist/index.js",
     "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "test": "npx jest"
+  },
+  "bin": {
+    "create-edgechains": "./bin/scripts/create-edgechains.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.2.0",

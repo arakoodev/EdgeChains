@@ -20,7 +20,6 @@ esbuild
     platform: "node",
     outdir: "./dist",
     tsconfig: "./tsconfig.json",
-    sourcemap: true,
     target: "node21.1.0",
     external: [
       "express",
@@ -33,6 +32,7 @@ esbuild
       "jsdom",
       "hono",
       "@hanazuki/node-jsonnet",
+      "readline/promises"
     ],
     format: "cjs",
     loader: {
