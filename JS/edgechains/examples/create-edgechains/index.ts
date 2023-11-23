@@ -12,17 +12,14 @@ import { fileURLToPath } from "node:url";
 import { copyFile } from "./src/utils/copyFile.js";
 
 type Options = {
-    project_name: string;
-    lang_preference: "typescript" | "javascript";
-    deployment_target: "node"|"deno";
-  };
+  project_name: string;
+  lang_preference: "typescript" | "javascript";
+  deployment_target: "node" | "deno";
+};
 
 const lang_choices = ["TypeScript", "JavaScript"] as const;
 
-const deployment_choices = [
-    "Node",
-    "Deno",
-  ] as const;
+const deployment_choices = ["Node", "Deno"] as const;
 
 function dirname_from_import_meta(import_meta_url: string) {
   return path.dirname(fileURLToPath(import_meta_url));
@@ -31,33 +28,33 @@ function dirname_from_import_meta(import_meta_url: string) {
 type Prompts = Parameters<(typeof inquirer)["prompt"]>[0];
 
 const prompts = [
-    {
-      type: "",
-      name: "new_dir_name",
-      message: `Enter a name for your project's new directory:`,
-      prefix: "\n",
-      validate: (dirname: string) => {
-        const invalidCharacters = /[<>:"\/\\|?*\x00-\x1F ]/;
-        return !!dirname && !invalidCharacters.test(dirname);
-      },
+  {
+    type: "",
+    name: "new_dir_name",
+    message: `Enter a name for your project's new directory:`,
+    prefix: "\n",
+    validate: (dirname: string) => {
+      const invalidCharacters = /[<>:"\/\\|?*\x00-\x1F ]/;
+      return !!dirname && !invalidCharacters.test(dirname);
     },
-    {
-      type: "list",
-      name: "lang_preference",
-      message: "TypeScript or JavaScript?",
-      choices: lang_choices,
-      prefix: "\n",
-    },
-    {
-      type: "list",
-      name: "deployment_target",
-      message: `Choose a deployment target (easy to change later):`,
-      choices: deployment_choices,
-      prefix: "\n",
-    },
-  ] satisfies Prompts;
+  },
+  {
+    type: "list",
+    name: "lang_preference",
+    message: "TypeScript or JavaScript?",
+    choices: lang_choices,
+    prefix: "\n",
+  },
+  {
+    type: "list",
+    name: "deployment_target",
+    message: `Choose a deployment target (easy to change later):`,
+    choices: deployment_choices,
+    prefix: "\n",
+  },
+] satisfies Prompts;
 
-  async function ask_questions(): Promise<
+async function ask_questions(): Promise<
   | {
       new_dir_name: string;
       lang_preference: (typeof lang_choices)[number];
@@ -79,10 +76,7 @@ function get_options(
     project_name: choices.new_dir_name,
     lang_preference:
       choices.lang_preference === "TypeScript" ? "typescript" : "javascript",
-    deployment_target:
-        choices.deployment_target === "Deno"
-        ? "deno"
-        : "node",
+    deployment_target: choices.deployment_target === "Deno" ? "deno" : "node",
   } satisfies Options;
 }
 
@@ -144,11 +138,7 @@ async function main() {
     );
 
     // .env
-    fs.writeFileSync(
-      path.join(new_dir_path, ".env"),
-      get_env(),
-      "utf8",
-    );
+    fs.writeFileSync(path.join(new_dir_path, ".env"), get_env(), "utf8");
 
     // eslintignore
     fs.writeFileSync(
@@ -163,104 +153,127 @@ async function main() {
     );
 
     // config folder
-    const configSourceFolder = path.join(root_dir_path, '../examples/src/config');
-    
-    const configDestinationFolder = path.join(new_dir_path, 'src/config');
+    const configSourceFolder = path.join(
+      root_dir_path,
+      "../examples/src/config",
+    );
+
+    const configDestinationFolder = path.join(new_dir_path, "src/config");
 
     await copyFolderRecursive(configSourceFolder, configDestinationFolder);
 
     // jsonnet folder
-    const jsonnetSourceFolder = path.join(root_dir_path, '../examples/src/jsonnet');
-    
-    const jsonnetDestinationFolder = path.join(new_dir_path, 'src/jsonnet');
+    const jsonnetSourceFolder = path.join(
+      root_dir_path,
+      "../examples/src/jsonnet",
+    );
+
+    const jsonnetDestinationFolder = path.join(new_dir_path, "src/jsonnet");
 
     await copyFolderRecursive(jsonnetSourceFolder, jsonnetDestinationFolder);
-    
+
     // lib folder
-    const libSourceFolder = path.join(root_dir_path, '../examples/src/lib');
-    
-    const libDestinationFolder = path.join(new_dir_path, 'src/lib');
+    const libSourceFolder = path.join(root_dir_path, "../examples/src/lib");
+
+    const libDestinationFolder = path.join(new_dir_path, "src/lib");
 
     await copyFolderRecursive(libSourceFolder, libDestinationFolder);
 
     // routes folder
 
-    const routesSourceFolder = path.join(root_dir_path, '../examples/src/routes');
-    
-    const routesDestinationFolder = path.join(new_dir_path, 'src/routes');
+    const routesSourceFolder = path.join(
+      root_dir_path,
+      "../examples/src/routes",
+    );
+
+    const routesDestinationFolder = path.join(new_dir_path, "src/routes");
 
     await copyFolderRecursive(routesSourceFolder, routesDestinationFolder);
 
-    // service folder 
+    // service folder
 
-    const serviceSourceFolder = path.join(root_dir_path, '../examples/src/service');
-    
-    const serviceDestinationFolder = path.join(new_dir_path, 'src/service');
+    const serviceSourceFolder = path.join(
+      root_dir_path,
+      "../examples/src/service",
+    );
+
+    const serviceDestinationFolder = path.join(new_dir_path, "src/service");
 
     await copyFolderRecursive(serviceSourceFolder, serviceDestinationFolder);
 
     // types folder
 
-    const typesSourceFolder = path.join(root_dir_path, '../examples/src/types');
-    
-    const typesDestinationFolder = path.join(new_dir_path, 'src/types');
+    const typesSourceFolder = path.join(root_dir_path, "../examples/src/types");
+
+    const typesDestinationFolder = path.join(new_dir_path, "src/types");
 
     await copyFolderRecursive(typesSourceFolder, typesDestinationFolder);
 
     // .eslint.js
 
-    const eslintJsSource = path.join(root_dir_path, '../examples/.eslintrc.js');
-    
-    const eslintJsDestination = path.join(new_dir_path, '.eslintrc.js');
+    const eslintJsSource = path.join(root_dir_path, "../examples/.eslintrc.js");
+
+    const eslintJsDestination = path.join(new_dir_path, ".eslintrc.js");
 
     await copyFile(eslintJsSource, eslintJsDestination);
 
     // .eslint.js
 
-    const prettierJsSource = path.join(root_dir_path, '../examples/.prettierrrc.json');
-    
-    const prettierJsDestination = path.join(new_dir_path, '.prettierrrc.json');
-    
+    const prettierJsSource = path.join(
+      root_dir_path,
+      "../examples/.prettierrrc.json",
+    );
+
+    const prettierJsDestination = path.join(new_dir_path, ".prettierrrc.json");
+
     await copyFile(prettierJsSource, prettierJsDestination);
 
     // esbuild.build.js
 
-    const buildJsSource = path.join(root_dir_path, '../examples/esbuild.build.js');
-    
-    const buildJsDestination = path.join(new_dir_path, 'esbuild.build.js');
-        
+    const buildJsSource = path.join(
+      root_dir_path,
+      "../examples/esbuild.build.js",
+    );
+
+    const buildJsDestination = path.join(new_dir_path, "esbuild.build.js");
+
     await copyFile(buildJsSource, buildJsDestination);
 
     // orm config
 
-    const ormConfigJsSource = path.join(root_dir_path, '../examples/ormconfig.json');
-    
-    const ormConfigJsDestination = path.join(new_dir_path, 'ormconfig.json');
-        
+    const ormConfigJsSource = path.join(
+      root_dir_path,
+      "../examples/ormconfig.json",
+    );
+
+    const ormConfigJsDestination = path.join(new_dir_path, "ormconfig.json");
+
     await copyFile(ormConfigJsSource, ormConfigJsDestination);
 
     // index.ts
 
-    const indexTsSource = path.join(root_dir_path, '../examples/src/index.ts');
-    
-    const indexTsDestination = path.join(new_dir_path, 'src/index.ts');
-            
+    const indexTsSource = path.join(root_dir_path, "../examples/src/index.ts");
+
+    const indexTsDestination = path.join(new_dir_path, "src/index.ts");
+
     await copyFile(indexTsSource, indexTsDestination);
 
     // setupTests.ts
 
-    const setupTestsTsSource = path.join(root_dir_path, '../examples/src/setupTests.ts');
-    
-    const setupTestsTsDestination = path.join(new_dir_path, 'src/setupTests.ts');
-            
+    const setupTestsTsSource = path.join(
+      root_dir_path,
+      "../examples/src/setupTests.ts",
+    );
+
+    const setupTestsTsDestination = path.join(
+      new_dir_path,
+      "src/setupTests.ts",
+    );
+
     await copyFile(setupTestsTsSource, setupTestsTsDestination);
-
-    
-
   } catch (e) {
     return e;
   }
-  
 }
 
 await main();

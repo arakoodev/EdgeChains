@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
 function copyFile(source: string, destination: string) {
   const sourcePath = path.resolve(source);
@@ -8,16 +8,16 @@ function copyFile(source: string, destination: string) {
   const readStream = fs.createReadStream(sourcePath);
   const writeStream = fs.createWriteStream(destinationPath);
 
-  readStream.on('error', (err: any) => {
+  readStream.on("error", (err: any) => {
     console.log(err);
   });
 
-  writeStream.on('error', (err: any) => {
+  writeStream.on("error", (err: any) => {
     console.log(err);
   });
 
-  writeStream.on('finish', () => {
-    console.log('success');
+  writeStream.on("finish", () => {
+    console.log("success");
   });
 
   readStream.pipe(writeStream);

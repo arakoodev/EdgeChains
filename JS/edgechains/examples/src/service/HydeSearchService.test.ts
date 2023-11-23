@@ -1,5 +1,5 @@
-import { ArkRequest } from "../types/ArkRequest";
-import { HydeSearchService } from "./HydeSearchService";
+import { ArkRequest } from "../types/ArkRequest.js";
+import { hydeSearchAdaEmbedding } from "./HydeSearchService.js";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
@@ -24,7 +24,7 @@ describe("Hyde Search", () => {
       orderRRF: "default",
     };
     expect(
-      (await HydeSearchService.request().hydeSearchAdaEmbedding(arkRequest))
+      (await hydeSearchAdaEmbedding(arkRequest, process.env.OPENAI_API_KEY!, process.env.OPENAI_ORG_ID!))
         .finalAnswer,
     ).toContain("Java");
   }, 30000);

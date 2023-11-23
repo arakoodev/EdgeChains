@@ -1,9 +1,9 @@
 import { Hono } from "hono";
-import { HydeSearchService } from "../service/HydeSearchService";
-import { HydeFragmentData } from "../types/HydeFragmentData";
-const HydeSearch = new Hono();
+import { hydeSearchAdaEmbedding } from "../service/HydeSearchService.js";
+import { HydeFragmentData } from "../types/HydeFragmentData.js";
+const HydeSearchRouter = new Hono();
 
-HydeSearch.get("/hyde-search/query-rrf", (c) => {
+HydeSearchRouter.get("/hyde-search/query-rrf", (c) => {
   return c.html(
     `<!DOCTYPE html>
     <html xmlns="http://www.w3.org/1999/xhtml"
@@ -283,7 +283,7 @@ HydeSearch.get("/hyde-search/query-rrf", (c) => {
   );
 });
 
-HydeSearch.get("/search", async (c) => {
+HydeSearchRouter.get("/search", async (c) => {
   const query = await c.req.query();
   const arkRequest = {
     topK: parseInt(query.topK ?? "5"),
@@ -303,8 +303,11 @@ HydeSearch.get("/search", async (c) => {
     },
     orderRRF: query.orderRRF,
   };
-  const answer =
-    await HydeSearchService.request().hydeSearchAdaEmbedding(arkRequest);
+  const answer = await hydeSearchAdaEmbedding(
+    arkRequest,
+    process.env.OPENAI_API_KEY!,
+    process.env.OPENAI_ORG_ID!,
+  );
   const final_answer = answer.finalAnswer;
   const responses = answer.wordEmbeddings;
   const data: HydeFragmentData = { responses, final_answer };
@@ -350,4 +353,4 @@ HydeSearch.get("/search", async (c) => {
     `);
 });
 
-export default HydeSearch;
+export { HydeSearchRouter };

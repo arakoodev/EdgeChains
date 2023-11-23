@@ -1,5 +1,5 @@
 import { createConnection, getManager } from "typeorm";
-import DatabaseConnection from "../config/db";
+import DatabaseConnection from "../config/db.js";
 export class PostgresClient {
   wordEmbeddings: number[][];
   metric: PostgresDistanceMetric;
