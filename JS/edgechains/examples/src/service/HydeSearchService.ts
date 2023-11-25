@@ -59,7 +59,7 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
                 return embedding;
             })
         );
-        console.log('REACHED');
+
         // Chain 5 ==> Query via EmbeddingChain
         const dbClient = new PostgresClient(
             await embeddingsListChain,
@@ -71,9 +71,9 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
             arkRequest,
             15
         );
-        console.log('issue found')
+
         const queryResult = await dbClient.dbQuery();
-console.log('this is the issue')
+
         // Chain 6 ==> Create Prompt using Embeddings
         const retrievedDocs: string[] = [];
 
