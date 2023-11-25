@@ -1,5 +1,5 @@
-import { html } from 'hono/html'
-import { FC } from 'hono/jsx'
+import { html } from "hono/html";
+import { FC } from "hono/jsx";
 
 const ExampleLayout: FC = (props) => html`
 <!DOCTYPE html>
@@ -277,6 +277,6 @@ const ExampleLayout: FC = (props) => html`
     </script>
     </body>
     </html>
-`
+`;
 
-export default ExampleLayout
+export default ExampleLayout;
