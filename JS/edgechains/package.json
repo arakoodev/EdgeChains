@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@hanazuki/node-jsonnet": "^2.1.0",
+    "@hono/node-server": "^1.2.0",
+    "hono": "^3.9.2",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.10"
+  }
+}

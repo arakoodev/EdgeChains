@@ -1,8 +1,10 @@
 {
-  "name": "examples",
+  "name": "edgechains",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "rm -rf dist && node esbuild.build.js",
     "start": "node dist/index.js",
@@ -10,16 +12,14 @@
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "test": "npx jest"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "bin": {
+    "create-edgechains": "./create-edgechains/scripts/create-edgechains.js"
+  },
   "dependencies": {
     "@hono/node-server": "^1.2.0",
     "@types/dotenv": "^8.2.0",
     "hono": "^3.9.2",
-    "pg": "^8.11.3",
-    "tsc": "^2.0.4",
-    "typescript": "^5.3.2"
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "@hanazuki/node-jsonnet": "^2.1.0",
@@ -43,5 +43,12 @@
     "tsx": "^3.12.2",
     "typeorm": "^0.3.17",
     "typescript": "^5.0.2"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "setupFiles": [
+      "./src/setupTests.ts"
+    ]
   }
 }
