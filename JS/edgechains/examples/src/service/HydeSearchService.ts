@@ -13,7 +13,7 @@ enum PostgresDistanceMetric {
 async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, orgId: string) {
     try {
         const gpt3endpoint = new OpenAiEndpoint(
-            process.env.CHAT_COMPLETION_ENDPOINT!,
+            'https://api.openai.com/v1/chat/completions',
             apiKey,
             orgId,
             "gpt-3.5-turbo",
@@ -29,8 +29,8 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
         //
         const jsonnet = new Jsonnet();
 
-        const promptPath = path.join(process.cwd(), "../examples/src/jsonnet/prompts.jsonnet");
-        const hydePath = path.join(process.cwd(), "../examples/src/jsonnet/hyde.jsonnet");
+        const promptPath = path.join(process.cwd(), "../src/jsonnet/prompts.jsonnet");
+        const hydePath = path.join(process.cwd(), "../src/jsonnet/hyde.jsonnet");
         // Load Jsonnet to extract args..
         const promptLoader = await jsonnet.evaluateFile(promptPath);
 
@@ -59,6 +59,7 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
                 return embedding;
             })
         );
+        console.log('REACHED');
         // Chain 5 ==> Query via EmbeddingChain
         const dbClient = new PostgresClient(
             await embeddingsListChain,
@@ -70,8 +71,9 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
             arkRequest,
             15
         );
+        console.log('issue found')
         const queryResult = await dbClient.dbQuery();
-
+console.log('this is the issue')
         // Chain 6 ==> Create Prompt using Embeddings
         const retrievedDocs: string[] = [];
 
