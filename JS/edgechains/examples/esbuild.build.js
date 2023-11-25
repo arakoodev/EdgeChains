@@ -15,11 +15,11 @@ fs.promises.mkdir(distPath, { recursive: true });
 
 esbuild
     .build({
-        entryPoints: ["./index.ts"],
+        entryPoints: ["./src/index.ts"],
         bundle: true,
         minify: true,
         platform: "node",
-        outdir: "./dist",
+        outfile: "./dist/index.js",
         tsconfig: "./tsconfig.json",
         target: "node21.1.0",
         external: [
@@ -42,17 +42,4 @@ esbuild
             ".jsonnet": "text",
         },
     })
-    .then(() => {
-        const entryPoint = path.resolve(process.cwd(), "index.ts");
-        const output = path.resolve(process.cwd(), "dist/index.d.ts");
-
-        execSync(`dts-bundle-generator ${entryPoint} --out-file ${output}`, {
-            stdio: "inherit",
-        });
-
-        console.log("TypeScript compilation and index.d.ts generation successful.");
-    })
-    .catch(() => {
-        console.error("TypeScript compilation or index.d.ts generation failed.");
-        process.exit(1);
-    });
+    .catch(() => process.exit(1));
