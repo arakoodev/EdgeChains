@@ -1,7 +1,7 @@
 import { Jsonnet } from "@hanazuki/node-jsonnet";
-import { OpenAiEndpoint } from "../lib/OpenAiEndpoint.js";
-import { PostgresClient } from "../lib/PostgresClient.js";
-import type { ArkRequest } from "../types/ArkRequest.js";
+import { OpenAiEndpoint } from "edgechains";
+import { PostgresClient } from "edgechains";
+import type { ArkRequest } from "edgechains";
 import * as path from "path";
 
 enum PostgresDistanceMetric {
@@ -33,8 +33,14 @@ async function hydeSearchAdaEmbedding(
     //
     const jsonnet = new Jsonnet();
 
-    const promptPath = path.join(process.cwd(), './node_modules/edgechains/jsonnet/prompts.jsonnet');
-    const hydePath = path.join(process.cwd(), './node_modules/edgechains/jsonnet/hyde.jsonnet');
+    const promptPath = path.join(
+      process.cwd(),
+      "../examples/src/jsonnet/prompts.jsonnet",
+    );
+    const hydePath = path.join(
+      process.cwd(),
+      "../examples/src/jsonnet/hyde.jsonnet",
+    );
     // Load Jsonnet to extract args..
     const promptLoader = await jsonnet.evaluateFile(promptPath);
 
