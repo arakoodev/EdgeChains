@@ -9,8 +9,8 @@ function get_gitignore() {
   # environment files
   .env
   `.trim();
-  
+
     return text.trim() + "\n";
-  }
-  
-  export { get_gitignore };
+}
+
+export { get_gitignore };

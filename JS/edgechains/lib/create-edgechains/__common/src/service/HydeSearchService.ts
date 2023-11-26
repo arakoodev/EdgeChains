@@ -13,7 +13,7 @@ enum PostgresDistanceMetric {
 async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, orgId: string) {
     try {
         const gpt3endpoint = new OpenAiEndpoint(
-            'https://api.openai.com/v1/chat/completions',
+            "https://api.openai.com/v1/chat/completions",
             apiKey,
             orgId,
             "gpt-3.5-turbo",
