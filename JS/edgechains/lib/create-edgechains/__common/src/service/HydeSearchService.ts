@@ -1,7 +1,7 @@
 import { Jsonnet } from "@hanazuki/node-jsonnet";
-import { OpenAiEndpoint } from "edgechains";
-import { PostgresClient } from "edgechains";
-import type { ArkRequest } from "edgechains";
+import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
+import { PostgresClient } from "@arakoodev/edgechains.js";
+import type { ArkRequest } from "@arakoodev/edgechains.js";
 import * as path from "path";
 
 enum PostgresDistanceMetric {
