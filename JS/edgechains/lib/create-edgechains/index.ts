@@ -307,6 +307,7 @@ async function main() {
       extension: ".json"
     });
   
+    console.log("\nFinished...");
   } catch (e) {
     return e;
   }
