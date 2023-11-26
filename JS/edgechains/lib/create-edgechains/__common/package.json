@@ -23,6 +23,7 @@
         "typescript": "^5.3.2"
     },
     "devDependencies": {
+        "@arakoodev/edgechains.js": "0.1.1",
         "@hanazuki/node-jsonnet": "^2.1.0",
         "@types/jest": "^29.5.8",
         "@types/node": "^20.9.4",

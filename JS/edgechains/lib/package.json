@@ -1,6 +1,6 @@
 {
     "name": "@arakoodev/edgechains.js",
-    "version": "0.0.1",
+    "version": "0.1.1",
     "main": "dist/index.js",
     "files": [
         "dist"
@@ -13,7 +13,7 @@
         "test": "npx jest"
     },
     "bin": {
-        "create-edgechains": "./create-edgechains/scripts/create-edgechains.js"
+        "create-edgechains": "./create-edgechains/scripts/create-edgechains.mjs"
     },
     "dependencies": {
         "@hono/node-server": "^1.2.0",

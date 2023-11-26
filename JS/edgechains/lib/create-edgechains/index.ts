@@ -20,7 +20,7 @@ function dirname_from_import_meta(import_meta_url: string) {
 
 type Prompts = Parameters<(typeof inquirer)["prompt"]>[0];
 
-const prompts = [
+const prompts: Prompts[] = [
     {
         type: "",
         name: "new_dir_name",
@@ -31,7 +31,7 @@ const prompts = [
             return !!dirname && !invalidCharacters.test(dirname);
         },
     },
-] satisfies Prompts;
+];
 
 async function ask_questions(): Promise<
     | {
@@ -47,11 +47,12 @@ async function ask_questions(): Promise<
 }
 
 function get_options(choices: NonNullable<Awaited<ReturnType<typeof ask_questions>>>) {
-    return {
+    const options: Options =  {
         project_name: choices.new_dir_name,
         lang_preference: "typescript",
         deployment_target: "node",
-    } satisfies Options;
+    };
+    return options;
 }
 
 async function main() {
@@ -266,7 +267,7 @@ async function main() {
     }
 }
 
-await main();
+main();
 
 async function handle_file_copy_low_level({
     code,
