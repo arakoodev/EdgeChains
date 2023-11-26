@@ -1,5 +1,4 @@
 import { createConnection, getManager } from "typeorm";
-import DatabaseConnection from "../config/db.js";
 export class PostgresClient {
     wordEmbeddings: number[][];
     metric: PostgresDistanceMetric;
@@ -31,7 +30,8 @@ export class PostgresClient {
     }
 
     async dbQuery() {
-        const entityManager = await DatabaseConnection.getEntityManager();
+        const connection = await createConnection();
+        const entityManager = await getManager();
         try {
             const query1 = `SET LOCAL ivfflat.probes = ${this.probes};`;
             await entityManager.query(query1);
@@ -93,10 +93,8 @@ export class PostgresClient {
             }
             const results = await entityManager.query(query);
             return results;
-        } catch (error) {
-            // Handle errors here
-            console.error(error);
-            throw error;
+        } finally {
+            await connection.close();
         }
     }
 }

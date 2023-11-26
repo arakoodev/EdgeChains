@@ -13,7 +13,7 @@ enum PostgresDistanceMetric {
 async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, orgId: string) {
     try {
         const gpt3endpoint = new OpenAiEndpoint(
-            "https://api.openai.com/v1/chat/completions",
+            'https://api.openai.com/v1/chat/completions',
             apiKey,
             orgId,
             "gpt-3.5-turbo",
@@ -29,8 +29,8 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
         //
         const jsonnet = new Jsonnet();
 
-        const promptPath = path.join(process.cwd(), "../src/jsonnet/prompts.jsonnet");
-        const hydePath = path.join(process.cwd(), "../src/jsonnet/hyde.jsonnet");
+        const promptPath = path.join(__dirname, "../src/jsonnet/prompts.jsonnet");
+        const hydePath = path.join(__dirname, "../src/jsonnet/hyde.jsonnet");
         // Load Jsonnet to extract args..
         const promptLoader = await jsonnet.evaluateFile(promptPath);
 

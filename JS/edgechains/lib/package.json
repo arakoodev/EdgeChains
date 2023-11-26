@@ -1,6 +1,6 @@
 {
-    "name": "edgechains",
-    "version": "1.0.0",
+    "name": "@arakoodev/edgechains.js",
+    "version": "0.0.1",
     "main": "dist/index.js",
     "files": [
         "dist"
@@ -19,6 +19,7 @@
         "@hono/node-server": "^1.2.0",
         "@types/dotenv": "^8.2.0",
         "hono": "^3.9.2",
+        "inquirer": "^9.2.12",
         "pg": "^8.11.3"
     },
     "devDependencies": {
