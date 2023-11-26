@@ -3,8 +3,8 @@ function get_env() {
     OPENAI_API_KEY=
     OPENAI_ORG_ID=
   `.trim();
-  
+
     return text.trim() + "\n";
-  }
-  
-  export { get_env };
+}
+
+export { get_env };
