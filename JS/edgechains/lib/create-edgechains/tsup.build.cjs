@@ -1,5 +1,5 @@
-const { execSync } = require('child_process');
+const { execSync } = require("child_process");
 
-execSync('rm -rf dist');
+execSync("rm -rf dist");
 
-execSync('tsup-node index.ts --format esm', { stdio: 'inherit' });
+execSync("tsup-node index.ts --format esm", { stdio: "inherit" });
