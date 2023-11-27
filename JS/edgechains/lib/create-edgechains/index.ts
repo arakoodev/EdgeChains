@@ -47,7 +47,7 @@ async function ask_questions(): Promise<
 }
 
 function get_options(choices: NonNullable<Awaited<ReturnType<typeof ask_questions>>>) {
-    const options: Options =  {
+    const options: Options = {
         project_name: choices.new_dir_name,
         lang_preference: "typescript",
         deployment_target: "node",
