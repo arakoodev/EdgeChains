@@ -266,8 +266,11 @@ async function main() {
         return e;
     }
 }
+async function runMain() {
+    await main();
+}
 
-main();
+runMain();
 
 async function handle_file_copy_low_level({
     code,
