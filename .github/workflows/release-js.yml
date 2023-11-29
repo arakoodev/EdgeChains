@@ -1,0 +1,61 @@
+name: Release Js
+
+on:
+  workflow_dispatch:
+    inputs:
+      manualTrigger:
+        description: 'Manually trigger the workflow'
+        required: true
+
+jobs:
+  checkout_ts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ts
+          fetch-depth: 0
+
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Prettier
+        run: npm install prettier@latest
+
+      - name: Install ESLint
+        run: npm install eslint@latest eslint-config-prettier@latest eslint-plugin-prettier@latest
+
+      - name: Run ESLint and Prettier
+        run: |
+          npx eslint JS --fix --cache --config JS/.eslintrc.js --ext .js,.jsx,.ts,.tsx
+          npx prettier --tab-width 4 --print-width 100 --trailing-comma es5 --ignore-path "$(PWD)/node_modules/*" --write JS/
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Automatically apply Prettier changes'
+          commit_user_name: GitHub Actions
+          commit_user_email: actions@github.com
+          commit_author: GitHub Actions <actions@github.com>
+          branch: ${{ github.head_ref }}
+
+  release:
+    name: Release Js
+    needs: formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Package for Release
+        run: npm pack
+
+      - name: Upload Release Tarball
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-artifact
+          path: '*.tgz'

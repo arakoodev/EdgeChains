@@ -1,0 +1,82 @@
+name: Release Java
+
+on:
+  workflow_dispatch:
+    inputs:
+      manualTrigger:
+        description: 'Manually trigger the workflow'
+        required: true
+
+jobs:
+  build_and_run:
+    runs-on: ubuntu-latest
+    outputs:
+      VALUE: ${{ steps.set_short_hash.outputs.VALUE }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set SHORT_HASH
+        id: set_short_hash
+        run: |
+          echo "::set-output name=VALUE::${{ github.sha }}"
+          echo "RELEASE_TAG=${{ github.sha:0:8}}-$(date -u +"%Y.%m.%d")" >> $GITHUB_ENV
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.9.3
+
+      - name: Create output folder
+        run: mkdir BuildOutput
+
+      - name: Build Java project
+        working-directory: ./FlySpring
+        run: mvn clean package -DskipTests
+
+      - name: Run Java tests
+        working-directory: ./FlySpring
+        run: mvn test
+
+      - name: Copy JAR to Output folder
+        run: cp ./FlySpring/edgechain-app/target/edgechain.jar ./BuildOutput/
+
+      - name: Upload Output folder as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Output
+          path: ./BuildOutput/
+
+  release:
+    name: Release JAR
+    needs: build_and_run
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download JAR from build
+        uses: actions/download-artifact@v3
+        with:
+          name: Output
+          path: Output
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Set environment variables
+        id: set_env_vars
+        run: |
+          echo "TAG_NAME=${{ needs.build_and_run.outputs.VALUE }}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=${{ env.RELEASE_TAG }}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          files: |
+            ./Output/**/*

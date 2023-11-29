@@ -1,31 +1,22 @@
-name: Generate attachments
+name: PR Build
 
 on:
-  # This workflow is started only on PRs
-    pull_request_target:
-     types:
+  pull_request_target:
+    types:
       - opened
       - reopened
       - synchronize
 
 jobs:
-  # Main job
   build:
     permissions:
-      # Required to upload/save artifact, otherwise you'll get
-      # "Error: Resource not accessible by integration"
       contents: write
-      # Required to post comment, otherwise you'll get
-      # "Error: Resource not accessible by integration"
       pull-requests: write
 
     runs-on: ubuntu-latest
     outputs:
       VALUE: ${{ steps.short_hash.outputs.VALUE }}
     steps:
-      # Put your steps here to generate the files to upload.
-      # Usually configure Node.js, build, etc.
-      # Finally, upload the artifacts and post comment:
       - name: Checkout PR
         if: ${{ github.event_name == 'pull_request_target' }}
         uses: actions/checkout@v3
@@ -33,7 +24,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
-          # Token for current repo (used to post PR comment)
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set SHORT_HASH
@@ -44,35 +34,48 @@ jobs:
         env:
           LONG_HASH: ${{ github.sha }}
 
-      - name: Set up JDK
+      - name: Determine changed directories
+        id: changed_dirs
+        run: |
+          CHANGED_DIRS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^(Java|JS)/' | cut -d/ -f1 | sort -u)
+          echo "CHANGED_DIRS=${CHANGED_DIRS}" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set up JDK and Node.js
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'adopt'
 
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@v4.5
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          maven-version: 3.9.3
+          node-version: '18'
+
+      - name: Build Java code
+        if: ${{ contains(env.CHANGED_DIRS, 'Java') }}
+        working-directory: ./FlySpring
+        run: mvn clean package -DskipTests
+
+      - name: Build JavaScript code
+        if: ${{ contains(env.CHANGED_DIRS, 'JS') }}
+        run: |
+          npm install
+          npm run build
 
       - name: Create output folder
         run: mkdir BuildOutput
 
-      - name: Build edgechain-app project
-        working-directory: ./FlySpring
-        #         run: mvn -Djavacpp.platform=linux-x86_64 clean package -DskipTests
-        run: mvn  clean package -DskipTests
-
-      - name: Run edgechain testcases
-        working-directory: ./FlySpring
-        run: mvn test
-
-      - name: Copy edgechain-app JAR to Examples folder
+      - name: Copy JAR to Output folder
+        if: ${{ contains(env.CHANGED_DIRS, 'Java') }}
         run: cp ./FlySpring/edgechain-app/target/edgechain.jar ./BuildOutput/
 
-      - name: Upload Examples folder as artifact
+      - name: Copy JavaScript build to Output folder
+        if: ${{ contains(env.CHANGED_DIRS, 'JS') }}
+        run: cp -r ./JS/dist/* ./BuildOutput/
+
+      - name: Upload Output folder as artifact
         uses: actions/upload-artifact@v3
         with:
           name: Output
           path: ./BuildOutput/
-    
