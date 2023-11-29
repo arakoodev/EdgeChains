@@ -125,4 +125,41 @@ export class OpenAiEndpoint {
 
         return responce[0].message.content;
     }
+
+    async gptFnTestGenerator(prompt: string): Promise<string> {
+        const responce = await axios
+            .post(
+                "https://api.openai.com/v1/chat/completions",
+                {
+                    model: this.model,
+                    messages: [
+                        {
+                            role: this.role,
+                            content: prompt,
+                        },
+                    ],
+                    temperature: this.temprature,
+                },
+                {
+                    headers: {
+                        Authorization: "Bearer " + this.apiKey,
+                        "content-type": "application/json",
+                    },
+                }
+            )
+            .then(function (response) {
+                return response.data.choices;
+            })
+            .catch(function (error) {
+                if (error.response) {
+                    console.log("Server responded with status code:", error.response.status);
+                    console.log("Response data:", error.response.data);
+                } else if (error.request) {
+                    console.log("No response received:", error.request);
+                } else {
+                    console.log("Error creating request:", error.message);
+                }
+            });
+        return responce[0].message.content;
+    }
 }
