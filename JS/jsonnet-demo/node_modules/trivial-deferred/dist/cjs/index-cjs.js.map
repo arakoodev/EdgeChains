@@ -1,1 +1,0 @@
-{"version":3,"file":"index-cjs.js","sourceRoot":"","sources":["../../src/index-cjs.ts"],"names":[],"mappings":";;;;AAAA,0DAAiC;AACjC,iBAAS,MAAM,CAAC,MAAM,CAAC,kBAAQ,EAAE,EAAE,OAAO,EAAE,kBAAQ,EAAE,CAAC,CAAA","sourcesContent":["import Deferred from './index.js'\nexport = Object.assign(Deferred, { default: Deferred })\n"]}
