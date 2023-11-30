@@ -26,7 +26,8 @@
         "dotenv": "^16.3.1",
         "hono": "^3.9.2",
         "inquirer": "^9.2.12",
-        "prettier": "^3.1.0"
+        "prettier": "^3.1.0",
+        "typeorm": "^0.3.17"
     },
     "devDependencies": {
         "@hanazuki/node-jsonnet": "^2.1.0",
