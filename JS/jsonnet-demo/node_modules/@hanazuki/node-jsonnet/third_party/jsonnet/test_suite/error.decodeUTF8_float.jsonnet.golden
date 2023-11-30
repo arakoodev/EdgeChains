@@ -1,2 +1,0 @@
-RUNTIME ERROR: Element 0 of the provided array was not an integer in range [0,255]
-	error.decodeUTF8_float.jsonnet:1:1-23	

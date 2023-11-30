@@ -1,2 +1,0 @@
-RUNTIME ERROR: expected string but arr[1] was array
-	error.std_join_types1.jsonnet:17:1-26	
