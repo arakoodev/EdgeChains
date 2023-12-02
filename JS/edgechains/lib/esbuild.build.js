@@ -51,6 +51,10 @@ esbuild
         });
 
         console.log("TypeScript compilation and index.d.ts generation successful.");
+
+        execSync("cd create-edgechains && rm -rf dist");
+
+        execSync("cd create-edgechains && tsup-node index.ts --format esm", { stdio: "inherit" });
     })
     .catch(() => {
         console.error("TypeScript compilation or index.d.ts generation failed.");
