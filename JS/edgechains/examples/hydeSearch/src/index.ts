@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { HydeSearchRouter } from "./routes/hydeSearch.route.js";
+import { HydeSearchRouter } from "./HydeSearch.js";
 import { view } from "../htmljs.js";
-import ExampleLayout from "./layouts/ExampleLayout.js";
+import ExampleLayout from "./ExampleLayout.js";
 
 const app = new Hono();
 
