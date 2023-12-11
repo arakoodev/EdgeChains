@@ -1,55 +1,56 @@
 package com.flyspring.flyfly.utils;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 
-public class ProjectTypeCheckerTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-  private ProjectTypeChecker projectTypeChecker;
+class ProjectTypeCheckerTest {
 
-  @BeforeEach
-  public void setup() {
-    projectTypeChecker = new ProjectTypeChecker();
-  }
+    private ProjectTypeChecker projectTypeChecker;
 
-  @Test
-  public void testIsMavenProject() throws IOException {
-    // Create a temporary directory and file
-    Path tempDirectory = Files.createTempDirectory("tempDir");
-    Path tempFile = Files.createTempFile(tempDirectory, "test", ".txt");
+    @BeforeEach
+    void setUp() {
+        projectTypeChecker = new ProjectTypeChecker();
+    }
 
-    // Check that the file is not named "pom.xml"
-    Assertions.assertFalse(tempFile.toFile().getName().equals("pom.xml"));
+    @Test
+    @DisplayName("Test whether the directory is not a Maven project")
+    void testIsNotMavenProject() throws IOException {
+        // Create a temporary directory and file
+        Path tempDirectory = Files.createTempDirectory("tempDir");
+        Path tempFile = Files.createTempFile(tempDirectory, "test", ".txt");
 
-    // Move to the temporary directory and check if it is a Maven project
-    System.setProperty("user.dir", tempDirectory.toString());
-    Assertions.assertFalse(projectTypeChecker.isMavenProject());
+        // Check that the file is not named "pom.xml"
+        assertFalse(tempFile.toFile().getName().equals("pom.xml"));
 
-    // Delete the temporary directory and file
-    Files.deleteIfExists(tempFile);
-    Files.deleteIfExists(tempDirectory);
-  }
+        // Move to the temporary directory and check if it is a Maven project
+        System.setProperty("user.dir", tempDirectory.toString());
+        assertFalse(projectTypeChecker.isMavenProject());
 
-  @Test
-  public void testIsGradleProject() throws IOException {
-    // Create a temporary directory and file
-    Path tempDirectory = Files.createTempDirectory("tempDir");
-    Path tempFile = Files.createTempFile(tempDirectory, "test", ".txt");
+        // Delete the temporary directory and file
+        Files.deleteIfExists(tempFile);
+        Files.deleteIfExists(tempDirectory);
+    }
 
-    // Check that the file is not named "build.gradle"
-    Assertions.assertFalse(tempFile.toFile().getName().equals("build.gradle"));
+    @Test
+    @DisplayName("Test whether the directory is not a Gradle project")
+    void testIsNotGradleProject() throws IOException {
+        // Create a temporary directory and file
+        Path tempDirectory = Files.createTempDirectory("tempDir");
+        Path tempFile = Files.createTempFile(tempDirectory, "test", ".txt");
 
-    // Move to the temporary directory and check if it is a Gradle project
-    System.setProperty("user.dir", tempDirectory.toString());
-    Assertions.assertFalse(projectTypeChecker.isGradleProject());
+        // Check that the file is not named "build.gradle"
+        assertFalse(tempFile.toFile().getName().equals("build.gradle"));
 
-    // Delete the temporary directory and file
-    Files.deleteIfExists(tempFile);
-    Files.deleteIfExists(tempDirectory);
-  }
+        // Move to the temporary directory and check if it is a Gradle project
+        System.setProperty("user.dir", tempDirectory.toString());
+        assertFalse(projectTypeChecker.isGradleProject());
+
+        // Delete the temporary directory and file
+        Files.deleteIfExists(tempFile);
+        Files.deleteIfExists(tempDirectory);
+    }
 }
