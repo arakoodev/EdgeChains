@@ -29,6 +29,20 @@ public class SimpleApp {
     System.setProperty("server.port", "8080");
     SpringApplication.run(SimpleApp.class, args);
   }
+  /* Added new methods for it
+  @SpringBootApplication
+public class SimpleApp {
+
+    private static final Logger logger = LoggerFactory.getLogger(SimpleApp.class);
+
+    @Value("${openai.api.key}")
+    private String openaiApiKey;
+
+    public static void main(String[] args) {
+        System.setProperty("server.port", "8080");
+        SpringApplication.run(SimpleApp.class, args);
+    }
+  */
 
   @RestController
   @RequestMapping("/v1/examples")
@@ -47,6 +61,7 @@ public class SimpleApp {
 
     @PostMapping("/gpt/ask")
     public ResponseEntity<String> ask(@RequestBody String prompt) {
+      try {                     // Added try-catch exception
       updateMessageList("user", prompt);
       String model = "gpt-3.5-turbo";
       ChatCompletionRequest chatCompletionRequest =
@@ -70,7 +85,10 @@ public class SimpleApp {
       System.out.println(response);
       updateMessageList("assistant", response);
       return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+    } catch (Exception e) {                   // Added try-catch exception
+                logger.error("An error occurred while processing the request.", e);
+                return new ResponseEntity<>("An error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
 
     private void updateMessageList(String role, String content) {
       messages.add(new ChatMessage(role, content));
