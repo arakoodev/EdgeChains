@@ -1,0 +1,14 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: wasmjs-hono
+  namespace: knative-serving
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/target: "10"
+    spec:
+      containers:
+        - image: tanjim/wasmjs-hono
+          imagePullPolicy: Always
