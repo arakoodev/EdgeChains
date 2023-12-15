@@ -1,0 +1,61 @@
+[local_server]
+[local_server.geolocation]
+use_default_loopback = false
+[local_server.geolocation.mapping.InlineToml.addresses]
+[local_server.geolocation.mapping.InlineToml.addresses."103.117.185.66".data]
+as_name = "shree net online services private limited"
+as_number = 137679
+area_code = 0
+city = "bhiwandi"
+conn_speed = "broadband"
+conn_type = "wifi"
+continent = "AS"
+country_code = "IN"
+country_code3 = "IND"
+country_name = "india"
+latitude = 19.24
+longitude = 73.02
+metro_code = 356002
+postal_code = "421302"
+proxy_description = "?"
+proxy_type = "?"
+region = "MH"
+utc_offset = 530
+[local_server.geolocation.mapping.InlineToml.addresses."127.0.0.1".data]
+as_name = "Arakoo Test"
+as_number = 12345
+area_code = 123
+city = "Test City"
+conn_speed = "broadband"
+conn_type = "wired"
+continent = "NA"
+country_code = "CA"
+country_code3 = "CAN"
+country_name = "Canada"
+latitude = 12.345
+longitude = 54.321
+metro_code = 0
+postal_code = "12345"
+proxy_description = "?"
+proxy_type = "?"
+region = "BC"
+utc_offset = -700
+[local_server.geolocation.mapping.InlineToml.addresses."0000:0000:0000:0000:0000:0000:0000:0001".data]
+as_name = "Arakoo Test IPv6"
+as_number = 12345
+area_code = 123
+city = "Test City IPv6"
+conn_speed = "broadband"
+conn_type = "wired"
+continent = "NA"
+country_code = "CA"
+country_code3 = "CAN"
+country_name = "Canada"
+latitude = 12.345
+longitude = 54.321
+metro_code = 0
+postal_code = "12345"
+proxy_description = "?"
+proxy_type = "?"
+region = "BC"
+utc_offset = -700

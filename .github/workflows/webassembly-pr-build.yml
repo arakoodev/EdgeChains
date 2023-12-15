@@ -1,0 +1,101 @@
+name: Webassembly PR Build
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - 'JS/wasm/**'
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      wasm: ${{ steps.filter.outputs.wasm }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            wasm:
+              - 'JS/wasm/**'
+
+  wasm:
+    needs: changes
+    if: ${{ needs.changes.outputs.wasm == 'true' }}
+    permissions:
+      contents: write
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Cache wasmjs-engine
+        uses: actions/cache@v2
+        with:
+          path: ./JS/wasm/crates/wasmjs-engine/target
+          key: wasmjs-engine
+          restore-keys: |
+            wasmjs-engine
+
+      - name: Check if wasmjs-engine is cached
+        id: wasmjs-engine-hit
+        run: |
+          echo "cache-hit=$(test -d ./JS/wasm/crates/wasmjs-engine/target && echo true || echo false)" >> $GITHUB_OUTPUT
+
+      - name: Build wasmjs-engine
+        if: steps.wasmjs-engine-hit.outputs.cache-hit != 'true'
+        working-directory: ./JS/wasm/crates/wasmjs-engine
+        run: |
+          npm install -g @go-task/cli
+          task build
+
+      - name: Cache wasmjs-runtime
+        uses: actions/cache@v2
+        with:
+          path: ./JS/wasm/crates/wasmjs-runtime/target
+          key: wasmjs-runtime
+          restore-keys: |
+            wasmjs-runtime
+
+      - name: Check if wasmjs-runtime is cached
+        id: wasmjs-runtime-hit
+        run: |
+          echo "cache-hit=$(test -d ./JS/wasm/crates/wasmjs-runtime/target && echo true || echo false)" >> $GITHUB_OUTPUT
+
+      - name: Build wasmjs-runtime
+        if: steps.wasmjs-runtime-hit.outputs.cache-hit != 'true'
+        working-directory: ./JS/wasm/crates/wasmjs-runtime
+        run: |
+          cargo build --release
+
+      - name: Build ec-wasmjs-hono
+        working-directory: ./JS/wasm/examples/ec-wasmjs-hono
+        run: |
+          npm install
+          npm run build
+
+      - name: Run ec-wasmjs-hono
+        working-directory: ./JS/wasm/crates/wasmjs-runtime
+        run: |
+          ./target/release/wasmjs-runtime run ../../examples/ec-wasmjs-hono/bin

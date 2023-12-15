@@ -1,0 +1,41 @@
+type uri = string
+type http-status = u16
+type http-header = tuple<string, string>
+type http-headers = list<http-header>
+enum http-method {
+  get,
+  post,
+  put,
+  patch,
+  delete,
+  options,
+  head
+}
+type http-param = tuple<string, string>
+type http-params = list<http-param>
+type http-body = list<u8>
+record http-request {
+  body: option<http-body>,
+  headers: http-headers,
+  method: http-method,
+  params: http-params,
+  uri: uri,
+}
+record http-request-error {
+  error: http-error,
+  message: string
+}
+record http-response {
+  body: option<http-body>,
+  headers: http-headers,
+  status: http-status,
+}
+enum http-error {
+  invalid-request,
+  invalid-request-body,
+  invalid-response-body,
+  not-allowed,
+  internal-error,
+  timeout,
+  redirect-loop,
+}
