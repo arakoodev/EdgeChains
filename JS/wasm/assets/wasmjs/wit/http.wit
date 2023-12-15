@@ -1,0 +1,2 @@
+use * from http-types
+send-http-request: func(request: http-request) -> expected<http-response, http-request-error>
