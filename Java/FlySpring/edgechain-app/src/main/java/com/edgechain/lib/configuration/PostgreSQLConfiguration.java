@@ -1,5 +1,6 @@
 package com.edgechain.lib.configuration;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +9,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
-import java.util.Objects;
 
 @Configuration
 public class PostgreSQLConfiguration {
@@ -16,34 +16,23 @@ public class PostgreSQLConfiguration {
   @Autowired private Environment env;
 
   @Bean
-  public DataSource dataSource() {
+  DataSource dataSource() {
 
     String dbHost = env.getProperty("postgres.db.host");
     String dbUsername = env.getProperty("postgres.db.username");
     String dbPassword = env.getProperty("postgres.db.password");
 
     return DataSourceBuilder.create()
+        .type(HikariDataSource.class)
         .url(dbHost)
         .driverClassName("org.postgresql.Driver")
         .username(dbUsername)
         .password(dbPassword)
         .build();
-
-    //    return DataSourceBuilder.create()
-    //              .type(HikariDataSource.class)
-    //              .url(dbHost)
-    //              .driverClassName("org.postgresql.Driver")
-    //              .username(dbUsername)
-    //              .password(dbPassword)
-    //              .build();
   }
 
   @Bean
-  public JdbcTemplate jdbcTemplate() {
+  JdbcTemplate jdbcTemplate() {
     return new JdbcTemplate(dataSource());
-  }
-
-  private boolean nonNullAndNotEmpty(String val) {
-    return Objects.nonNull(val) && val.trim().isEmpty();
   }
 }

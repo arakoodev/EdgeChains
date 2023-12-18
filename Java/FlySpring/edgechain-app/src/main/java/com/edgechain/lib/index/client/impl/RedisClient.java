@@ -1,7 +1,7 @@
 package com.edgechain.lib.index.client.impl;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.impl.RedisEndpoint;
+import com.edgechain.lib.endpoint.impl.index.RedisEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.index.responses.RedisDocument;
 import com.edgechain.lib.index.responses.RedisProperty;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.*;
 import redis.clients.jedis.search.*;
 
 import java.util.*;
@@ -30,84 +30,105 @@ public class RedisClient {
           + "    local res = redis.call('del', k)"
           + "  end";
 
-  private RedisEndpoint endpoint;
-
-  private String indexName;
-  private String namespace;
-
-  public RedisEndpoint getEndpoint() {
-    return endpoint;
-  }
-
-  public void setEndpoint(RedisEndpoint endpoint) {
-    this.endpoint = endpoint;
-  }
-
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Autowired private JedisPooled jedisPooled;
 
-  public EdgeChain<StringResponse> upsert(
-      WordEmbeddings words2Vec, int dimension, RedisDistanceMetric metric) {
-
+  public EdgeChain<StringResponse> createIndex(RedisEndpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
+                this.createSearchIndex(
+                    getNamespace(endpoint),
+                    endpoint.getIndexName(),
+                    endpoint.getDimensions(),
+                    endpoint.getMetric());
+                emitter.onNext(new StringResponse("Created Index ~ "));
+                emitter.onComplete();
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }));
+  }
 
-                this.indexName = endpoint.getIndexName();
-                this.namespace =
-                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                        ? "knowledge"
-                        : endpoint.getNamespace();
+  public EdgeChain<StringResponse> upsert(RedisEndpoint endpoint) {
 
-                this.createSearchIndex(dimension, RedisDistanceMetric.getDistanceMetric(metric));
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try (Jedis jedis = new Jedis(jedisPooled.getPool().getResource())) {
 
                 Map<byte[], byte[]> map = new HashMap<>();
-                map.put("id".getBytes(), words2Vec.getId().getBytes());
+                map.put("id".getBytes(), endpoint.getWordEmbedding().getId().getBytes());
                 map.put(
                     "values".getBytes(),
-                    FloatUtils.toByteArray(FloatUtils.toFloatArray(words2Vec.getValues())));
+                    FloatUtils.toByteArray(
+                        FloatUtils.toFloatArray(endpoint.getWordEmbedding().getValues())));
 
                 long v =
-                    jedisPooled.hset((this.namespace + ":" + words2Vec.getId()).getBytes(), map);
-
-                jedisPooled.getPool().returnResource(jedisPooled.getPool().getResource());
+                    jedis.hset(
+                        (getNamespace(endpoint) + ":" + endpoint.getWordEmbedding().getId())
+                            .getBytes(),
+                        map);
 
                 emitter.onNext(new StringResponse("Created ~ " + v));
                 emitter.onComplete();
               } catch (Exception ex) {
-                jedisPooled.getPool().returnBrokenResource(jedisPooled.getPool().getResource());
                 emitter.onError(ex);
               }
             }),
         endpoint);
   }
 
-  public EdgeChain<List<WordEmbeddings>> query(WordEmbeddings words2Vec, int topK) {
+  public EdgeChain<StringResponse> batchUpsert(RedisEndpoint endpoint) {
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try (Jedis jedis = new Jedis(jedisPooled.getPool().getResource())) {
+
+                Pipeline pipeline = jedis.pipelined();
+
+                for (WordEmbeddings w : endpoint.getWordEmbeddingsList()) {
+                  Map<byte[], byte[]> map = new HashMap<>();
+                  map.put("id".getBytes(), w.getId().getBytes());
+                  map.put(
+                      "values".getBytes(),
+                      FloatUtils.toByteArray(FloatUtils.toFloatArray(w.getValues())));
+
+                  pipeline.hmset((getNamespace(endpoint) + ":" + w.getId()).getBytes(), map);
+                }
+
+                pipeline.sync();
+
+                emitter.onNext(new StringResponse("Batch Processing Completed"));
+                emitter.onComplete();
+              } catch (Exception ex) {
+
+                emitter.onError(ex);
+              }
+            }),
+        endpoint);
+  }
+
+  public EdgeChain<List<WordEmbeddings>> query(RedisEndpoint endpoint) {
 
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
-
-                this.indexName = endpoint.getIndexName();
-                this.namespace =
-                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                        ? "knowledge"
-                        : endpoint.getNamespace();
-
                 Query query =
                     new Query("*=>[KNN $k @values $values]")
                         .addParam(
                             "values",
-                            FloatUtils.toByteArray(FloatUtils.toFloatArray(words2Vec.getValues())))
-                        .addParam("k", topK)
+                            FloatUtils.toByteArray(
+                                FloatUtils.toFloatArray(endpoint.getWordEmbedding().getValues())))
+                        .addParam("k", endpoint.getTopK())
                         .returnFields("id", "__values_score")
                         .setSortBy("__values_score", false)
                         .dialect(2);
 
-                SearchResult searchResult = jedisPooled.ftSearch(this.indexName, query);
+                SearchResult searchResult = jedisPooled.ftSearch(endpoint.getIndexName(), query);
 
                 String body = JsonUtils.convertToString(searchResult);
 
@@ -121,40 +142,10 @@ public class RedisClient {
                   ArrayList<RedisProperty> properties = iterator.next().getProperties();
                   words2VecList.add(
                       new WordEmbeddings(
-                          properties.get(1).getId(),
-                          String.valueOf(properties.get(0).get__values_score())));
+                          properties.get(1).getId(), properties.get(0).get__values_score()));
                 }
 
                 emitter.onNext(words2VecList);
-                emitter.onComplete();
-
-              } catch (Exception ex) {
-                emitter.onError(ex);
-              }
-            }),
-        endpoint);
-  }
-
-  public EdgeChain<StringResponse> deleteByPattern(String pattern) {
-
-    return new EdgeChain<>(
-        Observable.create(
-            emitter -> {
-              try {
-
-                this.indexName = endpoint.getIndexName();
-                this.namespace =
-                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                        ? "knowledge"
-                        : endpoint.getNamespace();
-
-                jedisPooled.eval(String.format(REDIS_DELETE_SCRIPT_IN_LUA, pattern));
-
-                jedisPooled.getPool().returnResource(jedisPooled.getPool().getResource());
-
-                emitter.onNext(
-                    new StringResponse(
-                        "Word embeddings are successfully deleted for pattern:" + pattern));
                 emitter.onComplete();
 
               } catch (Exception ex) {
@@ -165,9 +156,32 @@ public class RedisClient {
         endpoint);
   }
 
-  private void createSearchIndex(int dimension, String metric) {
+  public EdgeChain<StringResponse> deleteByPattern(RedisEndpoint endpoint) {
+
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try (Jedis jedis = new Jedis(jedisPooled.getPool().getResource())) {
+
+                jedis.eval(String.format(REDIS_DELETE_SCRIPT_IN_LUA, endpoint.getPattern()));
+
+                emitter.onNext(
+                    new StringResponse(
+                        "Word embeddings are successfully deleted for pattern:"
+                            + endpoint.getPattern()));
+                emitter.onComplete();
+
+              } catch (Exception ex) {
+                emitter.onError(ex);
+              }
+            }),
+        endpoint);
+  }
+
+  private void createSearchIndex(
+      String namespace, String indexName, int dimension, RedisDistanceMetric metric) {
     try {
-      Map<String, Object> map = jedisPooled.ftInfo(this.indexName);
+      Map<String, Object> map = jedisPooled.ftInfo(indexName);
       if (Objects.nonNull(map)) {
         return;
       }
@@ -184,12 +198,18 @@ public class RedisClient {
             .addTextField("id", 1)
             .addVectorField("values", Schema.VectorField.VectorAlgo.HNSW, attributes);
 
-    IndexDefinition indexDefinition = new IndexDefinition().setPrefixes(this.namespace);
+    IndexDefinition indexDefinition = new IndexDefinition().setPrefixes(namespace);
 
     String ftCreate =
         jedisPooled.ftCreate(
-            this.indexName, IndexOptions.defaultOptions().setDefinition(indexDefinition), schema);
+            indexName, IndexOptions.defaultOptions().setDefinition(indexDefinition), schema);
 
     logger.info("Redis search vector_index created ~ " + ftCreate);
+  }
+
+  private String getNamespace(RedisEndpoint endpoint) {
+    return (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+        ? "knowledge"
+        : endpoint.getNamespace();
   }
 }

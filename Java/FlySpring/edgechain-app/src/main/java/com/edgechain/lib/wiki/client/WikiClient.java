@@ -1,6 +1,6 @@
 package com.edgechain.lib.wiki.client;
 
-import com.edgechain.lib.endpoint.impl.WikiEndpoint;
+import com.edgechain.lib.endpoint.impl.wiki.WikiEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.wiki.response.WikiResponse;
 import com.fasterxml.jackson.databind.JsonNode;

@@ -3,7 +3,7 @@ package com.edgechain.service.controllers.bgeSmall;
 import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.embeddings.bgeSmall.BgeSmallClient;
 import com.edgechain.lib.embeddings.bgeSmall.response.BgeSmallResponse;
-import com.edgechain.lib.endpoint.impl.BgeSmallEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.BgeSmallEndpoint;
 import com.edgechain.lib.logger.entities.EmbeddingLog;
 import com.edgechain.lib.logger.services.EmbeddingLogService;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
@@ -32,10 +32,8 @@ public class BgeSmallController {
   @PostMapping
   public Single<BgeSmallResponse> embeddings(@RequestBody BgeSmallEndpoint bgeSmallEndpoint) {
 
-    this.bgeSmallClient.setEndpoint(bgeSmallEndpoint);
-
     EdgeChain<BgeSmallResponse> edgeChain =
-        this.bgeSmallClient.createEmbeddings(bgeSmallEndpoint.getInput());
+        this.bgeSmallClient.createEmbeddings(bgeSmallEndpoint.getRawText(), bgeSmallEndpoint);
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
@@ -53,9 +51,9 @@ public class BgeSmallController {
                 embeddingLog.setLatency(duration.toMillis());
                 embeddingLogService.saveOrUpdate(embeddingLog);
               })
-          .toSingle();
+          .toSingleWithoutScheduler();
     }
 
-    return edgeChain.toSingle();
+    return edgeChain.toSingleWithoutScheduler();
   }
 }

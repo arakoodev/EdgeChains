@@ -86,13 +86,31 @@ public class ChatCompletionResponse implements ArkObject, Serializable {
   @Override
   public JSONObject toJson() {
     JSONObject json = new JSONObject();
-    json.put("id", id);
-    json.put("object", object);
+
+    if (id != null) {
+      json.put("id", id);
+    }
+
+    if (object != null) {
+      json.put("object", object);
+    }
+
     json.put("created", created);
-    json.put("model", model);
-    json.put(
-        "choices", choices.stream().map(ChatCompletionChoice::toJson).collect(Collectors.toList()));
-    json.put("usage", usage.toJson());
+
+    if (model != null) {
+      json.put("model", model);
+    }
+
+    if (choices != null) {
+      json.put(
+          "choices",
+          choices.stream().map(ChatCompletionChoice::toJson).collect(Collectors.toList()));
+    }
+
+    if (usage != null) {
+      json.put("usage", usage.toJson());
+    }
+
     return json;
   }
 }

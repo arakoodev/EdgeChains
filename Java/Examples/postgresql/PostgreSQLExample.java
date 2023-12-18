@@ -4,12 +4,14 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
 import com.edgechain.lib.chains.PostgresRetrieval;
-import com.edgechain.lib.chains.Retrieval;
 import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.impl.*;
+import com.edgechain.lib.endpoint.impl.context.PostgreSQLHistoryContextEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.OpenAiEmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.index.PostgresEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.index.domain.PostgresWordEmbeddings;
 import com.edgechain.lib.index.enums.PostgresDistanceMetric;
+import com.edgechain.lib.index.enums.PostgresLanguage;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
 import com.edgechain.lib.jsonnet.enums.DataType;
@@ -26,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -36,13 +37,14 @@ import org.springframework.web.bind.annotation.*;
 @SpringBootApplication
 public class PostgreSQLExample {
 
-  private static final String OPENAI_AUTH_KEY = "";
-
-  private static OpenAiEndpoint ada002Embedding;
-  private static OpenAiEndpoint gpt3Endpoint;
+  private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
+  private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
+  private static OpenAiChatEndpoint gpt3Endpoint;
+  private static OpenAiChatEndpoint gpt3StreamEndpoint;
   private static PostgresEndpoint postgresEndpoint;
   private static PostgreSQLHistoryContextEndpoint contextEndpoint;
 
+  // For thread safe, instantitate it in methods...
   private JsonnetLoader queryLoader = new FileJsonnetLoader("./postgres/postgres-query.jsonnet");
   private JsonnetLoader chatLoader = new FileJsonnetLoader("./postgres/postgres-chat.jsonnet");
 
@@ -62,30 +64,48 @@ public class PostgreSQLExample {
     // If you want to use PostgreSQL only; then just provide dbHost, dbUsername & dbPassword.
     // If you haven't specified PostgreSQL, then logs won't be stored.
     properties.setProperty("postgres.db.host", "");
-    properties.setProperty("postgres.db.username", "postgres");
+    properties.setProperty("postgres.db.username", "");
     properties.setProperty("postgres.db.password", "");
 
     new SpringApplicationBuilder(PostgreSQLExample.class).properties(properties).run(args);
 
-    // Variables Initialization ==> Endpoints must be intialized in main method...
-    ada002Embedding =
-        new OpenAiEndpoint(
+    gpt3Endpoint =
+        new OpenAiChatEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.85,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+
+    gpt3StreamEndpoint =
+        new OpenAiChatEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.85,
+            true,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+
+    OpenAiEmbeddingEndpoint adaEmbedding =
+        new OpenAiEmbeddingEndpoint(
             OPENAI_EMBEDDINGS_API,
             OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
             "text-embedding-ada-002",
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    gpt3Endpoint =
-        new OpenAiEndpoint(
-            OPENAI_CHAT_COMPLETION_API,
-            OPENAI_AUTH_KEY,
-            "gpt-3.5-turbo",
-            "user",
-            0.7,
-            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
-
+    // Defining tablename and namespace...
     postgresEndpoint =
-        new PostgresEndpoint("spring_vectors", new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
+        new PostgresEndpoint(
+            "pg_vectors",
+            "machine-learning",
+            adaEmbedding,
+            new ExponentialDelay(5, 5, 2, TimeUnit.SECONDS));
+
     contextEndpoint = new PostgreSQLHistoryContextEndpoint(new FixedDelay(2, 3, TimeUnit.SECONDS));
   }
 
@@ -136,39 +156,36 @@ public class PostgreSQLExample {
      */
     @PostMapping("/postgres/upsert")
     public void upsert(ArkRequest arkRequest) throws IOException {
-
-      String namespace = arkRequest.getQueryParam("namespace");
       String filename = arkRequest.getMultiPart("file").getSubmittedFileName();
       InputStream file = arkRequest.getMultiPart("file").getInputStream();
 
-      postgresEndpoint.setNamespace(namespace);
-
       String[] arr = pdfReader.readByChunkSize(file, 512);
 
-      final Retrieval retrieval =
-          new PostgresRetrieval(postgresEndpoint, filename, 1536, ada002Embedding, arkRequest);
+      PostgresRetrieval retrieval =
+          new PostgresRetrieval(
+              arr, postgresEndpoint, 1536, filename, PostgresLanguage.ENGLISH, arkRequest);
 
-      IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
+      //   retrieval.setBatchSize(50); // Modifying batchSize....(Default is 30)
+
+      // Getting ids from upsertion... Internally, it automatically parallelizes the operation...
+      List<String> ids = retrieval.upsert();
+
+      ids.forEach(System.out::println);
+
+      System.out.println("Size: " + ids.size()); // Printing the UUIDs
     }
 
     @PostMapping(value = "/postgres/query")
     public ArkResponse query(ArkRequest arkRequest) {
 
-      String namespace = arkRequest.getQueryParam("namespace");
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
 
-      postgresEndpoint.setNamespace(namespace);
-
-      // Chain 1==> Get Embeddings  From Input & Then Query To PostgreSQL
-      EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
-
-      //  Chain 2 ==> Query Embeddings from PostgreSQL
+      //  Chain 1==> Query Embeddings from PostgreSQL
       EdgeChain<List<PostgresWordEmbeddings>> queryChain =
           new EdgeChain<>(
               postgresEndpoint.query(
-                  embeddingsChain.get(), PostgresDistanceMetric.IP, topK, 10)); // defining probes
+                  List.of(query), PostgresDistanceMetric.COSINE, topK, topK, 10, arkRequest));
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI
@@ -184,14 +201,8 @@ public class PostgreSQLExample {
       String contextId = arkRequest.getQueryParam("id");
 
       String query = arkRequest.getBody().getString("query");
-      String namespace = arkRequest.getQueryParam("namespace");
 
       boolean stream = arkRequest.getBooleanHeader("stream");
-
-      // Configure PostgresEndpoint
-      postgresEndpoint.setNamespace(namespace);
-
-      gpt3Endpoint.setStream(stream);
 
       // Get HistoryContext
       HistoryContext historyContext = contextEndpoint.get(contextId);
@@ -206,24 +217,23 @@ public class PostgreSQLExample {
 
       // Extract topK value from JsonnetLoader;
       int topK = chatLoader.getInt("topK");
-
-      // Chain 1 ==> Get Embeddings From Input
-      EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
-
       // Chain 2 ==> Query Embeddings from PostgreSQL & Then concatenate it (preparing for prompt)
-      // let's say topK=5; then we concatenate List into a string using String.join method
+
       EdgeChain<List<PostgresWordEmbeddings>> postgresChain =
           new EdgeChain<>(
-              postgresEndpoint.query(embeddingsChain.get(), PostgresDistanceMetric.L2, topK));
+              postgresEndpoint.query(
+                  List.of(query), PostgresDistanceMetric.COSINE, topK, topK, arkRequest));
 
       // Chain 3 ===> Transform String of Queries into List<Queries>
+      // let's say topK=5; then we concatenate List into a string using String.join method
       EdgeChain<String> queryChain =
           new EdgeChain<>(postgresChain)
               .transform(
                   postgresResponse -> {
+                    List<PostgresWordEmbeddings> postgresWordEmbeddingsList =
+                        postgresResponse.get();
                     List<String> queryList = new ArrayList<>();
-                    postgresResponse.get().forEach(q -> queryList.add(q.getRawText()));
+                    postgresWordEmbeddingsList.forEach(q -> queryList.add(q.getRawText()));
                     return String.join("\n", queryList);
                   });
 
@@ -231,15 +241,15 @@ public class PostgreSQLExample {
       EdgeChain<String> promptChain =
           queryChain.transform(queries -> chatFn(historyContext.getResponse(), queries));
 
-      // Chain 5 ==> Pass the Prompt To Gpt3
-      EdgeChain<ChatCompletionResponse> gpt3Chain =
-          new EdgeChain<>(
-              gpt3Endpoint.chatCompletion(promptChain.get(), "PostgresChatChain", arkRequest));
-
       //  (FOR NON STREAMING)
       // If it's not stream ==>
       // Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
       if (!stream) {
+
+        // Chain 5 ==> Pass the Prompt To Gpt3
+        EdgeChain<ChatCompletionResponse> gpt3Chain =
+            new EdgeChain<>(
+                gpt3Endpoint.chatCompletion(promptChain.get(), "PostgresChatChain", arkRequest));
 
         // Chain 6
         EdgeChain<ChatCompletionResponse> historyUpdatedChain =
@@ -256,6 +266,12 @@ public class PostgreSQLExample {
 
       // For STREAMING Version
       else {
+
+        // Chain 5 ==> Pass the Prompt To Gpt3
+        EdgeChain<ChatCompletionResponse> gpt3Chain =
+            new EdgeChain<>(
+                gpt3StreamEndpoint.chatCompletion(
+                    promptChain.get(), "PostgresChatChain", arkRequest));
 
         /* As the response is in stream, so we will use StringBuilder to append the response
         and once GPT chain indicates that it is finished, we will save the following into Postgres

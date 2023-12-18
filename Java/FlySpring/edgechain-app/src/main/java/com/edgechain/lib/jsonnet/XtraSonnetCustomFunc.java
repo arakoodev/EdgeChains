@@ -1,6 +1,6 @@
 package com.edgechain.lib.jsonnet;
 
-import com.edgechain.lib.endpoint.impl.WikiEndpoint;
+import com.edgechain.lib.endpoint.impl.wiki.WikiEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import io.github.jam01.xtrasonnet.DataFormatService;
 import io.github.jam01.xtrasonnet.header.Header;

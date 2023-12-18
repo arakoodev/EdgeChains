@@ -4,7 +4,7 @@ import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.context.client.impl.RedisHistoryContextClient;
 import com.edgechain.lib.context.domain.ContextPutRequest;
 import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.endpoint.impl.RedisHistoryContextEndpoint;
+import com.edgechain.lib.endpoint.impl.context.RedisHistoryContextEndpoint;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.beans.factory.annotation.Autowired;

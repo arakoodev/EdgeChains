@@ -39,6 +39,7 @@ class ArkEmitterObserver<T> extends DisposableObserver<T> implements Runnable {
 
   @Override
   public void onComplete() {
+
     if (!completed) {
       completed = true;
       responseBodyEmitter.complete();

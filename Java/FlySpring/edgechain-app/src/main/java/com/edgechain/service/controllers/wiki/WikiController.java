@@ -1,7 +1,7 @@
 package com.edgechain.service.controllers.wiki;
 
 import com.edgechain.lib.configuration.WebConfiguration;
-import com.edgechain.lib.endpoint.impl.WikiEndpoint;
+import com.edgechain.lib.endpoint.impl.wiki.WikiEndpoint;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
 import com.edgechain.lib.wiki.client.WikiClient;
 import com.edgechain.lib.wiki.response.WikiResponse;

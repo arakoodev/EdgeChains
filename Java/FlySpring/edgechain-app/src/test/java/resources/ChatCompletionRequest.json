@@ -1,9 +1,18 @@
 {
-  "model" : "gpt-3.5-turbo",
-  "temperature" : 0.7,
-  "messages" : [ {
-    "role" : "user",
-    "content" : "Can you write two unique sentences on Java Language?"
-  } ],
-  "stream" : false
+  "model": "gpt-3.5-turbo",
+  "temperature": 0.7,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Can you write two unique sentences on Java Language?"
+    }
+  ],
+  "stream": false,
+  "n": 1,
+  "stop": [],
+  "user": "",
+  "top_p": 1.0,
+  "presence_penalty": 0.0,
+  "frequency_penalty": 0.0,
+  "logit_bias": {}
 }

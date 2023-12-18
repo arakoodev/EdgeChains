@@ -1,6 +1,6 @@
 package com.edgechain.lib.controllers;
 
-import com.edgechain.lib.endpoint.impl.RedisEndpoint;
+import com.edgechain.lib.endpoint.impl.index.RedisEndpoint;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.rxjava.retry.impl.ExponentialDelay;
 import org.springframework.web.bind.annotation.DeleteMapping;
