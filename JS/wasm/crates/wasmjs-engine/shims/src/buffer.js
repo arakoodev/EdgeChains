@@ -1,19 +1,12 @@
-
 import {
     constants,
     kMaxLength,
     kStringMaxLength,
     Buffer,
     SlowBuffer,
-} from './internal/internal_buffer';
+} from "./internal/internal_buffer";
 
-export {
-    constants,
-    kMaxLength,
-    kStringMaxLength,
-    Buffer,
-    SlowBuffer,
-};
+export { constants, kMaxLength, kStringMaxLength, Buffer, SlowBuffer };
 
 export default {
     constants,
@@ -21,4 +14,4 @@ export default {
     kStringMaxLength,
     Buffer,
     SlowBuffer,
-}
+};

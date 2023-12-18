@@ -1,55 +1,55 @@
-import { build } from 'esbuild'
+import { build } from "esbuild";
 
 // Build for index.js
 build({
-  entryPoints: ['src/index.js'],
-  bundle: true,
-  outfile: 'dist/index.js',
-  format: "esm",
-  target: "esnext",
-  platform: "node",
-  treeShaking: false
+    entryPoints: ["src/index.js"],
+    bundle: true,
+    outfile: "dist/index.js",
+    format: "esm",
+    target: "esnext",
+    platform: "node",
+    treeShaking: false,
 }).catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+    console.error(error);
+    process.exit(1);
+});
 
 // Build for buffer.js
 build({
-  entryPoints: ['src/buffer.js'],
-  bundle: true,
-  outfile: 'dist/buffer.js',
-  format: "esm",
-  target: "esnext",
-  platform: "node",
-  treeShaking: false
+    entryPoints: ["src/buffer.js"],
+    bundle: true,
+    outfile: "dist/buffer.js",
+    format: "esm",
+    target: "esnext",
+    platform: "node",
+    treeShaking: false,
 }).catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+    console.error(error);
+    process.exit(1);
+});
 
 build({
-  entryPoints: ['src/path.js'],
-  bundle: true,
-  outfile: 'dist/path.js',
-  format: "esm",
-  target: "esnext",
-  platform: "node",
-  treeShaking: false
+    entryPoints: ["src/path.js"],
+    bundle: true,
+    outfile: "dist/path.js",
+    format: "esm",
+    target: "esnext",
+    platform: "node",
+    treeShaking: false,
 }).catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+    console.error(error);
+    process.exit(1);
+});
 
 build({
-  entryPoints: ['src/crypto.ts'],
-  bundle: true,
-  outfile: 'dist/crypto.js',
-  format: "esm",
-  target: "esnext",
-  platform: "node",
-  treeShaking: false
+    entryPoints: ["src/crypto.ts"],
+    bundle: true,
+    outfile: "dist/crypto.js",
+    format: "esm",
+    target: "esnext",
+    platform: "node",
+    treeShaking: false,
 }).catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+    console.error(error);
+    process.exit(1);
+});
