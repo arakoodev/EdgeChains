@@ -1,11 +1,19 @@
 package com.edgechain.lib.flyfly.commands.run;
 
-import static java.nio.file.StandardWatchEventKinds.*;
-
 import com.edgechain.lib.flyfly.utils.ProjectSetup;
 import jakarta.annotation.PreDestroy;
-import java.io.*;
-import java.nio.file.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -15,11 +23,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.zeroturnaround.exec.ProcessExecutor;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 @Component
 public class ProjectRunner {
 
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Autowired TestContainersStarter testContainersStarter;
   @Autowired ProjectSetup projectSetup;
@@ -31,30 +42,35 @@ public class ProjectRunner {
 
   public void run() {
     try {
-      log.info("Configuring the project");
-      log.info("Checking if initscript exists");
+      logger.info("Configuring the project");
+      logger.info("Checking if initscript exists");
       if (!projectSetup.initscriptExists()) {
-        log.info("Initscript doesn't exist");
-        log.info("Adding flyfly.gradle to initscripts");
+        logger.info("Initscript doesn't exist");
+        logger.info("Adding flyfly.gradle to initscripts");
         projectSetup.addInitscript();
       }
       projectSetup.addAutorouteJar();
       allowInfrastructureServices = isDockerInstalled();
       if (allowInfrastructureServices) checkAndConfigureServices();
-      log.debug("registering watcher for src files changes");
+      logger.debug("registering watcher for src files changes");
       registerFilesWatcher();
-      log.debug("registering watcher for build file changes");
+      logger.debug("registering watcher for build file changes");
       registerBuildFileWatcher();
-      log.info("Starting the project");
+      logger.info("Starting the project");
       runTheProject();
       loop();
+
+    } catch (InterruptedException ie) {
+      logger.warn("interrupted", ie);
+      Thread.currentThread().interrupt();
+
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("failed", e);
     }
   }
 
   boolean isDockerInstalled() throws IOException, InterruptedException {
-    log.info("Checking if docker is installed to allow infrastructure services");
+    logger.info("Checking if docker is installed to allow infrastructure services");
     int exitCode;
     try {
       String[] command;
@@ -62,11 +78,19 @@ public class ProjectRunner {
       else command = new String[] {"docker", "info"};
 
       exitCode = new ProcessExecutor().command(command).start().getProcess().waitFor();
+
+    } catch (InterruptedException ie) {
+      logger.warn("interrupted", ie);
+      Thread.currentThread().interrupt();
+      exitCode = -1;
+
     } catch (Exception e) {
+      logger.error("failed", e);
       exitCode = -1;
     }
+
     if (exitCode != 0) {
-      log.warn("Couldn't find docker. Disabling infrastructure services.");
+      logger.warn("Couldn't find docker. Disabling infrastructure services.");
       return false;
     }
     return true;
@@ -82,9 +106,9 @@ public class ProjectRunner {
   }
 
   void checkAndConfigureServices() throws IOException {
-    log.info("Checking if services are needed");
-    //    Set<String> supportedDBGroupIds =
-    //        Set.of("mysql", "com.mysql", "org.postgresql", "org.mariadb.jdbc");
+    logger.info("Checking if services are needed");
+    // Set<String> supportedDBGroupIds =
+    // Set.of("mysql", "com.mysql", "org.postgresql", "org.mariadb.jdbc");
     Set<String> supportedDBGroupIds = Set.of("org.postgresql");
     BufferedReader reader = new BufferedReader(new FileReader("build.gradle"));
     String line;
@@ -96,12 +120,12 @@ public class ProjectRunner {
           if (start < 0 || end < 0) continue;
           String groupID = line.substring(start + 1, end);
           if (supportedDBGroupIds.contains(groupID)) {
-            if (!testContainersStarter.isServiesNeeded()) break;
-            log.info("Found : " + groupID);
+            if (!testContainersStarter.isServiceNeeded()) break;
+            logger.info("Found : {}", groupID);
             switch (groupID) {
-                //              case "mysql", "com.mysql" -> testContainersStarter.startMySQL();
+                // case "mysql", "com.mysql" -> testContainersStarter.startMySQL();
               case "org.postgresql" -> testContainersStarter.startPostgreSQL();
-                //              case "org.mariadb.jdbc" -> testContainersStarter.startMariaDB();
+                // case "org.mariadb.jdbc" -> testContainersStarter.startMariaDB();
             }
             break;
           }
@@ -167,7 +191,7 @@ public class ProjectRunner {
       if (p.endsWith("build.gradle")) found = true;
     }
     key.reset();
-    if (found) log.info("Detected build file change ...");
+    if (found) logger.info("Detected build file change ...");
     return found;
   }
 

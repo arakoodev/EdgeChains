@@ -21,7 +21,7 @@ public class RedisConfiguration {
 
   @Bean
   @Lazy
-  public JedisPooled jedisPooled() {
+  JedisPooled jedisPooled() {
 
     int port = 6379;
     String host = "127.0.0.1";
@@ -40,7 +40,7 @@ public class RedisConfiguration {
 
   @Bean
   @Lazy
-  public JedisConnectionFactory jedisConnectionFactory() {
+  JedisConnectionFactory jedisConnectionFactory() {
 
     int port = 6379;
     String host = "127.0.0.1";
@@ -63,7 +63,7 @@ public class RedisConfiguration {
   }
 
   @Bean
-  public RedisTemplate<String, Object> redisTemplate() {
+  RedisTemplate<String, Object> redisTemplate() {
     RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(jedisConnectionFactory());
     redisTemplate.setKeySerializer(new StringRedisSerializer());

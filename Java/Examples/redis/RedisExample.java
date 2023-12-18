@@ -4,11 +4,13 @@ import static com.edgechain.lib.constants.EndpointConstants.OPENAI_CHAT_COMPLETI
 import static com.edgechain.lib.constants.EndpointConstants.OPENAI_EMBEDDINGS_API;
 
 import com.edgechain.lib.chains.RedisRetrieval;
-import com.edgechain.lib.chains.Retrieval;
 import com.edgechain.lib.chunk.enums.LangType;
 import com.edgechain.lib.context.domain.HistoryContext;
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.impl.*;
+import com.edgechain.lib.endpoint.impl.context.RedisHistoryContextEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.OpenAiEmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.index.RedisEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.index.enums.RedisDistanceMetric;
 import com.edgechain.lib.jsonnet.JsonnetArgs;
 import com.edgechain.lib.jsonnet.JsonnetLoader;
@@ -25,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -35,9 +36,12 @@ import org.springframework.web.bind.annotation.*;
 @SpringBootApplication
 public class RedisExample {
 
-  private static final String OPENAI_AUTH_KEY = "";
-  private static OpenAiEndpoint ada002Embedding;
-  private static OpenAiEndpoint gpt3Endpoint;
+  private static final String OPENAI_AUTH_KEY = ""; // YOUR OPENAI AUTH KEY
+  private static final String OPENAI_ORG_ID = ""; // YOUR OPENAI ORG ID
+  private static OpenAiChatEndpoint gpt3Endpoint;
+
+  private static OpenAiChatEndpoint gpt3StreamEndpoint;
+
   private static RedisEndpoint redisEndpoint;
   private static RedisHistoryContextEndpoint contextEndpoint;
 
@@ -70,25 +74,42 @@ public class RedisExample {
 
     new SpringApplicationBuilder(RedisExample.class).properties(properties).run(args);
 
-    // Variables Initialization ==> Endpoints must be intialized in main method...
-    ada002Embedding =
-        new OpenAiEndpoint(
+    gpt3Endpoint =
+        new OpenAiChatEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.85,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+
+    gpt3StreamEndpoint =
+        new OpenAiChatEndpoint(
+            OPENAI_CHAT_COMPLETION_API,
+            OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
+            "gpt-3.5-turbo",
+            "user",
+            0.85,
+            true,
+            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
+
+    OpenAiEmbeddingEndpoint ada002Endpoint =
+        new OpenAiEmbeddingEndpoint(
             OPENAI_EMBEDDINGS_API,
             OPENAI_AUTH_KEY,
+            OPENAI_ORG_ID,
             "text-embedding-ada-002",
             new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
 
-    gpt3Endpoint =
-        new OpenAiEndpoint(
-            OPENAI_CHAT_COMPLETION_API,
-            OPENAI_AUTH_KEY,
-            "gpt-3.5-turbo",
-            "user",
-            0.7,
-            new ExponentialDelay(3, 5, 2, TimeUnit.SECONDS));
-
     redisEndpoint =
-        new RedisEndpoint("vector_index", new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+        new RedisEndpoint(
+            "vector_index",
+            "machine-learning",
+            ada002Endpoint,
+            new ExponentialDelay(3, 3, 2, TimeUnit.SECONDS));
+
     contextEndpoint =
         new RedisHistoryContextEndpoint(new ExponentialDelay(2, 2, 2, TimeUnit.SECONDS));
   }
@@ -123,19 +144,14 @@ public class RedisExample {
     /********************** REDIS WITH OPENAI ****************************/
 
     // Namespace is optional (if not provided, it will be using namespace will be "knowledge")
+    /**
+     * Both IndexName & namespace are integral for upsert & performing similarity search; If you are
+     * creating different namespace; recommended to use different index_name because filtering is
+     * done by index_name *
+     */
     @PostMapping("/redis/upsert") // /v1/examples/openai/upsert?namespace=machine-learning
     public void upsert(ArkRequest arkRequest) throws IOException {
-
-      String namespace = arkRequest.getQueryParam("namespace");
       InputStream file = arkRequest.getMultiPart("file").getInputStream();
-
-      /**
-       * Both IndexName & namespace are integral for upsert & performing similarity search; If you
-       * are creating different namespace; recommended to use different index_name because filtering
-       * is done by index_name *
-       */
-      // Configure RedisEndpoint
-      redisEndpoint.setNamespace(namespace);
 
       /**
        * We have two implementation for Read By Sentence: a) readBySentence(LangType, Your File)
@@ -147,14 +163,12 @@ public class RedisExample {
       String[] arr = pdfReader.readBySentence(LangType.EN, file);
 
       /**
-       * Retrieval Class is basically used to generate embeddings & upsert it to VectorDB; If OpenAI
-       * Embedding Endpoint is not provided; then Doc2Vec constructor is used If the model is not
-       * provided, then it will emit an error
+       * Retrieval Class is basically used to generate embeddings & upsert it to VectorDB
+       * asynchronously...;
        */
-      Retrieval retrieval =
-          new RedisRetrieval(
-              redisEndpoint, ada002Embedding, 1536, RedisDistanceMetric.COSINE, arkRequest);
-      IntStream.range(0, arr.length).parallel().forEach(i -> retrieval.upsert(arr[i]));
+      RedisRetrieval retrieval =
+          new RedisRetrieval(arr, redisEndpoint, 1536, RedisDistanceMetric.COSINE, arkRequest);
+      retrieval.upsert();
     }
 
     /**
@@ -166,19 +180,12 @@ public class RedisExample {
     @PostMapping(value = "/redis/similarity-search")
     public ArkResponse similaritySearch(ArkRequest arkRequest) {
 
-      String namespace = arkRequest.getQueryParam("namespace");
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
 
-      redisEndpoint.setNamespace(namespace);
-
-      // Chain 1 ==> Generate Embeddings Using Ada002
-      EdgeChain<WordEmbeddings> ada002Chain =
-          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
-
-      // Chain 2 ==> Pass those embeddings to Redis & Return Score/values (Similarity search)
+      // Chain 1 ==> Pass those embeddings to Redis & Return Score/values (Similarity search)
       EdgeChain<List<WordEmbeddings>> redisQueries =
-          new EdgeChain<>(redisEndpoint.query(ada002Chain.get(), topK));
+          new EdgeChain<>(redisEndpoint.query(query, topK, arkRequest));
 
       return redisQueries.getArkResponse();
     }
@@ -186,19 +193,12 @@ public class RedisExample {
     @PostMapping(value = "/redis/query")
     public ArkResponse queryRedis(ArkRequest arkRequest) {
 
-      String namespace = arkRequest.getQueryParam("namespace");
       String query = arkRequest.getBody().getString("query");
       int topK = arkRequest.getIntQueryParam("topK");
 
-      redisEndpoint.setNamespace(namespace);
-
-      // Chain 1==> Get Embeddings  From Input & Then Query To Redis
-      EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
-
-      //  Chain 2 ==> Query Embeddings from Redis
+      //  Chain 1 ==> Query Embeddings from Redis
       EdgeChain<List<WordEmbeddings>> queryChain =
-          new EdgeChain<>(redisEndpoint.query(embeddingsChain.get(), topK));
+          new EdgeChain<>(redisEndpoint.query(query, topK, arkRequest));
 
       //  Chain 3 ===> Our queryFn passes takes list and passes each response with base prompt to
       // OpenAI
@@ -213,13 +213,7 @@ public class RedisExample {
 
       String contextId = arkRequest.getQueryParam("id");
       String query = arkRequest.getBody().getString("query");
-      String namespace = arkRequest.getQueryParam("namespace");
       boolean stream = arkRequest.getBooleanHeader("stream");
-
-      // configure GPT3Endpoint
-      gpt3Endpoint.setStream(stream);
-
-      redisEndpoint.setNamespace(namespace);
 
       // Get HistoryContext
       HistoryContext historyContext = contextEndpoint.get(contextId);
@@ -235,22 +229,20 @@ public class RedisExample {
       // Extract topK value from JsonnetLoader;
       int topK = chatLoader.getInt("topK");
 
-      // Chain 1 ==> Get Embeddings From Input
-      EdgeChain<WordEmbeddings> embeddingsChain =
-          new EdgeChain<>(ada002Embedding.embeddings(query, arkRequest));
+      // Chain 1==> Query Embeddings from Redis & Then concatenate it (preparing for prompt)
 
-      // Chain 2 ==> Query Embeddings from Redis & Then concatenate it (preparing for prompt)
-      // let's say topK=5; then we concatenate List into a string using String.join method
       EdgeChain<List<WordEmbeddings>> redisChain =
-          new EdgeChain<>(redisEndpoint.query(embeddingsChain.get(), topK));
+          new EdgeChain<>(redisEndpoint.query(query, topK, arkRequest));
 
       // Chain 3 ===> Transform String of Queries into List<Queries>
+      // let's say topK=5; then we concatenate List into a string using String.join method
       EdgeChain<String> queryChain =
           new EdgeChain<>(redisChain)
               .transform(
                   redisResponse -> {
+                    List<WordEmbeddings> wordEmbeddings = redisResponse.get();
                     List<String> queryList = new ArrayList<>();
-                    redisResponse.get().forEach(q -> queryList.add(q.getId()));
+                    wordEmbeddings.forEach(q -> queryList.add(q.getId()));
                     return String.join("\n", queryList);
                   });
 
@@ -258,15 +250,15 @@ public class RedisExample {
       EdgeChain<String> promptChain =
           queryChain.transform(queries -> chatFn(historyContext.getResponse(), queries));
 
-      // Chain 5 ==> Pass the Prompt To Gpt3
-      EdgeChain<ChatCompletionResponse> gpt3Chain =
-          new EdgeChain<>(
-              gpt3Endpoint.chatCompletion(promptChain.get(), "RedisChatChain", arkRequest));
-
       //  (FOR NON STREAMING)
       // If it's not stream ==>
       // Query(What is the collect stage for data maturity) + OpenAiResponse + Prev. ChatHistory
       if (!stream) {
+
+        // Chain 5 ==> Pass the Prompt To Gpt3
+        EdgeChain<ChatCompletionResponse> gpt3Chain =
+            new EdgeChain<>(
+                gpt3Endpoint.chatCompletion(promptChain.get(), "RedisChatChain", arkRequest));
 
         // Chain 6
         EdgeChain<ChatCompletionResponse> historyUpdatedChain =
@@ -283,6 +275,11 @@ public class RedisExample {
 
       // For STREAMING Version
       else {
+
+        // Chain 5 ==> Pass the Prompt To Gpt3
+        EdgeChain<ChatCompletionResponse> gpt3Chain =
+            new EdgeChain<>(
+                gpt3StreamEndpoint.chatCompletion(promptChain.get(), "RedisChatChain", arkRequest));
 
         /* As the response is in stream, so we will use StringBuilder to append the response
         and once GPT chain indicates that it is finished, we will save the following into Redis

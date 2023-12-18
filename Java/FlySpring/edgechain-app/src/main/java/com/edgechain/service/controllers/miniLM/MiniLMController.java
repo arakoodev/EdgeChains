@@ -3,7 +3,7 @@ package com.edgechain.service.controllers.miniLM;
 import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.embeddings.miniLLM.MiniLMClient;
 import com.edgechain.lib.embeddings.miniLLM.response.MiniLMResponse;
-import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.MiniLMEndpoint;
 import com.edgechain.lib.logger.entities.EmbeddingLog;
 import com.edgechain.lib.logger.services.EmbeddingLogService;
 import com.edgechain.lib.rxjava.transformer.observable.EdgeChain;
@@ -32,10 +32,8 @@ public class MiniLMController {
   @PostMapping
   public Single<MiniLMResponse> embeddings(@RequestBody MiniLMEndpoint miniLMEndpoint) {
 
-    this.miniLMClient.setEndpoint(miniLMEndpoint);
-
     EdgeChain<MiniLMResponse> edgeChain =
-        this.miniLMClient.createEmbeddings(miniLMEndpoint.getInput());
+        this.miniLMClient.createEmbeddings(miniLMEndpoint.getRawText(), miniLMEndpoint);
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
@@ -53,9 +51,9 @@ public class MiniLMController {
                 embeddingLog.setLatency(duration.toMillis());
                 embeddingLogService.saveOrUpdate(embeddingLog);
               })
-          .toSingle();
+          .toSingleWithoutScheduler();
     }
 
-    return edgeChain.toSingle();
+    return edgeChain.toSingleWithoutScheduler();
   }
 }

@@ -1,13 +1,15 @@
 package com.edgechain.lib.controllers;
 
 import com.edgechain.lib.logger.EmbeddingLogger;
-import com.edgechain.lib.logger.EmbeddingLogger;
 import com.edgechain.lib.logger.entities.EmbeddingLog;
 import java.util.HashMap;
-import java.util.Objects;
-
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/v1/logs/embeddings")
@@ -16,8 +18,10 @@ public class EmbeddingLoggerController {
   private EmbeddingLogger embeddingLogger;
 
   private EmbeddingLogger getInstance() {
-    if (Objects.isNull(embeddingLogger)) return embeddingLogger = new EmbeddingLogger();
-    else return embeddingLogger;
+    if (embeddingLogger == null) {
+      embeddingLogger = new EmbeddingLogger();
+    }
+    return embeddingLogger;
   }
 
   @GetMapping("/findAll/{page}/{size}")
