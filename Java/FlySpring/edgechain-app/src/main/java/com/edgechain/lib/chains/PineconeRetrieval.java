@@ -1,47 +1,79 @@
 package com.edgechain.lib.chains;
 
 import com.edgechain.lib.embeddings.WordEmbeddings;
-import com.edgechain.lib.endpoint.Endpoint;
-import com.edgechain.lib.endpoint.impl.MiniLMEndpoint;
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
-import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.BgeSmallEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.MiniLMEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.OpenAiEmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.index.PineconeEndpoint;
 import com.edgechain.lib.request.ArkRequest;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PineconeRetrieval extends Retrieval {
+import java.util.List;
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+public class PineconeRetrieval {
 
   private final PineconeEndpoint pineconeEndpoint;
 
   private final ArkRequest arkRequest;
-  private final Endpoint endpoint;
+  private final String[] arr;
+  private String namespace;
+  private int batchSize = 30;
 
   public PineconeRetrieval(
-      PineconeEndpoint pineconeEndpoint, Endpoint endpoint, ArkRequest arkRequest) {
+      String[] arr, PineconeEndpoint pineconeEndpoint, String namespace, ArkRequest arkRequest) {
     this.pineconeEndpoint = pineconeEndpoint;
-    this.endpoint = endpoint;
     this.arkRequest = arkRequest;
+    this.arr = arr;
+    this.namespace = namespace;
 
-    if (endpoint instanceof OpenAiEndpoint openAiEndpoint)
+    Logger logger = LoggerFactory.getLogger(getClass());
+    if (pineconeEndpoint.getEmbeddingEndpoint() instanceof OpenAiEmbeddingEndpoint openAiEndpoint)
       logger.info("Using OpenAi Embedding Service: " + openAiEndpoint.getModel());
-    else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint)
+    else if (pineconeEndpoint.getEmbeddingEndpoint() instanceof MiniLMEndpoint miniLMEndpoint)
       logger.info(String.format("Using %s", miniLMEndpoint.getMiniLMModel().getName()));
+    else if (pineconeEndpoint.getEmbeddingEndpoint() instanceof BgeSmallEndpoint bgeSmallEndpoint)
+      logger.info(String.format("Using BgeSmall: " + bgeSmallEndpoint.getModelUrl()));
   }
 
-  @Override
-  public void upsert(String input) {
-    if (endpoint instanceof OpenAiEndpoint openAiEndpoint) {
-      WordEmbeddings embeddings =
-          openAiEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
-      this.pineconeEndpoint.upsert(embeddings);
-    } else if (endpoint instanceof MiniLMEndpoint miniLMEndpoint) {
-      WordEmbeddings embeddings =
-          miniLMEndpoint.embeddings(input, arkRequest).firstOrError().blockingGet();
-      this.pineconeEndpoint.upsert(embeddings);
-    } else
-      throw new RuntimeException(
-          "Invalid Endpoint; Only OpenAIEndpoint & MiniLMEndpoint are supported");
+  public void upsert() {
+    Observable.fromArray(arr)
+        .buffer(batchSize)
+        .concatMapCompletable(
+            batch ->
+                Observable.fromIterable(batch)
+                    .flatMap(
+                        input ->
+                            Observable.fromCallable(() -> generateEmbeddings(input))
+                                .subscribeOn(Schedulers.io()))
+                    .toList()
+                    .flatMapCompletable(
+                        wordEmbeddingsList ->
+                            Completable.fromAction(() -> executeBatchUpsert(wordEmbeddingsList))
+                                .subscribeOn(Schedulers.io())))
+        .blockingAwait();
+  }
+
+  private WordEmbeddings generateEmbeddings(String input) {
+    return pineconeEndpoint
+        .getEmbeddingEndpoint()
+        .embeddings(input, arkRequest)
+        .firstOrError()
+        .blockingGet();
+  }
+
+  private void executeBatchUpsert(List<WordEmbeddings> wordEmbeddingsList) {
+    pineconeEndpoint.batchUpsert(wordEmbeddingsList, this.namespace);
+  }
+
+  public int getBatchSize() {
+    return batchSize;
+  }
+
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
   }
 }

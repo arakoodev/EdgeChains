@@ -6,7 +6,9 @@ import com.edgechain.lib.jsonnet.exceptions.JsonnetArgException;
 public class JsonnetArgs {
 
   private DataType dataType;
-  private final String val;
+  private String val;
+
+  public JsonnetArgs() {}
 
   public JsonnetArgs(DataType dataType, String val) {
 

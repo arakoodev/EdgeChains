@@ -45,3 +45,4 @@ build/
 
 /src/main/java/com/edgechain/HydeExample.java
 /model/
+/src/main/java/com/edgechain/SupabaseMiniLMExample.java

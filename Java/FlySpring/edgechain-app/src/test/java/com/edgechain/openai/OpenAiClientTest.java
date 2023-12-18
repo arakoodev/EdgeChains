@@ -1,6 +1,6 @@
 package com.edgechain.openai;
 
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
 import com.edgechain.lib.openai.request.ChatMessage;
 import com.edgechain.lib.openai.response.ChatCompletionResponse;
@@ -88,15 +88,15 @@ public class OpenAiClientTest {
   }
 
   @Test
-  @DisplayName("Test OpenAiEndpoint With Retry Mechanism")
+  @DisplayName("Test OpenAiChatEndpoint With Retry Mechanism")
   @Order(3)
   public void testOpenAiClient_WithRetryMechanism_ShouldThrowExceptionWithRetry(TestInfo testInfo)
       throws InterruptedException {
 
     System.out.println("======== " + testInfo.getDisplayName() + " ========");
 
-    OpenAiEndpoint endpoint =
-        new OpenAiEndpoint(
+    OpenAiChatEndpoint endpoint =
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             "", // apiKey
             "", // orgId
@@ -120,7 +120,7 @@ public class OpenAiClientTest {
   }
 
   @Test
-  @DisplayName("Test OpenAiEndpoint With No Retry Mechanism")
+  @DisplayName("Test OpenAiChatEndpoint With No Retry Mechanism")
   @Order(4)
   public void testOpenAiClient_WithNoRetryMechanism_ShouldThrowExceptionWithNoRetry(
       TestInfo testInfo) throws InterruptedException {
@@ -128,8 +128,8 @@ public class OpenAiClientTest {
     System.out.println("======== " + testInfo.getDisplayName() + " ========");
 
     // Step 1 : Create OpenAi Endpoint
-    OpenAiEndpoint endpoint =
-        new OpenAiEndpoint(
+    OpenAiChatEndpoint endpoint =
+        new OpenAiChatEndpoint(
             OPENAI_CHAT_COMPLETION_API,
             "", // apiKey
             "", // orgId

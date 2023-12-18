@@ -2,7 +2,7 @@ package com.edgechain.lib.retrofit;
 
 import com.edgechain.lib.context.domain.ContextPutRequest;
 import com.edgechain.lib.context.domain.HistoryContext;
-import com.edgechain.lib.endpoint.impl.PostgreSQLHistoryContextEndpoint;
+import com.edgechain.lib.endpoint.impl.context.PostgreSQLHistoryContextEndpoint;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.*;

@@ -1,6 +1,6 @@
 package com.edgechain.lib.controllers;
 
-import com.edgechain.lib.endpoint.impl.SupabaseEndpoint;
+import com.edgechain.lib.endpoint.impl.supabase.SupabaseEndpoint;
 import com.edgechain.lib.request.ArkRequest;
 import com.edgechain.lib.supabase.response.AuthenticatedResponse;
 import com.edgechain.lib.supabase.response.SupabaseUser;

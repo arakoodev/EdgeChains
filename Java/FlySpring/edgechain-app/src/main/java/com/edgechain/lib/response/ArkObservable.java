@@ -9,7 +9,7 @@ public class ArkObservable<T> extends DeferredResult<T> implements ArkResponse {
   private final ArkObserver<T> observer;
 
   public ArkObservable(EdgeChain<T> edgeChain) {
-    observer = new ArkObserver<>(edgeChain.getScheduledObservable(), this);
+    observer = new ArkObserver<>(edgeChain.getObservable(), this);
   }
 
   public ArkObservable(Observable<T> observable) {
