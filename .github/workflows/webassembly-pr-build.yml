@@ -7,7 +7,7 @@ on:
       - reopened
       - synchronize
     paths:
-      - 'JS/wasm/**'
+      - 'JS/**'
 
 jobs:
   changes:
@@ -24,7 +24,7 @@ jobs:
         with:
           filters: |
             wasm:
-              - 'JS/wasm/**'
+              - 'JS/**'
 
   wasm:
     needs: changes
