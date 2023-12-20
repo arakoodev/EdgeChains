@@ -1,3 +1,5 @@
+//ReAct-Chain example is taken from https://tsmatz.wordpress.com/2023/03/07/react-with-openai-gpt-and-langchain
+
 local config = {
   "edgechains.config": {
     "mapper": {
