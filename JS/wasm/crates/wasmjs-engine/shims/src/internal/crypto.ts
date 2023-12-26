@@ -1,9 +1,8 @@
-import * as sjcl from 'sjcl';
-import {Buffer} from "./internal_buffer";
+import * as sjcl from "sjcl";
+import { Buffer } from "./internal_buffer";
 
-export type ArrayLike = ArrayBuffer|string|Buffer|ArrayBufferView;
+export type ArrayLike = ArrayBuffer | string | Buffer | ArrayBufferView;
 export type KeyData = string | ArrayBuffer | ArrayBufferView;
-
 
 /**
  * Checks if a number represented by an ArrayBufferView is prime.
@@ -37,11 +36,16 @@ export function checkPrimeSync(candidate: ArrayBufferView, num_checks: number): 
  * @param {ArrayBufferView} [rem] - An ArrayBufferView representing a number to take the remainder of the generated prime number.
  * @returns {ArrayBuffer} - Returns an ArrayBuffer representing the generated prime number.
  */
-export function randomPrime(size: number, safe: boolean, add?: ArrayBufferView, rem?: ArrayBufferView): ArrayBuffer {
+export function randomPrime(
+    size: number,
+    safe: boolean,
+    add?: ArrayBufferView,
+    rem?: ArrayBufferView
+): ArrayBuffer {
     let prime: number;
     do {
         prime = sjcl.random.randomWords(1, 0)[0];
-        prime = Math.abs(prime) % (2 ** size);
+        prime = Math.abs(prime) % 2 ** size;
         if (safe) {
             prime = 2 * prime + 1;
         }
@@ -57,7 +61,13 @@ export function randomPrime(size: number, safe: boolean, add?: ArrayBufferView, 
 }
 
 // hkdf
-export function getHkdf(hash: string, key: ArrayLike, salt: ArrayLike, info: ArrayLike, length: number): ArrayBuffer {
+export function getHkdf(
+    hash: string,
+    key: ArrayLike,
+    salt: ArrayLike,
+    info: ArrayLike,
+    length: number
+): ArrayBuffer {
     // Convert key, salt, and info to bitArrays
     let keyBits = sjcl.codec.utf8String.toBits(key.toString());
     let saltBits = sjcl.codec.utf8String.toBits(salt.toString());
@@ -72,7 +82,13 @@ export function getHkdf(hash: string, key: ArrayLike, salt: ArrayLike, info: Arr
 }
 
 // pbkdf2
-export function getPbkdf(password: ArrayLike, salt: ArrayLike, iterations: number, keylen: number, digest: string): ArrayBuffer {
+export function getPbkdf(
+    password: ArrayLike,
+    salt: ArrayLike,
+    iterations: number,
+    keylen: number,
+    digest: string
+): ArrayBuffer {
     // Convert password and salt to bitArrays
     let passwordBits = sjcl.codec.utf8String.toBits(password.toString());
     let saltBits = sjcl.codec.utf8String.toBits(salt.toString());
@@ -85,19 +101,18 @@ export function getPbkdf(password: ArrayLike, salt: ArrayLike, iterations: numbe
     return sjcl.codec.arrayBuffer.fromBits(derivedKeyBits);
 }
 
-
 export class HashHandle {
     private hash: sjcl.SjclHash;
 
     public constructor(algorithm: string, xofLen: number) {
         switch (algorithm) {
-            case 'sha1':
+            case "sha1":
                 this.hash = new sjcl.hash.sha1();
                 break;
-            case 'sha256':
+            case "sha256":
                 this.hash = new sjcl.hash.sha256();
                 break;
-            case 'sha512':
+            case "sha512":
                 this.hash = new sjcl.hash.sha512();
                 break;
             default:
@@ -121,23 +136,23 @@ export class HashHandle {
     }
 
     public copy(xofLen: number): HashHandle {
-        let algo ="";
+        let algo = "";
         let hash = this.hash;
         switch (true) {
             case hash instanceof sjcl.hash.sha1:
-                algo = 'sha1';
+                algo = "sha1";
                 break;
             case hash instanceof sjcl.hash.sha256:
-                algo = 'sha256';
+                algo = "sha256";
                 break;
             case hash instanceof sjcl.hash.sha512:
-                algo = 'sha512';
+                algo = "sha512";
                 break;
             default:
                 throw new Error(`Unsupported hash algorithm: ${algo}`);
         }
-        let copy = new HashHandle( algo , xofLen); // Replace 'sha256' with the actual algorithm
-        copy.hash = this.hash
+        let copy = new HashHandle(algo, xofLen); // Replace 'sha256' with the actual algorithm
+        copy.hash = this.hash;
         return copy;
     }
 }
@@ -148,13 +163,13 @@ export class HmacHandle {
     public constructor(algorithm: string, key: ArrayLike | CryptoKey) {
         let keyBits = sjcl.codec.utf8String.toBits(key.toString());
         switch (algorithm) {
-            case 'sha1':
+            case "sha1":
                 this.hmac = new sjcl.misc.hmac(keyBits, sjcl.hash.sha1);
                 break;
-            case 'sha256':
+            case "sha256":
                 this.hmac = new sjcl.misc.hmac(keyBits, sjcl.hash.sha256);
                 break;
-            case 'sha512':
+            case "sha512":
                 this.hmac = new sjcl.misc.hmac(keyBits, sjcl.hash.sha512);
                 break;
             default:
@@ -175,45 +190,46 @@ export class HmacHandle {
 }
 
 export interface RsaKeyAlgorithm {
-    name: 'rsa' | 'rsa-pss';
+    name: "rsa" | "rsa-pss";
     modulusLength: number;
     publicExponent: Uint8Array;
     hash?: string;
 }
 
 export interface EcKeyAlgorithm {
-    name: 'ec';
+    name: "ec";
     namedCurve: string;
 }
 
 export interface DhKeyAlgorithm {
-    name: 'dh';
+    name: "dh";
     prime: Uint8Array;
     generator: Uint8Array;
 }
 
 export interface DsaKeyAlgorithm {
-    name: 'dsa';
+    name: "dsa";
     prime: Uint8Array;
     divisorLength: number;
 }
 
 export interface HmacKeyAlgorithm {
-    name: 'hmac';
+    name: "hmac";
     hash: string;
 }
 
 export interface AesKeyAlgorithm {
-    name: 'aes';
+    name: "aes";
     length: number;
 }
 
-export type KeyAlgorithm = RsaKeyAlgorithm |
-    EcKeyAlgorithm |
-    DhKeyAlgorithm |
-    DsaKeyAlgorithm |
-    HmacKeyAlgorithm |
-    AesKeyAlgorithm;
+export type KeyAlgorithm =
+    | RsaKeyAlgorithm
+    | EcKeyAlgorithm
+    | DhKeyAlgorithm
+    | DsaKeyAlgorithm
+    | HmacKeyAlgorithm
+    | AesKeyAlgorithm;
 
 export interface CryptoKey {
     algorithm: KeyAlgorithm;
@@ -254,17 +270,17 @@ export interface CryptoKeyPair {
     publicKey: CryptoKey;
 }
 
-export type KeyObjectType = 'secret' | 'public' | 'private';
+export type KeyObjectType = "secret" | "public" | "private";
 
 export type KeyExportResult = string | Buffer | JsonWebKey;
 
-export type SecretKeyFormat = 'buffer' | 'jwk';
-export type AsymmetricKeyFormat = 'pem' | 'der' | 'jwk';
-export type PublicKeyEncoding = 'pkcs1' | 'spki';
-export type PrivateKeyEncoding = 'pkcs1' | 'pkcs8' | 'sec1';
-export type AsymmetricKeyType = 'rsa' | 'rsa-pss' | 'dsa' | 'ec' | 'x25519' | 'ed25519' | 'dh';
-export type SecretKeyType = 'hmac' | 'aes';
-export type ParamEncoding = 'named' | 'explicit';
+export type SecretKeyFormat = "buffer" | "jwk";
+export type AsymmetricKeyFormat = "pem" | "der" | "jwk";
+export type PublicKeyEncoding = "pkcs1" | "spki";
+export type PrivateKeyEncoding = "pkcs1" | "pkcs8" | "sec1";
+export type AsymmetricKeyType = "rsa" | "rsa-pss" | "dsa" | "ec" | "x25519" | "ed25519" | "dh";
+export type SecretKeyType = "hmac" | "aes";
+export type ParamEncoding = "named" | "explicit";
 
 export interface SecretKeyExportOptions {
     format?: SecretKeyFormat;
@@ -290,13 +306,15 @@ export interface InnerPrivateKeyExportOptions {
     passphrase?: Uint8Array;
 }
 
-export type ExportOptions = SecretKeyExportOptions |
-    PublicKeyExportOptions |
-    PrivateKeyExportOptions;
+export type ExportOptions =
+    | SecretKeyExportOptions
+    | PublicKeyExportOptions
+    | PrivateKeyExportOptions;
 
-export type InnerExportOptions = SecretKeyExportOptions |
-    PublicKeyExportOptions |
-    InnerPrivateKeyExportOptions;
+export type InnerExportOptions =
+    | SecretKeyExportOptions
+    | PublicKeyExportOptions
+    | InnerPrivateKeyExportOptions;
 
 export interface AsymmetricKeyDetails {
     modulusLength?: number;
@@ -329,7 +347,7 @@ export interface GenerateKeyOptions {
 
 export interface GenerateKeyPairOptions {
     modulusLength?: number;
-    publicExponent?: number|bigint;
+    publicExponent?: number | bigint;
     hashAlgorithm?: string;
     mgf1HashAlgorithm?: string;
     saltLength?: number;
@@ -378,12 +396,12 @@ export function createSecretKey(key: ArrayBuffer | ArrayBufferView): CryptoKey {
 
     return {
         algorithm: {
-            name: 'aes',
-            length: key.byteLength * 8
+            name: "aes",
+            length: key.byteLength * 8,
         },
         extractable: true,
-        type: 'secret',
-        usages: ['encrypt', 'decrypt']
+        type: "secret",
+        usages: ["encrypt", "decrypt"],
     };
 }
 
@@ -397,15 +415,16 @@ export function createPublicKey(key: InnerCreateAsymmetricKeyOptions): CryptoKey
     throw new Error("Function createPublicKey is not implemented yet");
 }
 
-
 export class DiffieHellmanHandle {
     private prime: sjcl.BigNumber;
     private generator: sjcl.BigNumber;
     private privateKey: sjcl.BigNumber;
     private publicKey: sjcl.BigNumber;
 
-    public constructor(sizeOrKey: number | ArrayBuffer | ArrayBufferView,
-                       generator: number | ArrayBuffer | ArrayBufferView) {
+    public constructor(
+        sizeOrKey: number | ArrayBuffer | ArrayBufferView,
+        generator: number | ArrayBuffer | ArrayBufferView
+    ) {
         // Convert sizeOrKey and generator to sjcl.bn
         this.prime = new sjcl.bn(sizeOrKey.toString());
         this.generator = new sjcl.bn(generator.toString());
@@ -441,7 +460,7 @@ export class DiffieHellmanHandle {
         return sjcl.codec.arrayBuffer.fromBits(this.prime.toBits());
     }
 
-    public computeSecret(key: ArrayBuffer|ArrayBufferView): ArrayBuffer {
+    public computeSecret(key: ArrayBuffer | ArrayBufferView): ArrayBuffer {
         let otherPublicKey = new sjcl.bn(key.toString());
         let secret = otherPublicKey.powermod(this.privateKey, this.prime);
         return sjcl.codec.arrayBuffer.fromBits(secret.toBits());
@@ -449,7 +468,7 @@ export class DiffieHellmanHandle {
 
     public generateKeys(): ArrayBuffer {
         // Generate a new private key
-        this.privateKey = sjcl.bn.random(this.prime.sub(2),10).add(1);
+        this.privateKey = sjcl.bn.random(this.prime.sub(2), 10).add(1);
 
         // Calculate the new public key
         this.publicKey = this.generator.powermod(this.privateKey, this.prime);
@@ -463,13 +482,12 @@ export class DiffieHellmanHandle {
     }
 }
 
-
 export function DiffieHellmanGroupHandle(name: string): DiffieHellmanHandle {
     // Define some named groups with their prime and generator values
-    const groups: { [name: string]: { prime: number, generator: number } } = {
-        'modp1': { prime: 2, generator: 2 },
-        'modp2': { prime: 3, generator: 2 },
-        'modp5': { prime: 5, generator: 2 },
+    const groups: { [name: string]: { prime: number; generator: number } } = {
+        modp1: { prime: 2, generator: 2 },
+        modp2: { prime: 3, generator: 2 },
+        modp5: { prime: 5, generator: 2 },
         // Add more named groups here
     };
 
