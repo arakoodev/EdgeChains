@@ -1,4 +1,3 @@
-
 import * as internal from "./util";
 
 export function isCryptoKey(value: unknown): boolean {

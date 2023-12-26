@@ -1,7 +1,15 @@
-import { ALL_PROPERTIES as A_PROPERTIES, ONLY_CONFIGURABLE, ONLY_ENUMERABLE as O_ENUMERABLE, ONLY_WRITABLE, SKIP_STRINGS, SKIP_SYMBOLS, isArrayIndex } from "./internal_utils";
+import {
+    ALL_PROPERTIES as A_PROPERTIES,
+    ONLY_CONFIGURABLE,
+    ONLY_ENUMERABLE as O_ENUMERABLE,
+    ONLY_WRITABLE,
+    SKIP_STRINGS,
+    SKIP_SYMBOLS,
+    isArrayIndex,
+} from "./internal_utils";
 
 export const kPending = 0;
-export const kFulfilled= 1;
+export const kFulfilled = 1;
 export const kRejected = 2;
 
 export const kResourceTypeInspect: unique symbol = Symbol.for("nodejs.util.inspect.custom");
@@ -36,12 +44,9 @@ export interface ProxyDetails {
 export function getOwnNonIndexProperties(
     // deno-lint-ignore ban-types
     obj: object,
-    filter: number,
+    filter: number
 ): (string | symbol)[] {
-    let allProperties = [
-        ...Object.getOwnPropertyNames(obj),
-        ...Object.getOwnPropertySymbols(obj),
-    ];
+    let allProperties = [...Object.getOwnPropertyNames(obj), ...Object.getOwnPropertySymbols(obj)];
 
     if (Array.isArray(obj)) {
         allProperties = allProperties.filter((k) => !isArrayIndex(k));
@@ -233,17 +238,18 @@ export function isAnyArrayBuffer(value: unknown): value is ArrayBuffer | SharedA
     return false;
 }
 
-export function isBoxedPrimitive(value: unknown): value is Number | String | Boolean | BigInt | Symbol {
+export function isBoxedPrimitive(
+    value: unknown
+): value is Number | String | Boolean | BigInt | Symbol {
     return false;
 }
 
-
 export function getPromiseDetails(value: unknown): PromiseDetails | undefined {
-    return undefined
+    return undefined;
 }
 
 export function getProxyDetails(value: unknown): ProxyDetails | undefined {
-    return undefined
+    return undefined;
 }
 
 export function previewEntries(value: unknown): PreviewedEntries | undefined {
@@ -253,4 +259,3 @@ export function previewEntries(value: unknown): PreviewedEntries | undefined {
 export function getConstructorName(value: unknown): string {
     return "";
 }
-
