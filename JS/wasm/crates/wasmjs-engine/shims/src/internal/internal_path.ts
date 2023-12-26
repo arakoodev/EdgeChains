@@ -1,54 +1,52 @@
-import {
-    CHAR_DOT,
-    CHAR_FORWARD_SLASH,
-} from './constants';
+import { CHAR_DOT, CHAR_FORWARD_SLASH } from "./constants";
 
-import {
-    validateObject,
-    validateString,
-} from './validators';
+import { validateObject, validateString } from "./validators";
 
-function isPosixPathSeparator(code : number) {
+function isPosixPathSeparator(code: number) {
     return code === CHAR_FORWARD_SLASH;
 }
 
 // Resolves . and .. elements in a path with directory names
-function normalizeString(path: string, allowAboveRoot: boolean, separator: string, isPathSeparator: (code:number) => boolean) {
-    let res = '';
+function normalizeString(
+    path: string,
+    allowAboveRoot: boolean,
+    separator: string,
+    isPathSeparator: (code: number) => boolean
+) {
+    let res = "";
     let lastSegmentLength = 0;
     let lastSlash = -1;
     let dots = 0;
     let code = 0;
     for (let i = 0; i <= path.length; ++i) {
-        if (i < path.length)
-            code = path.charCodeAt(i);
-        else if (isPathSeparator(code))
-            break;
-        else
-            code = CHAR_FORWARD_SLASH;
+        if (i < path.length) code = path.charCodeAt(i);
+        else if (isPathSeparator(code)) break;
+        else code = CHAR_FORWARD_SLASH;
 
         if (isPathSeparator(code)) {
             if (lastSlash === i - 1 || dots === 1) {
                 // NOOP
             } else if (dots === 2) {
-                if (res.length < 2 || lastSegmentLength !== 2 ||
+                if (
+                    res.length < 2 ||
+                    lastSegmentLength !== 2 ||
                     res.charCodeAt(res.length - 1) !== CHAR_DOT ||
-                    res.charCodeAt(res.length - 2) !== CHAR_DOT) {
+                    res.charCodeAt(res.length - 2) !== CHAR_DOT
+                ) {
                     if (res.length > 2) {
                         const lastSlashIndex = res.lastIndexOf(separator);
                         if (lastSlashIndex === -1) {
-                            res = '';
+                            res = "";
                             lastSegmentLength = 0;
                         } else {
                             res = res.slice(0, lastSlashIndex);
-                            lastSegmentLength =
-                                res.length - 1 - res.lastIndexOf(separator);
+                            lastSegmentLength = res.length - 1 - res.lastIndexOf(separator);
                         }
                         lastSlash = i;
                         dots = 0;
                         continue;
                     } else if (res.length !== 0) {
-                        res = '';
+                        res = "";
                         lastSegmentLength = 0;
                         lastSlash = i;
                         dots = 0;
@@ -56,14 +54,12 @@ function normalizeString(path: string, allowAboveRoot: boolean, separator: strin
                     }
                 }
                 if (allowAboveRoot) {
-                    res += res.length > 0 ? `${separator}..` : '..';
+                    res += res.length > 0 ? `${separator}..` : "..";
                     lastSegmentLength = 2;
                 }
             } else {
-                if (res.length > 0)
-                    res += `${separator}${path.slice(lastSlash + 1, i)}`;
-                else
-                    res = path.slice(lastSlash + 1, i);
+                if (res.length > 0) res += `${separator}${path.slice(lastSlash + 1, i)}`;
+                else res = path.slice(lastSlash + 1, i);
                 lastSegmentLength = i - lastSlash - 1;
             }
             lastSlash = i;
@@ -77,8 +73,8 @@ function normalizeString(path: string, allowAboveRoot: boolean, separator: strin
     return res;
 }
 
-function formatExt(ext : string) {
-    return ext ? `${ext[0] === '.' ? '' : '.'}${ext}` : '';
+function formatExt(ext: string) {
+    return ext ? `${ext[0] === "." ? "" : "."}${ext}` : "";
 }
 
 /**
@@ -101,11 +97,10 @@ type PathObject = {
     ext?: string;
 };
 
-function _format(sep : string, pathObject : PathObject) {
-    validateObject(pathObject, 'pathObject', {});
+function _format(sep: string, pathObject: PathObject) {
+    validateObject(pathObject, "pathObject", {});
     const dir = pathObject.dir || pathObject.root;
-    const base = pathObject.base ||
-        `${pathObject.name || ''}${formatExt(pathObject.ext!)}`;
+    const base = pathObject.base || `${pathObject.name || ""}${formatExt(pathObject.ext!)}`;
     if (!dir) {
         return base;
     }
@@ -115,53 +110,53 @@ function _format(sep : string, pathObject : PathObject) {
 // We currently do not implement the path.win32 subset.
 const win32 = {
     resolve(..._: [string[], string]) {
-        throw new Error('path.win32.resolve() is not implemented.');
+        throw new Error("path.win32.resolve() is not implemented.");
     },
 
-    normalize(_ : string) {
-        throw new Error('path.win32.normalize() is not implemented.');
+    normalize(_: string) {
+        throw new Error("path.win32.normalize() is not implemented.");
     },
 
-    isAbsolute(_ : string) {
-        throw new Error('path.win32.isAbsolute() is not implemented.');
+    isAbsolute(_: string) {
+        throw new Error("path.win32.isAbsolute() is not implemented.");
     },
 
-    join(..._ : string[]) {
-        throw new Error('path.win32.join() is not implemented.');
+    join(..._: string[]) {
+        throw new Error("path.win32.join() is not implemented.");
     },
 
-    relative(_0 : string, _1 : string) {
-        throw new Error('path.win32.relative() is not implemented.');
+    relative(_0: string, _1: string) {
+        throw new Error("path.win32.relative() is not implemented.");
     },
 
-    toNamespacedPath(_ : string) {
-        throw new Error('path.win32.toNamedspacedPath() is not implemented.');
+    toNamespacedPath(_: string) {
+        throw new Error("path.win32.toNamedspacedPath() is not implemented.");
     },
 
-    dirname(_ : string) {
-        throw new Error('path.win32.dirname() is not implemented.');
+    dirname(_: string) {
+        throw new Error("path.win32.dirname() is not implemented.");
     },
 
-    basename(_0 : string, _1? : string) {
-    throw new Error('path.win32.basename() is not implemented.');
-},
+    basename(_0: string, _1?: string) {
+        throw new Error("path.win32.basename() is not implemented.");
+    },
 
-extname(_ : string) {
-    throw new Error('path.win32.extname() is not implemented.');
-},
+    extname(_: string) {
+        throw new Error("path.win32.extname() is not implemented.");
+    },
 
-format(_ : PathObject) {
-    throw new Error('path.win32.format() is not implemented.');
-},
+    format(_: PathObject) {
+        throw new Error("path.win32.format() is not implemented.");
+    },
 
-parse(_: string) {
-    throw new Error('path.win32.parse() is not implemented.');
-},
+    parse(_: string) {
+        throw new Error("path.win32.parse() is not implemented.");
+    },
 
-sep: '\\',
-    delimiter: ';',
-    win32: null as Object|null,
-    posix: null as Object|null,
+    sep: "\\",
+    delimiter: ";",
+    win32: null as Object | null,
+    posix: null as Object | null,
 };
 
 const posix = {
@@ -171,13 +166,13 @@ const posix = {
      * @returns {string}
      */
     resolve(...args: string[]) {
-        let resolvedPath = '';
+        let resolvedPath = "";
         let resolvedAbsolute = false;
 
         for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-            const path = i >= 0 ? args[i] : '/';
+            const path = i >= 0 ? args[i] : "/";
 
-            validateString(path, 'path');
+            validateString(path, "path");
 
             // Skip empty entries
             if (path!.length === 0) {
@@ -192,38 +187,34 @@ const posix = {
         // handle relative paths to be safe (might happen when process.cwd() fails)
 
         // Normalize the path
-        resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute, '/',
-            isPosixPathSeparator);
+        resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute, "/", isPosixPathSeparator);
 
         if (resolvedAbsolute) {
             return `/${resolvedPath}`;
         }
-        return resolvedPath.length > 0 ? resolvedPath : '.';
+        return resolvedPath.length > 0 ? resolvedPath : ".";
     },
 
     /**
      * @param {string} path
      * @returns {string}
      */
-    normalize(path : string) {
-        validateString(path, 'path');
+    normalize(path: string) {
+        validateString(path, "path");
 
-        if (path.length === 0)
-            return '.';
+        if (path.length === 0) return ".";
 
         const isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
         const trailingSeparator = path.charCodeAt(path.length - 1) === CHAR_FORWARD_SLASH;
 
         // Normalize the path
-        path = normalizeString(path, !isAbsolute, '/', isPosixPathSeparator);
+        path = normalizeString(path, !isAbsolute, "/", isPosixPathSeparator);
 
         if (path.length === 0) {
-            if (isAbsolute)
-                return '/';
-            return trailingSeparator ? './' : '.';
+            if (isAbsolute) return "/";
+            return trailingSeparator ? "./" : ".";
         }
-        if (trailingSeparator)
-            path += '/';
+        if (trailingSeparator) path += "/";
 
         return isAbsolute ? `/${path}` : path;
     },
@@ -232,8 +223,8 @@ const posix = {
      * @param {string} path
      * @returns {boolean}
      */
-    isAbsolute(path : string) {
-        validateString(path, 'path');
+    isAbsolute(path: string) {
+        validateString(path, "path");
         return path.length > 0 && path.charCodeAt(0) === CHAR_FORWARD_SLASH;
     },
 
@@ -241,22 +232,18 @@ const posix = {
      * @param {...string} args
      * @returns {string}
      */
-    join(...args : string[]) {
-        if (args.length === 0)
-            return '.';
+    join(...args: string[]) {
+        if (args.length === 0) return ".";
         let joined;
         for (let i = 0; i < args.length; ++i) {
             const arg = args[i];
-            validateString(arg, 'path');
+            validateString(arg, "path");
             if (arg!.length > 0) {
-                if (joined === undefined)
-                    joined = arg;
-                else
-                    joined += `/${arg}`;
+                if (joined === undefined) joined = arg;
+                else joined += `/${arg}`;
             }
         }
-        if (joined === undefined)
-            return '.';
+        if (joined === undefined) return ".";
         return posix.normalize(joined);
     },
 
@@ -265,19 +252,17 @@ const posix = {
      * @param {string} to
      * @returns {string}
      */
-    relative(from: string, to : string) {
-        validateString(from, 'from');
-        validateString(to, 'to');
+    relative(from: string, to: string) {
+        validateString(from, "from");
+        validateString(to, "to");
 
-        if (from === to)
-            return '';
+        if (from === to) return "";
 
         // Trim leading forward slashes.
         from = posix.resolve(from);
         to = posix.resolve(to);
 
-        if (from === to)
-            return '';
+        if (from === to) return "";
 
         const fromStart = 1;
         const fromEnd = from.length;
@@ -286,15 +271,13 @@ const posix = {
         const toLen = to.length - toStart;
 
         // Compare paths to find the longest common path from root
-        const length = (fromLen < toLen ? fromLen : toLen);
+        const length = fromLen < toLen ? fromLen : toLen;
         let lastCommonSep = -1;
         let i = 0;
         for (; i < length; i++) {
             const fromCode = from.charCodeAt(fromStart + i);
-            if (fromCode !== to.charCodeAt(toStart + i))
-                break;
-            else if (fromCode === CHAR_FORWARD_SLASH)
-                lastCommonSep = i;
+            if (fromCode !== to.charCodeAt(toStart + i)) break;
+            else if (fromCode === CHAR_FORWARD_SLASH) lastCommonSep = i;
         }
         if (i === length) {
             if (toLen > length) {
@@ -321,12 +304,12 @@ const posix = {
             }
         }
 
-        let out = '';
+        let out = "";
         // Generate the relative path based on the path difference between `to`
         // and `from`.
         for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
             if (i === fromEnd || from.charCodeAt(i) === CHAR_FORWARD_SLASH) {
-                out += out.length === 0 ? '..' : '/..';
+                out += out.length === 0 ? ".." : "/..";
             }
         }
 
@@ -339,7 +322,7 @@ const posix = {
      * @param {string} path
      * @returns {string}
      */
-    toNamespacedPath(path : string) {
+    toNamespacedPath(path: string) {
         // Non-op on posix systems
         return path;
     },
@@ -348,10 +331,9 @@ const posix = {
      * @param {string} path
      * @returns {string}
      */
-    dirname(path : string) {
-        validateString(path, 'path');
-        if (path.length === 0)
-            return '.';
+    dirname(path: string) {
+        validateString(path, "path");
+        if (path.length === 0) return ".";
         const hasRoot = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
         let end = -1;
         let matchedSlash = true;
@@ -367,10 +349,8 @@ const posix = {
             }
         }
 
-        if (end === -1)
-            return hasRoot ? '/' : '.';
-        if (hasRoot && end === 1)
-            return '//';
+        if (end === -1) return hasRoot ? "/" : ".";
+        if (hasRoot && end === 1) return "//";
         return path.slice(0, end);
     },
 
@@ -379,138 +359,131 @@ const posix = {
      * @param {string} [suffix]
      * @returns {string}
      */
-    basename(path : string, suffix? : string) {
-    if (suffix !== undefined)
-        validateString(suffix, 'ext');
-    validateString(path, 'path');
+    basename(path: string, suffix?: string) {
+        if (suffix !== undefined) validateString(suffix, "ext");
+        validateString(path, "path");
 
-    let start = 0;
-    let end = -1;
-    let matchedSlash = true;
+        let start = 0;
+        let end = -1;
+        let matchedSlash = true;
 
-    if (suffix !== undefined && suffix.length > 0 && suffix.length <= path.length) {
-        if (suffix === path)
-            return '';
-        let extIdx = suffix.length - 1;
-        let firstNonSlashEnd = -1;
+        if (suffix !== undefined && suffix.length > 0 && suffix.length <= path.length) {
+            if (suffix === path) return "";
+            let extIdx = suffix.length - 1;
+            let firstNonSlashEnd = -1;
+            for (let i = path.length - 1; i >= 0; --i) {
+                const code = path.charCodeAt(i);
+                if (code === CHAR_FORWARD_SLASH) {
+                    // If we reached a path separator that was not part of a set of path
+                    // separators at the end of the string, stop now
+                    if (!matchedSlash) {
+                        start = i + 1;
+                        break;
+                    }
+                } else {
+                    if (firstNonSlashEnd === -1) {
+                        // We saw the first non-path separator, remember this index in case
+                        // we need it if the extension ends up not matching
+                        matchedSlash = false;
+                        firstNonSlashEnd = i + 1;
+                    }
+                    if (extIdx >= 0) {
+                        // Try to match the explicit extension
+                        if (code === suffix.charCodeAt(extIdx)) {
+                            if (--extIdx === -1) {
+                                // We matched the extension, so mark this as the end of our path
+                                // component
+                                end = i;
+                            }
+                        } else {
+                            // Extension does not match, so our result is the entire path
+                            // component
+                            extIdx = -1;
+                            end = firstNonSlashEnd;
+                        }
+                    }
+                }
+            }
+
+            if (start === end) end = firstNonSlashEnd;
+            else if (end === -1) end = path.length;
+            return path.slice(start, end);
+        }
         for (let i = path.length - 1; i >= 0; --i) {
-            const code = path.charCodeAt(i);
-            if (code === CHAR_FORWARD_SLASH) {
+            if (path.charCodeAt(i) === CHAR_FORWARD_SLASH) {
                 // If we reached a path separator that was not part of a set of path
                 // separators at the end of the string, stop now
                 if (!matchedSlash) {
                     start = i + 1;
                     break;
                 }
-            } else {
-                if (firstNonSlashEnd === -1) {
-                    // We saw the first non-path separator, remember this index in case
-                    // we need it if the extension ends up not matching
-                    matchedSlash = false;
-                    firstNonSlashEnd = i + 1;
-                }
-                if (extIdx >= 0) {
-                    // Try to match the explicit extension
-                    if (code === suffix.charCodeAt(extIdx)) {
-                        if (--extIdx === -1) {
-                            // We matched the extension, so mark this as the end of our path
-                            // component
-                            end = i;
-                        }
-                    } else {
-                        // Extension does not match, so our result is the entire path
-                        // component
-                        extIdx = -1;
-                        end = firstNonSlashEnd;
-                    }
-                }
+            } else if (end === -1) {
+                // We saw the first non-path separator, mark this as the end of our
+                // path component
+                matchedSlash = false;
+                end = i + 1;
             }
         }
 
-        if (start === end)
-            end = firstNonSlashEnd;
-        else if (end === -1)
-            end = path.length;
+        if (end === -1) return "";
         return path.slice(start, end);
-    }
-    for (let i = path.length - 1; i >= 0; --i) {
-        if (path.charCodeAt(i) === CHAR_FORWARD_SLASH) {
-            // If we reached a path separator that was not part of a set of path
-            // separators at the end of the string, stop now
-            if (!matchedSlash) {
-                start = i + 1;
-                break;
+    },
+
+    /**
+     * @param {string} path
+     * @returns {string}
+     */
+    extname(path: string) {
+        validateString(path, "path");
+        let startDot = -1;
+        let startPart = 0;
+        let end = -1;
+        let matchedSlash = true;
+        // Track the state of characters (if any) we see before our first dot and
+        // after any path separator we find
+        let preDotState = 0;
+        for (let i = path.length - 1; i >= 0; --i) {
+            const code = path.charCodeAt(i);
+            if (code === CHAR_FORWARD_SLASH) {
+                // If we reached a path separator that was not part of a set of path
+                // separators at the end of the string, stop now
+                if (!matchedSlash) {
+                    startPart = i + 1;
+                    break;
+                }
+                continue;
             }
-        } else if (end === -1) {
-            // We saw the first non-path separator, mark this as the end of our
-            // path component
-            matchedSlash = false;
-            end = i + 1;
-        }
-    }
-
-    if (end === -1)
-        return '';
-    return path.slice(start, end);
-},
-
-/**
- * @param {string} path
- * @returns {string}
- */
-extname(path : string) {
-    validateString(path, 'path');
-    let startDot = -1;
-    let startPart = 0;
-    let end = -1;
-    let matchedSlash = true;
-    // Track the state of characters (if any) we see before our first dot and
-    // after any path separator we find
-    let preDotState = 0;
-    for (let i = path.length - 1; i >= 0; --i) {
-        const code = path.charCodeAt(i);
-        if (code === CHAR_FORWARD_SLASH) {
-            // If we reached a path separator that was not part of a set of path
-            // separators at the end of the string, stop now
-            if (!matchedSlash) {
-                startPart = i + 1;
-                break;
+            if (end === -1) {
+                // We saw the first non-path separator, mark this as the end of our
+                // extension
+                matchedSlash = false;
+                end = i + 1;
             }
-            continue;
+            if (code === CHAR_DOT) {
+                // If this is our first dot, mark it as the start of our extension
+                if (startDot === -1) startDot = i;
+                else if (preDotState !== 1) preDotState = 1;
+            } else if (startDot !== -1) {
+                // We saw a non-dot and non-path separator before our dot, so we should
+                // have a good chance at having a non-empty extension
+                preDotState = -1;
+            }
         }
-        if (end === -1) {
-            // We saw the first non-path separator, mark this as the end of our
-            // extension
-            matchedSlash = false;
-            end = i + 1;
-        }
-        if (code === CHAR_DOT) {
-            // If this is our first dot, mark it as the start of our extension
-            if (startDot === -1)
-                startDot = i;
-            else if (preDotState !== 1)
-                preDotState = 1;
-        } else if (startDot !== -1) {
-            // We saw a non-dot and non-path separator before our dot, so we should
-            // have a good chance at having a non-empty extension
-            preDotState = -1;
-        }
-    }
 
-    if (startDot === -1 ||
-        end === -1 ||
-        // We saw a non-dot character immediately before the dot
-        preDotState === 0 ||
-        // The (right-most) trimmed path component is exactly '..'
-        (preDotState === 1 &&
-            startDot === end - 1 &&
-            startDot === startPart + 1)) {
-        return '';
-    }
-    return path.slice(startDot, end);
-},
+        if (
+            startDot === -1 ||
+            end === -1 ||
+            // We saw a non-dot character immediately before the dot
+            preDotState === 0 ||
+            // The (right-most) trimmed path component is exactly '..'
+            (preDotState === 1 && startDot === end - 1 && startDot === startPart + 1)
+        ) {
+            return "";
+        }
+        return path.slice(startDot, end);
+    },
 
-format: _format.bind(null, '/'),
+    format: _format.bind(null, "/"),
 
     /**
      * @param {string} path
@@ -522,91 +495,85 @@ format: _format.bind(null, '/'),
      *   ext: string;
      *   }}
      */
-    parse(path: string) : PathObject {
-    validateString(path, 'path');
+    parse(path: string): PathObject {
+        validateString(path, "path");
 
-    const ret = { root: '', dir: '', base: '', ext: '', name: '' };
-    if (path.length === 0)
-        return ret;
-    const isAbsolute =
-        path.charCodeAt(0) === CHAR_FORWARD_SLASH;
-    let start;
-    if (isAbsolute) {
-        ret.root = '/';
-        start = 1;
-    } else {
-        start = 0;
-    }
-    let startDot = -1;
-    let startPart = 0;
-    let end = -1;
-    let matchedSlash = true;
-    let i = path.length - 1;
-
-    // Track the state of characters (if any) we see before our first dot and
-    // after any path separator we find
-    let preDotState = 0;
-
-    // Get non-dir info
-    for (; i >= start; --i) {
-        const code = path.charCodeAt(i);
-        if (code === CHAR_FORWARD_SLASH) {
-            // If we reached a path separator that was not part of a set of path
-            // separators at the end of the string, stop now
-            if (!matchedSlash) {
-                startPart = i + 1;
-                break;
-            }
-            continue;
-        }
-        if (end === -1) {
-            // We saw the first non-path separator, mark this as the end of our
-            // extension
-            matchedSlash = false;
-            end = i + 1;
-        }
-        if (code === CHAR_DOT) {
-            // If this is our first dot, mark it as the start of our extension
-            if (startDot === -1)
-                startDot = i;
-            else if (preDotState !== 1)
-                preDotState = 1;
-        } else if (startDot !== -1) {
-            // We saw a non-dot and non-path separator before our dot, so we should
-            // have a good chance at having a non-empty extension
-            preDotState = -1;
-        }
-    }
-
-    if (end !== -1) {
-        const start = startPart === 0 && isAbsolute ? 1 : startPart;
-        if (startDot === -1 ||
-            // We saw a non-dot character immediately before the dot
-            preDotState === 0 ||
-            // The (right-most) trimmed path component is exactly '..'
-            (preDotState === 1 &&
-                startDot === end - 1 &&
-                startDot === startPart + 1)) {
-            ret.base = ret.name = path.slice(start, end);
+        const ret = { root: "", dir: "", base: "", ext: "", name: "" };
+        if (path.length === 0) return ret;
+        const isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+        let start;
+        if (isAbsolute) {
+            ret.root = "/";
+            start = 1;
         } else {
-            ret.name = path.slice(start, startDot);
-            ret.base = path.slice(start, end);
-            ret.ext = path.slice(startDot, end);
+            start = 0;
         }
-    }
+        let startDot = -1;
+        let startPart = 0;
+        let end = -1;
+        let matchedSlash = true;
+        let i = path.length - 1;
 
-    if (startPart > 0)
-        ret.dir = path.slice(0, startPart - 1);
-    else if (isAbsolute)
-        ret.dir = '/';
+        // Track the state of characters (if any) we see before our first dot and
+        // after any path separator we find
+        let preDotState = 0;
 
-    return ret;
-},
+        // Get non-dir info
+        for (; i >= start; --i) {
+            const code = path.charCodeAt(i);
+            if (code === CHAR_FORWARD_SLASH) {
+                // If we reached a path separator that was not part of a set of path
+                // separators at the end of the string, stop now
+                if (!matchedSlash) {
+                    startPart = i + 1;
+                    break;
+                }
+                continue;
+            }
+            if (end === -1) {
+                // We saw the first non-path separator, mark this as the end of our
+                // extension
+                matchedSlash = false;
+                end = i + 1;
+            }
+            if (code === CHAR_DOT) {
+                // If this is our first dot, mark it as the start of our extension
+                if (startDot === -1) startDot = i;
+                else if (preDotState !== 1) preDotState = 1;
+            } else if (startDot !== -1) {
+                // We saw a non-dot and non-path separator before our dot, so we should
+                // have a good chance at having a non-empty extension
+                preDotState = -1;
+            }
+        }
 
-sep: '/',
-    delimiter: ':',
-    win32: null as Object|null,
-    posix: null as Object|null,
+        if (end !== -1) {
+            const start = startPart === 0 && isAbsolute ? 1 : startPart;
+            if (
+                startDot === -1 ||
+                // We saw a non-dot character immediately before the dot
+                preDotState === 0 ||
+                // The (right-most) trimmed path component is exactly '..'
+                (preDotState === 1 && startDot === end - 1 && startDot === startPart + 1)
+            ) {
+                ret.base = ret.name = path.slice(start, end);
+            } else {
+                ret.name = path.slice(start, startDot);
+                ret.base = path.slice(start, end);
+                ret.ext = path.slice(startDot, end);
+            }
+        }
+
+        if (startPart > 0) ret.dir = path.slice(0, startPart - 1);
+        else if (isAbsolute) ret.dir = "/";
+
+        return ret;
+    },
+
+    sep: "/",
+    delimiter: ":",
+    win32: null as Object | null,
+    posix: null as Object | null,
 };
 
 posix.win32 = win32.win32 = win32;

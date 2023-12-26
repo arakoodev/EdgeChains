@@ -1,4 +1,4 @@
-const {parseJsonnet} = require("../index.node")
+const { parseJsonnet } = require("../index.node");
 
 module.exports = {
     parseJsonnet,

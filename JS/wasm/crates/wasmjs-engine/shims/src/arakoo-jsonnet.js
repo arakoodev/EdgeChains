@@ -1,5 +1,3 @@
-const parseJsonnet = globalThis.parseJsonnet
+const parseJsonnet = globalThis.parseJsonnet;
 
-export {
-    parseJsonnet,
-}
+export { parseJsonnet };

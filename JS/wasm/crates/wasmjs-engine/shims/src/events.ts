@@ -3,5 +3,5 @@
 //     https://opensource.org/licenses/Apache-2.0
 //
 
-export * from './internal/events';
-export { default } from './internal/events';
+export * from "./internal/events";
+export { default } from "./internal/events";
