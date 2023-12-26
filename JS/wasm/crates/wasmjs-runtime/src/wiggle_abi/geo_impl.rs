@@ -1,7 +1,3 @@
-//! edge_geo` hostcall implementations.
-
-
-
 use crate::bindings::types::ArakooStatus;
 
 #[derive(Debug, thiserror::Error)]

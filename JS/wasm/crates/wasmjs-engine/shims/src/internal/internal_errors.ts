@@ -57,7 +57,10 @@ export class NodeTypeError extends NodeErrorAbstraction implements TypeError {
     }
 }
 
-function createInvalidArgType(name: string, expected: string | string[]): string {
+function createInvalidArgType(
+    name: string,
+    expected: string | string[],
+): string {
     // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
     expected = Array.isArray(expected) ? expected : [expected];
     let msg = "The ";
@@ -196,10 +199,7 @@ export class ERR_CRYPTO_INCOMPATIBLE_KEY extends NodeError {
 
 export class ERR_CRYPTO_INVALID_KEY_OBJECT_TYPE extends NodeError {
     constructor(actual: string, expected: string) {
-        super(
-            "ERR_CRYPTO_INVALID_KEY_OBJECT_TYPE",
-            `Invalid key object type ${actual}, expected ${expected}.`
-        );
+        super("ERR_CRYPTO_INVALID_KEY_OBJECT_TYPE", `Invalid key object type ${actual}, expected ${expected}.`);
     }
 }
 
@@ -226,7 +226,10 @@ export class ERR_INVALID_ARG_VALUE_RANGE extends NodeRangeError {
         const type = name.includes(".") ? "property" : "argument";
         const inspected = inspect(value);
 
-        super("ERR_INVALID_ARG_VALUE", `The ${type} '${name}' ${reason}. Received ${inspected}`);
+        super(
+            "ERR_INVALID_ARG_VALUE",
+            `The ${type} '${name}' ${reason}. Received ${inspected}`,
+        );
     }
 }
 
@@ -235,7 +238,10 @@ export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
         const type = name.includes(".") ? "property" : "argument";
         const inspected = inspect(value);
 
-        super("ERR_INVALID_ARG_VALUE", `The ${type} '${name}' ${reason}. Received ${inspected}`);
+        super(
+            "ERR_INVALID_ARG_VALUE",
+            `The ${type} '${name}' ${reason}. Received ${inspected}`,
+        );
     }
 
     static RangeError = ERR_INVALID_ARG_VALUE_RANGE;
@@ -244,10 +250,16 @@ export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
 export class ERR_OUT_OF_RANGE extends RangeError {
     code = "ERR_OUT_OF_RANGE";
 
-    constructor(str: string, range: string, input: unknown, replaceDefaultBoolean = false) {
+    constructor(
+        str: string,
+        range: string,
+        input: unknown,
+        replaceDefaultBoolean = false) {
         // TODO(later): Implement internal assert?
         // assert(range, 'Missing "range" argument');
-        let msg = replaceDefaultBoolean ? str : `The value of "${str}" is out of range.`;
+        let msg = replaceDefaultBoolean
+            ? str
+            : `The value of "${str}" is out of range.`;
         let received;
         if (Number.isInteger(input) && Math.abs(input as number) > 2 ** 32) {
             received = addNumericalSeparator(String(input));
@@ -292,14 +304,17 @@ export class ERR_BUFFER_OUT_OF_BOUNDS extends NodeRangeError {
             "ERR_BUFFER_OUT_OF_BOUNDS",
             name
                 ? `"${name}" is outside of buffer bounds`
-                : "Attempt to access memory outside buffer bounds"
+                : "Attempt to access memory outside buffer bounds",
         );
     }
 }
 
 export class ERR_INVALID_BUFFER_SIZE extends NodeRangeError {
     constructor(size: number) {
-        super("ERR_INVALID_BUFFER_SIZE", `Buffer size must be a multiple of ${size}-bits`);
+        super(
+            "ERR_INVALID_BUFFER_SIZE",
+            `Buffer size must be a multiple of ${size}-bits`,
+        );
     }
 }
 
@@ -357,9 +372,11 @@ export class ERR_INVALID_RETURN_VALUE extends NodeTypeError {
     constructor(input: string, name: string, value: unknown) {
         super(
             "ERR_INVALID_RETURN_VALUE",
-            `Expected ${input} to be returned from the "${name}" function but got ${determineSpecificType(
-                value
-            )}.`
+            `Expected ${input} to be returned from the "${name}" function but got ${
+                determineSpecificType(
+                    value,
+                )
+            }.`,
         );
     }
 }
@@ -378,7 +395,9 @@ export class ERR_MISSING_ARGS extends NodeTypeError {
 
         const wrap = (a: unknown) => `"${a}"`;
 
-        args = args.map((a) => (Array.isArray(a) ? a.map(wrap).join(" or ") : wrap(a)));
+        args = args.map((a) =>
+            Array.isArray(a) ? a.map(wrap).join(" or ") : wrap(a)
+        );
 
         switch (len) {
             case 1:
@@ -406,8 +425,8 @@ export class ERR_FALSY_VALUE_REJECTION extends NodeError {
 }
 
 export class ERR_METHOD_NOT_IMPLEMENTED extends NodeError {
-    constructor(name: string | symbol) {
-        if (typeof name === "symbol") {
+    constructor(name: string|symbol) {
+        if (typeof name === 'symbol') {
             name = (name as symbol).description!;
         }
         super("ERR_METHOD_NOT_IMPLEMENTED", `The ${name} method is not implemented`);
@@ -420,16 +439,16 @@ export class ERR_STREAM_CANNOT_PIPE extends NodeError {
     }
 }
 export class ERR_STREAM_DESTROYED extends NodeError {
-    constructor(name: string | symbol) {
-        if (typeof name === "symbol") {
+    constructor(name: string|symbol) {
+        if (typeof name === 'symbol') {
             name = (name as symbol).description!;
         }
         super("ERR_STREAM_DESTROYED", `Cannot call ${name} after a stream was destroyed`);
     }
 }
 export class ERR_STREAM_ALREADY_FINISHED extends NodeError {
-    constructor(name: string | symbol) {
-        if (typeof name === "symbol") {
+    constructor(name: string|symbol) {
+        if (typeof name === 'symbol') {
             name = (name as symbol).description!;
         }
         super("ERR_STREAM_ALREADY_FINISHED", `Cannot call ${name} after a stream was finished`);
@@ -469,5 +488,5 @@ export function aggregateTwoErrors(innerError: any, outerError: any) {
         (err as any).code = outerError.code;
         return err;
     }
-    return innerError || outerError;
+    return innerError || outerError
 }

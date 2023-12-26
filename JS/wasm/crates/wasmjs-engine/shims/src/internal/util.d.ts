@@ -11,7 +11,7 @@ export abstract class MIMEType {
 export abstract class MIMEParams {
     public constructor();
     public delete(name: string): void;
-    public get(name: string): string | undefined;
+    public get(name: string): string|undefined;
     public has(name: string): boolean;
     public set(name: string, value: string): void;
     public entries(): Iterable<string[]>;
@@ -23,10 +23,7 @@ export const kResourceTypeInspect: unique symbol;
 
 export const ALL_PROPERTIES: 0;
 export const ONLY_ENUMERABLE: 1;
-export function getOwnNonIndexProperties(
-    value: unknown,
-    filter: typeof ALL_PROPERTIES | typeof ONLY_ENUMERABLE
-): PropertyKey[];
+export function getOwnNonIndexProperties(value: unknown, filter: typeof ALL_PROPERTIES | typeof ONLY_ENUMERABLE): PropertyKey[];
 
 export const kPending: 0;
 export const kFulfilled: 1;
@@ -102,6 +99,4 @@ export function isUint32Array(value: unknown): value is Uint32Array;
 export function isWeakMap(value: unknown): value is WeakMap<any, unknown>;
 export function isWeakSet(value: unknown): value is WeakSet<any>;
 export function isAnyArrayBuffer(value: unknown): value is ArrayBuffer | SharedArrayBuffer;
-export function isBoxedPrimitive(
-    value: unknown
-): value is Number | String | Boolean | BigInt | Symbol;
+export function isBoxedPrimitive(value: unknown): value is Number | String | Boolean | BigInt | Symbol;

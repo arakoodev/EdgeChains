@@ -1,9 +1,10 @@
+use std::{collections::HashMap, fmt::Debug};
+
 use actix_web::{
     http::{header::HeaderMap, StatusCode, Uri},
     HttpRequest,
 };
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fmt::Debug};
 use serde_json::{Map, Value as SerdeValue};
 use crate::geolocation::GeolocationData;
 

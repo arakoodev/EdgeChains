@@ -39,3 +39,7 @@ enum http-error {
   timeout,
   redirect-loop,
 }
+enum file-error {
+  not-found,
+  invalid-path,
+}
