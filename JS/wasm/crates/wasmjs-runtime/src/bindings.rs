@@ -1,4 +1,5 @@
 use actix_web::http::Uri;
+use jsonnet::JsonnetVm;
 use reqwest::Method;
 use serde::Deserialize;
 use tokio::runtime::Builder;
@@ -21,7 +22,7 @@ impl  GuestErrorType for ArakooStatus {
     }
 }
 
-use self::{http::{Http, HttpRequest, HttpRequestError, HttpResponse, HttpError, HttpMethod}, types::ArakooStatus};
+use self::{http::{Http, HttpRequest, HttpRequestError, HttpResponse, HttpError, HttpMethod, FileError}, types::ArakooStatus};
 
 #[derive(Deserialize, Clone)]
 #[serde(default)]
@@ -51,7 +52,7 @@ pub struct HttpBindings {
     pub http_config: HttpRequestsConfig,
 }
 
-impl From<HttpMethod> for reqwest::Method {
+impl From<HttpMethod> for Method {
     fn from(value: HttpMethod) -> Self {
         match value {
             HttpMethod::Get => Method::GET,
@@ -190,5 +191,73 @@ impl Http for HttpBindings {
                 message: "Could not process the request".to_string(),
             }),
         }
+    }
+
+    fn read_bytes(&mut self, path: &str) -> Result<String, FileError> {
+        //     read the file from the path and return the bytes
+        //     if the file does not exist, return FileError::NotFound
+        let path = path.to_owned();
+        let thread_result = std::thread::spawn(move || {
+            Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap()
+                .block_on(async {
+                    let bytes = tokio::fs::read(path).await;
+                    match bytes {
+                        Ok(bytes) =>
+                            Ok(std::str::from_utf8(&bytes).unwrap().to_string()),
+                        Err(_) => {
+                            Err(FileError::NotFound)
+                        }
+                    }
+                })
+        })
+            .join();
+
+        match thread_result {
+            Ok(res) => match res {
+                Ok(res) => Ok(res),
+                Err(err) => Err(err),
+            },
+            Err(_) => Err(FileError::NotFound),
+        }
+    }
+
+
+    fn parse_jsonnet(&mut self, file: &str) -> Result<String, FileError> {
+        parse_jsonnet(file)
+    }
+}
+
+
+pub fn parse_jsonnet(file: &str) -> Result<String, FileError> {
+    let file = file.to_owned();
+    let thread_result = std::thread::spawn(move || {
+        Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                let mut vm = JsonnetVm::new();
+                let json = vm.evaluate_file(&file);
+
+                match json {
+                    Ok(json) => Ok(json.to_string()),
+                    Err(e) => {
+                        println!("Error: {}", e);
+                        Err(FileError::NotFound)
+                    },
+                }
+            })
+    })
+        .join();
+
+    match thread_result {
+        Ok(res) => match res {
+            Ok(res) => Ok(res),
+            Err(err) => Err(err),
+        },
+        Err(_) => Err(FileError::NotFound),
     }
 }

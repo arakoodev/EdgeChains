@@ -1,17 +1,21 @@
-use crate::{io::WasmOutput, routes::WORKERS, server::AppData};
+use std::{
+    io::{Error, ErrorKind},
+    path::{Component, Path, PathBuf},
+};
+
 use actix_files::NamedFile;
 use actix_web::{
     http::StatusCode,
     web::{Bytes, Data},
     HttpRequest, HttpResponse,
 };
-use std::{
-    io::{Error, ErrorKind},
-    path::{Component, Path, PathBuf},
-};
+
 use std::net::{IpAddr, Ipv4Addr};
 use std::str::FromStr;
 use crate::geolocation::GeolocationData;
+use crate::io::WasmOutput;
+use crate::routes::WORKERS;
+use crate::server::AppData;
 
 fn clean_up_path(uri: &str) -> PathBuf {
     let path = PathBuf::from_iter(uri.split('/'));

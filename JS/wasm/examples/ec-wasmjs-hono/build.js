@@ -8,6 +8,9 @@ build({
     format: "esm",
     target: "esnext",
     platform: "node",
+    external:[
+        "arakoo-jsonnet"
+    ]
 }).catch((error) => {
     console.error(error);
     process.exit(1);

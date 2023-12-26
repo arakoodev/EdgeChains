@@ -13,7 +13,6 @@ pub struct Session {
 }
 
 impl Session {
-
     pub fn geolocation_lookup(&self, addr: &IpAddr) -> Option<String> {
         self.geolocation.lookup(addr).map(|data| data.to_string())
     }

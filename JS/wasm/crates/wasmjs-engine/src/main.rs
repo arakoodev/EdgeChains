@@ -131,15 +131,71 @@ pub fn load_bindings(context: &JSContextRef, global: JSValueRef) -> Result<(), R
             invalid_export: "console_log".to_string(),
         })?;
 
+    global
+        .set_property(
+            "readBytes",
+            context
+                .wrap_callback(|_ctx, _this_arg, args| {
+                    let path = args[0].to_string();
+                    match read_bytes(path.as_str()) {
+                        Ok(result) => Ok(JSValue::String(result)),
+                        Err(err) => {
+                            let kind = match err {
+                                FileError::NotFound => "File not found".to_string(),
+                                FileError::InvalidPath => "Not allowed".to_string(),
+                            };
+
+                            Ok(JSValue::from_hashmap(HashMap::from([
+                                ("error", JSValue::Bool(true)),
+                                ("type", JSValue::String(kind)),
+                            ])))
+                        }
+                    }
+                })
+                .map_err(|_| RuntimeError::InvalidBinding {
+                    invalid_export: "readBytes".to_string(),
+                })?,
+        )
+        .map_err(|_| RuntimeError::InvalidBinding {
+            invalid_export: "readBytes".to_string(),
+        })?;
+
+    global
+        .set_property(
+            "parseJsonnet",
+            context
+                .wrap_callback(|_ctx, _this_arg, args| {
+                    let path = args[0].to_string();
+                    match parse_jsonnet(path.as_str()) {
+                        Ok(result) => Ok(JSValue::String(result)),
+                        Err(err) => {
+                            let kind = match err {
+                                FileError::NotFound => "File not found".to_string(),
+                                FileError::InvalidPath => "Not allowed".to_string(),
+                            };
+
+                            Ok(JSValue::from_hashmap(HashMap::from([
+                                ("error", JSValue::Bool(true)),
+                                ("type", JSValue::String(kind)),
+                            ])))
+                        }
+                    }
+                })
+                .map_err(|_| RuntimeError::InvalidBinding {
+                    invalid_export: "parseJsonnet".to_string(),
+                })?,
+        )
+        .map_err(|_| RuntimeError::InvalidBinding {
+            invalid_export: "parseJsonnet".to_string(),
+        })?;
     Ok(())
 }
 
 static POLYFILL: &str = include_str!("../shims/dist/index.js");
 static POLYFILL_BUFFER: &str = include_str!("../shims/dist/buffer.js");
-
 static POLYFILL_PATH: &str = include_str!("../shims/dist/path.js");
-
 static POLYFILL_CRYPTO: &str = include_str!("../shims/dist/crypto.js");
+static ARAKOOJSONNET: &str = include_str!("../shims/dist/arakoo-jsonnet.js");
 
 fn main() {
     let runtime = Runtime::default();
@@ -171,16 +227,19 @@ fn main() {
     let global = context.global_object().unwrap();
     match load_bindings(context, global) {
         Ok(_) => {}
-        Err(e) => match e {
-            RuntimeError::InvalidBinding { invalid_export } => {
-                eprintln!("There was an error adding the '{invalid_export}' binding");
+        Err(e) => {
+            match e {
+                RuntimeError::InvalidBinding { invalid_export } => {
+                    eprintln!("There was an error adding the '{invalid_export}' binding");
+                }
             }
-        },
+        }
     }
 
     context.eval_module("buffer", &buffer).unwrap();
     context.eval_module("crypto", &crypto).unwrap();
-
+    context.eval_module("arakoo-jsonnet", &ARAKOOJSONNET).unwrap();
+    
     match context.eval_module("path", &path) {
         Ok(_) => {}
         Err(err) => eprintln!("Error loading the path shim: {err}"),

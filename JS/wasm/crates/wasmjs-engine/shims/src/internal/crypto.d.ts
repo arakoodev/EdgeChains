@@ -1,47 +1,35 @@
-import { Buffer } from "./internal_buffer";
+import {
+  Buffer,
+} from './internal_buffer';
 
 // random
 export function checkPrimeSync(candidate: ArrayBufferView, num_checks: number): boolean;
-export function randomPrime(
-    size: number,
-    safe: boolean,
-    add?: ArrayBufferView | undefined,
-    rem?: ArrayBufferView | undefined
-): ArrayBuffer;
+export function randomPrime(size: number, safe: boolean, add?: ArrayBufferView|undefined,
+                            rem?: ArrayBufferView|undefined): ArrayBuffer;
 
 // Hash and Hmac
 export class HashHandle {
-    public constructor(algorithm: string, xofLen: number);
-    public update(data: Buffer | ArrayBufferView): number;
-    public digest(): ArrayBuffer;
-    public copy(xofLen: number): HashHandle;
+  public constructor(algorithm: string, xofLen: number);
+  public update(data: Buffer | ArrayBufferView): number;
+  public digest(): ArrayBuffer;
+  public copy(xofLen: number): HashHandle;
 }
 
-export type ArrayLike = ArrayBuffer | string | Buffer | ArrayBufferView;
+export type ArrayLike = ArrayBuffer|string|Buffer|ArrayBufferView;
 
 export class HmacHandle {
-    public constructor(algorithm: string, key: ArrayLike | CryptoKey);
-    public update(data: Buffer | ArrayBufferView): number;
-    public digest(): ArrayBuffer;
+  public constructor(algorithm: string, key: ArrayLike | CryptoKey);
+  public update(data: Buffer | ArrayBufferView): number;
+  public digest(): ArrayBuffer;
 }
 
 // hkdf
-export function getHkdf(
-    hash: string,
-    key: ArrayLike,
-    salt: ArrayLike,
-    info: ArrayLike,
-    length: number
-): ArrayBuffer;
+export function getHkdf(hash: string, key: ArrayLike, salt: ArrayLike, info: ArrayLike,
+                        length: number): ArrayBuffer;
 
 // pbkdf2
-export function getPbkdf(
-    password: ArrayLike,
-    salt: ArrayLike,
-    iterations: number,
-    keylen: number,
-    digest: string
-): ArrayBuffer;
+export function getPbkdf(password: ArrayLike, salt: ArrayLike, iterations: number, keylen: number,
+                         digest: string): ArrayBuffer;
 
 // Keys
 export function exportKey(key: CryptoKey, options?: InnerExportOptions): KeyExportResult;
@@ -226,21 +214,19 @@ export type KeyData = string | ArrayBuffer | ArrayBufferView;
 
 // DiffieHellman
 export class DiffieHellmanHandle {
-    public constructor(
-        sizeOrKey: number | ArrayBuffer | ArrayBufferView,
-        generator: number | ArrayBuffer | ArrayBufferView
-    );
-    public setPublicKey(data: ArrayBuffer | ArrayBufferView | Buffer): void;
-    public setPrivateKey(data: ArrayBuffer | ArrayBufferView | Buffer): void;
-    public getPublicKey(): ArrayBuffer;
-    public getPrivateKey(): ArrayBuffer;
-    public getGenerator(): ArrayBuffer;
-    public getPrime(): ArrayBuffer;
+  public constructor(sizeOrKey: number | ArrayBuffer | ArrayBufferView,
+                     generator: number | ArrayBuffer | ArrayBufferView);
+  public setPublicKey(data: ArrayBuffer | ArrayBufferView | Buffer): void;
+  public setPrivateKey(data: ArrayBuffer | ArrayBufferView | Buffer): void;
+  public getPublicKey(): ArrayBuffer;
+  public getPrivateKey(): ArrayBuffer;
+  public getGenerator(): ArrayBuffer;
+  public getPrime(): ArrayBuffer;
 
-    public computeSecret(key: ArrayBuffer | ArrayBufferView): ArrayBuffer;
-    public generateKeys(): ArrayBuffer;
+  public computeSecret(key: ArrayBuffer|ArrayBufferView): ArrayBuffer;
+  public generateKeys(): ArrayBuffer;
 
-    public getVerifyError(): number;
+  public getVerifyError(): number;
 }
 
 export function DiffieHellmanGroupHandle(name: string): DiffieHellmanHandle;

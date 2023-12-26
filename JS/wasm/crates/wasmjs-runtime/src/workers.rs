@@ -3,16 +3,18 @@ use crate::config::{ArakooConfig, Config};
 use crate::io::{WasmInput, WasmOutput};
 use crate::runtime::{init_runtime, CtxBuilder, Runtime};
 use crate::bindings::http;
+use std::{
+    collections::HashMap,
+    io::Cursor,
+    path::{Path, PathBuf},
+};
+
 use actix_web::HttpRequest;
 use sha256::digest as sha256_digest;
-use std::path::PathBuf;
-use std::{collections::HashMap, path::Path};
-use wasmtime::Linker;
-use wasmtime::{Config as WasmtimeConfig, Engine, Module, Store};
+use wasmtime::{Config as WasmtimeConfig, Engine, Linker, Module, Store};
 use wasmtime_wasi::{ambient_authority, Dir, WasiCtxBuilder};
 
 use anyhow::Result;
-use std::io::Cursor;
 use wasi_common::pipe::{ReadPipe, WritePipe};
 use crate::ServeArgs;
 use crate::geolocation::GeolocationData;

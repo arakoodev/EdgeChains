@@ -1,4 +1,7 @@
-import { posix, win32 } from "./internal/internal_path";
+import {
+    posix,
+    win32,
+} from './internal/internal_path';
 
 const {
     resolve,
@@ -34,8 +37,8 @@ export {
     win32,
 };
 
-export { default } from "./internal/internal_path";
-import process from "./internal/process";
+export { default } from './internal/internal_path'
+import process from './internal/process';
 
 globalThis.process = process;
 
@@ -55,4 +58,4 @@ globalThis.path = {
     delimiter,
     posix,
     win32,
-};
+}

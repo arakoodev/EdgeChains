@@ -1,8 +1,9 @@
-use anyhow::Result;
 use std::{
     fs,
     path::{Path, PathBuf},
 };
+
+use anyhow::Result;
 
 pub const STORE_FOLDER: &str = ".wasmjs";
 

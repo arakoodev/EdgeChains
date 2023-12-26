@@ -1,3 +1,4 @@
+
 import * as internal from "./util";
 
 import { Buffer } from "./internal_buffer";
@@ -34,9 +35,9 @@ import { validateObject, validateString } from "./validators";
 function assert(value: boolean, message = "Assertion failed"): asserts value {
     if (!value) throw new Error(message);
 }
-assert.fail = function (message = "Assertion failed"): never {
+assert.fail = function(message = "Assertion failed"): never {
     throw new Error(message);
-};
+}
 
 function isError(e: unknown): e is Error {
     // An error could be an instance of Error while not being a native error
@@ -46,28 +47,18 @@ function isError(e: unknown): e is Error {
 }
 
 const typedArrayPrototype = Object.getPrototypeOf(Uint8Array).prototype;
-const typedArrayPrototypeLength: (this: internal.TypedArray) => number =
-    Object.getOwnPropertyDescriptor(typedArrayPrototype, "length")!.get!;
-const typedArrayPrototypeToStringTag: (this: internal.TypedArray) => string =
-    Object.getOwnPropertyDescriptor(typedArrayPrototype, Symbol.toStringTag)!.get!;
+const typedArrayPrototypeLength: (this: internal.TypedArray) => number = Object.getOwnPropertyDescriptor(typedArrayPrototype, "length")!.get!;
+const typedArrayPrototypeToStringTag: (this: internal.TypedArray) => string = Object.getOwnPropertyDescriptor(typedArrayPrototype, Symbol.toStringTag)!.get!;
 
-const setPrototypeSize: (this: Set<unknown>) => number = Object.getOwnPropertyDescriptor(
-    Set.prototype,
-    "size"
-)!.get!;
-const mapPrototypeSize: (this: Map<unknown, unknown>) => number = Object.getOwnPropertyDescriptor(
-    Map.prototype,
-    "size"
-)!.get!;
+const setPrototypeSize: (this: Set<unknown>) => number = Object.getOwnPropertyDescriptor(Set.prototype, "size")!.get!;
+const mapPrototypeSize: (this: Map<unknown, unknown>) => number = Object.getOwnPropertyDescriptor(Map.prototype, "size")!.get!;
 
 let maxStack_ErrorName: string;
 let maxStack_ErrorMessage: string;
 function isStackOverflowError(err: Error): boolean {
     if (maxStack_ErrorMessage === undefined) {
         try {
-            function overflowStack() {
-                overflowStack();
-            }
+            function overflowStack() { overflowStack(); }
             overflowStack();
         } catch (err) {
             assert(isError(err));
@@ -76,15 +67,16 @@ function isStackOverflowError(err: Error): boolean {
         }
     }
 
-    return err && err.name === maxStack_ErrorName && err.message === maxStack_ErrorMessage;
+    return err && err.name === maxStack_ErrorName &&
+        err.message === maxStack_ErrorMessage;
 }
 
-export const customInspectSymbol = Symbol.for("nodejs.util.inspect.custom");
+export const customInspectSymbol = Symbol.for('nodejs.util.inspect.custom');
 
 const colorRegExp = /\u001b\[\d\d?m/g;
 
 function removeColors(str: string): string {
-    return str.replace(colorRegExp, "");
+    return str.replace(colorRegExp, '');
 }
 
 export interface InspectOptions {
@@ -188,11 +180,12 @@ export interface InspectOptionsStylized extends InspectOptions {
 }
 
 const builtInObjects = new Set(
-    Object.getOwnPropertyNames(globalThis).filter((e) => /^[A-Z][a-zA-Z0-9]+$/.exec(e) !== null)
+    Object.getOwnPropertyNames(globalThis).filter(
+        (e) => /^[A-Z][a-zA-Z0-9]+$/.exec(e) !== null)
 );
 
 // https://tc39.es/ecma262/#sec-IsHTMLDDA-internal-slot
-const isUndetectableObject = (v: unknown): boolean => typeof v === "undefined" && v !== undefined;
+const isUndetectableObject = (v: unknown): boolean => typeof v === 'undefined' && v !== undefined;
 
 // These options must stay in sync with `getUserOptions`. So if any option will
 // be added or removed, `getUserOptions` must also be updated accordingly.
@@ -215,14 +208,10 @@ const kObjectType = 0;
 const kArrayType = 1;
 const kArrayExtrasType = 2;
 
-const strEscapeSequencesRegExp =
-    /[\x00-\x1f\x27\x5c\x7f-\x9f]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/;
-const strEscapeSequencesReplacer =
-    /[\x00-\x1f\x27\x5c\x7f-\x9f]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
-const strEscapeSequencesRegExpSingle =
-    /[\x00-\x1f\x5c\x7f-\x9f]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/;
-const strEscapeSequencesReplacerSingle =
-    /[\x00-\x1f\x5c\x7f-\x9f]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
+const strEscapeSequencesRegExp = /[\x00-\x1f\x27\x5c\x7f-\x9f]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/;
+const strEscapeSequencesReplacer = /[\x00-\x1f\x27\x5c\x7f-\x9f]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
+const strEscapeSequencesRegExpSingle = /[\x00-\x1f\x5c\x7f-\x9f]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/;
+const strEscapeSequencesReplacerSingle = /[\x00-\x1f\x5c\x7f-\x9f]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
 
 const keyStrRegExp = /^[a-zA-Z_][a-zA-Z_0-9]*$/;
 const numberRegExp = /^(0|[1-9][0-9]*)$/;
@@ -243,178 +232,31 @@ const kMapEntries = 2;
 // Escaped control characters (plus the single quote and the backslash). Use
 // empty strings to fill up unused entries.
 const meta = [
-    "\\x00",
-    "\\x01",
-    "\\x02",
-    "\\x03",
-    "\\x04",
-    "\\x05",
-    "\\x06",
-    "\\x07", // x07
-    "\\b",
-    "\\t",
-    "\\n",
-    "\\x0B",
-    "\\f",
-    "\\r",
-    "\\x0E",
-    "\\x0F", // x0F
-    "\\x10",
-    "\\x11",
-    "\\x12",
-    "\\x13",
-    "\\x14",
-    "\\x15",
-    "\\x16",
-    "\\x17", // x17
-    "\\x18",
-    "\\x19",
-    "\\x1A",
-    "\\x1B",
-    "\\x1C",
-    "\\x1D",
-    "\\x1E",
-    "\\x1F", // x1F
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "\\'",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "", // x2F
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "", // x3F
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "", // x4F
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "\\\\",
-    "",
-    "",
-    "", // x5F
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "", // x6F
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "\\x7F", // x7F
-    "\\x80",
-    "\\x81",
-    "\\x82",
-    "\\x83",
-    "\\x84",
-    "\\x85",
-    "\\x86",
-    "\\x87", // x87
-    "\\x88",
-    "\\x89",
-    "\\x8A",
-    "\\x8B",
-    "\\x8C",
-    "\\x8D",
-    "\\x8E",
-    "\\x8F", // x8F
-    "\\x90",
-    "\\x91",
-    "\\x92",
-    "\\x93",
-    "\\x94",
-    "\\x95",
-    "\\x96",
-    "\\x97", // x97
-    "\\x98",
-    "\\x99",
-    "\\x9A",
-    "\\x9B",
-    "\\x9C",
-    "\\x9D",
-    "\\x9E",
-    "\\x9F", // x9F
+    '\\x00', '\\x01', '\\x02', '\\x03', '\\x04', '\\x05', '\\x06', '\\x07', // x07
+    '\\b', '\\t', '\\n', '\\x0B', '\\f', '\\r', '\\x0E', '\\x0F',           // x0F
+    '\\x10', '\\x11', '\\x12', '\\x13', '\\x14', '\\x15', '\\x16', '\\x17', // x17
+    '\\x18', '\\x19', '\\x1A', '\\x1B', '\\x1C', '\\x1D', '\\x1E', '\\x1F', // x1F
+    '', '', '', '', '', '', '', "\\'", '', '', '', '', '', '', '', '',      // x2F
+    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',         // x3F
+    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',         // x4F
+    '', '', '', '', '', '', '', '', '', '', '', '', '\\\\', '', '', '',     // x5F
+    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',         // x6F
+    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '\\x7F',    // x7F
+    '\\x80', '\\x81', '\\x82', '\\x83', '\\x84', '\\x85', '\\x86', '\\x87', // x87
+    '\\x88', '\\x89', '\\x8A', '\\x8B', '\\x8C', '\\x8D', '\\x8E', '\\x8F', // x8F
+    '\\x90', '\\x91', '\\x92', '\\x93', '\\x94', '\\x95', '\\x96', '\\x97', // x97
+    '\\x98', '\\x99', '\\x9A', '\\x9B', '\\x9C', '\\x9D', '\\x9E', '\\x9F', // x9F
 ];
 
 // Regex used for ansi escape code splitting
 // Adopted from https://github.com/chalk/ansi-regex/blob/HEAD/index.js
 // License: MIT, authors: @sindresorhus, Qix-, arjunmehta and LitoMore
 // Matches all ansi escape code sequences in a string
-const ansiPattern =
-    "[\\u001B\\u009B][[\\]()#;?]*" +
-    "(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*" +
-    "|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)" +
-    "|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))";
-const ansi = new RegExp(ansiPattern, "g");
+const ansiPattern = '[\\u001B\\u009B][[\\]()#;?]*' +
+    '(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*' +
+    '|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)' +
+    '|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))';
+const ansi = new RegExp(ansiPattern, 'g');
 
 interface Context extends Required<InspectOptionsStylized> {
     maxArrayLength: number;
@@ -452,11 +294,9 @@ function getUserOptions(ctx: Context, isCrossContext: boolean): InspectOptionsSt
     // and remove all other non-primitives, including non-primitive user options.
     if (isCrossContext) {
         Object.setPrototypeOf(ret, null);
-        for (const key of Object.keys(ret) as (keyof InspectOptionsStylized)[]) {
-            if (
-                (typeof ret[key] === "object" || typeof ret[key] === "function") &&
-                ret[key] !== null
-            ) {
+        for (const key of (Object.keys(ret) as (keyof InspectOptionsStylized)[])) {
+            if ((typeof ret[key] === 'object' || typeof ret[key] === 'function') &&
+                ret[key] !== null) {
                 delete ret[key];
             }
         }
@@ -468,7 +308,7 @@ function getUserOptions(ctx: Context, isCrossContext: boolean): InspectOptionsSt
                 // Continue regardless of error.
             }
 
-            if (typeof stylized !== "string") return value;
+            if (typeof stylized !== 'string') return value;
             // `stylized` is a string as it should be, which is safe to pass along.
             return stylized;
         }, null);
@@ -484,12 +324,7 @@ function getUserOptions(ctx: Context, isCrossContext: boolean): InspectOptionsSt
  * @param {object} opts Optional options object that alters the output.
  */
 /* Legacy: value, showHidden, depth, colors */
-export function inspect(
-    value: unknown,
-    showHidden?: boolean,
-    depth?: number | null,
-    color?: boolean
-): string;
+export function inspect(value: unknown, showHidden?: boolean, depth?: number | null, color?: boolean): string;
 export function inspect(value: unknown, opts?: InspectOptions): string;
 export function inspect(value: unknown, opts?: Partial<InspectOptionsStylized> | boolean): string {
     // Default options
@@ -523,7 +358,7 @@ export function inspect(value: unknown, opts?: Partial<InspectOptionsStylized> |
             }
         }
         // Set user-specified options
-        if (typeof opts === "boolean") {
+        if (typeof opts === 'boolean') {
             ctx.showHidden = opts;
         } else if (opts) {
             const optKeys = Object.keys(opts) as (keyof InspectOptionsStylized)[];
@@ -534,8 +369,7 @@ export function inspect(value: unknown, opts?: Partial<InspectOptionsStylized> |
                 // functionality.
                 if (
                     Object.prototype.hasOwnProperty.call(inspectDefaultOptions, key) ||
-                    key === "stylize"
-                ) {
+                    key === 'stylize') {
                     (ctx as Record<keyof InspectOptionsStylized, unknown>)[key] = opts[key];
                 } else if (ctx.userOptions === undefined) {
                     // This is required to pass through the actual user input.
@@ -551,12 +385,12 @@ export function inspect(value: unknown, opts?: Partial<InspectOptionsStylized> |
 }
 inspect.custom = customInspectSymbol;
 
-Object.defineProperty(inspect, "defaultOptions", {
+Object.defineProperty(inspect, 'defaultOptions', {
     get() {
         return inspectDefaultOptions;
     },
     set(options) {
-        validateObject(options, "options");
+        validateObject(options, 'options');
         return Object.assign(inspectDefaultOptions, options);
     },
 });
@@ -628,36 +462,36 @@ function defineColorAlias(target: string, alias: string) {
     });
 }
 
-defineColorAlias("gray", "grey");
-defineColorAlias("gray", "blackBright");
-defineColorAlias("bgGray", "bgGrey");
-defineColorAlias("bgGray", "bgBlackBright");
-defineColorAlias("dim", "faint");
-defineColorAlias("strikethrough", "crossedout");
-defineColorAlias("strikethrough", "strikeThrough");
-defineColorAlias("strikethrough", "crossedOut");
-defineColorAlias("hidden", "conceal");
-defineColorAlias("inverse", "swapColors");
-defineColorAlias("inverse", "swapcolors");
-defineColorAlias("doubleunderline", "doubleUnderline");
+defineColorAlias('gray', 'grey');
+defineColorAlias('gray', 'blackBright');
+defineColorAlias('bgGray', 'bgGrey');
+defineColorAlias('bgGray', 'bgBlackBright');
+defineColorAlias('dim', 'faint');
+defineColorAlias('strikethrough', 'crossedout');
+defineColorAlias('strikethrough', 'strikeThrough');
+defineColorAlias('strikethrough', 'crossedOut');
+defineColorAlias('hidden', 'conceal');
+defineColorAlias('inverse', 'swapColors');
+defineColorAlias('inverse', 'swapcolors');
+defineColorAlias('doubleunderline', 'doubleUnderline');
 
 // TODO(BridgeAR): Add function style support for more complex styles.
 // Don't use 'blue' not visible on cmd.exe
 inspect.styles = {
     __proto__: null,
-    special: "cyan",
-    number: "yellow",
-    bigint: "yellow",
-    boolean: "yellow",
-    undefined: "grey",
-    null: "bold",
-    string: "green",
-    symbol: "green",
-    date: "magenta",
+    special: 'cyan',
+    number: 'yellow',
+    bigint: 'yellow',
+    boolean: 'yellow',
+    undefined: 'grey',
+    null: 'bold',
+    string: 'green',
+    symbol: 'green',
+    date: 'magenta',
     name: undefined,
     // TODO(BridgeAR): Highlight regular expressions properly.
-    regexp: "red",
-    module: "underline",
+    regexp: 'red',
+    module: 'underline',
 };
 
 function addQuotes(str: string, quotes: number): string {
@@ -689,9 +523,10 @@ function strEscape(str: string): string {
     if (str.includes("'")) {
         // This invalidates the charCode and therefore can not be matched for
         // anymore.
-        if (!str.includes('"')) {
+        if (!(str.includes('"'))) {
             singleQuote = -1;
-        } else if (!str.includes("`") && !str.includes("${")) {
+        } else if (!str.includes('`') &&
+            !str.includes('${')) {
             singleQuote = -2;
         }
         if (singleQuote !== 39) {
@@ -701,17 +536,21 @@ function strEscape(str: string): string {
     }
 
     // Some magic numbers that worked out fine while benchmarking with v8 6.0
-    if (str.length < 5000 && escapeTest.exec(str) === null) return addQuotes(str, singleQuote);
+    if (str.length < 5000 && escapeTest.exec(str) === null)
+        return addQuotes(str, singleQuote);
     if (str.length > 100) {
         str = str.replace(escapeReplace, escapeFn);
         return addQuotes(str, singleQuote);
     }
 
-    let result = "";
+    let result = '';
     let last = 0;
     for (let i = 0; i < str.length; i++) {
         const point = str.charCodeAt(i);
-        if (point === singleQuote || point === 92 || point < 32 || (point > 126 && point < 160)) {
+        if (point === singleQuote ||
+            point === 92 ||
+            point < 32 ||
+            (point > 126 && point < 160)) {
             if (last === i) {
                 result += meta[point];
             } else {
@@ -741,7 +580,8 @@ function stylizeWithColor(str: string, styleType: Style): string {
     const style = inspect.styles[styleType];
     if (style !== undefined) {
         const color = (inspect.colors as unknown as Record<string, number[] | undefined>)[style];
-        if (color !== undefined) return `\u001b[${color[0]}m${str}\u001b[${color[1]}m`;
+        if (color !== undefined)
+            return `\u001b[${color[0]}m${str}\u001b[${color[1]}m`;
     }
     return str;
 }
@@ -763,27 +603,20 @@ function isInstanceof(object: unknown, proto: Function): boolean {
     }
 }
 
-function getConstructorName(
-    obj: object,
-    ctx: Context,
-    recurseTimes: number,
-    protoProps?: string[]
-): string | null {
+function getConstructorName(obj: object, ctx: Context, recurseTimes: number, protoProps?: string[]): string | null {
     let firstProto: unknown;
     const tmp = obj;
     while (obj || isUndetectableObject(obj)) {
-        const descriptor = Object.getOwnPropertyDescriptor(obj, "constructor");
-        if (
-            descriptor !== undefined &&
-            typeof descriptor.value === "function" &&
-            descriptor.value.name !== "" &&
-            isInstanceof(tmp, descriptor.value)
-        ) {
-            if (
-                protoProps !== undefined &&
-                (firstProto !== obj || !builtInObjects.has(descriptor.value.name))
-            ) {
-                addPrototypeProperties(ctx, tmp, firstProto || tmp, recurseTimes, protoProps);
+        const descriptor = Object.getOwnPropertyDescriptor(obj, 'constructor');
+        if (descriptor !== undefined &&
+            typeof descriptor.value === 'function' &&
+            descriptor.value.name !== '' &&
+            isInstanceof(tmp, descriptor.value)) {
+            if (protoProps !== undefined &&
+                (firstProto !== obj ||
+                    !builtInObjects.has(descriptor.value.name))) {
+                addPrototypeProperties(
+                    ctx, tmp, firstProto || tmp, recurseTimes, protoProps);
             }
             return String(descriptor.value.name);
         }
@@ -804,7 +637,8 @@ function getConstructorName(
         return `${res} <Complex prototype>`;
     }
 
-    const protoConstr = getConstructorName(firstProto!, ctx, recurseTimes + 1, protoProps);
+    const protoConstr = getConstructorName(
+        firstProto!, ctx, recurseTimes + 1, protoProps);
 
     if (protoConstr === null) {
         return `${res} <${inspect(firstProto, {
@@ -820,13 +654,7 @@ function getConstructorName(
 // This function has the side effect of adding prototype properties to the
 // `output` argument (which is an array). This is intended to highlight user
 // defined prototype properties.
-function addPrototypeProperties(
-    ctx: Context,
-    main: object,
-    obj: Object,
-    recurseTimes: number,
-    output: string[]
-): void {
+function addPrototypeProperties(ctx: Context, main: object, obj: Object, recurseTimes: number, output: string[]): void {
     let depth = 0;
     let keys: PropertyKey[] | undefined;
     let keySet: Set<PropertyKey> | undefined;
@@ -838,12 +666,10 @@ function addPrototypeProperties(
                 return;
             }
             // Stop as soon as a built-in object type is detected.
-            const descriptor = Object.getOwnPropertyDescriptor(obj, "constructor");
-            if (
-                descriptor !== undefined &&
-                typeof descriptor.value === "function" &&
-                builtInObjects.has(descriptor.value.name)
-            ) {
+            const descriptor = Object.getOwnPropertyDescriptor(obj, 'constructor');
+            if (descriptor !== undefined &&
+                typeof descriptor.value === 'function' &&
+                builtInObjects.has(descriptor.value.name)) {
                 return;
             }
         }
@@ -858,18 +684,17 @@ function addPrototypeProperties(
         ctx.seen.push(main);
         for (const key of keys) {
             // Ignore the `constructor` property and keys that exist on layers above.
-            if (
-                key === "constructor" ||
+            if (key === 'constructor' ||
                 Object.prototype.hasOwnProperty.call(main, key) ||
-                (depth !== 0 && keySet!.has(key))
-            ) {
+                (depth !== 0 && keySet!.has(key))) {
                 continue;
             }
             const desc = Object.getOwnPropertyDescriptor(obj, key);
-            if (typeof desc?.value === "function") {
+            if (typeof desc?.value === 'function') {
                 continue;
             }
-            const value = formatProperty(ctx, obj, recurseTimes, key, kObjectType, desc, main);
+            const value = formatProperty(
+                ctx, obj, recurseTimes, key, kObjectType, desc, main);
             if (ctx.colors) {
                 // Faint!
                 output.push(`\u001b[2m${value}\u001b[22m`);
@@ -884,15 +709,15 @@ function addPrototypeProperties(
     } while (++depth !== 3);
 }
 
-function getPrefix(constructor: string | null, tag: string, fallback: string, size = ""): string {
+function getPrefix(constructor: string | null, tag: string, fallback: string, size = ''): string {
     if (constructor === null) {
-        if (tag !== "" && fallback !== tag) {
+        if (tag !== '' && fallback !== tag) {
             return `[${fallback}${size}: null prototype] [${tag}] `;
         }
         return `[${fallback}${size}: null prototype] `;
     }
 
-    if (tag !== "" && constructor !== tag) {
+    if (tag !== '' && constructor !== tag) {
         return `${constructor}${size} [${tag}] `;
     }
     return `${constructor}${size} `;
@@ -904,7 +729,8 @@ function getKeys(value: object, showHidden: boolean): PropertyKey[] {
     const symbols = Object.getOwnPropertySymbols(value);
     if (showHidden) {
         keys = Object.getOwnPropertyNames(value);
-        if (symbols.length !== 0) keys.push(...symbols);
+        if (symbols.length !== 0)
+            keys.push(...symbols);
     } else {
         // This might throw if `value` is a Module Namespace Object from an
         // unevaluated module, but we don't want to perform the actual type
@@ -914,16 +740,12 @@ function getKeys(value: object, showHidden: boolean): PropertyKey[] {
         try {
             keys = Object.keys(value);
         } catch (err: any) {
-            assert(
-                isNativeError(err) &&
-                    err.name === "ReferenceError" &&
-                    isModuleNamespaceObject(value)
-            );
+            assert(isNativeError(err) && err.name === 'ReferenceError' &&
+                isModuleNamespaceObject(value));
             keys = Object.getOwnPropertyNames(value);
         }
         if (symbols.length !== 0) {
-            const filter = (key: PropertyKey) =>
-                Object.prototype.propertyIsEnumerable.call(value, key);
+            const filter = (key: PropertyKey) => Object.prototype.propertyIsEnumerable.call(value, key);
             keys.push(...symbols.filter(filter));
         }
     }
@@ -931,11 +753,11 @@ function getKeys(value: object, showHidden: boolean): PropertyKey[] {
 }
 
 function getCtxStyle(value: unknown, constructor: string | null, tag: string): string {
-    let fallback = "";
+    let fallback = '';
     if (constructor === null) {
         fallback = internal.getConstructorName(value);
         if (fallback === tag) {
-            fallback = "Object";
+            fallback = 'Object';
         }
     }
     return getPrefix(constructor, tag, fallback);
@@ -943,7 +765,7 @@ function getCtxStyle(value: unknown, constructor: string | null, tag: string): s
 
 function formatProxy(ctx: Context, proxy: internal.ProxyDetails, recurseTimes: number): string {
     if (ctx.depth !== null && recurseTimes > ctx.depth) {
-        return ctx.stylize("Proxy [Array]", "special");
+        return ctx.stylize('Proxy [Array]', 'special');
     }
     recurseTimes += 1;
     ctx.indentationLvl += 2;
@@ -952,24 +774,22 @@ function formatProxy(ctx: Context, proxy: internal.ProxyDetails, recurseTimes: n
         formatValue(ctx, proxy.handler, recurseTimes),
     ];
     ctx.indentationLvl -= 2;
-    return reduceToSingleString(ctx, res, "", ["Proxy [", "]"], kArrayExtrasType, recurseTimes);
+    return reduceToSingleString(
+        ctx, res, '', ['Proxy [', ']'], kArrayExtrasType, recurseTimes);
 }
 
 // Note: using `formatValue` directly requires the indentation level to be
 // corrected by setting `ctx.indentationLvL += diff` and then to decrease the
 // value afterwards again.
-function formatValue(
-    ctx: Context,
-    value: unknown,
-    recurseTimes: number,
-    typedArray?: unknown
-): string {
+function formatValue(ctx: Context, value: unknown, recurseTimes: number, typedArray?: unknown): string {
     // Primitive types cannot have properties.
-    if (typeof value !== "object" && typeof value !== "function" && !isUndetectableObject(value)) {
+    if (typeof value !== 'object' &&
+        typeof value !== 'function' &&
+        !isUndetectableObject(value)) {
         return formatPrimitive(ctx.stylize, value as Primitive, ctx);
     }
     if (value === null) {
-        return ctx.stylize("null", "null");
+        return ctx.stylize('null', 'null');
     }
 
     // Memorize the context for custom inspection on proxies.
@@ -979,7 +799,7 @@ function formatValue(
     const proxy = internal.getProxyDetails(value);
     if (proxy !== undefined) {
         if (proxy === null || proxy.target === null) {
-            return ctx.stylize("<Revoked Proxy>", "special");
+            return ctx.stylize('<Revoked Proxy>', 'special');
         }
         if (ctx.showProxy) {
             return formatProxy(ctx, proxy, recurseTimes);
@@ -993,9 +813,7 @@ function formatValue(
         let maybeCustom = (value as Record<PropertyKey, unknown>)[customInspectSymbol];
 
         // WORKERD SPECIFIC PATCH: if `value` is a JSG resource type, use a well-known custom inspect
-        const maybeResourceTypeInspect = (value as Record<PropertyKey, unknown>)[
-            internal.kResourceTypeInspect
-        ];
+        const maybeResourceTypeInspect = (value as Record<PropertyKey, unknown>)[internal.kResourceTypeInspect];
         if (typeof maybeResourceTypeInspect === "object") {
             maybeCustom = formatJsgResourceType.bind(
                 context as Record<PropertyKey, unknown>,
@@ -1003,31 +821,30 @@ function formatValue(
             );
         }
 
-        if (
-            typeof maybeCustom === "function" &&
+        if (typeof maybeCustom === 'function' &&
             // Filter out the util module, its inspect function is special.
             maybeCustom !== inspect &&
             // Also filter out any prototype objects using the circular check.
-            !((value as object).constructor && (value as object).constructor.prototype === value)
-        ) {
+            !((value as object).constructor && (value as object).constructor.prototype === value)) {
             // This makes sure the recurseTimes are reported as before while using
             // a counter internally.
             const depth = ctx.depth === null ? null : ctx.depth - recurseTimes;
-            const isCrossContext = proxy !== undefined || !(context instanceof Object);
+            const isCrossContext =
+                proxy !== undefined || !(context instanceof Object);
             const ret = Function.prototype.call.call(
                 maybeCustom,
                 context,
                 depth,
                 getUserOptions(ctx, isCrossContext),
-                inspect
+                inspect,
             );
             // If the custom inspection method returned `this`, don't go into
             // infinite recursion.
             if (ret !== context) {
-                if (typeof ret !== "string") {
+                if (typeof ret !== 'string') {
                     return formatValue(ctx, ret, recurseTimes);
                 }
-                return ret.replaceAll("\n", `\n${" ".repeat(ctx.indentationLvl)}`);
+                return ret.replaceAll('\n', `\n${' '.repeat(ctx.indentationLvl)}`);
             }
         }
     }
@@ -1046,18 +863,13 @@ function formatValue(
                 ctx.circular.set(value, index);
             }
         }
-        return ctx.stylize(`[Circular *${index}]`, "special");
+        return ctx.stylize(`[Circular *${index}]`, 'special');
     }
 
     return formatRaw(ctx, value, recurseTimes, typedArray);
 }
 
-function formatRaw(
-    ctx: Context,
-    value: unknown,
-    recurseTimes: number,
-    typedArray: unknown
-): string {
+function formatRaw(ctx: Context, value: unknown, recurseTimes: number, typedArray: unknown): string {
     let keys: PropertyKey[] | undefined;
     let protoProps: string[] | undefined;
     if (ctx.showHidden && (ctx.depth === null || recurseTimes <= ctx.depth)) {
@@ -1073,19 +885,16 @@ function formatRaw(
     let tag = (value as { [Symbol.toStringTag]?: string })[Symbol.toStringTag];
     // Only list the tag in case it's non-enumerable / not an own property.
     // Otherwise we'd print this twice.
-    if (
-        typeof tag !== "string" ||
-        (tag !== "" &&
-            (ctx.showHidden
-                ? Object.prototype.hasOwnProperty
-                : Object.prototype.propertyIsEnumerable
-            ).call(value, Symbol.toStringTag))
-    ) {
-        tag = "";
+    if (typeof tag !== 'string' ||
+        (tag !== '' &&
+            (ctx.showHidden ?
+                Object.prototype.hasOwnProperty :
+                Object.prototype.propertyIsEnumerable)
+                .call(value, Symbol.toStringTag))) {
+        tag = '';
     }
-    let base = "";
-    let formatter: (ctx: Context, value: any, recurseTimes: number) => string[] =
-        getEmptyFormatArray;
+    let base = '';
+    let formatter: (ctx: Context, value: any, recurseTimes: number) => string[] = getEmptyFormatArray;
     let braces: [string, string] | undefined;
     let noIterator = true;
     let i = 0;
@@ -1103,7 +912,7 @@ function formatRaw(
         if (isEntriesObject) {
             // WORKERD SPECIFIC PATCH: if `value` is an object with entries, format them like a map
             const size = value[kEntries].length;
-            const prefix = getPrefix(constructor, tag, "Object", `(${size})`);
+            const prefix = getPrefix(constructor, tag, 'Object', `(${size})`);
             keys = getKeys(value, ctx.showHidden);
 
             // Remove `kEntries` and `size` from keys
@@ -1112,70 +921,66 @@ function formatRaw(
             if (sizeIndex !== -1) keys.splice(sizeIndex, 1);
 
             formatter = formatMap.bind(null, value[kEntries][Symbol.iterator]());
-            if (size === 0 && keys.length === 0 && protoProps === undefined) return `${prefix}{}`;
-            braces = [`${prefix}{`, "}"];
+            if (size === 0 && keys.length === 0 && protoProps === undefined)
+                return `${prefix}{}`;
+            braces = [`${prefix}{`, '}'];
         } else if (Array.isArray(value)) {
             // Only set the constructor for non ordinary ("Array [...]") arrays.
-            const prefix =
-                constructor !== "Array" || tag !== ""
-                    ? getPrefix(constructor, tag, "Array", `(${value.length})`)
-                    : "";
+            const prefix = (constructor !== 'Array' || tag !== '') ?
+                getPrefix(constructor, tag, 'Array', `(${value.length})`) :
+                '';
             keys = internal.getOwnNonIndexProperties(value, filter);
-            braces = [`${prefix}[`, "]"];
+            braces = [`${prefix}[`, ']'];
             if (value.length === 0 && keys.length === 0 && protoProps === undefined)
                 return `${braces[0]}]`;
             extrasType = kArrayExtrasType;
             formatter = formatArray;
         } else if (isSet(value)) {
             const size = setPrototypeSize.call(value);
-            const prefix = getPrefix(constructor, tag, "Set", `(${size})`);
+            const prefix = getPrefix(constructor, tag, 'Set', `(${size})`);
             keys = getKeys(value, ctx.showHidden);
-            formatter =
-                constructor !== null
-                    ? formatSet.bind(null, value)
-                    : formatSet.bind(null, Set.prototype.values.call(value));
-            if (size === 0 && keys.length === 0 && protoProps === undefined) return `${prefix}{}`;
-            braces = [`${prefix}{`, "}"];
+            formatter = constructor !== null ?
+                formatSet.bind(null, value) :
+                formatSet.bind(null, Set.prototype.values.call(value));
+            if (size === 0 && keys.length === 0 && protoProps === undefined)
+                return `${prefix}{}`;
+            braces = [`${prefix}{`, '}'];
         } else if (isMap(value)) {
             const size = mapPrototypeSize.call(value);
-            const prefix = getPrefix(constructor, tag, "Map", `(${size})`);
+            const prefix = getPrefix(constructor, tag, 'Map', `(${size})`);
             keys = getKeys(value, ctx.showHidden);
-            formatter =
-                constructor !== null
-                    ? formatMap.bind(null, value)
-                    : formatMap.bind(null, Map.prototype.entries.call(value));
-            if (size === 0 && keys.length === 0 && protoProps === undefined) return `${prefix}{}`;
-            braces = [`${prefix}{`, "}"];
+            formatter = constructor !== null ?
+                formatMap.bind(null, value) :
+                formatMap.bind(null, Map.prototype.entries.call(value));
+            if (size === 0 && keys.length === 0 && protoProps === undefined)
+                return `${prefix}{}`;
+            braces = [`${prefix}{`, '}'];
         } else if (isTypedArray(value)) {
             keys = internal.getOwnNonIndexProperties(value, filter);
             let bound = value;
-            let fallback = "";
+            let fallback = '';
             if (constructor === null) {
                 fallback = typedArrayPrototypeToStringTag.call(value);
                 // Reconstruct the array information.
-                bound = new (
-                    globalThis as unknown as Record<
-                        string,
-                        { new (value: NodeJS.TypedArray): NodeJS.TypedArray }
-                    >
-                )[fallback]!(value);
+                bound = new (globalThis as unknown as Record<string, { new(value: NodeJS.TypedArray): NodeJS.TypedArray }>)[fallback]!(value);
             }
             const size = typedArrayPrototypeLength.call(value);
             const prefix = getPrefix(constructor, tag, fallback, `(${size})`);
-            braces = [`${prefix}[`, "]"];
-            if (value.length === 0 && keys.length === 0 && !ctx.showHidden) return `${braces[0]}]`;
+            braces = [`${prefix}[`, ']'];
+            if (value.length === 0 && keys.length === 0 && !ctx.showHidden)
+                return `${braces[0]}]`;
             // Special handle the value. The original value is required below. The
             // bound function is required to reconstruct missing information.
             formatter = formatTypedArray.bind(null, bound, size);
             extrasType = kArrayExtrasType;
         } else if (isMapIterator(value)) {
             keys = getKeys(value, ctx.showHidden);
-            braces = getIteratorBraces("Map", tag);
+            braces = getIteratorBraces('Map', tag);
             // Add braces to the formatter parameters.
             formatter = formatIterator.bind(null, braces);
         } else if (isSetIterator(value)) {
             keys = getKeys(value, ctx.showHidden);
-            braces = getIteratorBraces("Set", tag);
+            braces = getIteratorBraces('Set', tag);
             // Add braces to the formatter parameters.
             formatter = formatIterator.bind(null, braces);
         } else {
@@ -1184,73 +989,77 @@ function formatRaw(
     }
     if (noIterator) {
         keys = getKeys(value as object, ctx.showHidden);
-        braces = ["{", "}"];
-        if (constructor === "Object") {
+        braces = ['{', '}'];
+        if (constructor === 'Object') {
             if (isArgumentsObject(value)) {
-                braces[0] = "[Arguments] {";
-            } else if (tag !== "") {
-                braces[0] = `${getPrefix(constructor, tag, "Object")}{`;
+                braces[0] = '[Arguments] {';
+            } else if (tag !== '') {
+                braces[0] = `${getPrefix(constructor, tag, 'Object')}{`;
             }
             if (keys.length === 0 && protoProps === undefined) {
                 return `${braces[0]}}`;
             }
-        } else if (typeof value === "function") {
+        } else if (typeof value === 'function') {
             base = getFunctionBase(value, constructor, tag);
-            if (keys.length === 0 && protoProps === undefined) return ctx.stylize(base, "special");
+            if (keys.length === 0 && protoProps === undefined)
+                return ctx.stylize(base, 'special');
         } else if (isRegExp(value)) {
             // Make RegExps say that they are RegExps
-            base = RegExp.prototype.toString.call(constructor !== null ? value : new RegExp(value));
-            const prefix = getPrefix(constructor, tag, "RegExp");
-            if (prefix !== "RegExp ") base = `${prefix}${base}`;
-            if (
-                (keys.length === 0 && protoProps === undefined) ||
-                (ctx.depth !== null && recurseTimes > ctx.depth)
-            ) {
-                return ctx.stylize(base, "regexp");
+            base = RegExp.prototype.toString.call(
+                constructor !== null ? value : new RegExp(value)
+            );
+            const prefix = getPrefix(constructor, tag, 'RegExp');
+            if (prefix !== 'RegExp ')
+                base = `${prefix}${base}`;
+            if ((keys.length === 0 && protoProps === undefined) ||
+                (ctx.depth !== null && recurseTimes > ctx.depth)) {
+                return ctx.stylize(base, 'regexp');
             }
         } else if (isDate(value)) {
             // Make dates with properties first say the date
-            base = Number.isNaN(Date.prototype.getTime.call(value))
-                ? Date.prototype.toString.call(value)
-                : Date.prototype.toISOString.call(value);
-            const prefix = getPrefix(constructor, tag, "Date");
-            if (prefix !== "Date ") base = `${prefix}${base}`;
+            base = Number.isNaN(Date.prototype.getTime.call(value)) ?
+                Date.prototype.toString.call(value) :
+                Date.prototype.toISOString.call(value);
+            const prefix = getPrefix(constructor, tag, 'Date');
+            if (prefix !== 'Date ')
+                base = `${prefix}${base}`;
             if (keys.length === 0 && protoProps === undefined) {
-                return ctx.stylize(base, "date");
+                return ctx.stylize(base, 'date');
             }
         } else if (isError(value)) {
             base = formatError(value, constructor, tag, ctx, keys);
-            if (keys.length === 0 && protoProps === undefined) return base;
+            if (keys.length === 0 && protoProps === undefined)
+                return base;
         } else if (isAnyArrayBuffer(value)) {
             // Fast path for ArrayBuffer and SharedArrayBuffer.
             // Can't do the same for DataView because it has a non-primitive
             // .buffer property that we need to recurse for.
-            const arrayType = isArrayBuffer(value) ? "ArrayBuffer" : "SharedArrayBuffer";
+            const arrayType = isArrayBuffer(value) ? 'ArrayBuffer' :
+                'SharedArrayBuffer';
             const prefix = getPrefix(constructor, tag, arrayType);
             if (typedArray === undefined) {
                 formatter = formatArrayBuffer;
             } else if (keys.length === 0 && protoProps === undefined) {
-                return (
-                    prefix + `{ byteLength: ${formatNumber(ctx.stylize, value.byteLength, false)} }`
-                );
+                return prefix +
+                    `{ byteLength: ${formatNumber(ctx.stylize, value.byteLength, false)} }`;
             }
             braces[0] = `${prefix}{`;
-            keys.unshift("byteLength");
+            keys.unshift('byteLength');
         } else if (isDataView(value)) {
-            braces[0] = `${getPrefix(constructor, tag, "DataView")}{`;
+            braces[0] = `${getPrefix(constructor, tag, 'DataView')}{`;
             // .buffer goes last, it's not a primitive like the others.
-            keys.unshift("byteLength", "byteOffset", "buffer");
+            keys.unshift('byteLength', 'byteOffset', 'buffer');
         } else if (isPromise(value)) {
-            braces[0] = `${getPrefix(constructor, tag, "Promise")}{`;
+            braces[0] = `${getPrefix(constructor, tag, 'Promise')}{`;
             formatter = formatPromise;
         } else if (isWeakSet(value)) {
-            braces[0] = `${getPrefix(constructor, tag, "WeakSet")}{`;
+            braces[0] = `${getPrefix(constructor, tag, 'WeakSet')}{`;
             formatter = ctx.showHidden ? formatWeakSet : formatWeakCollection;
         } else if (isWeakMap(value)) {
-            braces[0] = `${getPrefix(constructor, tag, "WeakMap")}{`;
+            braces[0] = `${getPrefix(constructor, tag, 'WeakMap')}{`;
             formatter = ctx.showHidden ? formatWeakMap : formatWeakCollection;
         } else if (isModuleNamespaceObject(value)) {
-            braces[0] = `${getPrefix(constructor, tag, "Module")}{`;
+            braces[0] = `${getPrefix(constructor, tag, 'Module')}{`;
             // Special handle keys for namespace objects.
             formatter = formatNamespaceObject.bind(null, keys);
         } else if (isBoxedPrimitive(value)) {
@@ -1268,8 +1077,9 @@ function formatRaw(
 
     if (ctx.depth !== null && recurseTimes > ctx.depth) {
         let constructorName = getCtxStyle(value, constructor, tag).slice(0, -1);
-        if (constructor !== null) constructorName = `[${constructorName}]`;
-        return ctx.stylize(constructorName, "special");
+        if (constructor !== null)
+            constructorName = `[${constructorName}]`;
+        return ctx.stylize(constructorName, 'special');
     }
     recurseTimes += 1;
 
@@ -1280,7 +1090,9 @@ function formatRaw(
     try {
         output = formatter(ctx, value, recurseTimes);
         for (i = 0; i < keys!.length; i++) {
-            output.push(formatProperty(ctx, value as object, recurseTimes, keys![i]!, extrasType));
+            output.push(
+                formatProperty(ctx, value as object, recurseTimes, keys![i]!, extrasType),
+            );
         }
         if (protoProps !== undefined) {
             output.push(...protoProps);
@@ -1292,10 +1104,10 @@ function formatRaw(
     if (ctx.circular !== undefined) {
         const index = ctx.circular.get(value);
         if (index !== undefined) {
-            const reference = ctx.stylize(`<ref *${index}>`, "special");
+            const reference = ctx.stylize(`<ref *${index}>`, 'special');
             // Add reference always to the very beginning of the output.
             if (ctx.compact !== true) {
-                base = base === "" ? reference : `${reference} ${base}`;
+                base = base === '' ? reference : `${reference} ${base}`;
             } else {
                 braces![0] = `${reference} ${braces![0]}`;
             }
@@ -1313,7 +1125,8 @@ function formatRaw(
         }
     }
 
-    const res = reduceToSingleString(ctx, output, base, braces!, extrasType, recurseTimes, value);
+    const res = reduceToSingleString(
+        ctx, output, base, braces!, extrasType, recurseTimes, value);
     const budget = ctx.budget[ctx.indentationLvl] || 0;
     const newLength = budget + res.length;
     ctx.budget[ctx.indentationLvl] = newLength;
@@ -1332,65 +1145,61 @@ function formatRaw(
 
 function getIteratorBraces(type: string, tag: string): [string, string] {
     if (tag !== `${type} Iterator`) {
-        if (tag !== "") tag += "] [";
+        if (tag !== '')
+            tag += '] [';
         tag += `${type} Iterator`;
     }
-    return [`[${tag}] {`, "}"];
+    return [`[${tag}] {`, '}'];
 }
 
-function getBoxedBase(
-    value: unknown,
-    ctx: Context,
-    keys: PropertyKey[],
-    constructor: string | null,
-    tag: string
-): string {
+function getBoxedBase(value: unknown, ctx: Context, keys: PropertyKey[], constructor: string | null, tag: string): string {
     let fn: (this: unknown) => Primitive;
     let type: Capitalize<Exclude<Style, "bigint">> | "BigInt";
     if (isNumberObject(value)) {
         fn = Number.prototype.valueOf;
-        type = "Number";
+        type = 'Number';
     } else if (isStringObject(value)) {
         fn = String.prototype.valueOf;
-        type = "String";
+        type = 'String';
         // For boxed Strings, we have to remove the 0-n indexed entries,
         // since they just noisy up the output and are redundant
         // Make boxed primitive Strings look like such
         keys.splice(0, value.length);
     } else if (isBooleanObject(value)) {
         fn = Boolean.prototype.valueOf;
-        type = "Boolean";
+        type = 'Boolean';
     } else if (isBigIntObject(value)) {
         fn = BigInt.prototype.valueOf;
-        type = "BigInt";
+        type = 'BigInt';
     } else {
         fn = Symbol.prototype.valueOf;
-        type = "Symbol";
+        type = 'Symbol';
     }
     let base = `[${type}`;
     if (type !== constructor) {
         if (constructor === null) {
-            base += " (null prototype)";
+            base += ' (null prototype)';
         } else {
             base += ` (${constructor})`;
         }
     }
     base += `: ${formatPrimitive(stylizeNoColor, fn.call(value), ctx)}]`;
-    if (tag !== "" && tag !== constructor) {
+    if (tag !== '' && tag !== constructor) {
         base += ` [${tag}]`;
     }
-    if (keys.length !== 0 || ctx.stylize === stylizeNoColor) return base;
+    if (keys.length !== 0 || ctx.stylize === stylizeNoColor)
+        return base;
     return ctx.stylize(base, type.toLowerCase() as Style);
 }
 
 function getClassBase(value: any, constructor: string | null, tag: string): string {
-    const hasName = Object.prototype.hasOwnProperty.call(value, "name");
-    const name = (hasName && value.name) || "(anonymous)";
+    const hasName = Object.prototype.hasOwnProperty.call(value, 'name');
+    const name = (hasName && value.name) || '(anonymous)';
     let base = `class ${name}`;
-    if (constructor !== "Function" && constructor !== null) {
+    if (constructor !== 'Function' && constructor !== null) {
         base += ` [${constructor}]`;
     }
-    if (tag !== "" && constructor !== tag) {
+    if (tag !== '' && constructor !== tag) {
         base += ` [${tag}]`;
     }
     if (constructor !== null) {
@@ -1399,26 +1208,25 @@ function getClassBase(value: any, constructor: string | null, tag: string): stri
             base += ` extends ${superName}`;
         }
     } else {
-        base += " extends [null prototype]";
+        base += ' extends [null prototype]';
     }
     return `[${base}]`;
 }
 
 function getFunctionBase(value: Function, constructor: string | null, tag: string): string {
     const stringified = Function.prototype.toString.call(value);
-    if (stringified.startsWith("class") && stringified.endsWith("}")) {
+    if (stringified.startsWith('class') && stringified.endsWith('}')) {
         const slice = stringified.slice(5, -1);
-        const bracketIndex = slice.indexOf("{");
-        if (
-            bracketIndex !== -1 &&
-            (!slice.slice(0, bracketIndex).includes("(") ||
+        const bracketIndex = slice.indexOf('{');
+        if (bracketIndex !== -1 &&
+            (!slice.slice(0, bracketIndex).includes('(') ||
                 // Slow path to guarantee that it's indeed a class.
                 classRegExp.exec(slice.replace(stripCommentsRegExp, "")) !== null)
         ) {
             return getClassBase(value, constructor, tag);
         }
     }
-    let type = "Function";
+    let type = 'Function';
     if (isGeneratorFunction(value)) {
         type = `Generator${type}`;
     }
@@ -1427,27 +1235,24 @@ function getFunctionBase(value: Function, constructor: string | null, tag: strin
     }
     let base = `[${type}`;
     if (constructor === null) {
-        base += " (null prototype)";
+        base += ' (null prototype)';
     }
-    if (value.name === "") {
-        base += " (anonymous)";
+    if (value.name === '') {
+        base += ' (anonymous)';
     } else {
         base += `: ${value.name}`;
     }
-    base += "]";
+    base += ']';
     if (constructor !== type && constructor !== null) {
         base += ` ${constructor}`;
     }
-    if (tag !== "" && constructor !== tag) {
+    if (tag !== '' && constructor !== tag) {
         base += ` [${tag}]`;
     }
     return base;
 }
 
-export function identicalSequenceRange(
-    a: unknown[],
-    b: unknown[]
-): { len: number; offset: number } {
+export function identicalSequenceRange(a: unknown[], b: unknown[]): { len: number, offset: number } {
     for (let i = 0; i < a.length - 3; i++) {
         // Find the first entry of b that matches the current entry of a.
         const pos = b.indexOf(a[i]);
@@ -1475,7 +1280,7 @@ function getStackString(error: Error): string {
 }
 
 function getStackFrames(ctx: Context, err: Error, stack: string): string[] {
-    const frames = stack.split("\n");
+    const frames = stack.split('\n');
 
     let cause;
     try {
@@ -1487,44 +1292,36 @@ function getStackFrames(ctx: Context, err: Error, stack: string): string[] {
     // Remove stack frames identical to frames in cause.
     if (cause != null && isError(cause)) {
         const causeStack = getStackString(cause);
-        const causeStackStart = causeStack.indexOf("\n    at");
+        const causeStackStart = causeStack.indexOf('\n    at');
         if (causeStackStart !== -1) {
-            const causeFrames = causeStack.slice(causeStackStart + 1).split("\n");
+            const causeFrames = causeStack.slice(causeStackStart + 1).split('\n');
             const { len, offset } = identicalSequenceRange(frames, causeFrames);
             if (len > 0) {
                 const skipped = len - 2;
                 const msg = `    ... ${skipped} lines matching cause stack trace ...`;
-                frames.splice(offset + 1, skipped, ctx.stylize(msg, "undefined"));
+                frames.splice(offset + 1, skipped, ctx.stylize(msg, 'undefined'));
             }
         }
     }
     return frames;
 }
 
-function improveStack(
-    stack: string,
-    constructor: string | null,
-    name: string,
-    tag: string
-): string {
+function improveStack(stack: string, constructor: string | null, name: string, tag: string): string {
     // A stack trace may contain arbitrary data. Only manipulate the output
     // for "regular errors" (errors that "look normal") for now.
     let len = name.length;
 
-    if (
-        constructor === null ||
-        (name.endsWith("Error") &&
+    if (constructor === null ||
+        (name.endsWith('Error') &&
             stack.startsWith(name) &&
-            (stack.length === len || stack[len] === ":" || stack[len] === "\n"))
-    ) {
-        let fallback = "Error";
+            (stack.length === len || stack[len] === ':' || stack[len] === '\n'))) {
+        let fallback = 'Error';
         if (constructor === null) {
-            const start =
-                /^([A-Z][a-z_ A-Z0-9[\]()-]+)(?::|\n {4}at)/.exec(stack) ||
+            const start = /^([A-Z][a-z_ A-Z0-9[\]()-]+)(?::|\n {4}at)/.exec(stack) ||
                 /^([a-z_A-Z0-9-]*Error)$/.exec(stack);
-            fallback = (start && start[1]) || "";
+            fallback = (start && start[1]) || '';
             len = fallback.length;
-            fallback = fallback || "Error";
+            fallback = fallback || 'Error';
         }
         const prefix = getPrefix(constructor, tag, fallback).slice(0, -1);
         if (name !== prefix) {
@@ -1542,14 +1339,9 @@ function improveStack(
     return stack;
 }
 
-function removeDuplicateErrorKeys(
-    ctx: Context,
-    keys: PropertyKey[],
-    err: Error,
-    stack: string
-): void {
+function removeDuplicateErrorKeys(ctx: Context, keys: PropertyKey[], err: Error, stack: string): void {
     if (!ctx.showHidden && keys.length !== 0) {
-        for (const name of ["name", "message", "stack"] as const) {
+        for (const name of ['name', 'message', 'stack'] as const) {
             const index = keys.indexOf(name);
             // Only hide the property in case it's part of the original stack
             if (index !== -1 && stack.includes(err[name]!)) {
@@ -1560,13 +1352,13 @@ function removeDuplicateErrorKeys(
 }
 
 function markNodeModules(ctx: Context, line: string): string {
-    let tempLine = "";
+    let tempLine = '';
     let nodeModule;
     let pos = 0;
     while ((nodeModule = nodeModulesRegExp.exec(line)) !== null) {
         // '/node_modules/'.length === 14
         tempLine += line.slice(pos, nodeModule.index + 14);
-        tempLine += ctx.stylize(nodeModule[1]!, "module");
+        tempLine += ctx.stylize(nodeModule[1]!, 'module');
         pos = nodeModule.index + nodeModule[0].length;
     }
     if (pos !== 0) {
@@ -1575,37 +1367,31 @@ function markNodeModules(ctx: Context, line: string): string {
     return line;
 }
 
-function formatError(
-    err: Error,
-    constructor: string | null,
-    tag: string,
-    ctx: Context,
-    keys: PropertyKey[]
-): string {
-    const name = err.name != null ? String(err.name) : "Error";
+function formatError(err: Error, constructor: string | null, tag: string, ctx: Context, keys: PropertyKey[]): string {
+    const name = err.name != null ? String(err.name) : 'Error';
     let stack = getStackString(err);
 
     removeDuplicateErrorKeys(ctx, keys, err, stack);
 
-    if ("cause" in err && (keys.length === 0 || !keys.includes("cause"))) {
-        keys.push("cause");
+    if ('cause' in err &&
+        (keys.length === 0 || !keys.includes('cause'))) {
+        keys.push('cause');
     }
 
     // Print errors aggregated into AggregateError
-    if (
-        Array.isArray((err as { errors?: unknown }).errors) &&
-        (keys.length === 0 || !keys.includes("errors"))
-    ) {
-        keys.push("errors");
+    if (Array.isArray((err as { errors?: unknown }).errors) &&
+        (keys.length === 0 || !keys.includes('errors'))) {
+        keys.push('errors');
     }
 
     stack = improveStack(stack, constructor, name, tag);
 
     // Ignore the error message if it's contained in the stack.
     let pos = (err.message && stack.indexOf(err.message)) || -1;
-    if (pos !== -1) pos += err.message.length;
+    if (pos !== -1)
+        pos += err.message.length;
     // Wrap the error in brackets in case it has no stack trace.
-    const stackStart = stack.indexOf("\n    at", pos);
+    const stackStart = stack.indexOf('\n    at', pos);
     if (stackStart === -1) {
         stack = `[${stack}]`;
     } else {
@@ -1615,30 +1401,26 @@ function formatError(
         if (ctx.colors) {
             // Highlight userland code and node modules.
             for (let line of lines) {
-                newStack += "\n";
+                newStack += '\n';
 
                 line = markNodeModules(ctx, line);
 
                 newStack += line;
             }
         } else {
-            newStack += `\n${lines.join("\n")}`;
+            newStack += `\n${lines.join('\n')}`;
         }
         stack = newStack;
     }
     // The message and the stack have to be indented as well!
     if (ctx.indentationLvl !== 0) {
-        const indentation = " ".repeat(ctx.indentationLvl);
-        stack = stack.replaceAll("\n", `\n${indentation}`);
+        const indentation = ' '.repeat(ctx.indentationLvl);
+        stack = stack.replaceAll('\n', `\n${indentation}`);
     }
     return stack;
 }
 
-function groupArrayElements(
-    ctx: Context,
-    output: string[],
-    value: unknown[] | undefined
-): string[] {
+function groupArrayElements(ctx: Context, output: string[], value: unknown[] | undefined): string[] {
     let totalLength = 0;
     let maxLength = 0;
     let i = 0;
@@ -1656,7 +1438,8 @@ function groupArrayElements(
         const len = getStringWidth(output[i]!, ctx.colors);
         dataLen[i] = len;
         totalLength += len + separatorSpace;
-        if (maxLength < len) maxLength = len;
+        if (maxLength < len)
+            maxLength = len;
     }
     // Add two to `maxLength` as we add a single whitespace character plus a comma
     // in-between two entries.
@@ -1665,10 +1448,9 @@ function groupArrayElements(
     // of arrays that contains entries of very different length (i.e., if a single
     // entry is longer than 1/5 of all other entries combined). Otherwise the
     // space in-between small entries would be enormous.
-    if (
-        actualMax * 3 + ctx.indentationLvl < ctx.breakLength &&
-        (totalLength / actualMax > 5 || maxLength <= 6)
-    ) {
+    if (actualMax * 3 + ctx.indentationLvl < ctx.breakLength &&
+        (totalLength / actualMax > 5 || maxLength <= 6)) {
+
         const approxCharHeights = 2.5;
         const averageBias = Math.sqrt(actualMax - totalLength / output.length);
         const biasedMax = Math.max(actualMax - 3 - averageBias, 1);
@@ -1679,18 +1461,18 @@ function groupArrayElements(
             // which contains n rectangles of size `actualMax * approxCharHeights`.
             // Divide that by `actualMax` to receive the correct number of columns.
             // The added bias increases the columns for short entries.
-            Math.round(Math.sqrt(approxCharHeights * biasedMax * outputLength) / biasedMax),
+            Math.round(
+                Math.sqrt(
+                    approxCharHeights * biasedMax * outputLength,
+                ) / biasedMax,
+            ),
             // Do not exceed the breakLength.
             Math.floor((ctx.breakLength - ctx.indentationLvl) / actualMax),
             // Limit array grouping for small `compact` modes as the user requested
             // minimal grouping.
-            (ctx.compact === false
-                ? 0
-                : ctx.compact === true
-                  ? inspectDefaultOptions.compact
-                  : ctx.compact) * 4,
+            (ctx.compact === false ? 0 : ctx.compact === true ? inspectDefaultOptions.compact : ctx.compact) * 4,
             // Limit the columns to a maximum of fifteen.
-            15
+            15,
         );
         // Return with the original output if no grouping should happen.
         if (columns <= 1) {
@@ -1701,7 +1483,8 @@ function groupArrayElements(
         for (let i = 0; i < columns; i++) {
             let lineMaxLength = 0;
             for (let j = i; j < output.length; j += columns) {
-                if (dataLen[j] > lineMaxLength) lineMaxLength = dataLen[j];
+                if (dataLen[j] > lineMaxLength)
+                    lineMaxLength = dataLen[j];
             }
             lineMaxLength += separatorSpace;
             maxLineLength[i] = lineMaxLength;
@@ -1709,7 +1492,7 @@ function groupArrayElements(
         let order = String.prototype.padStart;
         if (value !== undefined) {
             for (let i = 0; i < output.length; i++) {
-                if (typeof value[i] !== "number" && typeof value[i] !== "bigint") {
+                if (typeof value[i] !== 'number' && typeof value[i] !== 'bigint') {
                     order = String.prototype.padEnd;
                     break;
                 }
@@ -1719,19 +1502,21 @@ function groupArrayElements(
         for (let i = 0; i < outputLength; i += columns) {
             // The last lines may contain less entries than columns.
             const max = Math.min(i + columns, outputLength);
-            let str = "";
+            let str = '';
             let j = i;
             for (; j < max - 1; j++) {
                 // Calculate extra color padding in case it's active. This has to be
                 // done line by line as some lines might contain more colors than
                 // others.
                 const padding = maxLineLength[j - i]! + output[j]!.length - dataLen[j];
-                str += order.call(`${output[j]}, `, padding, " ");
+                str += order.call(`${output[j]}, `, padding, ' ');
             }
             if (order === String.prototype.padStart) {
-                const padding =
-                    maxLineLength[j - i]! + output[j]!.length - dataLen[j] - separatorSpace;
-                str += output[j]!.padStart(padding, " ");
+                const padding = maxLineLength[j - i]! +
+                    output[j]!.length -
+                    dataLen[j] -
+                    separatorSpace;
+                str += output[j]!.padStart(padding, ' ');
             } else {
                 str += output[j];
             }
@@ -1745,19 +1530,14 @@ function groupArrayElements(
     return output;
 }
 
-function handleMaxCallStackSize(
-    ctx: Context,
-    err: Error,
-    constructorName: string,
-    indentationLvl: number
-): string {
+function handleMaxCallStackSize(ctx: Context, err: Error, constructorName: string, indentationLvl: number): string {
     if (isStackOverflowError(err)) {
         ctx.seen.pop();
         ctx.indentationLvl = indentationLvl;
         return ctx.stylize(
             `[${constructorName}: Inspection interrupted ` +
-                "prematurely. Maximum call stack size exceeded.]",
-            "special"
+            'prematurely. Maximum call stack size exceeded.]',
+            'special',
         );
     }
     /* c8 ignore next */
@@ -1765,129 +1545,119 @@ function handleMaxCallStackSize(
 }
 
 function addNumericSeparator(integerString: string): string {
-    let result = "";
+    let result = '';
     let i = integerString.length;
-    const start = integerString.startsWith("-") ? 1 : 0;
+    const start = integerString.startsWith('-') ? 1 : 0;
     for (; i >= start + 4; i -= 3) {
         result = `_${integerString.slice(i - 3, i)}${result}`;
     }
-    return i === integerString.length ? integerString : `${integerString.slice(0, i)}${result}`;
+    return i === integerString.length ?
+        integerString :
+        `${integerString.slice(0, i)}${result}`;
 }
 
 function addNumericSeparatorEnd(integerString: string): string {
-    let result = "";
+    let result = '';
     let i = 0;
     for (; i < integerString.length - 3; i += 3) {
         result += `${integerString.slice(i, i + 3)}_`;
     }
-    return i === 0 ? integerString : `${result}${integerString.slice(i)}`;
+    return i === 0 ?
+        integerString :
+        `${result}${integerString.slice(i)}`;
 }
 
-const remainingText = (remaining: number) =>
-    `... ${remaining} more item${remaining > 1 ? "s" : ""}`;
+const remainingText = (remaining: number) => `... ${remaining} more item${remaining > 1 ? 's' : ''}`;
 
-function formatNumber(
-    fn: InspectOptionsStylized["stylize"],
-    number: number,
-    numericSeparator?: boolean
-): string {
+function formatNumber(fn: InspectOptionsStylized["stylize"], number: number, numericSeparator?: boolean): string {
     if (!numericSeparator) {
         // Format -0 as '-0'. Checking `number === -0` won't distinguish 0 from -0.
         if (Object.is(number, -0)) {
-            return fn("-0", "number");
+            return fn('-0', 'number');
         }
-        return fn(`${number}`, "number");
+        return fn(`${number}`, 'number');
     }
     const integer = Math.trunc(number);
     const string = String(integer);
     if (integer === number) {
-        if (!Number.isFinite(number) || string.includes("e")) {
-            return fn(string, "number");
+        if (!Number.isFinite(number) || string.includes('e')) {
+            return fn(string, 'number');
         }
-        return fn(`${addNumericSeparator(string)}`, "number");
+        return fn(`${addNumericSeparator(string)}`, 'number');
     }
     if (Number.isNaN(number)) {
-        return fn(string, "number");
+        return fn(string, 'number');
     }
-    return fn(
-        `${addNumericSeparator(string)}.${addNumericSeparatorEnd(
-            String(number).slice(string.length + 1)
-        )}`,
-        "number"
-    );
+    return fn(`${
+        addNumericSeparator(string)
+    }.${
+        addNumericSeparatorEnd(
+            String(number).slice(string.length + 1),
+        )
+    }`, 'number');
 }
 
-function formatBigInt(
-    fn: InspectOptionsStylized["stylize"],
-    bigint: bigint,
-    numericSeparator?: boolean
-): string {
+function formatBigInt(fn: InspectOptionsStylized["stylize"], bigint: bigint, numericSeparator?: boolean): string {
     const string = String(bigint);
     if (!numericSeparator) {
-        return fn(`${string}n`, "bigint");
+        return fn(`${string}n`, 'bigint');
     }
-    return fn(`${addNumericSeparator(string)}n`, "bigint");
+    return fn(`${addNumericSeparator(string)}n`, 'bigint');
 }
 
 type Primitive = string | number | bigint | boolean | undefined | symbol;
-function formatPrimitive(
-    fn: InspectOptionsStylized["stylize"],
-    value: Primitive,
-    ctx: Context
-): string {
-    if (typeof value === "string") {
-        let trailer = "";
+function formatPrimitive(fn: InspectOptionsStylized["stylize"], value: Primitive, ctx: Context): string {
+    if (typeof value === 'string') {
+        let trailer = '';
         if (ctx.maxStringLength !== null && value.length > ctx.maxStringLength) {
             const remaining = value.length - ctx.maxStringLength;
             value = value.slice(0, ctx.maxStringLength);
-            trailer = `... ${remaining} more character${remaining > 1 ? "s" : ""}`;
+            trailer = `... ${remaining} more character${remaining > 1 ? 's' : ''}`;
         }
-        if (
-            ctx.compact !== true &&
+        if (ctx.compact !== true &&
             // We do not support handling unicode characters width with
             // the readline getStringWidth function as there are
             // performance implications.
             value.length > kMinLineLength &&
-            value.length > ctx.breakLength - ctx.indentationLvl - 4
-        ) {
-            return (
-                value
+            value.length > ctx.breakLength - ctx.indentationLvl - 4) {
+            return value
                     .split(/(?<=\n)/)
-                    .map((line) => fn(strEscape(line), "string"))
-                    .join(` +\n${" ".repeat(ctx.indentationLvl + 2)}`) + trailer
-            );
+                    .map((line) => fn(strEscape(line), 'string'))
+                    .join(` +\n${' '.repeat(ctx.indentationLvl + 2)}`)
+                + trailer;
         }
-        return fn(strEscape(value), "string") + trailer;
+        return fn(strEscape(value), 'string') + trailer;
     }
-    if (typeof value === "number") return formatNumber(fn, value, ctx.numericSeparator);
-    if (typeof value === "bigint") return formatBigInt(fn, value, ctx.numericSeparator);
-    if (typeof value === "boolean") return fn(`${value}`, "boolean");
-    if (typeof value === "undefined") return fn("undefined", "undefined");
+    if (typeof value === 'number')
+        return formatNumber(fn, value, ctx.numericSeparator);
+    if (typeof value === 'bigint')
+        return formatBigInt(fn, value, ctx.numericSeparator);
+    if (typeof value === 'boolean')
+        return fn(`${value}`, 'boolean');
+    if (typeof value === 'undefined')
+        return fn('undefined', 'undefined');
     // es6 symbol primitive
-    return fn(Symbol.prototype.toString.call(value), "symbol");
+    return fn(Symbol.prototype.toString.call(value), 'symbol');
 }
 
-function formatNamespaceObject(
-    keys: PropertyKey[],
-    ctx: Context,
-    value: object,
-    recurseTimes: number
-): string[] {
+function formatNamespaceObject(keys: PropertyKey[], ctx: Context, value: object, recurseTimes: number): string[] {
     const output = new Array<string>(keys.length);
     for (let i = 0; i < keys.length; i++) {
         try {
-            output[i] = formatProperty(ctx, value, recurseTimes, keys[i]!, kObjectType);
+            output[i] = formatProperty(ctx, value, recurseTimes, keys[i]!,
+                kObjectType);
         } catch (err) {
-            assert(isNativeError(err) && err.name === "ReferenceError");
+            assert(isNativeError(err) && err.name === 'ReferenceError');
             // Use the existing functionality. This makes sure the indentation and
             // line breaks are always correct. Otherwise it is very difficult to keep
             // this aligned, even though this is a hacky way of dealing with this.
-            const tmp = { [keys[i]!]: "" };
+            const tmp = { [keys[i]!]: '' };
             output[i] = formatProperty(ctx, tmp, recurseTimes, keys[i]!, kObjectType);
-            const pos = output[i]!.lastIndexOf(" ");
+            const pos = output[i]!.lastIndexOf(' ');
             // We have to find the last whitespace and have to replace that value as
             // it will be visualized as a regular string.
-            output[i] = output[i]!.slice(0, pos + 1) + ctx.stylize("<uninitialized>", "special");
+            output[i] = output[i]!.slice(0, pos + 1) +
+                ctx.stylize('<uninitialized>', 'special');
         }
     }
     // Reset the keys to an empty array. This prevents duplicated inspection.
@@ -1896,14 +1666,7 @@ function formatNamespaceObject(
 }
 
 // The array is sparse and/or has extra keys
-function formatSpecialArray(
-    ctx: Context,
-    value: unknown[],
-    recurseTimes: number,
-    maxLength: number,
-    output: string[],
-    i: number
-): string[] {
+function formatSpecialArray(ctx: Context, value: unknown[], recurseTimes: number, maxLength: number, output: string[], i: number): string[] {
     const keys = Object.keys(value);
     let index = i;
     for (; i < keys.length && output.length < maxLength; i++) {
@@ -1918,9 +1681,9 @@ function formatSpecialArray(
                 break;
             }
             const emptyItems = tmp - index;
-            const ending = emptyItems > 1 ? "s" : "";
+            const ending = emptyItems > 1 ? 's' : '';
             const message = `<${emptyItems} empty item${ending}>`;
-            output.push(ctx.stylize(message, "undefined"));
+            output.push(ctx.stylize(message, 'undefined'));
             index = tmp;
             if (output.length === maxLength) {
                 break;
@@ -1932,9 +1695,9 @@ function formatSpecialArray(
     const remaining = value.length - index;
     if (output.length !== maxLength) {
         if (remaining > 0) {
-            const ending = remaining > 1 ? "s" : "";
+            const ending = remaining > 1 ? 's' : '';
             const message = `<${remaining} empty item${ending}>`;
-            output.push(ctx.stylize(message, "undefined"));
+            output.push(ctx.stylize(message, 'undefined'));
         }
     } else if (remaining > 0) {
         output.push(remainingText(remaining));
@@ -1947,16 +1710,16 @@ function formatArrayBuffer(ctx: Context, value: ArrayBuffer): string[] {
     try {
         buffer = new Uint8Array(value);
     } catch {
-        return [ctx.stylize("(detached)", "special")];
+        return [ctx.stylize('(detached)', 'special')];
     }
     const maxArrayLength = ctx.maxArrayLength;
-    let str = Buffer.prototype.hexSlice
-        .call(buffer, 0, Math.min(maxArrayLength, buffer.length))
-        .replace(/(.{2})/g, "$1 ")
+    let str = Buffer.prototype.hexSlice.call(buffer, 0, Math.min(maxArrayLength, buffer.length))
+        .replace(/(.{2})/g, '$1 ')
         .trim();
     const remaining = buffer.length - maxArrayLength;
-    if (remaining > 0) str += ` ... ${remaining} more byte${remaining > 1 ? "s" : ""}`;
-    return [`${ctx.stylize("[Uint8Contents]", "special")}: <${str}>`];
+    if (remaining > 0)
+        str += ` ... ${remaining} more byte${remaining > 1 ? 's' : ''}`;
+    return [`${ctx.stylize('[Uint8Contents]', 'special')}: <${str}>`];
 }
 
 function formatArray(ctx: Context, value: unknown[], recurseTimes: number): string[] {
@@ -1978,18 +1741,13 @@ function formatArray(ctx: Context, value: unknown[], recurseTimes: number): stri
     return output;
 }
 
-function formatTypedArray(
-    value: internal.TypedArray,
-    length: number,
-    ctx: Context,
-    _ignored: unknown,
-    recurseTimes: number
-): string[] {
+function formatTypedArray(value: internal.TypedArray, length: number, ctx: Context, _ignored: unknown, recurseTimes: number): string[] {
     const maxLength = Math.min(Math.max(0, ctx.maxArrayLength), length);
     const remaining = value.length - maxLength;
     const output = new Array<string>(maxLength);
-    const elementFormatter =
-        value.length > 0 && typeof value[0] === "number" ? formatNumber : formatBigInt;
+    const elementFormatter = value.length > 0 && typeof value[0] === 'number' ?
+        formatNumber :
+        formatBigInt;
     for (let i = 0; i < maxLength; ++i) {
         // @ts-expect-error `value[i]` assumed to be of correct numeric type
         output[i] = elementFormatter(ctx.stylize, value[i], ctx.numericSeparator);
@@ -2002,11 +1760,11 @@ function formatTypedArray(
         // All besides `BYTES_PER_ELEMENT` are actually getters.
         ctx.indentationLvl += 2;
         for (const key of [
-            "BYTES_PER_ELEMENT",
-            "length",
-            "byteLength",
-            "byteOffset",
-            "buffer",
+            'BYTES_PER_ELEMENT',
+            'length',
+            'byteLength',
+            'byteOffset',
+            'buffer',
         ] as const) {
             const str = formatValue(ctx, value[key], recurseTimes, true);
             output.push(`[${key}]: ${str}`);
@@ -2016,12 +1774,7 @@ function formatTypedArray(
     return output;
 }
 
-function formatSet(
-    value: Set<unknown> | IterableIterator<unknown>,
-    ctx: Context,
-    _ignored: unknown,
-    recurseTimes: number
-): string[] {
+function formatSet(value: Set<unknown> | IterableIterator<unknown>, ctx: Context, _ignored: unknown, recurseTimes: number): string[] {
     const length = isSet(value) ? value.size : NaN;
     const maxLength = Math.min(Math.max(0, ctx.maxArrayLength), length);
     const remaining = length - maxLength;
@@ -2040,12 +1793,7 @@ function formatSet(
     return output;
 }
 
-function formatMap(
-    value: Map<unknown, unknown> | IterableIterator<[unknown, unknown]>,
-    ctx: Context,
-    _ignored: unknown,
-    recurseTimes: number
-): string[] {
+function formatMap(value: Map<unknown, unknown> | IterableIterator<[unknown, unknown]>, ctx: Context, _ignored: unknown, recurseTimes: number): string[] {
     const length = isMap(value) ? value.size : NaN;
     const maxLength = Math.min(Math.max(0, ctx.maxArrayLength), length);
     const remaining = length - maxLength;
@@ -2054,7 +1802,9 @@ function formatMap(
     let i = 0;
     for (const { 0: k, 1: v } of value) {
         if (i >= maxLength) break;
-        output.push(`${formatValue(ctx, k, recurseTimes)} => ${formatValue(ctx, v, recurseTimes)}`);
+        output.push(
+            `${formatValue(ctx, k, recurseTimes)} => ${formatValue(ctx, v, recurseTimes)}`
+        );
         i++;
     }
     if (remaining > 0) {
@@ -2064,12 +1814,7 @@ function formatMap(
     return output;
 }
 
-function formatSetIterInner(
-    ctx: Context,
-    recurseTimes: number,
-    entries: unknown[],
-    state: number
-): string[] {
+function formatSetIterInner(ctx: Context, recurseTimes: number, entries: unknown[], state: number): string[] {
     const maxArrayLength = Math.max(ctx.maxArrayLength, 0);
     const maxLength = Math.min(maxArrayLength, entries.length);
     const output = new Array<string>(maxLength);
@@ -2091,12 +1836,7 @@ function formatSetIterInner(
     return output;
 }
 
-function formatMapIterInner(
-    ctx: Context,
-    recurseTimes: number,
-    entries: unknown[],
-    state: number
-): string[] {
+function formatMapIterInner(ctx: Context, recurseTimes: number, entries: unknown[], state: number): string[] {
     const maxArrayLength = Math.max(ctx.maxArrayLength, 0);
     // Entries exist as [key1, val1, key2, val2, ...]
     const len = entries.length / 2;
@@ -2108,16 +1848,14 @@ function formatMapIterInner(
     if (state === kWeak) {
         for (; i < maxLength; i++) {
             const pos = i * 2;
-            output[i] = `${formatValue(ctx, entries[pos], recurseTimes)} => ${formatValue(
-                ctx,
-                entries[pos + 1],
-                recurseTimes
-            )}`;
+            output[i] =
+                `${formatValue(ctx, entries[pos], recurseTimes)} => ${formatValue(ctx, entries[pos + 1], recurseTimes)}`;
         }
         // Sort all entries to have a halfway reliable output (if more entries than
         // retrieved ones exist, we can not reliably return the same output) if the
         // output is not sorted anyway.
-        if (!ctx.sorted) output.sort();
+        if (!ctx.sorted)
+            output.sort();
     } else {
         for (; i < maxLength; i++) {
             const pos = i * 2;
@@ -2126,13 +1864,7 @@ function formatMapIterInner(
                 formatValue(ctx, entries[pos + 1], recurseTimes),
             ];
             output[i] = reduceToSingleString(
-                ctx,
-                res,
-                "",
-                ["[", "]"],
-                kArrayExtrasType,
-                recurseTimes
-            );
+                ctx, res, '', ['[', ']'], kArrayExtrasType, recurseTimes);
         }
     }
     ctx.indentationLvl -= 2;
@@ -2143,7 +1875,7 @@ function formatMapIterInner(
 }
 
 function formatWeakCollection(ctx: Context): string[] {
-    return [ctx.stylize("<items unknown>", "special")];
+    return [ctx.stylize('<items unknown>', 'special')];
 }
 
 function formatWeakSet(ctx: Context, value: WeakSet<any>, recurseTimes: number): string[] {
@@ -2156,16 +1888,11 @@ function formatWeakMap(ctx: Context, value: WeakMap<any, unknown>, recurseTimes:
     return formatMapIterInner(ctx, recurseTimes, entries, kWeak);
 }
 
-function formatIterator(
-    braces: [string, string],
-    ctx: Context,
-    value: Iterator<unknown>,
-    recurseTimes: number
-): string[] {
+function formatIterator(braces: [string, string], ctx: Context, value: Iterator<unknown>, recurseTimes: number): string[] {
     const { entries, isKeyValue } = internal.previewEntries(value)!;
     if (isKeyValue) {
         // Mark entry iterators as such.
-        braces[0] = braces[0].replace(/ Iterator] {$/, " Entries] {");
+        braces[0] = braces[0].replace(/ Iterator] {$/, ' Entries] {');
         return formatMapIterInner(ctx, recurseTimes, entries, kMapEntries);
     }
 
@@ -2176,93 +1903,80 @@ function formatPromise(ctx: Context, value: Promise<unknown>, recurseTimes: numb
     let output: string[];
     const { state, result } = internal.getPromiseDetails(value)!;
     if (state === internal.kPending) {
-        output = [ctx.stylize("<pending>", "special")];
+        output = [ctx.stylize('<pending>', 'special')];
     } else {
         ctx.indentationLvl += 2;
         const str = formatValue(ctx, result, recurseTimes);
         ctx.indentationLvl -= 2;
         output = [
-            state === internal.kRejected ? `${ctx.stylize("<rejected>", "special")} ${str}` : str,
+            state === internal.kRejected ?
+                `${ctx.stylize('<rejected>', 'special')} ${str}` :
+                str,
         ];
     }
     return output;
 }
 
-function formatProperty(
-    ctx: Context,
-    value: object,
-    recurseTimes: number,
-    key: PropertyKey,
-    type: number,
-    desc?: PropertyDescriptor,
-    original = value
-): string {
+function formatProperty(ctx: Context, value: object, recurseTimes: number, key: PropertyKey, type: number, desc?: PropertyDescriptor,
+                        original = value): string {
     let name: string, str: string;
-    let extra = " ";
-    desc = desc ||
-        Object.getOwnPropertyDescriptor(value, key) || {
-            value: (value as Record<PropertyKey, unknown>)[key],
-            enumerable: true,
-        };
+    let extra = ' ';
+    desc = desc || Object.getOwnPropertyDescriptor(value, key) ||
+        { value: (value as Record<PropertyKey, unknown>)[key], enumerable: true };
     if (desc.value !== undefined) {
-        const diff = ctx.compact !== true || type !== kObjectType ? 2 : 3;
+        const diff = (ctx.compact !== true || type !== kObjectType) ? 2 : 3;
         ctx.indentationLvl += diff;
         str = formatValue(ctx, desc.value, recurseTimes);
         if (diff === 3 && ctx.breakLength < getStringWidth(str, ctx.colors)) {
-            extra = `\n${" ".repeat(ctx.indentationLvl)}`;
+            extra = `\n${' '.repeat(ctx.indentationLvl)}`;
         }
         ctx.indentationLvl -= diff;
     } else if (desc.get !== undefined) {
-        const label = desc.set !== undefined ? "Getter/Setter" : "Getter";
+        const label = desc.set !== undefined ? 'Getter/Setter' : 'Getter';
         const s = ctx.stylize;
-        const sp = "special";
-        if (
-            ctx.getters &&
-            (ctx.getters === true ||
-                (ctx.getters === "get" && desc.set === undefined) ||
-                (ctx.getters === "set" && desc.set !== undefined))
-        ) {
+        const sp = 'special';
+        if (ctx.getters && (ctx.getters === true ||
+            (ctx.getters === 'get' && desc.set === undefined) ||
+            (ctx.getters === 'set' && desc.set !== undefined))) {
             try {
                 const tmp = desc.get.call(original);
                 ctx.indentationLvl += 2;
                 if (tmp === null) {
-                    str = `${s(`[${label}:`, sp)} ${s("null", "null")}${s("]", sp)}`;
-                } else if (typeof tmp === "object") {
+                    str = `${s(`[${label}:`, sp)} ${s('null', 'null')}${s(']', sp)}`;
+                } else if (typeof tmp === 'object') {
                     str = `${s(`[${label}]`, sp)} ${formatValue(ctx, tmp, recurseTimes)}`;
                 } else {
                     const primitive = formatPrimitive(s, tmp, ctx);
-                    str = `${s(`[${label}:`, sp)} ${primitive}${s("]", sp)}`;
+                    str = `${s(`[${label}:`, sp)} ${primitive}${s(']', sp)}`;
                 }
                 ctx.indentationLvl -= 2;
             } catch (err) {
                 const message = `<Inspection threw (${isError(err) ? err.message : String(err)})>`;
-                str = `${s(`[${label}:`, sp)} ${message}${s("]", sp)}`;
+                str = `${s(`[${label}:`, sp)} ${message}${s(']', sp)}`;
             }
         } else {
             str = ctx.stylize(`[${label}]`, sp);
         }
     } else if (desc.set !== undefined) {
-        str = ctx.stylize("[Setter]", "special");
+        str = ctx.stylize('[Setter]', 'special');
     } else {
-        str = ctx.stylize("undefined", "undefined");
+        str = ctx.stylize('undefined', 'undefined');
     }
     if (type === kArrayType) {
         return str;
     }
-    if (typeof key === "symbol") {
-        const tmp = Symbol.prototype.toString
-            .call(key)
-            .replace(strEscapeSequencesReplacer, escapeFn);
-        name = `[${ctx.stylize(tmp, "symbol")}]`;
-    } else if (key === "__proto__") {
+    if (typeof key === 'symbol') {
+        const tmp = Symbol.prototype.toString.call(key).replace(strEscapeSequencesReplacer, escapeFn);
+        name = `[${ctx.stylize(tmp, 'symbol')}]`;
+    } else if (key === '__proto__') {
         name = "['__proto__']";
     } else if (desc.enumerable === false) {
         const tmp = String(key).replace(strEscapeSequencesReplacer, escapeFn);
         name = `[${tmp}]`;
     } else if (keyStrRegExp.exec(String(key)) !== null) {
-        name = ctx.stylize(String(key), "name");
+        name = ctx.stylize(String(key), 'name');
     } else {
-        name = ctx.stylize(strEscape(String(key)), "string");
+        name = ctx.stylize(strEscape(String(key)), 'string');
     }
     return `${name}:${extra}${str}`;
 }
@@ -2275,7 +1989,8 @@ function isBelowBreakLength(ctx: Context, output: string[], start: number, base:
     // function. Check the performance overhead and make it an opt-in in case it's
     // significant.
     let totalLength = output.length + start;
-    if (totalLength + output.length > ctx.breakLength) return false;
+    if (totalLength + output.length > ctx.breakLength)
+        return false;
     for (let i = 0; i < output.length; i++) {
         if (ctx.colors) {
             totalLength += removeColors(output[i]!).length;
@@ -2287,20 +2002,13 @@ function isBelowBreakLength(ctx: Context, output: string[], start: number, base:
         }
     }
     // Do not line up properties on the same line if `base` contains line breaks.
-    return base === "" || !base.includes("\n");
+    return base === '' || !base.includes('\n');
 }
 
 function reduceToSingleString(
-    ctx: Context,
-    output: string[],
-    base: string,
-    braces: [string, string],
-    extrasType: number,
-    recurseTimes: number,
-    value?: unknown
-): string {
+    ctx: Context, output: string[], base: string, braces: [string, string], extrasType: number, recurseTimes: number, value?: unknown): string {
     if (ctx.compact !== true) {
-        if (typeof ctx.compact === "number" && ctx.compact >= 1) {
+        if (typeof ctx.compact === 'number' && ctx.compact >= 1) {
             // Memorize the original output length. In case the output is grouped,
             // prevent lining up the entries on a single line.
             const entries = output.length;
@@ -2323,41 +2031,39 @@ function reduceToSingleString(
             // Consolidate all entries of the local most inner depth up to
             // `ctx.compact`, as long as the properties are smaller than
             // `ctx.breakLength`.
-            if (ctx.currentDepth - recurseTimes < ctx.compact && entries === output.length) {
+            if (ctx.currentDepth - recurseTimes < ctx.compact &&
+                entries === output.length) {
                 // Line up all entries on a single line in case the entries do not
                 // exceed `breakLength`. Add 10 as constant to start next to all other
                 // factors that may reduce `breakLength`.
-                const start =
-                    output.length + ctx.indentationLvl + braces[0].length + base.length + 10;
+                const start = output.length + ctx.indentationLvl +
+                    braces[0].length + base.length + 10;
                 if (isBelowBreakLength(ctx, output, start, base)) {
-                    const joinedOutput = output.join(", ");
-                    if (!joinedOutput.includes("\n")) {
-                        return (
-                            `${base ? `${base} ` : ""}${braces[0]} ${joinedOutput}` +
-                            ` ${braces[1]}`
-                        );
+                    const joinedOutput = output.join(', ');
+                    if (!joinedOutput.includes('\n')) {
+                        return `${base ? `${base} ` : ''}${braces[0]} ${joinedOutput}` +
+                            ` ${braces[1]}`;
                     }
                 }
             }
         }
         // Line up each entry on an individual line.
-        const indentation = `\n${" ".repeat(ctx.indentationLvl)}`;
-        return (
-            `${base ? `${base} ` : ""}${braces[0]}${indentation}  ` +
-            `${output.join(`,${indentation}  `)}${indentation}${braces[1]}`
-        );
+        const indentation = `\n${' '.repeat(ctx.indentationLvl)}`;
+        return `${base ? `${base} ` : ''}${braces[0]}${indentation}  ` +
+            `${output.join(`,${indentation}  `)}${indentation}${braces[1]}`;
     }
     // Line up all entries on a single line in case the entries do not exceed
     // `breakLength`.
     if (isBelowBreakLength(ctx, output, 0, base)) {
-        return `${braces[0]}${base ? ` ${base}` : ""} ${output.join(", ")} ` + braces[1];
+        return `${braces[0]}${base ? ` ${base}` : ''} ${output.join(', ')} ` +
+            braces[1];
     }
-    const indentation = " ".repeat(ctx.indentationLvl);
+    const indentation = ' '.repeat(ctx.indentationLvl);
     // If the opening "brace" is too large, like in the case of "Set {",
     // we need to force the first item to be on the next line or the
     // items will not line up correctly.
-    const ln =
-        base === "" && braces[0].length === 1 ? " " : `${base ? ` ${base}` : ""}\n${indentation}  `;
+    const ln = base === '' && braces[0].length === 1 ?
+        ' ' : `${base ? ` ${base}` : ''}\n${indentation}  `;
     // Line up each entry on an individual line.
     return `${braces[0]}${ln}${output.join(`,\n${indentation}  `)} ${braces[1]}`;
 }
@@ -2373,12 +2079,12 @@ function hasBuiltInToString(value: object): boolean {
     }
 
     // Count objects that have no `toString` function as built-in.
-    if (typeof value?.toString !== "function") {
+    if (typeof value?.toString !== 'function') {
         return true;
     }
 
     // The object has a own `toString` property. Thus it's not not a built-in one.
-    if (Object.prototype.hasOwnProperty.call(value, "toString")) {
+    if (Object.prototype.hasOwnProperty.call(value, 'toString')) {
         return false;
     }
 
@@ -2387,19 +2093,16 @@ function hasBuiltInToString(value: object): boolean {
     let pointer = value;
     do {
         pointer = Object.getPrototypeOf(pointer);
-    } while (!Object.prototype.hasOwnProperty.call(pointer, "toString"));
+    } while (!Object.prototype.hasOwnProperty.call(pointer, 'toString'));
 
     // Check closer if the object is a built-in.
-    const descriptor = Object.getOwnPropertyDescriptor(pointer, "constructor");
-    return (
-        descriptor !== undefined &&
-        typeof descriptor.value === "function" &&
-        builtInObjects.has(descriptor.value.name)
-    );
+    const descriptor = Object.getOwnPropertyDescriptor(pointer, 'constructor');
+    return descriptor !== undefined &&
+        typeof descriptor.value === 'function' &&
+        builtInObjects.has(descriptor.value.name);
 }
 
-const firstErrorLine = (error: unknown) =>
-    (isError(error) ? error.message : String(error)).split("\n", 1)[0];
+const firstErrorLine = (error: unknown) => (isError(error) ? error.message : String(error)).split('\n', 1)[0];
 let CIRCULAR_ERROR_MESSAGE: string | undefined;
 function tryStringify(arg: unknown): string {
     try {
@@ -2415,14 +2118,9 @@ function tryStringify(arg: unknown): string {
                 CIRCULAR_ERROR_MESSAGE = firstErrorLine(circularError);
             }
         }
-        if (
-            typeof err === "object" &&
-            err !== null &&
-            "name" in err &&
-            err.name === "TypeError" &&
-            firstErrorLine(err) === CIRCULAR_ERROR_MESSAGE
-        ) {
-            return "[Circular]";
+        if (typeof err === "object" && err !== null && "name" in err && err.name === 'TypeError' &&
+            firstErrorLine(err) === CIRCULAR_ERROR_MESSAGE) {
+            return '[Circular]';
         }
         throw err;
     }
@@ -2433,7 +2131,7 @@ export function format(...args: unknown[]): string {
 }
 
 export function formatWithOptions(inspectOptions: InspectOptions, ...args: unknown[]): string {
-    validateObject(inspectOptions, "inspectOptions", { allowArray: true });
+    validateObject(inspectOptions, 'inspectOptions', { allowArray: true });
     return formatWithOptionsInternal(inspectOptions, args);
 }
 
@@ -2441,7 +2139,7 @@ function formatNumberNoColor(number: number, options?: InspectOptions): string {
     return formatNumber(
         stylizeNoColor,
         number,
-        options?.numericSeparator ?? inspectDefaultOptions.numericSeparator
+        options?.numericSeparator ?? inspectDefaultOptions.numericSeparator,
     );
 }
 
@@ -2449,20 +2147,17 @@ function formatBigIntNoColor(bigint: bigint, options?: InspectOptions): string {
     return formatBigInt(
         stylizeNoColor,
         bigint,
-        options?.numericSeparator ?? inspectDefaultOptions.numericSeparator
+        options?.numericSeparator ?? inspectDefaultOptions.numericSeparator,
     );
 }
 
-function formatWithOptionsInternal(
-    inspectOptions: InspectOptions | undefined,
-    args: unknown[]
-): string {
+function formatWithOptionsInternal(inspectOptions: InspectOptions | undefined, args: unknown[]): string {
     const first = args[0];
     let a = 0;
-    let str = "";
-    let join = "";
+    let str = '';
+    let join = '';
 
-    if (typeof first === "string") {
+    if (typeof first === 'string') {
         if (args.length === 1) {
             return first;
         }
@@ -2470,23 +2165,19 @@ function formatWithOptionsInternal(
         let lastPos = 0;
 
         for (let i = 0; i < first.length - 1; i++) {
-            if (first.charCodeAt(i) === 37) {
-                // '%'
+            if (first.charCodeAt(i) === 37) { // '%'
                 const nextChar = first.charCodeAt(++i);
                 if (a + 1 !== args.length) {
                     switch (nextChar) {
-                        case 115: {
-                            // 's'
+                        case 115: { // 's'
                             const tempArg = args[++a];
-                            if (typeof tempArg === "number") {
+                            if (typeof tempArg === 'number') {
                                 tempStr = formatNumberNoColor(tempArg, inspectOptions);
-                            } else if (typeof tempArg === "bigint") {
+                            } else if (typeof tempArg === 'bigint') {
                                 tempStr = formatBigIntNoColor(tempArg, inspectOptions);
-                            } else if (
-                                typeof tempArg !== "object" ||
+                            } else if (typeof tempArg !== 'object' ||
                                 tempArg === null ||
-                                !hasBuiltInToString(tempArg)
-                            ) {
+                                !hasBuiltInToString(tempArg)) {
                                 tempStr = String(tempArg);
                             } else {
                                 tempStr = inspect(tempArg, {
@@ -2501,13 +2192,12 @@ function formatWithOptionsInternal(
                         case 106: // 'j'
                             tempStr = tryStringify(args[++a]);
                             break;
-                        case 100: {
-                            // 'd'
+                        case 100: { // 'd'
                             const tempNum = args[++a];
-                            if (typeof tempNum === "bigint") {
+                            if (typeof tempNum === 'bigint') {
                                 tempStr = formatBigIntNoColor(tempNum, inspectOptions);
-                            } else if (typeof tempNum === "symbol") {
-                                tempStr = "NaN";
+                            } else if (typeof tempNum === 'symbol') {
+                                tempStr = 'NaN';
                             } else {
                                 tempStr = formatNumberNoColor(Number(tempNum), inspectOptions);
                             }
@@ -2524,37 +2214,31 @@ function formatWithOptionsInternal(
                                 depth: 4,
                             });
                             break;
-                        case 105: {
-                            // 'i'
+                        case 105: { // 'i'
                             const tempInteger = args[++a];
-                            if (typeof tempInteger === "bigint") {
+                            if (typeof tempInteger === 'bigint') {
                                 tempStr = formatBigIntNoColor(tempInteger, inspectOptions);
-                            } else if (typeof tempInteger === "symbol") {
-                                tempStr = "NaN";
+                            } else if (typeof tempInteger === 'symbol') {
+                                tempStr = 'NaN';
                             } else {
                                 tempStr = formatNumberNoColor(
-                                    Number.parseInt(tempInteger as unknown as string),
-                                    inspectOptions
-                                );
+                                    Number.parseInt(tempInteger as unknown as string), inspectOptions);
                             }
                             break;
                         }
-                        case 102: {
-                            // 'f'
+                        case 102: { // 'f'
                             const tempFloat = args[++a];
-                            if (typeof tempFloat === "symbol") {
-                                tempStr = "NaN";
+                            if (typeof tempFloat === 'symbol') {
+                                tempStr = 'NaN';
                             } else {
                                 tempStr = formatNumberNoColor(
-                                    Number.parseFloat(tempFloat as unknown as string),
-                                    inspectOptions
-                                );
+                                    Number.parseFloat(tempFloat as unknown as string), inspectOptions);
                             }
                             break;
                         }
                         case 99: // 'c'
                             a += 1;
-                            tempStr = "";
+                            tempStr = '';
                             break;
                         case 37: // '%'
                             str += first.slice(lastPos, i);
@@ -2576,7 +2260,7 @@ function formatWithOptionsInternal(
         }
         if (lastPos !== 0) {
             a++;
-            join = " ";
+            join = ' ';
             if (lastPos < first.length) {
                 str += first.slice(lastPos);
             }
@@ -2586,25 +2270,23 @@ function formatWithOptionsInternal(
     while (a < args.length) {
         const value = args[a];
         str += join;
-        str += typeof value !== "string" ? inspect(value, inspectOptions) : value;
-        join = " ";
+        str += typeof value !== 'string' ? inspect(value, inspectOptions) : value;
+        join = ' ';
         a++;
     }
     return str;
 }
 
 export function isZeroWidthCodePoint(code: number): boolean {
-    return (
-        code <= 0x1f || // C0 control codes
-        (code >= 0x7f && code <= 0x9f) || // C1 control codes
-        (code >= 0x300 && code <= 0x36f) || // Combining Diacritical Marks
-        (code >= 0x200b && code <= 0x200f) || // Modifying Invisible Characters
+    return code <= 0x1F || // C0 control codes
+        (code >= 0x7F && code <= 0x9F) || // C1 control codes
+        (code >= 0x300 && code <= 0x36F) || // Combining Diacritical Marks
+        (code >= 0x200B && code <= 0x200F) || // Modifying Invisible Characters
         // Combining Diacritical Marks for Symbols
-        (code >= 0x20d0 && code <= 0x20ff) ||
-        (code >= 0xfe00 && code <= 0xfe0f) || // Variation Selectors
-        (code >= 0xfe20 && code <= 0xfe2f) || // Combining Half Marks
-        (code >= 0xe0100 && code <= 0xe01ef)
-    ); // Variation Selectors
+        (code >= 0x20D0 && code <= 0x20FF) ||
+        (code >= 0xFE00 && code <= 0xFE0F) || // Variation Selectors
+        (code >= 0xFE20 && code <= 0xFE2F) || // Combining Half Marks
+        (code >= 0xE0100 && code <= 0xE01EF); // Variation Selectors
 }
 
 /**
@@ -2613,8 +2295,9 @@ export function isZeroWidthCodePoint(code: number): boolean {
 export function getStringWidth(str: string, removeControlChars = true): number {
     let width = 0;
 
-    if (removeControlChars) str = stripVTControlCharacters(str);
-    str = str.normalize("NFC");
+    if (removeControlChars)
+        str = stripVTControlCharacters(str);
+    str = str.normalize('NFC');
     for (const char of str) {
         const code = char.codePointAt(0)!;
         if (isFullWidthCodePoint(code)) {
@@ -2625,7 +2308,7 @@ export function getStringWidth(str: string, removeControlChars = true): number {
     }
 
     return width;
-}
+};
 
 /**
  * Returns true if the character represented by a given
@@ -2634,39 +2317,38 @@ export function getStringWidth(str: string, removeControlChars = true): number {
 const isFullWidthCodePoint = (code: number) => {
     // Code points are partially derived from:
     // https://www.unicode.org/Public/UNIDATA/EastAsianWidth.txt
-    return (
-        code >= 0x1100 &&
-        (code <= 0x115f || // Hangul Jamo
-            code === 0x2329 || // LEFT-POINTING ANGLE BRACKET
-            code === 0x232a || // RIGHT-POINTING ANGLE BRACKET
-            // CJK Radicals Supplement .. Enclosed CJK Letters and Months
-            (code >= 0x2e80 && code <= 0x3247 && code !== 0x303f) ||
-            // Enclosed CJK Letters and Months .. CJK Unified Ideographs Extension A
-            (code >= 0x3250 && code <= 0x4dbf) ||
-            // CJK Unified Ideographs .. Yi Radicals
-            (code >= 0x4e00 && code <= 0xa4c6) ||
-            // Hangul Jamo Extended-A
-            (code >= 0xa960 && code <= 0xa97c) ||
-            // Hangul Syllables
-            (code >= 0xac00 && code <= 0xd7a3) ||
-            // CJK Compatibility Ideographs
-            (code >= 0xf900 && code <= 0xfaff) ||
-            // Vertical Forms
-            (code >= 0xfe10 && code <= 0xfe19) ||
-            // CJK Compatibility Forms .. Small Form Variants
-            (code >= 0xfe30 && code <= 0xfe6b) ||
-            // Halfwidth and Fullwidth Forms
-            (code >= 0xff01 && code <= 0xff60) ||
-            (code >= 0xffe0 && code <= 0xffe6) ||
-            // Kana Supplement
-            (code >= 0x1b000 && code <= 0x1b001) ||
-            // Enclosed Ideographic Supplement
-            (code >= 0x1f200 && code <= 0x1f251) ||
-            // Miscellaneous Symbols and Pictographs 0x1f300 - 0x1f5ff
-            // Emoticons 0x1f600 - 0x1f64f
-            (code >= 0x1f300 && code <= 0x1f64f) ||
-            // CJK Unified Ideographs Extension B .. Tertiary Ideographic Plane
-            (code >= 0x20000 && code <= 0x3fffd))
+    return code >= 0x1100 && (
+        code <= 0x115f ||  // Hangul Jamo
+        code === 0x2329 || // LEFT-POINTING ANGLE BRACKET
+        code === 0x232a || // RIGHT-POINTING ANGLE BRACKET
+        // CJK Radicals Supplement .. Enclosed CJK Letters and Months
+        (code >= 0x2e80 && code <= 0x3247 && code !== 0x303f) ||
+        // Enclosed CJK Letters and Months .. CJK Unified Ideographs Extension A
+        (code >= 0x3250 && code <= 0x4dbf) ||
+        // CJK Unified Ideographs .. Yi Radicals
+        (code >= 0x4e00 && code <= 0xa4c6) ||
+        // Hangul Jamo Extended-A
+        (code >= 0xa960 && code <= 0xa97c) ||
+        // Hangul Syllables
+        (code >= 0xac00 && code <= 0xd7a3) ||
+        // CJK Compatibility Ideographs
+        (code >= 0xf900 && code <= 0xfaff) ||
+        // Vertical Forms
+        (code >= 0xfe10 && code <= 0xfe19) ||
+        // CJK Compatibility Forms .. Small Form Variants
+        (code >= 0xfe30 && code <= 0xfe6b) ||
+        // Halfwidth and Fullwidth Forms
+        (code >= 0xff01 && code <= 0xff60) ||
+        (code >= 0xffe0 && code <= 0xffe6) ||
+        // Kana Supplement
+        (code >= 0x1b000 && code <= 0x1b001) ||
+        // Enclosed Ideographic Supplement
+        (code >= 0x1f200 && code <= 0x1f251) ||
+        // Miscellaneous Symbols and Pictographs 0x1f300 - 0x1f5ff
+        // Emoticons 0x1f600 - 0x1f64f
+        (code >= 0x1f300 && code <= 0x1f64f) ||
+        // CJK Unified Ideographs Extension B .. Tertiary Ideographic Plane
+        (code >= 0x20000 && code <= 0x3fffd)
     );
 };
 
@@ -2674,9 +2356,9 @@ const isFullWidthCodePoint = (code: number) => {
  * Remove all VT control characters. Use to estimate displayed string width.
  */
 export function stripVTControlCharacters(str: string): string {
-    validateString(str, "str");
+    validateString(str, 'str');
 
-    return str.replace(ansi, "");
+    return str.replace(ansi, '');
 }
 
 // ================================================================================================
@@ -2694,7 +2376,7 @@ export function formatLog(...args: [...values: unknown[], colors: boolean]): str
 
 function isBuiltinPrototype(proto: unknown) {
     if (proto === null) return true;
-    const descriptor = Object.getOwnPropertyDescriptor(proto, "constructor");
+    const descriptor = Object.getOwnPropertyDescriptor(proto, 'constructor');
     return (
         descriptor !== undefined &&
         typeof descriptor.value === "function" &&
@@ -2729,7 +2411,7 @@ function formatJsgResourceType(
     options: InspectOptionsStylized
 ): unknown {
     const name = this.constructor.name;
-    if (depth < 0) return options.stylize(`[${name}]`, "special");
+    if (depth < 0) return options.stylize(`[${name}]`, 'special');
 
     // Build a plain object for inspection. If this value has an `entries()` function, add those
     // entries for map-like `K => V` formatting. Note we can't use a `Map` here as a key may have
@@ -2748,7 +2430,7 @@ function formatJsgResourceType(
             if (typeof value === "function" || this.constructor.propertyIsEnumerable(key)) continue;
             record[key] = value;
         }
-    } while (!isBuiltinPrototype((current = Object.getPrototypeOf(current))));
+    } while (!isBuiltinPrototype(current = Object.getPrototypeOf(current)));
 
     // Add additional inspect-only properties as non-enumerable so they appear in square brackets
     for (const [key, symbol] of Object.entries(additionalProperties)) {
