@@ -1,4 +1,6 @@
-import { ERR_METHOD_NOT_IMPLEMENTED } from "./internal/internal_errors";
+import {
+  ERR_METHOD_NOT_IMPLEMENTED
+} from './internal/internal_errors';
 
 // export const getRandomValues = crypto.getRandomValues;
 // export const subtle = crypto.subtle;
@@ -6,236 +8,209 @@ import { ERR_METHOD_NOT_IMPLEMENTED } from "./internal/internal_errors";
 // export const webcrypto = crypto;
 
 import {
-    DiffieHellman,
-    DiffieHellmanGroup,
-    createDiffieHellman,
-    createDiffieHellmanGroup,
-    getDiffieHellman,
-} from "./internal/crypto_dh";
+  DiffieHellman,
+  DiffieHellmanGroup,
+  createDiffieHellman,
+  createDiffieHellmanGroup,
+  getDiffieHellman,
+} from './internal/crypto_dh';
 
 import {
-    randomBytes,
-    randomFillSync,
-    randomFill,
-    randomInt,
-    randomUUID,
-    PrimeNum,
-    GeneratePrimeOptions,
-    CheckPrimeOptions,
-    generatePrime,
-    generatePrimeSync,
-    checkPrime,
-    checkPrimeSync,
-} from "./internal/crypto_random";
-
-import { createHash, createHmac, Hash, HashOptions, Hmac } from "./internal/crypto_hash";
-
-import { hkdf, hkdfSync } from "./internal/crypto_hkdf";
-
-import { pbkdf2, pbkdf2Sync, ArrayLike } from "./internal/crypto_pbkdf2";
+  randomBytes,
+  randomFillSync,
+  randomFill,
+  randomInt,
+  randomUUID,
+  PrimeNum,
+  GeneratePrimeOptions,
+  CheckPrimeOptions,
+  generatePrime,
+  generatePrimeSync,
+  checkPrime,
+  checkPrimeSync,
+} from './internal/crypto_random';
 
 import {
-    KeyObject,
-    PublicKeyObject,
-    PrivateKeyObject,
-    SecretKeyObject,
-    generateKey,
-    generateKeyPair,
-    generateKeyPairSync,
-    generateKeySync,
-    createPrivateKey,
-    createPublicKey,
-    createSecretKey,
-} from "./internal/crypto_keys";
+  createHash,
+  createHmac,
+  Hash,
+  HashOptions,
+  Hmac,
+} from './internal/crypto_hash';
+
+import {
+  hkdf,
+  hkdfSync,
+} from './internal/crypto_hkdf';
+
+import {
+  pbkdf2,
+  pbkdf2Sync,
+  ArrayLike,
+} from './internal/crypto_pbkdf2';
+
+import {
+  KeyObject,
+  PublicKeyObject,
+  PrivateKeyObject,
+  SecretKeyObject,
+  generateKey,
+  generateKeyPair,
+  generateKeyPairSync,
+  generateKeySync,
+  createPrivateKey,
+  createPublicKey,
+  createSecretKey,
+} from './internal/crypto_keys';
 
 export {
-    // DH
-    DiffieHellman,
-    DiffieHellmanGroup,
-    createDiffieHellman,
-    createDiffieHellmanGroup,
-    getDiffieHellman,
-    // Random
-    randomBytes,
-    randomFillSync,
-    randomFill,
-    randomInt,
-    randomUUID,
-    // Primes
-    PrimeNum as primeNum,
-    GeneratePrimeOptions as generatePrimeOptions,
-    CheckPrimeOptions as checkPrimeOptions,
-    generatePrime,
-    generatePrimeSync,
-    checkPrime,
-    checkPrimeSync,
-    // Hash and Hmac
-    createHash,
-    createHmac,
-    Hash,
-    HashOptions,
-    Hmac,
-    // Hkdf
-    hkdf,
-    hkdfSync,
-    // Pbkdf2
-    pbkdf2,
-    pbkdf2Sync,
-    ArrayLike as arrayLike,
-    // Keys
-    KeyObject,
-    PublicKeyObject,
-    PrivateKeyObject,
-    SecretKeyObject,
-    generateKey,
-    generateKeyPair,
-    generateKeyPairSync,
-    generateKeySync,
-    createPrivateKey,
-    createPublicKey,
-    createSecretKey,
-};
+  // DH
+  DiffieHellman,
+  DiffieHellmanGroup,
+  createDiffieHellman,
+  createDiffieHellmanGroup,
+  getDiffieHellman,
+  // Random
+  randomBytes,
+  randomFillSync,
+  randomFill,
+  randomInt,
+  randomUUID,
+  // Primes
+  PrimeNum as primeNum,
+  GeneratePrimeOptions as generatePrimeOptions,
+  CheckPrimeOptions as checkPrimeOptions,
+  generatePrime,
+  generatePrimeSync,
+  checkPrime,
+  checkPrimeSync,
+  // Hash and Hmac
+  createHash,
+  createHmac,
+  Hash,
+  HashOptions,
+  Hmac,
+  // Hkdf
+  hkdf,
+  hkdfSync,
+  // Pbkdf2
+  pbkdf2,
+  pbkdf2Sync,
+  ArrayLike as arrayLike,
+  // Keys
+  KeyObject,
+  PublicKeyObject,
+  PrivateKeyObject,
+  SecretKeyObject,
+  generateKey,
+  generateKeyPair,
+  generateKeyPairSync,
+  generateKeySync,
+  createPrivateKey,
+  createPublicKey,
+  createSecretKey,
+}
 
 export function getCiphers() {
-    return [
-        "aes-128-cbc",
-        "aes-192-cbc",
-        "aes-256-cbc",
-        "aes-128-ctr",
-        "aes-192-ctr",
-        "aes-256-ctr",
-        "aes-128-ecb",
-        "aes-192-ecb",
-        "aes-256-ecb",
-        "aes-128-gcm",
-        "aes-192-gcm",
-        "aes-256-gcm",
-        "aes-128-ofb",
-        "aes-192-ofb",
-        "aes-256-ofb",
-        "des-ecb",
-        "des-ede",
-        "des-ede-cbc",
-        "rc2-cbc",
-    ];
+  return ["aes-128-cbc", "aes-192-cbc", "aes-256-cbc", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr",
+  "aes-128-ecb", "aes-192-ecb", "aes-256-ecb", "aes-128-gcm", "aes-192-gcm", "aes-256-gcm",
+  "aes-128-ofb", "aes-192-ofb", "aes-256-ofb", "des-ecb", "des-ede", "des-ede-cbc", "rc2-cbc"];
 }
 
 export function getCurves() {
-    // Hardcoded list of supported curves. Note that prime256v1 is equivalent to secp256r1, we follow
-    // OpenSSL's and bssl's nomenclature here.
-    return ["secp224r1", "prime256v1", "secp384r1", "secp521r1"];
+  // Hardcoded list of supported curves. Note that prime256v1 is equivalent to secp256r1, we follow
+  // OpenSSL's and bssl's nomenclature here.
+  return ['secp224r1', 'prime256v1', 'secp384r1', 'secp521r1'];
 }
 
 export function getHashes() {
-    // Hardcoded list of hashes supported in boringssl, node's approach looks pretty clunky. This is
-    // expected to change infrequently based of bssl's stability-focused approach.
-    return [
-        "md4",
-        "md5",
-        "sha1",
-        "sha224",
-        "sha256",
-        "sha384",
-        "sha512",
-        "md5-sha1",
-        "RSA-MD5",
-        "RSA-SHA1",
-        "RSA-SHA224",
-        "RSA-SHA256",
-        "RSA-SHA384",
-        "RSA-SHA512",
-        "DSA-SHA",
-        "DSA-SHA1",
-        "ecdsa-with-SHA1",
-    ];
+  // Hardcoded list of hashes supported in boringssl, node's approach looks pretty clunky. This is
+  // expected to change infrequently based of bssl's stability-focused approach.
+  return ['md4', 'md5', 'sha1', 'sha224', 'sha256', 'sha384', 'sha512', 'md5-sha1', 'RSA-MD5',
+          'RSA-SHA1', 'RSA-SHA224', 'RSA-SHA256', 'RSA-SHA384', 'RSA-SHA512', 'DSA-SHA',
+          'DSA-SHA1', 'ecdsa-with-SHA1'];
 }
 
 // We do not implement the openssl secure heap.
 export function secureHeapUsed() {
-    return {
-        total: 0,
-        used: 0,
-        utilization: 0,
-        min: 0,
-    };
+  return {
+    total: 0,
+    used: 0,
+    utilization: 0,
+    min: 0,
+  }
 }
 
 // We do not allow users to set the engine used.
-export function setEngine(_1: string, _2?: number) {
-    throw new ERR_METHOD_NOT_IMPLEMENTED("setEngine");
+export function setEngine(_1 : string, _2?: number) {
+  throw new ERR_METHOD_NOT_IMPLEMENTED('setEngine');
 }
 
 // We do not allow users to modify the FIPS enablement.
 export function setFips(_: boolean) {
-    throw new ERR_METHOD_NOT_IMPLEMENTED("setFips");
+  throw new ERR_METHOD_NOT_IMPLEMENTED('setFips');
 }
 
 // We always run in FIPS mode.
 export const fips = true;
-export function getFips() {
-    return fips;
-}
+export function getFips() { return fips; }
 
 export default {
-    // DH
-    DiffieHellman,
-    DiffieHellmanGroup,
-    createDiffieHellman,
-    createDiffieHellmanGroup,
-    getDiffieHellman,
-    // Keys,
-    KeyObject,
-    PublicKeyObject,
-    PrivateKeyObject,
-    SecretKeyObject,
-    generateKey,
-    generateKeyPair,
-    generateKeyPairSync,
-    generateKeySync,
-    createPrivateKey,
-    createPublicKey,
-    createSecretKey,
-    // Random
-    // getRandomValues,
-    randomBytes,
-    randomFillSync,
-    randomFill,
-    randomInt,
-    randomUUID,
-    generatePrime,
-    generatePrimeSync,
-    checkPrime,
-    checkPrimeSync,
-    // Hash and Hmac
-    Hash,
-    Hmac,
-    createHash,
-    createHmac,
-    getHashes,
-    // Hkdf
-    hkdf,
-    hkdfSync,
-    // Pbkdf2
-    pbkdf2,
-    pbkdf2Sync,
-    // Misc
-    getCiphers,
-    getCurves,
-    secureHeapUsed,
-    setEngine,
-    // timingSafeEqual,
-    // Fips
-    getFips,
-    setFips,
-    get fips() {
-        return getFips();
-    },
-    set fips(_: boolean) {
-        setFips(_);
-    },
-    // WebCrypto
-    // subtle,
-    // webcrypto,
+  // DH
+  DiffieHellman,
+  DiffieHellmanGroup,
+  createDiffieHellman,
+  createDiffieHellmanGroup,
+  getDiffieHellman,
+  // Keys,
+  KeyObject,
+  PublicKeyObject,
+  PrivateKeyObject,
+  SecretKeyObject,
+  generateKey,
+  generateKeyPair,
+  generateKeyPairSync,
+  generateKeySync,
+  createPrivateKey,
+  createPublicKey,
+  createSecretKey,
+  // Random
+  // getRandomValues,
+  randomBytes,
+  randomFillSync,
+  randomFill,
+  randomInt,
+  randomUUID,
+  generatePrime,
+  generatePrimeSync,
+  checkPrime,
+  checkPrimeSync,
+  // Hash and Hmac
+  Hash,
+  Hmac,
+  createHash,
+  createHmac,
+  getHashes,
+  // Hkdf
+  hkdf,
+  hkdfSync,
+  // Pbkdf2
+  pbkdf2,
+  pbkdf2Sync,
+  // Misc
+  getCiphers,
+  getCurves,
+  secureHeapUsed,
+  setEngine,
+  // timingSafeEqual,
+  // Fips
+  getFips,
+  setFips,
+  get fips() { return getFips(); },
+  set fips(_: boolean) { setFips(_); },
+  // WebCrypto
+  // subtle,
+  // webcrypto,
 };
 
 // Classes
@@ -319,3 +294,4 @@ export default {
 // * WebCrypto
 //   * [x] crypto.subtle
 //   * [x] crypto.webcrypto
+

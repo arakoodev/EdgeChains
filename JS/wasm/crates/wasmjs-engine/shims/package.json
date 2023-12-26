@@ -14,7 +14,7 @@
         "buffer": "^6.0.3",
         "esbuild": "^0.19",
         "http-status": "^1.7",
-        "query-string": "^7.1.1",
+                "query-string": "^7.1.1",
         "sjcl": "^1.0.8",
         "url-parse": "^1.5.10"
     },

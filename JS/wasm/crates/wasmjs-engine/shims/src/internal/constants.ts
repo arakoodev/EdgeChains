@@ -1,3 +1,4 @@
+
 export const CHAR_UPPERCASE_A = 65; /* A */
 export const CHAR_LOWERCASE_A = 97; /* a */
 export const CHAR_UPPERCASE_Z = 90; /* Z */
@@ -41,4 +42,4 @@ export const CHAR_AMPERSAND = 38; /* & */
 export const CHAR_EQUAL = 61; /* = */
 export const CHAR_0 = 48; /* 0 */
 export const CHAR_9 = 57; /* 9 */
-export const EOL = ";";
+export const EOL = '\;';

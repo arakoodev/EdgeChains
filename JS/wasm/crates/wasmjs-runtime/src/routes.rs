@@ -1,14 +1,17 @@
+use std::{
+    collections::HashMap,
+    ffi::OsStr,
+    path::{Component, Path, PathBuf},
+    str::FromStr,
+    sync::{Arc, RwLock},
+};
+
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
-use std::sync::RwLock;
-use std::{collections::HashMap, ffi::OsStr, path::Component, sync::Arc};
 use wax::{Glob, WalkEntry};
 use crate::ServeArgs;
 
-use crate::store::STORE_FOLDER;
-use crate::workers::Worker;
+use crate::{store::STORE_FOLDER, workers::Worker};
 
 pub struct Files<'t> {
     root: PathBuf,
