@@ -6,55 +6,53 @@ import axios from "axios";
 
 const jsonnet = new Jsonnet();
 
-jsonnet.nativeCallback("udf.fn",async (prompt) => {
+jsonnet.nativeCallback(
+    "udf.fn",
+    async (prompt) => {
+        const wikiResponse = await axios
+            .post(
+                "https://en.wikipedia.org/w/api.php",
+                {},
+                {
+                    params: {
+                        action: "query",
+                        prop: "extracts",
+                        format: "json",
+                        titles: prompt,
+                        explaintext: "",
+                    },
+                    headers: {
+                        "content-type": "application/x-www-form-urlencoded",
+                        Accept: "application/json",
+                    },
+                }
+            )
+            .then(function (response) {
+                if (response.data.query == undefined) return "";
+                else return Object.values(response.data.query.pages);
+            })
+            .catch(function (error) {
+                if (error.response) {
+                    console.log("Server responded with status code:", error.response.status);
+                    console.log("Response data:", error.response.data);
+                } else if (error.request) {
+                    console.log("No response received:", error.request);
+                } else {
+                    console.log("Error creating request:", error.message);
+                }
+            });
 
-    const wikiResponse = await axios
-        .post(
-            "https://en.wikipedia.org/w/api.php",
-            {},
-            {
-                params: {
-                    action: "query",
-                    prop: "extracts",
-                    format: "json",
-                    titles: prompt,
-                    explaintext: "",
-                },
-                headers: {
-                    "content-type": "application/x-www-form-urlencoded",
-                    Accept: "application/json",
-                },
-            }
-        )
-        .then(function (response) {
-            
-            if(response.data.query == undefined)
-                return "";
-            else
-                return Object.values(response.data.query.pages);
-        })
-        .catch(function (error) {
-            if (error.response) {
-                console.log("Server responded with status code:", error.response.status);
-                console.log("Response data:", error.response.data);
-            } else if (error.request) {
-                console.log("No response received:", error.request);
-            } else {
-                console.log("Error creating request:", error.message);
-            }
-        });
-
-    if(wikiResponse == ""){
-        return ""
-    }
-    else{
-        if(wikiResponse[0].extract == undefined){
+        if (wikiResponse == "") {
             return "";
+        } else {
+            if (wikiResponse[0].extract == undefined) {
+                return "";
+            }
+            return wikiResponse[0].extract;
         }
-        return wikiResponse[0].extract;
-    } 
-
-},"prompt")
+    },
+    "prompt"
+);
 
 export const ReactChainRouter = new Hono();
 
@@ -73,16 +71,14 @@ ReactChainRouter.post("/react-chain", async (c) => {
     const query = await c.req.json();
     const reactResponse = await reactChain(query.prompt);
 
-    return c.json({ answer : reactResponse }, 200);
+    return c.json({ answer: reactResponse }, 200);
 });
 
 export async function reactChain(query) {
-
-
     var reactJsonnet = await jsonnet
-                                .extString("gptResponse","")
-                                .extString("context","This is contenxt")
-                                .evaluateFile(reactChainJsonnetPath);
+        .extString("gptResponse", "")
+        .extString("context", "This is contenxt")
+        .evaluateFile(reactChainJsonnetPath);
 
     var context = "";
 
@@ -96,10 +92,9 @@ export async function reactChain(query) {
 
     context = context + query;
 
-    jsonnet.extString("context",context).extString("gptResponse",gptResponse);
+    jsonnet.extString("context", context).extString("gptResponse", gptResponse);
 
-    while(!checkIfFinished(gptResponse)){
-
+    while (!checkIfFinished(gptResponse)) {
         reactJsonnet = await jsonnet.evaluateFile(reactChainJsonnetPath);
         query = JSON.parse(reactJsonnet).prompt;
 
@@ -108,15 +103,15 @@ export async function reactChain(query) {
         console.log(gptResponse);
 
         context += "\n" + query;
-        jsonnet.extString("context",context).extString("gptResponse",gptResponse);
+        jsonnet.extString("context", context).extString("gptResponse", gptResponse);
     }
 
     console.log(gptResponse);
 
-    var res = gptResponse.substring(gptResponse.indexOf("Finish["))
-    return res.substring(res.indexOf("[")+1,res.indexOf("]"));
+    var res = gptResponse.substring(gptResponse.indexOf("Finish["));
+    return res.substring(res.indexOf("[") + 1, res.indexOf("]"));
 }
 
-function checkIfFinished(response:string){
+function checkIfFinished(response: string) {
     return response.includes("Finish");
 }
