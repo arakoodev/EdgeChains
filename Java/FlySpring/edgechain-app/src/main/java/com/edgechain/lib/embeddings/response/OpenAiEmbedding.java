@@ -1,6 +1,7 @@
 package com.edgechain.lib.embeddings.response;
 
 import com.edgechain.lib.response.ArkObject;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -50,10 +51,20 @@ public class OpenAiEmbedding implements ArkObject {
 
   @Override
   public JSONObject toJson() {
-    JSONObject jsonObject = new JSONObject();
-    jsonObject.put("object", object);
-    jsonObject.put("embedding", embedding);
-    jsonObject.put("index", index);
-    return jsonObject;
+    JSONObject json = new JSONObject();
+
+    if (object != null) {
+      json.put("object", object);
+    }
+
+    if (embedding != null) {
+      json.put("embedding", new JSONArray(embedding));
+    }
+
+    if (index != null) {
+      json.put("index", index);
+    }
+
+    return json;
   }
 }

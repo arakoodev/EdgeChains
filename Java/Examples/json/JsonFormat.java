@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import org.json.JSONObject;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.edgechain.lib.constants.EndpointConstants;
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
 import com.edgechain.lib.jsonFormat.request.FunctionRequest;
 import com.edgechain.lib.jsonFormat.request.Message;
 import com.edgechain.lib.jsonFormat.request.OpenApiFunctionRequest;
@@ -41,7 +41,7 @@ public class JsonFormat {
   // need only for situation endpoint
   private static final String OPENAI_ORG_ID = "";
 
-  private static OpenAiEndpoint userChatEndpoint;
+  private static OpenAiChatEndpoint userChatEndpoint;
   private static JsonnetLoader loader = new FileJsonnetLoader("./json/json-format.jsonnet");
   private static JsonnetLoader functionLoader = new FileJsonnetLoader("./json/function.jsonnet");
   private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -84,7 +84,7 @@ public class JsonFormat {
     public String extract(ArkRequest arkRequest) {
 
       userChatEndpoint =
-          new OpenAiEndpoint(
+          new OpenAiChatEndpoint(
               OPENAI_CHAT_COMPLETION_API,
               OPENAI_AUTH_KEY,
               "gpt-3.5-turbo",
@@ -129,8 +129,8 @@ public class JsonFormat {
 
       JSONObject json = arkRequest.getBody();
 
-      OpenAiEndpoint userChat =
-          new OpenAiEndpoint(
+      OpenAiChatEndpoint userChat =
+          new OpenAiChatEndpoint(
               EndpointConstants.OPENAI_CHAT_COMPLETION_API,
               OPENAI_AUTH_KEY,
               OPENAI_ORG_ID,

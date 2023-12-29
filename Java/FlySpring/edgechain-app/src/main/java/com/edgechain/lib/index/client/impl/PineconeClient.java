@@ -1,6 +1,6 @@
 package com.edgechain.lib.index.client.impl;
 
-import com.edgechain.lib.endpoint.impl.PineconeEndpoint;
+import com.edgechain.lib.endpoint.impl.index.PineconeEndpoint;
 import com.edgechain.lib.index.request.pinecone.PineconeUpsert;
 import com.edgechain.lib.embeddings.WordEmbeddings;
 import com.edgechain.lib.response.StringResponse;
@@ -18,27 +18,11 @@ import java.util.*;
 @Service
 public class PineconeClient {
 
-  private PineconeEndpoint endpoint;
-  private String namespace;
-
-  public PineconeEndpoint getEndpoint() {
-    return endpoint;
-  }
-
-  public void setEndpoint(PineconeEndpoint endpoint) {
-    this.endpoint = endpoint;
-  }
-
-  public EdgeChain<StringResponse> upsert(WordEmbeddings wordEmbeddings) {
+  public EdgeChain<StringResponse> upsert(PineconeEndpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
-
-                this.namespace =
-                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                        ? ""
-                        : endpoint.getNamespace();
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -46,8 +30,8 @@ public class PineconeClient {
                 headers.set("Api-Key", endpoint.getApiKey());
 
                 PineconeUpsert pinecone = new PineconeUpsert();
-                pinecone.setVectors(List.of(wordEmbeddings));
-                pinecone.setNamespace(namespace);
+                pinecone.setVectors(List.of(endpoint.getWordEmbedding()));
+                pinecone.setNamespace(getNamespace(endpoint));
 
                 HttpEntity<PineconeUpsert> entity = new HttpEntity<>(pinecone, headers);
 
@@ -65,17 +49,43 @@ public class PineconeClient {
         endpoint);
   }
 
-  public EdgeChain<List<WordEmbeddings>> query(WordEmbeddings wordEmbeddings, int topK) {
-
+  public EdgeChain<StringResponse> batchUpsert(PineconeEndpoint endpoint) {
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
 
-                this.namespace =
-                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                        ? ""
-                        : endpoint.getNamespace();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("Api-Key", endpoint.getApiKey());
+
+                PineconeUpsert pinecone = new PineconeUpsert();
+                pinecone.setVectors(endpoint.getWordEmbeddingsList());
+                pinecone.setNamespace(getNamespace(endpoint));
+
+                HttpEntity<PineconeUpsert> entity = new HttpEntity<>(pinecone, headers);
+
+                ResponseEntity<String> response =
+                    new RestTemplate()
+                        .exchange(endpoint.getUrl(), HttpMethod.POST, entity, String.class);
+
+                emitter.onNext(new StringResponse(response.getBody()));
+                emitter.onComplete();
+
+              } catch (final Exception e) {
+                emitter.onError(e);
+              }
+            }),
+        endpoint);
+  }
+
+  public EdgeChain<List<WordEmbeddings>> query(PineconeEndpoint endpoint) {
+
+    return new EdgeChain<>(
+        Observable.create(
+            emitter -> {
+              try {
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -86,9 +96,9 @@ public class PineconeClient {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("includeValues", true);
                 payload.put("includeMetadata", false);
-                payload.put("vector", wordEmbeddings.getValues());
-                payload.put("top_k", topK);
-                payload.put("namespace", this.namespace);
+                payload.put("vector", endpoint.getWordEmbedding().getValues());
+                payload.put("top_k", endpoint.getTopK());
+                payload.put("namespace", getNamespace(endpoint));
 
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
 
@@ -105,17 +115,12 @@ public class PineconeClient {
         endpoint);
   }
 
-  public EdgeChain<StringResponse> deleteAll() {
+  public EdgeChain<StringResponse> deleteAll(PineconeEndpoint endpoint) {
 
     return new EdgeChain<>(
         Observable.create(
             emitter -> {
               try {
-
-                this.namespace =
-                    (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
-                        ? ""
-                        : endpoint.getNamespace();
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -124,7 +129,7 @@ public class PineconeClient {
 
                 Map<String, Object> body = new HashMap<>();
                 body.put("deleteAll", true);
-                body.put("namespace", namespace);
+                body.put("namespace", getNamespace(endpoint));
 
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
@@ -134,7 +139,7 @@ public class PineconeClient {
                 emitter.onNext(
                     new StringResponse(
                         "Word embeddings are successfully deleted for namespace:"
-                            + this.namespace));
+                            + getNamespace(endpoint)));
                 emitter.onComplete();
 
               } catch (final Exception e) {
@@ -157,5 +162,11 @@ public class PineconeClient {
     }
 
     return words2VecList;
+  }
+
+  public String getNamespace(PineconeEndpoint endpoint) {
+    return (Objects.isNull(endpoint.getNamespace()) || endpoint.getNamespace().isEmpty())
+        ? ""
+        : endpoint.getNamespace();
   }
 }

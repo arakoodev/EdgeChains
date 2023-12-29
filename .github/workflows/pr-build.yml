@@ -115,7 +115,7 @@ jobs:
         continue-on-error: true
 
       - name: Run Prettiers
-        run: npx prettier --tab-width 4 --print-width 100 --trailing-comma es5  --ignore-path "$(CURDIR)/node_modules/*" --write JS/
+        run: npx prettier --tab-width 4 --print-width 100 --trailing-comma es5  --ignore-path "$(CURDIR)/.prettierignore" --write JS/
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:

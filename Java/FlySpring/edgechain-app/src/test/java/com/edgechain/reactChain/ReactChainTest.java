@@ -1,6 +1,7 @@
 package com.edgechain.reactChain;
 
 import com.edgechain.lib.jsonnet.JsonnetLoader;
+import com.edgechain.lib.jsonnet.exceptions.JsonnetLoaderException;
 import com.edgechain.lib.jsonnet.impl.FileJsonnetLoader;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,8 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class ReactChainTest {
@@ -75,5 +76,49 @@ public class ReactChainTest {
     String searchFunction = jsonnetLoader.get("searchFunction");
     assertNotNull(searchFunction);
     assertEquals(searchFunction, "udf.fn");
+  }
+
+  @Test
+  @DisplayName("Test extractAction with invalid input")
+  void test_extractAction_WithInvalidJsonnet() throws Exception {
+    String inputJsonnet = "This is invalid jsonnet.";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    assertThrows(Exception.class, () -> jsonnetLoader.load(inputStream));
+  }
+
+  @Test
+  @DisplayName("Test extractAction with empty input")
+  void test_extractAction_withEmptyJsonnet() throws Exception {
+    String inputJsonnet = "";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    assertThrows(Exception.class, () -> jsonnetLoader.get("action"));
+    assertThrows(Exception.class, () -> jsonnetLoader.load(inputStream));
+  }
+
+  @Test
+  @DisplayName("Test extractThought - invalid input")
+  void test_extractThought_WithInvalidInput() {
+    String inputJsonnet = "This is not a valid jsonnet pattern";
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    assertThrows(Exception.class, () -> jsonnetLoader.load(inputStream));
+  }
+
+  @Test
+  @DisplayName("Test Mapper - Missing function")
+  public void test_mapper_MissingFunction_ReturnedExpectedResult() {
+    String inputJsonnet =
+        """
+                    local config = {
+                      "edgechains.config": {
+                        "mapper": {},
+                      },
+                    };
+                    """;
+    InputStream inputStream = new ByteArrayInputStream(inputJsonnet.getBytes());
+    JsonnetLoader jsonnetLoader = new FileJsonnetLoader();
+    assertThrows(JsonnetLoaderException.class, () -> jsonnetLoader.load(inputStream));
   }
 }

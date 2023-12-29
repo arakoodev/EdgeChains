@@ -1,0 +1,24 @@
+{
+    "name": "shims",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "bin/index.js",
+    "scripts": {
+        "build": "node ./build.js"
+    },
+    "dependencies": {
+        "@sinonjs/text-encoding": "^0.7",
+        "@types/node": "^20.10.3",
+        "@ungap/url-search-params": "^0.2",
+        "base64-js": "^1.5.1",
+        "buffer": "^6.0.3",
+        "esbuild": "^0.19",
+        "http-status": "^1.7",
+        "query-string": "^7.1.1",
+        "sjcl": "^1.0.8",
+        "url-parse": "^1.5.10"
+    },
+    "devDependencies": {
+        "@types/sjcl": "^1.0.34"
+    }
+}

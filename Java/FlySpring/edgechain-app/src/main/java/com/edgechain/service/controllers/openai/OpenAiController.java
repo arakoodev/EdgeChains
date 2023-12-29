@@ -3,11 +3,14 @@ package com.edgechain.service.controllers.openai;
 import com.edgechain.lib.configuration.WebConfiguration;
 import com.edgechain.lib.embeddings.request.OpenAiEmbeddingRequest;
 import com.edgechain.lib.embeddings.response.OpenAiEmbeddingResponse;
-import com.edgechain.lib.endpoint.impl.OpenAiEndpoint;
+import com.edgechain.lib.endpoint.impl.embeddings.OpenAiEmbeddingEndpoint;
+import com.edgechain.lib.endpoint.impl.llm.OpenAiChatEndpoint;
 import com.edgechain.lib.logger.entities.ChatCompletionLog;
 import com.edgechain.lib.logger.entities.EmbeddingLog;
+import com.edgechain.lib.logger.entities.JsonnetLog;
 import com.edgechain.lib.logger.services.ChatCompletionLogService;
 import com.edgechain.lib.logger.services.EmbeddingLogService;
+import com.edgechain.lib.logger.services.JsonnetLogService;
 import com.edgechain.lib.openai.client.OpenAiClient;
 import com.edgechain.lib.openai.request.ChatCompletionRequest;
 import com.edgechain.lib.openai.request.ChatMessage;
@@ -32,8 +35,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,12 +45,14 @@ public class OpenAiController {
 
   @Autowired private ChatCompletionLogService chatCompletionLogService;
   @Autowired private EmbeddingLogService embeddingLogService;
+  @Autowired private JsonnetLogService jsonnetLogService;
 
   @Autowired private Environment env;
   @Autowired private OpenAiClient openAiClient;
 
   @PostMapping(value = "/chat-completion")
-  public Single<ChatCompletionResponse> chatCompletion(@RequestBody OpenAiEndpoint openAiEndpoint) {
+  public Single<ChatCompletionResponse> chatCompletion(
+      @RequestBody OpenAiChatEndpoint openAiEndpoint) {
 
     ChatCompletionRequest chatCompletionRequest =
         ChatCompletionRequest.builder()
@@ -57,38 +60,61 @@ public class OpenAiController {
             .temperature(openAiEndpoint.getTemperature())
             .messages(openAiEndpoint.getChatMessages())
             .stream(false)
+            .topP(openAiEndpoint.getTopP())
+            .n(openAiEndpoint.getN())
+            .stop(openAiEndpoint.getStop())
+            .presencePenalty(openAiEndpoint.getPresencePenalty())
+            .frequencyPenalty(openAiEndpoint.getFrequencyPenalty())
+            .logitBias(openAiEndpoint.getLogitBias())
+            .user(openAiEndpoint.getUser())
             .build();
 
-    this.openAiClient.setEndpoint(openAiEndpoint);
-
     EdgeChain<ChatCompletionResponse> edgeChain =
-        openAiClient.createChatCompletion(chatCompletionRequest);
+        openAiClient.createChatCompletion(chatCompletionRequest, openAiEndpoint);
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
-      ChatCompletionLog chatCompletionLog = new ChatCompletionLog();
-      chatCompletionLog.setName(openAiEndpoint.getChainName());
-      chatCompletionLog.setCreatedAt(LocalDateTime.now());
-      chatCompletionLog.setCallIdentifier(openAiEndpoint.getCallIdentifier());
-      chatCompletionLog.setInput(StringUtils.join(openAiEndpoint.getChatMessages()));
-      chatCompletionLog.setModel(openAiEndpoint.getModel());
+      ChatCompletionLog chatLog = new ChatCompletionLog();
+      chatLog.setName(openAiEndpoint.getChainName());
+      chatLog.setCreatedAt(LocalDateTime.now());
+      chatLog.setCallIdentifier(openAiEndpoint.getCallIdentifier());
+      chatLog.setInput(StringUtils.join(chatCompletionRequest.getMessages()));
+      chatLog.setModel(chatCompletionRequest.getModel());
+
+      chatLog.setPresencePenalty(chatCompletionRequest.getPresencePenalty());
+      chatLog.setFrequencyPenalty(chatCompletionRequest.getFrequencyPenalty());
+      chatLog.setTopP(chatCompletionRequest.getTopP());
+      chatLog.setN(chatCompletionRequest.getN());
+      chatLog.setTemperature(chatCompletionRequest.getTemperature());
 
       return edgeChain
           .doOnNext(
               c -> {
-                chatCompletionLog.setPromptTokens(c.getUsage().getPrompt_tokens());
-                chatCompletionLog.setTotalTokens(c.getUsage().getTotal_tokens());
-                chatCompletionLog.setContent(c.getChoices().get(0).getMessage().getContent());
-                chatCompletionLog.setType(c.getObject());
+                chatLog.setPromptTokens(c.getUsage().getPrompt_tokens());
+                chatLog.setTotalTokens(c.getUsage().getTotal_tokens());
+                chatLog.setContent(c.getChoices().get(0).getMessage().getContent());
+                chatLog.setType(c.getObject());
 
-                chatCompletionLog.setCompletedAt(LocalDateTime.now());
+                chatLog.setCompletedAt(LocalDateTime.now());
 
                 Duration duration =
-                    Duration.between(
-                        chatCompletionLog.getCreatedAt(), chatCompletionLog.getCompletedAt());
-                chatCompletionLog.setLatency(duration.toMillis());
+                    Duration.between(chatLog.getCreatedAt(), chatLog.getCompletedAt());
+                chatLog.setLatency(duration.toMillis());
 
-                chatCompletionLogService.saveOrUpdate(chatCompletionLog);
+                chatCompletionLogService.saveOrUpdate(chatLog);
+
+                if (Objects.nonNull(openAiEndpoint.getJsonnetLoader())
+                    && openAiEndpoint.getJsonnetLoader().getThreshold() >= 1) {
+                  JsonnetLog jsonnetLog = new JsonnetLog();
+                  jsonnetLog.setMetadata(openAiEndpoint.getJsonnetLoader().getMetadata());
+                  jsonnetLog.setContent(c.getChoices().get(0).getMessage().getContent());
+                  jsonnetLog.setF1(openAiEndpoint.getJsonnetLoader().getF1());
+                  jsonnetLog.setF2(openAiEndpoint.getJsonnetLoader().getF2());
+                  jsonnetLog.setSplitSize(openAiEndpoint.getJsonnetLoader().getSplitSize());
+                  jsonnetLog.setCreatedAt(LocalDateTime.now());
+                  jsonnetLog.setSelectedFile(openAiEndpoint.getJsonnetLoader().getSelectedFile());
+                  jsonnetLogService.saveOrUpdate(jsonnetLog);
+                }
               })
           .toSingle();
 
@@ -98,7 +124,7 @@ public class OpenAiController {
   @PostMapping(
       value = "/chat-completion-stream",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public SseEmitter chatCompletionStream(@RequestBody OpenAiEndpoint openAiEndpoint) {
+  public SseEmitter chatCompletionStream(@RequestBody OpenAiChatEndpoint openAiEndpoint) {
 
     ChatCompletionRequest chatCompletionRequest =
         ChatCompletionRequest.builder()
@@ -106,10 +132,14 @@ public class OpenAiController {
             .temperature(openAiEndpoint.getTemperature())
             .messages(openAiEndpoint.getChatMessages())
             .stream(true)
+            .topP(openAiEndpoint.getTopP())
+            .n(openAiEndpoint.getN())
+            .stop(openAiEndpoint.getStop())
+            .presencePenalty(openAiEndpoint.getPresencePenalty())
+            .frequencyPenalty(openAiEndpoint.getFrequencyPenalty())
+            .logitBias(openAiEndpoint.getLogitBias())
+            .user(openAiEndpoint.getUser())
             .build();
-
-    this.openAiClient.setEndpoint(openAiEndpoint);
-
     SseEmitter emitter = new SseEmitter();
     ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -117,18 +147,24 @@ public class OpenAiController {
         () -> {
           try {
             EdgeChain<ChatCompletionResponse> edgeChain =
-                openAiClient.createChatCompletionStream(chatCompletionRequest);
+                openAiClient.createChatCompletionStream(chatCompletionRequest, openAiEndpoint);
 
             AtomInteger chunks = AtomInteger.of(0);
 
             if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
-              ChatCompletionLog chatCompletionLog = new ChatCompletionLog();
-              chatCompletionLog.setName(openAiEndpoint.getChainName());
-              chatCompletionLog.setCallIdentifier(openAiEndpoint.getCallIdentifier());
-              chatCompletionLog.setInput(StringUtils.join(openAiEndpoint.getChatMessages()));
-              chatCompletionLog.setModel(openAiEndpoint.getModel());
-              chatCompletionLog.setCreatedAt(LocalDateTime.now());
+              ChatCompletionLog chatLog = new ChatCompletionLog();
+              chatLog.setName(openAiEndpoint.getChainName());
+              chatLog.setCreatedAt(LocalDateTime.now());
+              chatLog.setCallIdentifier(openAiEndpoint.getCallIdentifier());
+              chatLog.setInput(StringUtils.join(chatCompletionRequest.getMessages()));
+              chatLog.setModel(chatCompletionRequest.getModel());
+
+              chatLog.setPresencePenalty(chatCompletionRequest.getPresencePenalty());
+              chatLog.setFrequencyPenalty(chatCompletionRequest.getFrequencyPenalty());
+              chatLog.setTopP(chatCompletionRequest.getTopP());
+              chatLog.setN(chatCompletionRequest.getN());
+              chatLog.setTemperature(chatCompletionRequest.getTemperature());
 
               StringBuilder stringBuilder = new StringBuilder();
               stringBuilder.append("<|im_start|>");
@@ -139,12 +175,7 @@ public class OpenAiController {
               EncodingRegistry registry = Encodings.newDefaultEncodingRegistry();
               Encoding enc = registry.getEncoding(EncodingType.CL100K_BASE);
 
-              List<String> strings = new ArrayList<>();
-              for (ChatMessage chatMessage : openAiEndpoint.getChatMessages()) {
-                strings.add(chatMessage.getContent());
-              }
-
-              chatCompletionLog.setPromptTokens((long) enc.countTokens(stringBuilder.toString()));
+              chatLog.setPromptTokens((long) enc.countTokens(stringBuilder.toString()));
 
               StringBuilder content = new StringBuilder();
 
@@ -162,20 +193,30 @@ public class OpenAiController {
                       if (Objects.nonNull(res.getChoices().get(0).getFinishReason())) {
 
                         emitter.complete();
-
-                        chatCompletionLog.setType(res.getObject());
-                        chatCompletionLog.setContent(content.toString());
-                        chatCompletionLog.setCompletedAt(LocalDateTime.now());
-                        chatCompletionLog.setTotalTokens(
-                            chunks.get() + chatCompletionLog.getPromptTokens());
+                        chatLog.setType(res.getObject());
+                        chatLog.setContent(content.toString());
+                        chatLog.setCompletedAt(LocalDateTime.now());
+                        chatLog.setTotalTokens(chunks.get() + chatLog.getPromptTokens());
 
                         Duration duration =
-                            Duration.between(
-                                chatCompletionLog.getCreatedAt(),
-                                chatCompletionLog.getCompletedAt());
-                        chatCompletionLog.setLatency(duration.toMillis());
+                            Duration.between(chatLog.getCreatedAt(), chatLog.getCompletedAt());
+                        chatLog.setLatency(duration.toMillis());
 
-                        chatCompletionLogService.saveOrUpdate(chatCompletionLog);
+                        chatCompletionLogService.saveOrUpdate(chatLog);
+
+                        if (Objects.nonNull(openAiEndpoint.getJsonnetLoader())
+                            && openAiEndpoint.getJsonnetLoader().getThreshold() >= 1) {
+                          JsonnetLog jsonnetLog = new JsonnetLog();
+                          jsonnetLog.setMetadata(openAiEndpoint.getJsonnetLoader().getMetadata());
+                          jsonnetLog.setContent(content.toString());
+                          jsonnetLog.setF1(openAiEndpoint.getJsonnetLoader().getF1());
+                          jsonnetLog.setF2(openAiEndpoint.getJsonnetLoader().getF2());
+                          jsonnetLog.setSplitSize(openAiEndpoint.getJsonnetLoader().getSplitSize());
+                          jsonnetLog.setCreatedAt(LocalDateTime.now());
+                          jsonnetLog.setSelectedFile(
+                              openAiEndpoint.getJsonnetLoader().getSelectedFile());
+                          jsonnetLogService.saveOrUpdate(jsonnetLog);
+                        }
                       }
 
                     } catch (final Exception e) {
@@ -209,7 +250,7 @@ public class OpenAiController {
   }
 
   @PostMapping("/completion")
-  public Single<CompletionResponse> completion(@RequestBody OpenAiEndpoint openAiEndpoint) {
+  public Single<CompletionResponse> completion(@RequestBody OpenAiChatEndpoint openAiEndpoint) {
 
     CompletionRequest completionRequest =
         CompletionRequest.builder()
@@ -218,22 +259,20 @@ public class OpenAiController {
             .temperature(openAiEndpoint.getTemperature())
             .build();
 
-    this.openAiClient.setEndpoint(openAiEndpoint);
-
-    EdgeChain<CompletionResponse> edgeChain = openAiClient.createCompletion(completionRequest);
+    EdgeChain<CompletionResponse> edgeChain =
+        openAiClient.createCompletion(completionRequest, openAiEndpoint);
 
     return edgeChain.toSingle();
   }
 
   @PostMapping("/embeddings")
-  public Single<OpenAiEmbeddingResponse> embeddings(@RequestBody OpenAiEndpoint openAiEndpoint)
-      throws SQLException {
-
-    this.openAiClient.setEndpoint(openAiEndpoint);
+  public Single<OpenAiEmbeddingResponse> embeddings(
+      @RequestBody OpenAiEmbeddingEndpoint openAiEndpoint) throws SQLException {
 
     EdgeChain<OpenAiEmbeddingResponse> edgeChain =
         openAiClient.createEmbeddings(
-            new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), openAiEndpoint.getInput()));
+            new OpenAiEmbeddingRequest(openAiEndpoint.getModel(), openAiEndpoint.getRawText()),
+            openAiEndpoint);
 
     if (Objects.nonNull(env.getProperty("postgres.db.host"))) {
 
@@ -255,9 +294,9 @@ public class OpenAiController {
 
                 embeddingLogService.saveOrUpdate(embeddingLog);
               })
-          .toSingle();
+          .toSingleWithoutScheduler();
     }
 
-    return edgeChain.toSingle();
+    return edgeChain.toSingleWithoutScheduler();
   }
 }
