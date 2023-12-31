@@ -13,6 +13,7 @@
   </div>
   
 ---
+**Join our [Discord](https://discord.gg/aehBPdPqf5) - we are one of the friendliest and nicest dev groups in Generative AI !**
 
 Leveraging the full potential of Large language models (LLMs) often requires integrating them with other sources of computation or knowledge. Edgechains is specifically designed to **orchestrate** such applications.
 
