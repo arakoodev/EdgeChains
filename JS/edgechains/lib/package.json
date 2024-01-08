@@ -2,6 +2,8 @@
     "name": "@arakoodev/edgechains.js",
     "version": "0.1.10",
     "main": "dist/index.js",
+    "type":"module",
+  
     "files": [
         "dist",
         "create-edgechains/scripts",
@@ -30,6 +32,7 @@
         "typeorm": "^0.3.17"
     },
     "devDependencies": {
+        "@arakoodev/edgechains.js": "^0.1.16",
         "@hanazuki/node-jsonnet": "^2.1.0",
         "@types/inquirer": "^9.0.7",
         "@types/jest": "^29.5.8",
@@ -46,6 +49,12 @@
         "testEnvironment": "node",
         "setupFiles": [
             "./src/setupTests.ts"
-        ]
+        ],
+        "moduleNameMapper": {
+            "HydeSearchService.js": "<rootDir>/create-edgechains/__common/src/service/HydeSearchService.ts"
+        }
     }
 }
+
+
+
