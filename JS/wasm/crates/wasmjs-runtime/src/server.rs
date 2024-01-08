@@ -68,13 +68,19 @@ pub async fn run(serve_options: ServeOptions) -> Result<()> {
 
     let app_data: Data<AppData> =
         Data::new(<ServeOptions as TryInto<AppData>>::try_into(serve_options).unwrap());
-    let request = actix_web::test::TestRequest::with_uri("/").app_data(app_data).to_http_request();
+    let request = actix_web::test::TestRequest::with_uri("/").app_data(app_data.clone()).to_http_request();
+    let request_jsonnet = actix_web::test::TestRequest::with_uri("/jsonnet").app_data(app_data).to_http_request();
         let body: Bytes = Bytes::from("");
     let req = HttpRequest::from(request);
-    let res = handle_worker(req, body).await;
+    let req_jsonnet = HttpRequest::from(request_jsonnet);
+
+    let res = handle_worker(req, body.clone()).await;
+    let res_jsonnet = handle_worker(req_jsonnet,body).await;
     // print body of response
     let res_body = res.body();
-
     println!("{:?}", res_body);
+    let res_body = res_jsonnet.body();
+    println!("{:?}", res_body);
+
     Ok(())
 }
