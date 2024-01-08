@@ -1,4 +1,4 @@
-import { Jsonnet } from "@hanazuki/node-jsonnet";
+import { Jsonnet } from "../../../../../examples/hydeSearch/node_modules/@hanazuki/node-jsonnet/lib/index.js";
 import * as path from "path";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 const jsonnet = new Jsonnet();
