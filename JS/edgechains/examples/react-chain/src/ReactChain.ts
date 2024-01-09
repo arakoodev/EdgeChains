@@ -4,8 +4,8 @@ import * as path from "path";
 import { Hono } from "hono";
 import axios from "axios";
 
-let OPENAI_API_KEY = "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";
-// let OPENAI_ORG_ID = "org-ha7bPSLcoUnYzUMZ5xAogTgo";
+let OPENAI_API_KEY = "";
+// let OPENAI_ORG_ID = "";
 
 const jsonnet = new Jsonnet();
 
