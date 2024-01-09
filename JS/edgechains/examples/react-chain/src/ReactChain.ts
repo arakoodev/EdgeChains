@@ -4,6 +4,9 @@ import * as path from "path";
 import { Hono } from "hono";
 import axios from "axios";
 
+let OPENAI_API_KEY = "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";
+// let OPENAI_ORG_ID = "org-ha7bPSLcoUnYzUMZ5xAogTgo";
+
 const jsonnet = new Jsonnet();
 
 jsonnet.nativeCallback(
@@ -58,7 +61,7 @@ export const ReactChainRouter = new Hono();
 
 const gpt3Endpoint = new OpenAiEndpoint(
     "https://api.openai.com/v1/chat/completions",
-    process.env.OPENAI_API_KEY!,
+    OPENAI_API_KEY,
     "",
     "gpt-3.5-turbo",
     "user",
@@ -75,6 +78,7 @@ ReactChainRouter.post("/react-chain", async (c) => {
 });
 
 export async function reactChain(query) {
+    console.log("test04:- ",query)
     var reactJsonnet = await jsonnet
         .extString("gptResponse", "")
         .extString("context", "This is contenxt")
@@ -93,6 +97,7 @@ export async function reactChain(query) {
     context = context + query;
 
     jsonnet.extString("context", context).extString("gptResponse", gptResponse);
+    console.log("test05 :-",gptResponse)
 
     while (!checkIfFinished(gptResponse)) {
         reactJsonnet = await jsonnet.evaluateFile(reactChainJsonnetPath);

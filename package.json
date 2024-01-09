@@ -1,9 +1,8 @@
 {
   "dependencies": {
     "@microsoft/eslint-formatter-sarif": "^3.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.16.0",
-    "@typescript-eslint/parser": "^6.16.0",
-    "dotenv": "^16.3.1",
+    "@typescript-eslint/eslint-plugin": "^6.18.0",
+    "@typescript-eslint/parser": "^6.18.0",
     "eslint": "^8.56.0",
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^9.1.0",
@@ -13,7 +12,6 @@
     "prettier": "^3.1.1"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/jest": "^29.5.11"
+    "@types/express": "^4.17.21"
   }
 }

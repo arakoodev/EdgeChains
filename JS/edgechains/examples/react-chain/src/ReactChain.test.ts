@@ -1,4 +1,12 @@
-const reactChain = require("./ReactChain");
+// const reactChain = require("./ReactChain");
+
+import { reactChain } from "./ReactChain";
+
+// import { reactChain } from "./ReactChain";
+// ^^^^^^
+
+// SyntaxError: Cannot use import statement outside a module
+
 
 describe("ReAct Chain", () => {
     it("should return a response", async () => {
