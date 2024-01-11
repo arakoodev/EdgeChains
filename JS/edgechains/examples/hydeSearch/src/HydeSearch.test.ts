@@ -1,11 +1,9 @@
 import { ArkRequest } from "@arakoodev/edgechains.js";
-// import dotenv from "dotenv";
+import dotenv from "dotenv";
 import { hydeSearchAdaEmbedding } from "./HydeSearch";
 
-let OPENAI_API_KEY = "";
-let OPENAI_ORG_ID = "";
 
-// dotenv.config({ path: ".env" });
+dotenv.config({ path: ".env" });
 describe("Hyde Search", () => {
     it("should return a response", async () => {
         const arkRequest: ArkRequest = {
@@ -30,8 +28,8 @@ describe("Hyde Search", () => {
             (
                 await hydeSearchAdaEmbedding(
                     arkRequest,
-                    OPENAI_API_KEY!,
-                    OPENAI_ORG_ID!
+                    process.env.OPENAI_API_KEY!,
+                    process.env.OPENAI_ORG_ID!
                 )
             ).finalAnswer
         ).toContain("Java");

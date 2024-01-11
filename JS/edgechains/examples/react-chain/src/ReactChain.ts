@@ -4,8 +4,8 @@ import * as path from "path";
 import { Hono } from "hono";
 import axios from "axios";
 
-let OPENAI_API_KEY = "";
-// let OPENAI_ORG_ID = "";
+let OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
 
 const jsonnet = new Jsonnet();
 
