@@ -3,24 +3,11 @@ import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 import { PostgresClient } from "@arakoodev/edgechains.js";
 import type { ArkRequest } from "@arakoodev/edgechains.js";
 import * as path from "path";
-import { Hono } from "hono";
-const HydeSearchRouter = new Hono();
 
 enum PostgresDistanceMetric {
     COSINE = "COSINE",
     IP = "IP",
     L2 = "L2",
-}
-
-export interface HydeFragmentData {
-    responses: Array<{
-        rawText?: string;
-        metadata?: string;
-        filename?: string;
-        titleMetadata?: string;
-        documentDate?: string;
-    }>;
-    final_answer?: string;
 }
 
 async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, orgId: string) {
@@ -42,8 +29,8 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
         //
         const jsonnet = new Jsonnet();
 
-        const promptPath = path.join(__dirname, "../jsonnet/prompts.jsonnet");
-        const hydePath = path.join(__dirname, "../jsonnet/hyde.jsonnet");
+        const promptPath = path.join(__dirname, "../src/jsonnet/prompts.jsonnet");
+        const hydePath = path.join(__dirname, "../src/jsonnet/hyde.jsonnet");
         // Load Jsonnet to extract args..
         const promptLoader = await jsonnet.evaluateFile(promptPath);
 
@@ -143,75 +130,3 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
 }
 
 export { hydeSearchAdaEmbedding };
-
-HydeSearchRouter.get("/search", async (c) => {
-    const query = await c.req.query();
-    const arkRequest = {
-        topK: parseInt(query.topK ?? "5"),
-        metadataTable: query.metadataTable,
-        query: query.query,
-        textWeight: {
-            baseWeight: query.textBaseWeight,
-            fineTuneWeight: query.textFineTuneWeight,
-        },
-        similarityWeight: {
-            baseWeight: query.similarityBaseWeight,
-            fineTuneWeight: query.similarityFineTuneWeight,
-        },
-        dateWeight: {
-            baseWeight: query.dateBaseWeight,
-            fineTuneWeight: query.dateFineTuneWeight,
-        },
-        orderRRF: query.orderRRF,
-    };
-    const answer = await hydeSearchAdaEmbedding(
-        arkRequest,
-        process.env.OPENAI_API_KEY!,
-        process.env.OPENAI_ORG_ID!
-    );
-    const final_answer = answer.finalAnswer;
-    const responses = answer.wordEmbeddings;
-    const data: HydeFragmentData = { responses, final_answer };
-    return c.html(`
-    <html lang="en">
-    <div>
-        <div class="card card-active">
-            <div class="card-body">${data.final_answer}</div>
-        </div>
-            <ul class="list-unstyled mb-0">
-              ${data.responses.map(
-                  (item) => `
-                  <li>
-                    <div class="card">
-                      <div class="card-body">
-                        ${
-                            item.rawText != null
-                                ? `<div class="card card-body">${item.rawText}</div>`
-                                : `<div class="card card-body">${item.metadata}</div>`
-                        }
-                        ${
-                            item.filename != null
-                                ? `<div class="card card-body" style="color: blue;">${item.filename}</div>`
-                                : ""
-                        }
-                        ${
-                            item.titleMetadata != null
-                                ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>`
-                                : ""
-                        }
-                        ${
-                            item.documentDate != null
-                                ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>`
-                                : ""
-                        }
-                      </div>
-                    </div>
-                  </li>
-                `
-              )}
-            </ul>
-  </html>
-    `);
-});
-
-export { HydeSearchRouter };
