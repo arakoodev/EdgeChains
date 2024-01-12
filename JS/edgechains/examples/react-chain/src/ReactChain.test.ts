@@ -1,4 +1,9 @@
-const reactChain = require("./ReactChain");
+// const reactChain = require("./ReactChain");
+
+import { reactChain } from "./ReactChain";
+
+
+
 
 describe("ReAct Chain", () => {
     it("should return a response", async () => {
