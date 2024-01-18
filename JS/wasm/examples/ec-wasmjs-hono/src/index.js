@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { connect } from "@planetscale/database";
-import { parseJsonnet } from "arakoo-jsonnet"
+import { parseJsonnet } from "arakoo-jsonnet";
 
 const app = new Hono();
 
@@ -10,7 +10,7 @@ app.get("/", (c) => {
 });
 
 app.get("/jsonnet", async (c) => {
-    const jsonnet = await parseJsonnet('test.jsonnet')
+    const jsonnet = await parseJsonnet("test.jsonnet");
     return c.json(JSON.parse(jsonnet));
 });
 

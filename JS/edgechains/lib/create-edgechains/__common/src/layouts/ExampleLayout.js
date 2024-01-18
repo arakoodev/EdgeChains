@@ -1,5 +1,5 @@
 import { html } from "hono/html";
-const ExampleLayout = (props) => html `
+const ExampleLayout = (props) => html`
 <!DOCTYPE html>
     <html xmlns="http://www.w3.org/1999/xhtml"
           xmlns:th="http://www.thymeleaf.org"
