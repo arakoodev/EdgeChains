@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { connect } from "@planetscale/database";
 import { jsonnet, jsonnetExtVars } from "arakoo-jsonnet";
 
+
 const app = new Hono();
 
 app.get("/", (c) => {

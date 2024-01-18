@@ -6,7 +6,6 @@ import axios from "axios";
 
 let OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-
 const jsonnet = new Jsonnet();
 
 jsonnet.nativeCallback(
@@ -78,7 +77,7 @@ ReactChainRouter.post("/react-chain", async (c) => {
 });
 
 export async function reactChain(query) {
-    console.log("test04:- ",query)
+    console.log("test04:- ", query);
     var reactJsonnet = await jsonnet
         .extString("gptResponse", "")
         .extString("context", "This is contenxt")
@@ -97,7 +96,7 @@ export async function reactChain(query) {
     context = context + query;
 
     jsonnet.extString("context", context).extString("gptResponse", gptResponse);
-    console.log("test05 :-",gptResponse)
+    console.log("test05 :-", gptResponse);
 
     while (!checkIfFinished(gptResponse)) {
         reactJsonnet = await jsonnet.evaluateFile(reactChainJsonnetPath);
