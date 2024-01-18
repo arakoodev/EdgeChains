@@ -11,7 +11,7 @@
         "jsxImportSource": "hono/jsx",
         "noImplicitAny": false,
         "moduleResolution": "NodeNext",
-        "declaration": true
+        "declaration": true,
     },
-    "include": ["src/**/*.ts", "dist/**/*.d.ts"]
+    "include": ["src/**/*.ts", "dist/**/*.d.ts"],
 }
