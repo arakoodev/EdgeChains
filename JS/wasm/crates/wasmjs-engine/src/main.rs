@@ -162,11 +162,11 @@ pub fn load_bindings(context: &JSContextRef, global: JSValueRef) -> Result<(), R
 
     global
         .set_property(
-            "parseJsonnet",
+            "jsonnet",
             context
                 .wrap_callback(|_ctx, _this_arg, args| {
                     let path = args[0].to_string();
-                    match parse_jsonnet(path.as_str()) {
+                    match jsonnet(path.as_str()) {
                         Ok(result) => Ok(JSValue::String(result)),
                         Err(err) => {
                             let kind = match err {
@@ -188,6 +188,36 @@ pub fn load_bindings(context: &JSContextRef, global: JSValueRef) -> Result<(), R
         .map_err(|_| RuntimeError::InvalidBinding {
             invalid_export: "parseJsonnet".to_string(),
         })?;
+
+    global
+        .set_property(
+            "jsonnetExtVars",
+            context
+                .wrap_callback(|_ctx, _this_arg, args| {
+                    let path = args[0].to_string();
+                    let ext_var = args[1].to_string();
+                    match jsonnet_ext_var(path.as_str(), ext_var.as_str()) {
+                        Ok(result) => Ok(JSValue::String(result)),
+                        Err(err) => {
+                            let kind = match err {
+                                FileError::NotFound => "File not found".to_string(),
+                                FileError::InvalidPath => "Not allowed".to_string(),
+                            };
+                            Ok(JSValue::from_hashmap(HashMap::from([
+                                ("error", JSValue::Bool(true)),
+                                ("type", JSValue::String(kind)),
+                            ])))
+                        }
+                    }
+                })
+                .map_err(|_| RuntimeError::InvalidBinding {
+                    invalid_export: "parseJsonnet".to_string(),
+                })?,
+        )
+        .map_err(|_| RuntimeError::InvalidBinding {
+            invalid_export: "parseJsonnet".to_string(),
+        })?;
+
     Ok(())
 }
 
@@ -227,19 +257,19 @@ fn main() {
     let global = context.global_object().unwrap();
     match load_bindings(context, global) {
         Ok(_) => {}
-        Err(e) => {
-            match e {
-                RuntimeError::InvalidBinding { invalid_export } => {
-                    eprintln!("There was an error adding the '{invalid_export}' binding");
-                }
+        Err(e) => match e {
+            RuntimeError::InvalidBinding { invalid_export } => {
+                eprintln!("There was an error adding the '{invalid_export}' binding");
             }
-        }
+        },
     }
 
     context.eval_module("buffer", &buffer).unwrap();
     context.eval_module("crypto", &crypto).unwrap();
-    context.eval_module("arakoo-jsonnet", &ARAKOOJSONNET).unwrap();
-    
+    context
+        .eval_module("arakoo-jsonnet", &ARAKOOJSONNET)
+        .unwrap();
+
     match context.eval_module("path", &path) {
         Ok(_) => {}
         Err(err) => eprintln!("Error loading the path shim: {err}"),
