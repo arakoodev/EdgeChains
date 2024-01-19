@@ -1,4 +1,6 @@
 use * from http-types
 send-http-request: func(request: http-request) -> expected<http-response, http-request-error>
-parse-jsonnet: func(file: string) -> expected<string, file-error>
+jsonnet: func(file: string) -> expected<string, file-error>
+jsonnet-ext-var: func(name: string, value: string) -> expected<string, file-error>
+
 read-bytes: func(file: string) -> expected<string, file-error>

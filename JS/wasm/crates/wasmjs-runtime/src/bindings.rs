@@ -1,10 +1,13 @@
+use std::collections::HashMap;
+
+use crate::error::Error;
 use actix_web::http::Uri;
 use jsonnet::JsonnetVm;
 use reqwest::Method;
 use serde::Deserialize;
+use serde_json::Value;
 use tokio::runtime::Builder;
 use wiggle::GuestErrorType;
-use crate::error::Error;
 
 wit_bindgen_wasmtime::export!({paths: ["../../assets/wasmjs/wit/http.wit",],
     async:[]
@@ -16,13 +19,16 @@ wiggle::from_witx!({
     errors: { arakoo_status => Error },
 });
 
-impl  GuestErrorType for ArakooStatus {
+impl GuestErrorType for ArakooStatus {
     fn success() -> Self {
         ArakooStatus::Ok
     }
 }
 
-use self::{http::{Http, HttpRequest, HttpRequestError, HttpResponse, HttpError, HttpMethod, FileError}, types::ArakooStatus};
+use self::{
+    http::{FileError, Http, HttpError, HttpMethod, HttpRequest, HttpRequestError, HttpResponse},
+    types::ArakooStatus,
+};
 
 #[derive(Deserialize, Clone)]
 #[serde(default)]
@@ -205,15 +211,12 @@ impl Http for HttpBindings {
                 .block_on(async {
                     let bytes = tokio::fs::read(path).await;
                     match bytes {
-                        Ok(bytes) =>
-                            Ok(std::str::from_utf8(&bytes).unwrap().to_string()),
-                        Err(_) => {
-                            Err(FileError::NotFound)
-                        }
+                        Ok(bytes) => Ok(std::str::from_utf8(&bytes).unwrap().to_string()),
+                        Err(_) => Err(FileError::NotFound),
                     }
                 })
         })
-            .join();
+        .join();
 
         match thread_result {
             Ok(res) => match res {
@@ -224,14 +227,47 @@ impl Http for HttpBindings {
         }
     }
 
+    fn jsonnet(&mut self, file: &str) -> Result<String, FileError> {
+        jsonnet(file)
+    }
 
-    fn parse_jsonnet(&mut self, file: &str) -> Result<String, FileError> {
-        parse_jsonnet(file)
+    fn jsonnet_ext_var(&mut self, file: &str, ext_var: &str) -> Result<String, FileError> {
+        let file = file.to_owned();
+        let ext_var = ext_var.to_owned();
+        let thread_result = std::thread::spawn(move || {
+            Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap()
+                .block_on(async {
+                    let mut vm = JsonnetVm::new();
+                    let ext_var_str = ext_var.as_str();
+                    let ext_vars: HashMap<&str, Value> = serde_json::from_str(ext_var_str).unwrap();
+                    for (key, value) in ext_vars {
+                        vm.ext_var(key, value.as_str().unwrap());
+                    }
+                    let json = vm.evaluate_file(&file);
+                    match json {
+                        Ok(json) => Ok(json.to_string()),
+                        Err(e) => {
+                            println!("Error: {}", e);
+                            Err(FileError::NotFound)
+                        }
+                    }
+                })
+        })
+        .join();
+        match thread_result {
+            Ok(res) => match res {
+                Ok(res) => Ok(res),
+                Err(err) => Err(err),
+            },
+            Err(_) => Err(FileError::NotFound),
+        }
     }
 }
 
-
-pub fn parse_jsonnet(file: &str) -> Result<String, FileError> {
+pub fn jsonnet(file: &str) -> Result<String, FileError> {
     let file = file.to_owned();
     let thread_result = std::thread::spawn(move || {
         Builder::new_current_thread()
@@ -247,11 +283,11 @@ pub fn parse_jsonnet(file: &str) -> Result<String, FileError> {
                     Err(e) => {
                         println!("Error: {}", e);
                         Err(FileError::NotFound)
-                    },
+                    }
                 }
             })
     })
-        .join();
+    .join();
 
     match thread_result {
         Ok(res) => match res {

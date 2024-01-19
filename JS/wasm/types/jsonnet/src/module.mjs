@@ -1,5 +1,5 @@
 import parseJson from "./index.js";
 
-const { parseJsonnet } = parseJson;
+const { jsonnet, jsonnetExtVars } = parseJson;
 
-export { parseJsonnet };
+export { jsonnet, jsonnetExtVars };

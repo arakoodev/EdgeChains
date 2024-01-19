@@ -12,6 +12,7 @@ path = "src/lib.rs"
 
 [dependencies]
 jsonnet-rs = "0.17"
+serde_json = "1.0.111"
 
 [dependencies.neon]
 version = "0.10"
