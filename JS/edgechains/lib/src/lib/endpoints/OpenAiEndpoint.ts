@@ -1,4 +1,8 @@
 import axios from "axios";
+import Openai from "openai"
+
+const openai = new Openai();
+
 
 export class OpenAiEndpoint {
     url: string;
@@ -6,7 +10,6 @@ export class OpenAiEndpoint {
     orgId: string;
     model: string;
     role: string;
-    temprature: number;
 
     constructor(
         url: string,
@@ -14,14 +17,14 @@ export class OpenAiEndpoint {
         orgId: string,
         model: string,
         role: string,
-        temprature: number
+        
     ) {
         this.url = url;
         this.apiKey = apiKey;
         this.orgId = orgId;
         this.model = model;
         this.role = role;
-        this.temprature = temprature;
+        
     }
 
     async gptFn(prompt: string): Promise<string> {
@@ -36,7 +39,7 @@ export class OpenAiEndpoint {
                             content: prompt,
                         },
                     ],
-                    temperature: this.temprature,
+                   
                 },
                 {
                     headers: {
@@ -77,6 +80,7 @@ export class OpenAiEndpoint {
                 }
             )
             .then(function (response) {
+                console.log("response", response );
                 return response.data.data[0].embedding;
             })
             .catch(function (error) {
@@ -100,7 +104,7 @@ export class OpenAiEndpoint {
                 {
                     model: this.model,
                     messages: chatMessages,
-                    temperature: this.temprature,
+                   
                 },
                 {
                     headers: {
@@ -138,7 +142,7 @@ export class OpenAiEndpoint {
                             content: prompt,
                         },
                     ],
-                    temperature: this.temprature,
+                   
                 },
                 {
                     headers: {

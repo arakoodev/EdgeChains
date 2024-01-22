@@ -1,6 +1,6 @@
 {
     "name": "@arakoodev/edgechains.js",
-    "version": "0.1.17",
+    "version": "0.1.10",
     "main": "dist/index.js",
     "files": [
         "dist",
@@ -26,6 +26,7 @@
         "dotenv": "^16.3.1",
         "hono": "^3.9.2",
         "inquirer": "^9.2.12",
+        "openai": "^4.24.7",
         "prettier": "^3.1.0",
         "typeorm": "^0.3.17"
     },

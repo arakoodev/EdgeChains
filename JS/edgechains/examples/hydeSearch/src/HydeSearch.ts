@@ -42,8 +42,8 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
         //
         const jsonnet = new Jsonnet();
 
-        const promptPath = path.join(__dirname, "../jsonnet/prompts.jsonnet");
-        const hydePath = path.join(__dirname, "../jsonnet/hyde.jsonnet");
+        const promptPath = path.join(__dirname, "../src/prompts.jsonnet");
+        const hydePath = path.join(__dirname, "../src/hyde.jsonnet");
         // Load Jsonnet to extract args..
         const promptLoader = await jsonnet.evaluateFile(promptPath);
 
