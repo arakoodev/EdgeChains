@@ -11,6 +11,7 @@ dotenv.config();
 // Create instances of Jsonnet, Hono, and OpenAiEndpoint
 const jsonnet = new Jsonnet();
 export const ReactChainRouter = new Hono();
+
 const gpt3Endpoint = new OpenAiEndpoint(
     "https://api.openai.com/v1/chat/completions",
     process.env.OPENAI_API_KEY!,
@@ -41,11 +42,9 @@ export async function reactChainCall(query: string) {
         // Make a GPT-3 call using the OpenAiEndpoint
         const gptResponse = await gpt3Endpoint.gptFn(prompt);
 
-        // Replace escaped newline characters with actual newlines
-        const formattedResponse = gptResponse.replace(/\\n/g, '\n');
-        
-        // Return the formatted response
-        return formattedResponse;
+       
+        // Return the  response
+        return gptResponse;
 
     } catch (error) {
         // Log and rethrow any errors that occur during the process
@@ -63,11 +62,10 @@ export function UserInput(query: string) {
             // Call the reactChainCall function with the provided query
             const ReactChainCall = await reactChainCall(query);
 
-            // Replace escaped newline characters with actual newlines in the response
-            const formattedResponse = ReactChainCall.replace(/\\n/g, '\n');
+            
 
-            // Respond with the formatted answer
-            return res.json({ answer: formattedResponse });
+            // Respond with the ReactChainCall response
+            return res.json({ answer: ReactChainCall });
 
         } catch (error) {
             // If an error occurs, respond with an error status and message
@@ -77,7 +75,7 @@ export function UserInput(query: string) {
 }
 
 // Example usage: Make a UserInput call with a specific query
-UserInput("what is AI");
+UserInput("Author David Chanoff has collaborated with a U.S. Navy admiral who served as the ambassador to the United Kingdom under which President?");
 
 
 

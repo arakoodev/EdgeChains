@@ -113,7 +113,7 @@ local CUSTOM_TEMPLATE = |||
                             and Leonid Levin have the same type of work.
                             Action 3: Finish[yes]
                             
-                            Based upon the above prompt format, answer the user question in this format only. Doesn't stop in halfway.Give Full Response and give complete text 
+                            Based upon the above prompt format, answer the user question in this format only. Doesn't stop in halfway.each Thought , Action, Observation and Finish should be start from new line. Give Full Response and give complete text 
                             Question: {}
                             
                         |||;
