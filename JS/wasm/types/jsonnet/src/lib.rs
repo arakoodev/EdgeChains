@@ -1,48 +1,50 @@
-use std::{collections::HashMap, fs};
+use jrsonnet_evaluator::{apply_tla, function::TlaArg, gc::GcHashMap, manifest::{JsonFormat, ManifestFormat}, tb, trace::{CompactFormat, PathResolver, TraceFormat}, FileImportResolver, State};
+use jrsonnet_parser::IStr;
+use wasm_bindgen::prelude::*;
 
-use jsonnet::JsonnetVm;
-use neon::prelude::*;
-use serde_json::Value;
-
-pub fn jsonnet(mut cx: FunctionContext) -> JsResult<JsString> {
-    let path: String = cx.argument::<JsString>(0)?.value(&mut cx);
-    let mut vm = JsonnetVm::new();
-    let snippet = fs::read_to_string(path).unwrap();
-    let output = vm.evaluate_snippet("snippet", &snippet);
-    let output = match output {
-        Ok(output) => output,
-        Err(e) => {
-            return cx.throw_error(format!("Error: {}", e));
-        }
-    };
-    Ok(cx.string(output.to_string()))
+pub struct VM {
+    state: State,
+    manifest_format: Box<dyn ManifestFormat>,
+    trace_format: Box<dyn TraceFormat>,
+    tla_args: GcHashMap<IStr, TlaArg>,
 }
 
-pub fn jsonnet_ext_vars(mut cx: FunctionContext) -> JsResult<JsString> {
-    let path: String = cx.argument::<JsString>(0)?.value(&mut cx);
-    let ext_var: String = cx.argument::<JsString>(1)?.value(&mut cx);
-    let mut vm = JsonnetVm::new();
-    let ext_var_str = ext_var.as_str();
-    let ext_vars: HashMap<&str, Value> = serde_json::from_str(ext_var_str).unwrap();
-    for (key, value) in ext_vars {
-        vm.ext_var(key, value.as_str().unwrap());
+#[wasm_bindgen]
+pub fn jsonnet_make() -> *mut VM {
+    let state = State::default();
+    state.settings_mut().import_resolver = tb!(FileImportResolver::default());
+    state.settings_mut().context_initializer = tb!(jrsonnet_stdlib::ContextInitializer::new(
+        state.clone(),
+        PathResolver::new_cwd_fallback(),
+    ));
+    Box::into_raw(Box::new(VM {
+        state,
+        manifest_format: Box::new(JsonFormat::default()),
+        trace_format: Box::new(CompactFormat::default()),
+        tla_args: GcHashMap::default(),
+    }))
+}
+
+
+#[wasm_bindgen]
+pub fn jsonnet_destroy(vm: *mut VM) {
+    unsafe {
+        let dloc_vm = Box::from_raw(vm);
+        drop(dloc_vm);
     }
-
-    let snippet = fs::read_to_string(path).unwrap();
-
-    let output = vm.evaluate_snippet("snippet", &snippet);
-    let output = match output {
-        Ok(output) => output,
-        Err(e) => {
-            return cx.throw_error(format!("{}", e));
-        }
-    };
-    Ok(cx.string(output.to_string()))
 }
 
-#[neon::main]
-fn main(mut cx: ModuleContext) -> NeonResult<()> {
-    cx.export_function("jsonnet", jsonnet)?;
-    cx.export_function("jsonnetExtVars", jsonnet_ext_vars)?;
-    Ok(())
+#[wasm_bindgen]
+pub fn jsonnet_evaluate_snippet(vm: *mut VM, filename: &str, snippet: &str) -> String {
+    let vm = unsafe { &mut *vm };
+    match vm.state.evaluate_snippet(filename, snippet)
+    .and_then(|val| apply_tla(vm.state.clone(), &vm.tla_args, val))
+    .and_then(|val| val.manifest(&vm.manifest_format)) {
+        Ok(v) => v,
+        Err(e) => {
+            let mut out  = String::new();
+            vm.trace_format.write_trace(&mut out, &e).unwrap();
+            out
+        }
+    }
 }
