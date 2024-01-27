@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
-        "types": [ "jest", "node"],
-        // "dotenv/config",
+        "types": ["dotenv/config", "jest", "node"],
         "target": "ES2022",
         "module": "NodeNext",
         "esModuleInterop": true,
@@ -14,5 +13,5 @@
         "moduleResolution": "NodeNext",
         "declaration": true
     },
-    "include": ["src/**/*.ts", "dist/**/*.d.ts"]
+    "include": ["src/**/*.ts", "dist/**/*.d.ts", "src/jest.config.js"]
 }
