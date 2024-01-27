@@ -1,22 +1,11 @@
 import { Hono } from "hono";
 import { connect } from "@planetscale/database";
-import { jsonnet, jsonnetExtVars } from "arakoo-jsonnet";
 
 const app = new Hono();
 
 app.get("/", (c) => {
   const geo = c.req.raw.geo;
   return c.text(`Your from ${geo.city}, ${geo.country_name}!`);
-});
-
-app.get("/jsonnet", async (c) => {
-  try {
-    const result = await jsonnet("test.jsonnet");
-    return c.json(JSON.parse(result));
-  } catch (error) {
-    console.log(JSON.stringify(error));
-    c.text(error);
-  }
 });
 
 app.get("/vars", async (c) => {
