@@ -1,14 +1,11 @@
 {
-  "name": "arakoo",
-  "version": "1.0.0",
-  "description": "",
-  "module": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {
-    "jsonnet_wasm": "file:./jsonnet"
-  },
-  "author": "",
-  "license": "ISC"
+  "name": "arakoo-jsonnet",
+  "version": "0.1.1",
+  "main": "src/index.js",
+  "type": "module",
+  "types": "src/index.d.ts",
+  "sideEffects": [
+    "./jsonnet_wasm.js",
+    "./snippets/*"
+  ]
 }
