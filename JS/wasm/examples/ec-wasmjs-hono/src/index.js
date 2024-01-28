@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { connect } from "@planetscale/database";
+import Jsonnet from "arakoo-jsonnet";
 
 const app = new Hono();
 

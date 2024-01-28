@@ -3,7 +3,7 @@ import { Jsonnet } from "@hanazuki/node-jsonnet";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 import * as path from "path";
 import { Hono } from "hono";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 
 // Load environment variables from a .env file
 dotenv.config();
@@ -33,7 +33,8 @@ export async function reactChainCall(query: string) {
         const promptTemplate = JSON.parse(promptLoader).custom_template;
 
         // Load and parse the intermediate template, injecting the prompt template and query
-        let InterLoader = await jsonnet.extString("promptTemplate", promptTemplate)
+        let InterLoader = await jsonnet
+            .extString("promptTemplate", promptTemplate)
             .extString("query", query)
             .evaluateFile(InterPath);
 
@@ -42,10 +43,8 @@ export async function reactChainCall(query: string) {
         // Make a GPT-3 call using the OpenAiEndpoint
         const gptResponse = await gpt3Endpoint.gptFn(prompt);
 
-       
         // Return the  response
         return gptResponse;
-
     } catch (error) {
         // Log and rethrow any errors that occur during the process
         console.error(error);
@@ -62,11 +61,8 @@ export function UserInput(query: string) {
             // Call the reactChainCall function with the provided query
             const ReactChainCall = await reactChainCall(query);
 
-            
-
             // Respond with the ReactChainCall response
             return res.json({ answer: ReactChainCall });
-
         } catch (error) {
             // If an error occurs, respond with an error status and message
             return res.json({ error: "An error occurred" }, 500);
@@ -75,11 +71,8 @@ export function UserInput(query: string) {
 }
 
 // Example usage: Make a UserInput call with a specific query
-UserInput("Author David Chanoff has collaborated with a U.S. Navy admiral who served as the ambassador to the United Kingdom under which President?");
-
-
-
-
+UserInput(
+    "Author David Chanoff has collaborated with a U.S. Navy admiral who served as the ambassador to the United Kingdom under which President?"
+);
 
 // let query="Author David Chanoff has collaborated with a U.S. Navy admiral who served as the ambassador to the United Kingdom under which President?"
-

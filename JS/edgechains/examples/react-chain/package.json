@@ -3,7 +3,6 @@
     "version": "1.0.0",
     "description": "",
     "main": "dist/index.js",
-    
     "scripts": {
         "build": "rm -rf dist && node esbuild.build.js",
         "start": "node dist/index.js",
