@@ -4,12 +4,12 @@
         "lib": ["es6"],
         "strict": true,
         "baseUrl": ".",
-        "paths": { "arakoo-jsonnet": ["."] },
+        "paths": { "arakoo-jsonnet": ["."] }
     },
     "typedocOptions": {
         "entryPoints": ["index.d.ts"],
         "out": "../docs",
-        "excludeExternals": true,
+        "excludeExternals": true
     },
-    "include": ["."],
+    "include": ["."]
 }
