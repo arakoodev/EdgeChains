@@ -1,13 +1,12 @@
 import { Hono } from "hono";
 import { connect } from "@planetscale/database";
-import Jsonnet from "arakoo-jsonnet";
 
 const app = new Hono();
-
+const env = {};
 app.get("/", (c) => {
-  const geo = c.req.raw.geo;
-  return c.text(`Your from ${geo.city}, ${geo.country_name}!`);
+    return c.text("Hello World!");
 });
+
 
 app.get("/vars", async (c) => {
   try {
@@ -49,4 +48,4 @@ app.notFound((c) => {
   return c.text("404 not found", 404);
 });
 
-export default app;
+app.fire();
