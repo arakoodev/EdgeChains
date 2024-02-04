@@ -1,0 +1,20 @@
+[package]
+name = "arakoo-core"
+edition.workspace = true
+version.workspace = true
+
+[[bin]]
+name = "arakoo-core"
+path = "src/main.rs"
+[lib]
+name = "javy_quickjs_provider"
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = { workspace = true }
+javy = { workspace=true, features = ["export_alloc_fns","json"] }
+once_cell = {workspace = true}
+apis = { path = "../apis", features = ["console", "text_encoding", "random", "stream_io"] }
+
+[features]
+experimental_event_loop = []

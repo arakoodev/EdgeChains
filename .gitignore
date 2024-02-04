@@ -34,3 +34,10 @@ build/
 
 ### Node Modules ###
 node_modules
+
+### rust ###
+/target/
+index.wasm
+index.wit
+
+.DS_Store
