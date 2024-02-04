@@ -11,6 +11,6 @@
         "jsxImportSource": "hono/jsx",
         "noImplicitAny": false,
         "moduleResolution": "NodeNext",
-        "declaration": true,
-    },
+        "declaration": true
+    }
 }
