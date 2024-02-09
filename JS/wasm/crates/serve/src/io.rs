@@ -12,6 +12,15 @@ pub struct WasmInput<'a> {
     params: HashMap<String, String>,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct WasmOutput {
+    pub headers: HashMap<String, String>,
+    pub status: u16,
+    #[serde(rename = "statusText")]
+    pub status_text: String,
+    body: String,
+}
+
 impl<'a> WasmInput<'a> {
     pub fn new(request: &'a Parts, body: &'a str) -> Self {
         let mut params = HashMap::new();
@@ -57,5 +66,10 @@ impl<'a> WasmInput<'a> {
         }
 
         parsed_headers
+    }
+}
+impl WasmOutput {
+    pub fn body(&self) -> String {
+        self.body.clone()
     }
 }
