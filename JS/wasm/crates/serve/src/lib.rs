@@ -11,7 +11,11 @@ use std::{
 
 use futures::future::{self, Ready};
 use hyper::{
-    http::request::Parts, server::conn::AddrStream, service::Service, Body, Request, Response,
+    header::{HeaderName, HeaderValue},
+    http::request::Parts,
+    server::conn::AddrStream,
+    service::Service,
+    Body, Request, Response,
 };
 
 use tracing::{error, event, info, Level};
@@ -21,7 +25,7 @@ use wasmtime_wasi::WasiCtxBuilder;
 
 use wasmtime::{Config, Engine, Instance, Linker, Memory, Module, Store};
 
-use crate::io::WasmInput;
+use crate::io::{WasmInput, WasmOutput};
 
 #[derive(Clone)]
 pub struct RequestService {
@@ -76,11 +80,38 @@ impl WorkerCtx {
         let body = hyper::body::to_bytes(body).await.unwrap();
         let body_str = String::from_utf8_lossy(&body).to_string();
         let result = self.run(&parts, &body_str).await;
-
         match result {
             Ok(output) => {
-                let response = Response::new(Body::from(output));
-                Ok((response, None))
+                let parsed_output = serde_json::from_slice::<WasmOutput>(&output);
+                match parsed_output {
+                    Ok(parsed_output) => {
+                        let mut response = Response::builder();
+                        response = response
+                            .status(parsed_output.status);
+
+                        let headers = parsed_output.headers.clone();
+                        let headers_vec: Vec<(String, String)> = headers
+                            .into_iter()
+                            .map(|(k, v)| (k.to_owned(), v.to_owned()))
+                            .collect();
+                        headers_vec.iter().for_each(|(key, value)| {
+                            response.headers_mut().unwrap().insert(
+                                HeaderName::from_bytes(key.as_bytes()).unwrap(),
+                                HeaderValue::from_str(value).unwrap(),
+                            );
+                        });
+                        let response = Response::new(Body::from(parsed_output.body()));
+                        Ok((response, None))
+                    }
+                    Err(e) => {
+                        error!("Error: {}", e);
+                        let response = Response::builder()
+                            .status(500)
+                            .body(Body::from("Internal Server Error"))
+                            .unwrap();
+                        Ok((response, Some(e.into())))
+                    }
+                }
             }
             Err(e) => {
                 error!("Error: {}", e);

@@ -1,12 +1,12 @@
 use std::{collections::HashMap, fmt::Debug};
 
+use crate::geolocation::GeolocationData;
 use actix_web::{
     http::{header::HeaderMap, StatusCode, Uri},
     HttpRequest,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value as SerdeValue};
-use crate::geolocation::GeolocationData;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WasmInput<'a> {
@@ -15,7 +15,7 @@ pub struct WasmInput<'a> {
     headers: HashMap<String, String>,
     body: &'a str,
     params: HashMap<String, String>,
-    geo: Map<String, SerdeValue>
+    geo: Map<String, SerdeValue>,
 }
 
 impl<'a> WasmInput<'a> {
@@ -34,7 +34,7 @@ impl<'a> WasmInput<'a> {
             headers: Self::build_headers_hash(request.headers()),
             body,
             params,
-            geo: geo_details.data.clone()
+            geo: geo_details.data.clone(),
         }
     }
 

@@ -1,12 +1,11 @@
 import { Hono } from "hono";
 import { connect } from "@planetscale/database";
-
+import { html } from "hono/html";
 const app = new Hono();
 const env = {};
 app.get("/", (c) => {
-    return c.text("Hello World!");
+  return c.text("Hello World!");
 });
-
 
 app.get("/vars", async (c) => {
   try {
@@ -19,6 +18,14 @@ app.get("/vars", async (c) => {
     console.log(JSON.stringify(error));
     c.text(error);
   }
+});
+
+app.get("/:username", (c) => {
+  const { username } = c.req.param();
+  return c.html(
+    html`<!doctype html>
+      <h1>Hello! ${username}!</h1>`,
+  );
 });
 
 app.get("/hello/:name", async (c) => {

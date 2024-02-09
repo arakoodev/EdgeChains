@@ -283,9 +283,10 @@ const requestToHandler = (input) => {
     Promise.resolve(event.response)
       .then((res) => {
         result = {
-          data: res.body,
+          body: res.body,
           headers: res.headers.headers,
           status: res.status,
+          statusText: res.statusText,
         };
       })
       .catch((err) => {
