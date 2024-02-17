@@ -132,10 +132,8 @@ impl WorkerCtx {
 
         let mut linker: Linker<WasiCtx> = Linker::new(self.engine());
         wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
-        println!("Adding exports to linker");
 
         linker.func_wrap("arakoo", "get_request_len", move || -> i32 { mem_len })?;
-        println!("Added get_request_len");
         match linker.func_wrap(
             "arakoo",
             "get_request",
@@ -157,7 +155,6 @@ impl WorkerCtx {
                 println!("Error adding get_request: {}", e);
             }
         }
-        println!("Added get_request");
         let output: Arc<Mutex<WasmOutput>> = Arc::new(Mutex::new(WasmOutput::new()));
         let output_clone = output.clone();
         linker.func_wrap(
@@ -200,9 +197,7 @@ impl WorkerCtx {
             .instantiate_async(&mut store, self.module())
             .await
             .map_err(anyhow::Error::msg)?;
-        println!("Instantiated module");
         let run_entrypoint_fn = instance.get_typed_func::<(), ()>(&mut store, "run_entrypoint")?;
-        println!("Got run_entrypoint_fn");
         run_entrypoint_fn
             .call_async(&mut store, ())
             .await

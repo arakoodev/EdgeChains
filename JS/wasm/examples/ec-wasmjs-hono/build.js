@@ -1,5 +1,7 @@
 import { build } from "esbuild";
 
+let runtime = process.argv[2];
+console.log("runtime", runtime);
 build({
     entryPoints: ["src/index.js"],
     bundle: true,
@@ -8,7 +10,10 @@ build({
     format: "esm",
     target: "esnext",
     platform: "node",
-    external: ["arakoo"],
+    // external: ["arakoo"],
+    define: {
+        "process.env.arakoo": JSON.stringify(runtime === "arakoo"),
+    },
 }).catch((error) => {
     console.error(error);
     process.exit(1);

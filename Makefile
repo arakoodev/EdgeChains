@@ -20,7 +20,7 @@ build-arakoo: build-cors
 
 build-cors: build-shims
 	@echo "Building arakoo core"
-	@cargo build -p arakoo-core --target=wasm32-wasi -r --features experimental_event_loop 
+	@cargo build -p arakoo-core --target=wasm32-wasi -r --features experimental_event_loop
 
 build-shims: shims-install
 	@echo "Building shims"
@@ -37,7 +37,7 @@ serve:
 	./target/release/arakoo serve index.wasm
 
 build-example:
-	@cd /Users/rahulyadav/Documents/edgeCloud/EdgeChain/JS/wasm/examples/ec-wasmjs-hono && npm i && npm run build
+	@cd /Users/rahulyadav/Documents/edgeCloud/EdgeChain/JS/wasm/examples/ec-wasmjs-hono && npm i && npm run build arakoo
 
 clean-example:
 	@rm -r JS/wasm/examples/ec-wasmjs-hono/node_modules/ JS/wasm/examples/ec-wasmjs-hono/bin/

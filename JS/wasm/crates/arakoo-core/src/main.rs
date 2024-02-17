@@ -50,12 +50,11 @@ fn main() {
 pub fn run_entrypoint() {
     let runtime = unsafe { RUNTIME.take().unwrap() };
     let bytecode = unsafe { BYTECODE.take().unwrap() };
-    eprintln!("Running entrypoint");
+
     let input_len = unsafe { get_request_len() };
-    eprintln!("Input length: {}", input_len);
     let mut input_buffer = Vec::with_capacity(input_len as usize);
     let input_ptr = input_buffer.as_mut_ptr();
-    eprintln!("get_request");
+
     let input_buffer = unsafe {
         get_request(input_ptr);
         Vec::from_raw_parts(input_ptr, input_len as usize, input_len as usize)
@@ -63,12 +62,11 @@ pub fn run_entrypoint() {
     let request: Request = serde_json::from_slice(&input_buffer).unwrap();
     let request_string = serde_json::to_string(&request).unwrap();
     let result = execution::invoke_entrypoint(&runtime, &bytecode, request_string).unwrap();
-    eprintln!("convert result");
+
     let result_string = serde_json::to_string(&result).unwrap();
 
     let len = result_string.len() as i32;
     let result_ptr = result_string.as_ptr();
-    eprintln!("set_output");
     unsafe {
         set_output(result_ptr, len);
     };
