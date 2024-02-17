@@ -1,24 +1,30 @@
 use javy::Runtime;
 use once_cell::sync::OnceCell;
-use std::io::{self, Read};
+
+use std::io;
+use std::io::Read;
 use std::slice;
 use std::str;
 use std::string::String;
 
 mod execution;
 mod runtime;
-
+use apis::http::types::Request;
 const FUNCTION_MODULE_NAME: &str = "function.mjs";
-
-static mut COMPILE_SRC_RET_AREA: [u32; 2] = [0; 2];
 
 static mut RUNTIME: OnceCell<Runtime> = OnceCell::new();
 static mut BYTECODE: OnceCell<Vec<u8>> = OnceCell::new();
 
+#[link(wasm_import_module = "arakoo")]
+extern "C" {
+    fn set_output(ptr: *const u8, len: i32);
+    fn get_request_len() -> i32;
+    fn get_request(ptr: *mut u8);
+}
+
 #[export_name = "wizer.initialize"]
 pub extern "C" fn init() {
     let _wasm_ctx = WasmCtx::new();
-
     let runtime = runtime::new_runtime().unwrap();
 
     let mut contents = String::new();
@@ -41,16 +47,31 @@ fn main() {
 }
 
 #[export_name = "run_entrypoint"]
-pub unsafe fn run_entrypoint(input_ptr: *mut u8, input_len: usize) -> *const u32 {
+pub fn run_entrypoint() {
     let runtime = unsafe { RUNTIME.take().unwrap() };
     let bytecode = unsafe { BYTECODE.take().unwrap() };
-    let input = str::from_utf8(unsafe { slice::from_raw_parts(input_ptr, input_len) }).unwrap();
-    let result = execution::invoke_entrypoint(&runtime, &bytecode, input.to_string()).unwrap();
-    let result_len = result.len();
-    let result_ptr = Box::leak(result.into_boxed_slice()).as_ptr();
-    COMPILE_SRC_RET_AREA[0] = result_ptr as u32;
-    COMPILE_SRC_RET_AREA[1] = result_len.try_into().unwrap();
-    COMPILE_SRC_RET_AREA.as_ptr()
+    eprintln!("Running entrypoint");
+    let input_len = unsafe { get_request_len() };
+    eprintln!("Input length: {}", input_len);
+    let mut input_buffer = Vec::with_capacity(input_len as usize);
+    let input_ptr = input_buffer.as_mut_ptr();
+    eprintln!("get_request");
+    let input_buffer = unsafe {
+        get_request(input_ptr);
+        Vec::from_raw_parts(input_ptr, input_len as usize, input_len as usize)
+    };
+    let request: Request = serde_json::from_slice(&input_buffer).unwrap();
+    let request_string = serde_json::to_string(&request).unwrap();
+    let result = execution::invoke_entrypoint(&runtime, &bytecode, request_string).unwrap();
+    eprintln!("convert result");
+    let result_string = serde_json::to_string(&result).unwrap();
+
+    let len = result_string.len() as i32;
+    let result_ptr = result_string.as_ptr();
+    eprintln!("set_output");
+    unsafe {
+        set_output(result_ptr, len);
+    };
 }
 
 // Removed in post-processing.

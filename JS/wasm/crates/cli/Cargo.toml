@@ -6,7 +6,7 @@ version.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [[bin]]
-name = "arakoo"
+name = "cli"
 path = "src/main.rs"
 
 [features]
@@ -25,9 +25,9 @@ wasmtime-wasi = { workspace = true }
 wasi-common = { workspace = true }
 walrus = "0.20.3"
 swc_core = { version = "0.87.19", features = [
-    "common_sourcemap",
-    "ecma_ast",
-    "ecma_parser",
+  "common_sourcemap",
+  "ecma_ast",
+  "ecma_parser",
 ] }
 wit-parser = "0.13.0"
 convert_case = "0.6.0"

@@ -39,5 +39,6 @@ node_modules
 /target/
 index.wasm
 index.wit
+Cargo.lock
 
 .DS_Store

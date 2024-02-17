@@ -12,7 +12,7 @@ pub struct WasmInput<'a> {
     params: HashMap<String, String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct WasmOutput {
     pub headers: HashMap<String, String>,
     pub status: u16,
@@ -71,5 +71,14 @@ impl<'a> WasmInput<'a> {
 impl WasmOutput {
     pub fn body(&self) -> String {
         self.body.clone()
+    }
+
+    pub(crate) fn new() -> Self {
+        Self {
+            headers: HashMap::new(),
+            status: 200,
+            status_text: "OK".to_string(),
+            body: String::new(),
+        }
     }
 }

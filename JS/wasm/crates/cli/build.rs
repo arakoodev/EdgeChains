@@ -43,12 +43,24 @@ fn read_file(path: impl AsRef<Path>) -> Result<Vec<u8>> {
 // Copy the engine binary build from the `core` crate
 fn copy_javy_core() -> Result<()> {
     let cargo_manifest_dir = env::var("CARGO_MANIFEST_DIR")?;
-    let module_path = PathBuf::from(&cargo_manifest_dir)
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .join("target/wasm32-wasi/release");
+    // let if build mode is release or debug
+
+    let module_path = if cfg!(debug_assertions) {
+        PathBuf::from(&cargo_manifest_dir)
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("../../target/wasm32-wasi/debug/")
+    } else {
+        PathBuf::from(&cargo_manifest_dir)
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("../../target/wasm32-wasi/release/")
+    };
+
     let engine_path = module_path.join("arakoo-core.wasm");
     let quickjs_provider_path = module_path.join("javy_quickjs_provider.wasm");
     let quickjs_provider_wizened_path = module_path.join("javy_quickjs_provider_wizened.wasm");

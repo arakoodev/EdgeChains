@@ -51,7 +51,7 @@ pub struct EmitProviderCommandOpts {
 #[derive(Debug, StructOpt)]
 pub struct ServeCommandOpts {
     input: PathBuf,
-    #[structopt(short, long, default_value = "0.0.0.0")]
+    #[structopt(short, long, default_value = "127.0.0.1")]
     hostname: String,
     #[structopt(short, long, default_value = "8080")]
     port: u16,
