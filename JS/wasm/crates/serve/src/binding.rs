@@ -30,7 +30,6 @@ pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
               var_len: i32,
               path_ptr: i32,
               code_len: i32| {
-            println!("Evaluating jsonnet snippet in cli");
             let output = output_clone.clone();
             let mem = match caller.get_export("memory") {
                 Some(Extern::Memory(mem)) => mem,
@@ -97,7 +96,7 @@ pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
     let output_clone = output.clone();
     linker.func_wrap("arakoo", "jsonnet_output_len", move || -> i32 {
         let output_clone = output_clone.clone();
-        let output = output_clone.lock().unwrap();
+        let output = output_clone.lock().unwrap().clone();
         output.len() as i32
     })?;
 
@@ -111,7 +110,7 @@ pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
                 _ => return Err(Trap::NullReference.into()),
             };
             let offset = ptr as u32 as usize;
-            let out = output_clone.lock().unwrap();
+            let out = output_clone.lock().unwrap().clone();
             match mem.write(&mut caller, offset, out.as_bytes()) {
                 Ok(_) => {}
                 _ => return Err(Trap::MemoryOutOfBounds.into()),

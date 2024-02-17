@@ -97,7 +97,7 @@ pub fn add_to_runtime(runtime: &Runtime, config: APIConfig) -> Result<()> {
     #[cfg(feature = "text_encoding")]
     text_encoding::TextEncoding.register(runtime, &config)?;
     http::Http.register(runtime, &config)?;
-
     jsonnet::Jsonnet.register(runtime, &config)?;
+    
     Ok(())
 }

@@ -20,7 +20,7 @@ pub fn invoke_entrypoint(
     input: String,
 ) -> anyhow::Result<Response> {
     let context = runtime.context();
-    eprintln!("context.eval_binary");
+
     match context.eval_binary(bytecode) {
         Ok(_) => {}
         Err(e) => {
@@ -29,7 +29,6 @@ pub fn invoke_entrypoint(
             return Err(e);
         }
     }
-    eprintln!("context.global_object()");
     let global = context.global_object().unwrap();
     let entry_point = global.get_property("entrypoint").unwrap();
 
@@ -39,7 +38,6 @@ pub fn invoke_entrypoint(
         eprintln!("Error when transcoding input: {e}");
         process::abort();
     });
-    eprintln!("entry_point.call");
     entry_point
         .call(&global, &[input_value])
         .and_then(|_| process_event_loop(context))

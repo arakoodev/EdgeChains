@@ -1,24 +1,17 @@
 import { Hono } from "hono";
 import { connect } from "@planetscale/database";
 import { html } from "hono/html";
+import Jsonnet from "arakoo-jsonnet";
+
+let jsonnet = new Jsonnet();
+
 const app = new Hono();
 const env = {};
 app.get("/", (c) => {
-  return c.text("Hello World!");
+  let result = jsonnet.evaluateSnippet("test.jsonnet", );
+  return c.json(JSON.parse(result));
 });
 
-app.get("/vars", async (c) => {
-  try {
-    const extVars = JSON.stringify({
-      var1: "value1",
-    });
-    const result = await jsonnetExtVars("test-vars.jsonnet", extVars);
-    return c.json(JSON.parse(result));
-  } catch (error) {
-    console.log(JSON.stringify(error));
-    c.text(error);
-  }
-});
 
 app.get("/:username", (c) => {
   const { username } = c.req.param();
