@@ -14,4 +14,8 @@ text_encoding = []
 [dependencies]
 anyhow = { workspace = true }
 fastrand = { version = "2.0.1", optional = true }
-javy = {workspace = true}
+javy = { workspace = true }
+# wit-bindgen-rust = { git = "https://github.com/bytecodealliance/wit-bindgen", tag = "v0.2.0" }
+tokio = "1.36.0"
+serde = { workspace = true }
+serde_json = { workspace = true }

@@ -1,4 +1,7 @@
+// mod binding;
+mod binding;
 mod io;
+
 use std::{
     convert::Infallible,
     env,
@@ -6,9 +9,11 @@ use std::{
     net::SocketAddr,
     path::Path,
     pin::Pin,
+    sync::{Arc, Mutex},
     task::{self, Poll},
 };
 
+// use binding::add_exports_to_linker;
 use futures::future::{self, Ready};
 use hyper::{
     header::{HeaderName, HeaderValue},
@@ -23,9 +28,12 @@ use tracing_subscriber::{filter::EnvFilter, FmtSubscriber};
 use wasi_common::WasiCtx;
 use wasmtime_wasi::WasiCtxBuilder;
 
-use wasmtime::{Config, Engine, Instance, Linker, Memory, Module, Store};
+use wasmtime::{Caller, Config, Engine, Extern, Linker, Module, Store, Trap, WasmBacktraceDetails};
 
-use crate::io::{WasmInput, WasmOutput};
+use crate::{
+    binding::add_exports_to_linker,
+    io::{WasmInput, WasmOutput},
+};
 
 #[derive(Clone)]
 pub struct RequestService {
@@ -49,10 +57,17 @@ impl WorkerCtx {
     pub fn new(module_path: impl AsRef<Path>) -> anyhow::Result<Self> {
         tracing_subscriber();
         info!("Loading module from {:?}", module_path.as_ref());
-        // let config = configure_wasmtime(profiling_strategy);
-        let engine = Engine::new(Config::default().async_support(true)).unwrap(); //Engine::new(&config)?;
+        let mut binding = Config::default();
+        let config = binding
+            .async_support(true)
+            .debug_info(true)
+            .wasm_backtrace(true)
+            .coredump_on_trap(true) // Enable core dumps on trap
+            .wasm_backtrace_details(WasmBacktraceDetails::Enable);
 
+        let engine = Engine::new(&config)?;
         let module = Module::from_file(&engine, module_path)?;
+
         Ok(Self { engine, module })
     }
 
@@ -82,37 +97,24 @@ impl WorkerCtx {
         let result = self.run(&parts, &body_str).await;
         match result {
             Ok(output) => {
-                let parsed_output = serde_json::from_slice::<WasmOutput>(&output);
-                match parsed_output {
-                    Ok(parsed_output) => {
-                        let mut response = Response::builder();
-                        response = response
-                            .status(parsed_output.status);
+                let mut response = Response::builder();
+                response = response.status(output.status);
 
-                        let headers = parsed_output.headers.clone();
-                        let headers_vec: Vec<(String, String)> = headers
-                            .into_iter()
-                            .map(|(k, v)| (k.to_owned(), v.to_owned()))
-                            .collect();
-                        headers_vec.iter().for_each(|(key, value)| {
-                            response.headers_mut().unwrap().insert(
-                                HeaderName::from_bytes(key.as_bytes()).unwrap(),
-                                HeaderValue::from_str(value).unwrap(),
-                            );
-                        });
-                        let response = Response::new(Body::from(parsed_output.body()));
-                        Ok((response, None))
-                    }
-                    Err(e) => {
-                        error!("Error: {}", e);
-                        let response = Response::builder()
-                            .status(500)
-                            .body(Body::from("Internal Server Error"))
-                            .unwrap();
-                        Ok((response, Some(e.into())))
-                    }
-                }
+                let headers = output.headers.clone();
+                let headers_vec: Vec<(String, String)> = headers
+                    .into_iter()
+                    .map(|(k, v)| (k.to_owned(), v.to_owned()))
+                    .collect();
+                headers_vec.iter().for_each(|(key, value)| {
+                    response.headers_mut().unwrap().insert(
+                        HeaderName::from_bytes(key.as_bytes()).unwrap(),
+                        HeaderValue::from_str(value).unwrap(),
+                    );
+                });
+                let response = Response::new(Body::from(output.body()));
+                Ok((response, None))
             }
+
             Err(e) => {
                 error!("Error: {}", e);
                 let response = Response::builder()
@@ -124,45 +126,94 @@ impl WorkerCtx {
         }
     }
 
-    fn make_service(&self) -> RequestService {
-        RequestService::new(self.clone())
-    }
-
-    async fn run(&self, parts: &Parts, body: &str) -> anyhow::Result<Vec<u8>> {
-        let input = serde_json::to_string(&WasmInput::new(parts, body)).unwrap();
+    async fn run(&self, parts: &Parts, body: &str) -> anyhow::Result<WasmOutput> {
+        let input = serde_json::to_vec(&WasmInput::new(parts, body)).unwrap();
+        let mem_len = input.len() as i32;
 
         let mut linker: Linker<WasiCtx> = Linker::new(self.engine());
-
         wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
+        println!("Adding exports to linker");
 
-        let mut wasi_ctx = WasiCtxBuilder::new();
-        wasi_ctx.inherit_stdout().inherit_stderr();
-        let wasi_builder = wasi_ctx.build();
+        linker.func_wrap("arakoo", "get_request_len", move || -> i32 { mem_len })?;
+        println!("Added get_request_len");
+        match linker.func_wrap(
+            "arakoo",
+            "get_request",
+            move |mut caller: Caller<'_, WasiCtx>, ptr: i32| {
+                let mem = match caller.get_export("memory") {
+                    Some(Extern::Memory(mem)) => mem,
+                    _ => return Err(Trap::NullReference.into()),
+                };
+                let offset = ptr as u32 as usize;
+                match mem.write(&mut caller, offset, &input) {
+                    Ok(_) => {}
+                    _ => return Err(Trap::MemoryOutOfBounds.into()),
+                };
+                Ok(())
+            },
+        ) {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Error adding get_request: {}", e);
+            }
+        }
+        println!("Added get_request");
+        let output: Arc<Mutex<WasmOutput>> = Arc::new(Mutex::new(WasmOutput::new()));
+        let output_clone = output.clone();
+        linker.func_wrap(
+            "arakoo",
+            "set_output",
+            move |mut caller: Caller<'_, WasiCtx>, ptr: i32, len: i32| {
+                let output = output_clone.clone();
+                let mem = match caller.get_export("memory") {
+                    Some(Extern::Memory(mem)) => mem,
+                    _ => return Err(Trap::NullReference.into()),
+                };
+                let offset = ptr as u32 as usize;
+                let mut buffer = vec![0; len as usize];
+                match mem.read(&caller, offset, &mut buffer) {
+                    Ok(_) => match serde_json::from_slice::<WasmOutput>(&buffer) {
+                        Ok(parsed_output) => {
+                            let mut output = output.lock().unwrap();
+                            *output = parsed_output;
+                            Ok(())
+                        }
+                        Err(_e) => Err(Trap::BadSignature.into()),
+                    },
+                    _ => Err(Trap::MemoryOutOfBounds.into()),
+                }
+            },
+        )?;
+
+        add_exports_to_linker(&mut linker)?;
+
+        let wasi_builder = WasiCtxBuilder::new()
+            .inherit_stdout()
+            .inherit_stderr()
+            .build();
+
         let mut store = Store::new(self.engine(), wasi_builder);
+
+        linker.module(&mut store, "", self.module())?;
 
         let instance = linker
             .instantiate_async(&mut store, self.module())
             .await
             .map_err(anyhow::Error::msg)?;
-
-        let memory = &instance.get_memory(&mut store, "memory").unwrap();
-
-        let (result_ptr, result_len) =
-            copy_request_into_instance(input.as_bytes(), &mut store, &instance, memory).await?;
-
-        let run_entrypoint_fn =
-            instance.get_typed_func::<(u32, u32), u32>(&mut store, "run_entrypoint")?;
-
-        let output_ptr = run_entrypoint_fn
-            .call_async(&mut store, (result_ptr, result_len))
+        println!("Instantiated module");
+        let run_entrypoint_fn = instance.get_typed_func::<(), ()>(&mut store, "run_entrypoint")?;
+        println!("Got run_entrypoint_fn");
+        run_entrypoint_fn
+            .call_async(&mut store, ())
             .await
             .map_err(anyhow::Error::msg)?;
-
-        let output = copy_bytecode_from_instance(output_ptr, &mut store, memory)?;
-
         drop(store);
-
+        let output = output.lock().unwrap().clone();
         Ok(output)
+    }
+
+    fn make_service(&self) -> RequestService {
+        RequestService::new(self.clone())
     }
 }
 
@@ -233,44 +284,4 @@ fn tracing_subscriber() {
         "RUST_LOG set to '{}'",
         env::var("RUST_LOG").unwrap_or_else(|_| String::from("<Could not get env>"))
     );
-}
-
-async fn copy_request_into_instance(
-    request: &[u8],
-    mut store: &mut Store<WasiCtx>,
-    instance: &Instance,
-    memory: &Memory,
-) -> anyhow::Result<(u32, u32)> {
-    let realloc_fn = instance
-        .get_typed_func::<(u32, u32, u32, u32), u32>(&mut store, "canonical_abi_realloc")?;
-    let request_len = request.len().try_into()?;
-
-    let original_ptr = 0;
-    let original_size = 0;
-    let alignment = 1;
-    let size = request_len;
-    let request_ptr = realloc_fn
-        .call_async(&mut store, (original_ptr, original_size, alignment, size))
-        .await?;
-
-    memory.write(&mut store, request_ptr.try_into()?, request)?;
-
-    Ok((request_ptr, request_len))
-}
-
-fn copy_bytecode_from_instance(
-    ret_ptr: u32,
-    mut store: &mut Store<WasiCtx>,
-    memory: &Memory,
-) -> anyhow::Result<Vec<u8>> {
-    let mut ret_buffer = [0; 8];
-    memory.read(&mut store, ret_ptr.try_into()?, &mut ret_buffer)?;
-
-    let bytecode_ptr = u32::from_le_bytes(ret_buffer[0..4].try_into()?);
-    let bytecode_len = u32::from_le_bytes(ret_buffer[4..8].try_into()?);
-
-    let mut bytecode = vec![0; bytecode_len.try_into()?];
-    memory.read(&mut store, bytecode_ptr.try_into()?, &mut bytecode)?;
-
-    Ok(bytecode)
 }

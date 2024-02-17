@@ -12,9 +12,14 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow = { workspace = true }
-javy = { workspace=true, features = ["export_alloc_fns","json"] }
-once_cell = {workspace = true}
-apis = { path = "../apis", features = ["console", "text_encoding", "random", "stream_io"] }
-
+javy = { workspace = true, features = ["export_alloc_fns", "json"] }
+once_cell = { workspace = true }
+apis = { path = "../apis", features = [
+    "console",
+    "text_encoding",
+    "random",
+    "stream_io",
+] }
+serde_json = { workspace = true }
 [features]
 experimental_event_loop = []

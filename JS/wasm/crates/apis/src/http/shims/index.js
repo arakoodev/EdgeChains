@@ -282,6 +282,7 @@ const requestToHandler = (input) => {
 
     Promise.resolve(event.response)
       .then((res) => {
+        console.log("res: ", res);
         result = {
           body: res.body,
           headers: res.headers.headers,

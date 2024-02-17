@@ -58,7 +58,7 @@ pub fn generate(js: &JS, exports: Vec<Export>, no_source_compression: bool) -> R
         )
     };
 
-    // let realloc_export = realloc.id();
+    let realloc_export = realloc.id();
     let free_export = free.id();
     let invoke_export = invoke.id();
 
@@ -76,7 +76,7 @@ pub fn generate(js: &JS, exports: Vec<Export>, no_source_compression: bool) -> R
     }
 
     // We no longer need these exports so remove them.
-    // module.exports.delete(realloc_export);
+    module.exports.delete(realloc_export);
     module.exports.delete(free_export);
     module.exports.delete(invoke_export);
 

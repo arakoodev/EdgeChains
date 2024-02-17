@@ -1,3 +1,5 @@
+pub mod types;
+
 use anyhow::Result;
 
 use crate::JSApiSet;
