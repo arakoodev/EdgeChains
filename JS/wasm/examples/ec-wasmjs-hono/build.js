@@ -1,7 +1,7 @@
 import { build } from "esbuild";
 
 let runtime = process.argv[2];
-console.log("runtime", runtime);
+
 build({
     entryPoints: ["src/index.js"],
     bundle: true,

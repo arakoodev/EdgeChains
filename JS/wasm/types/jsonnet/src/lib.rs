@@ -5,7 +5,7 @@ use jrsonnet_evaluator::{
     manifest::{JsonFormat, ManifestFormat},
     tb,
     trace::{CompactFormat, PathResolver, TraceFormat},
-    FileImportResolver, State,
+    FileImportResolver, State, Val,
 };
 use jrsonnet_parser::IStr;
 use wasm_bindgen::prelude::*;
@@ -57,4 +57,18 @@ pub fn jsonnet_evaluate_snippet(vm: *mut VM, filename: &str, snippet: &str) -> S
             out
         }
     }
+}
+
+#[wasm_bindgen]
+pub fn ext_string(vm: *mut VM, key: &str, value: &str) -> *mut VM {
+    let vm = unsafe { &mut *vm };
+    {
+        let any_initializer = vm.state.context_initializer();
+        any_initializer
+            .as_any()
+            .downcast_ref::<jrsonnet_stdlib::ContextInitializer>()
+            .unwrap()
+            .add_ext_var(key.into(), Val::Str(value.into()));
+    }
+    vm
 }

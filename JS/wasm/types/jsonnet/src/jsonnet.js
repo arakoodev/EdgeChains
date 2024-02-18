@@ -4,7 +4,7 @@ let Jsonnet;
 
 if (!isArakoo) {
   let module = import("./jsonnet_wasm.js");
-  let { jsonnet_evaluate_snippet, jsonnet_destroy, jsonnet_make } =
+  let { jsonnet_evaluate_snippet, jsonnet_destroy, jsonnet_make, ext_string } =
     await module;
   Jsonnet = class Jsonnet {
     constructor() {
@@ -13,6 +13,11 @@ if (!isArakoo) {
 
     evaluateSnippet(snippet) {
       return jsonnet_evaluate_snippet(this.vm, snippet);
+    }
+
+    extString(key, value) {
+      this.vm = ext_string(this.vm, key, value);
+      return this;
     }
 
     destroy() {
@@ -27,9 +32,12 @@ if (!isArakoo) {
 
     extString(key, value) {
       this.vars[key] = value;
+      return this
     }
     evaluateSnippet(snippet) {
-      return __jsonnet_evaluate_snippet("", snippet);
+
+      let vars = JSON.stringify(this.vars);
+      return __jsonnet_evaluate_snippet(vars, snippet);
     }
 
     destroy() {}

@@ -7,7 +7,7 @@ use jrsonnet_evaluator::{
     manifest::{JsonFormat, ManifestFormat},
     tb,
     trace::{CompactFormat, PathResolver, TraceFormat},
-    FileImportResolver, State,
+    FileImportResolver, State, Val,
 };
 use jrsonnet_parser::IStr;
 use tracing::error;
@@ -23,6 +23,7 @@ pub struct VM {
 pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()> {
     let output: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
     let output_clone = output.clone();
+
     linker.func_wrap(
         "arakoo",
         "jsonnet_evaluate",
@@ -48,12 +49,19 @@ pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
                 },
                 _ => return Err(Trap::MemoryOutOfBounds.into()),
             };
-            let _var = match mem.read(&caller, var_offset, &mut var_buffer) {
+            let var = match mem.read(&caller, var_offset, &mut var_buffer) {
                 Ok(_) => match std::str::from_utf8(&var_buffer) {
                     Ok(s) => s,
                     Err(_) => return Err(Trap::BadSignature.into()),
                 },
                 _ => return Err(Trap::MemoryOutOfBounds.into()),
+            };
+            let var_json: serde_json::Value = match serde_json::from_str(var) {
+                Ok(v) => v,
+                Err(e) => {
+                    error!("Error parsing var: {}", e);
+                    return Err(Trap::BadSignature.into());
+                }
             };
 
             let state = State::default();
@@ -71,6 +79,15 @@ pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
             };
 
             let code = path;
+
+            let any_initializer = vm.state.context_initializer();
+            let context = any_initializer
+                .as_any()
+                .downcast_ref::<jrsonnet_stdlib::ContextInitializer>()
+                .unwrap();
+            for (key, value) in var_json.as_object().unwrap() {
+                context.add_ext_var(key.into(), Val::Str(value.as_str().unwrap().into()));
+            }
             let out = match vm
                 .state
                 .evaluate_snippet("snippet", code)
@@ -79,16 +96,12 @@ pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
             {
                 Ok(v) => v,
                 Err(e) => {
+                    error!("Error evaluating snippet: {}", e);
                     let mut out = String::new();
                     vm.trace_format.write_trace(&mut out, &e).unwrap();
                     out
                 }
             };
-            // let out_offset = out_ptr as u32 as usize;
-            // match mem.write(&mut caller, out_offset, out.as_bytes()) {
-            //     Ok(_) => {}
-            //     _ => return Err(Trap::MemoryOutOfBounds.into()),
-            // };
             let mut output = output.lock().unwrap();
             *output = out;
             Ok(())

@@ -16,9 +16,6 @@ tracing = "0.1.37"
 hyper = { version = "0.14.26", features = ["full"] }
 futures = "0.3.24"
 tracing-subscriber = { version = "^0.3.18", features = ["env-filter", "fmt"] }
-wit-bindgen-wasmtime = { git = "https://github.com/fermyon/wit-bindgen-backport", rev = "598cd229bb43baceff9616d16930b8a5a3e79d79", features = [
-    "async",
-] }
 jrsonnet-evaluator = { version = "0.5.0-pre95" }
 jrsonnet-parser = { version = "0.5.0-pre95" }
 jrsonnet-stdlib = { version = "0.5.0-pre95" }

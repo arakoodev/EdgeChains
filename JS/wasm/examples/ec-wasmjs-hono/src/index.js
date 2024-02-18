@@ -9,15 +9,16 @@ const app = new Hono();
 const env = {};
 app.get("/", (c) => {
   const code = `
+  local username = std.extVar('name');
   local Person(name='Alice') = {
     name: name,
     welcome: 'Hello ' + name + '!',
   };
   {
-    person1: Person(),
+    person1: Person(username),
     person2: Person('Bob'),
   }`;
-  let result = jsonnet.evaluateSnippet(code);
+  let result = jsonnet.extString("name", "ll").evaluateSnippet(code);
   return c.json(JSON.parse(result));
 });
 
