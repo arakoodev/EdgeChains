@@ -129,14 +129,26 @@ impl WorkerCtx {
         }
     }
 
+    /// Runs the WebAssembly module with the provided request parts and body.
+    ///
+    /// This function sets up the necessary state and memory management for running the WebAssembly
+    /// module, including setting up the input and output buffers, and wrapping the necessary
+    /// functions to be called from WebAssembly.
     async fn run(&self, parts: &Parts, body: &str) -> anyhow::Result<WasmOutput> {
+        // Serialize the request parts and body into a JSON input for the WebAssembly module.
         let input = serde_json::to_vec(&WasmInput::new(parts, body)).unwrap();
         let mem_len = input.len() as i32;
 
+        // Create a new linker with the WASI context.
         let mut linker: Linker<WasiCtx> = Linker::new(self.engine());
         wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
 
+        // Wrap the `get_request_len` function to be called from WebAssembly.
+        // This function returns the length of the input buffer.
         linker.func_wrap("arakoo", "get_request_len", move || -> i32 { mem_len })?;
+
+        // Wrap the `get_request` function to be called from WebAssembly.
+        // This function writes the input buffer to the specified memory location.
         match linker.func_wrap(
             "arakoo",
             "get_request",
@@ -158,8 +170,13 @@ impl WorkerCtx {
                 println!("Error adding get_request: {}", e);
             }
         }
+
+        // Create a shared output buffer that will be used to store the result of the WebAssembly execution.
         let output: Arc<Mutex<WasmOutput>> = Arc::new(Mutex::new(WasmOutput::new()));
         let output_clone = output.clone();
+
+        // Wrap the `set_output` function to be called from WebAssembly.
+        // This function reads the output buffer from the specified memory location and updates the shared output buffer.
         linker.func_wrap(
             "arakoo",
             "set_output",
@@ -185,17 +202,22 @@ impl WorkerCtx {
             },
         )?;
 
+        // Add additional exports to the linker, such as Jsonnet evaluation functions.
         add_exports_to_linker(&mut linker)?;
 
+        // Create a WASI context builder with inherited standard output and error streams.
         let wasi_builder = WasiCtxBuilder::new()
             .inherit_stdout()
             .inherit_stderr()
             .build();
 
+        // Create a new store with the WASI context.
         let mut store = Store::new(self.engine(), wasi_builder);
 
+        // Instantiate the WebAssembly module with the linker and store.
         linker.module(&mut store, "", self.module())?;
 
+        // Get the entrypoint function from the WebAssembly instance and call it.
         let instance = linker
             .instantiate_async(&mut store, self.module())
             .await
@@ -205,11 +227,14 @@ impl WorkerCtx {
             .call_async(&mut store, ())
             .await
             .map_err(anyhow::Error::msg)?;
+
+        // Drop the store to release resources.
         drop(store);
+
+        // Lock the output buffer and return a clone of the result.
         let output = output.lock().unwrap().clone();
         Ok(output)
     }
-
     fn make_service(&self) -> RequestService {
         RequestService::new(self.clone())
     }
