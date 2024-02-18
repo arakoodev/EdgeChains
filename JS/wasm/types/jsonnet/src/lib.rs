@@ -1,4 +1,12 @@
-use jrsonnet_evaluator::{apply_tla, function::TlaArg, gc::GcHashMap, manifest::{JsonFormat, ManifestFormat}, tb, trace::{CompactFormat, PathResolver, TraceFormat}, FileImportResolver, State};
+use jrsonnet_evaluator::{
+    apply_tla,
+    function::TlaArg,
+    gc::GcHashMap,
+    manifest::{JsonFormat, ManifestFormat},
+    tb,
+    trace::{CompactFormat, PathResolver, TraceFormat},
+    FileImportResolver, State,
+};
 use jrsonnet_parser::IStr;
 use wasm_bindgen::prelude::*;
 
@@ -25,7 +33,6 @@ pub fn jsonnet_make() -> *mut VM {
     }))
 }
 
-
 #[wasm_bindgen]
 pub fn jsonnet_destroy(vm: *mut VM) {
     unsafe {
@@ -37,12 +44,15 @@ pub fn jsonnet_destroy(vm: *mut VM) {
 #[wasm_bindgen]
 pub fn jsonnet_evaluate_snippet(vm: *mut VM, filename: &str, snippet: &str) -> String {
     let vm = unsafe { &mut *vm };
-    match vm.state.evaluate_snippet(filename, snippet)
-    .and_then(|val| apply_tla(vm.state.clone(), &vm.tla_args, val))
-    .and_then(|val| val.manifest(&vm.manifest_format)) {
+    match vm
+        .state
+        .evaluate_snippet(filename, snippet)
+        .and_then(|val| apply_tla(vm.state.clone(), &vm.tla_args, val))
+        .and_then(|val| val.manifest(&vm.manifest_format))
+    {
         Ok(v) => v,
         Err(e) => {
-            let mut out  = String::new();
+            let mut out = String::new();
             vm.trace_format.write_trace(&mut out, &e).unwrap();
             out
         }
