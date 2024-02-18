@@ -78,6 +78,7 @@ function passStringToWasm0(arg, malloc, realloc) {
         const ret = encodeString(arg, view);
 
         offset += ret.written;
+        ptr = realloc(ptr, len, offset, 1) >>> 0;
     }
 
     WASM_VECTOR_LEN = offset;
@@ -128,5 +129,20 @@ export function jsonnet_evaluate_snippet(vm, filename, snippet) {
         wasm.__wbindgen_add_to_stack_pointer(16);
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
     }
+}
+
+/**
+* @param {number} vm
+* @param {string} key
+* @param {string} value
+* @returns {number}
+*/
+export function ext_string(vm, key, value) {
+    const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(value, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.ext_string(vm, ptr0, len0, ptr1, len1);
+    return ret >>> 0;
 }
 

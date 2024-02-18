@@ -75,21 +75,7 @@ export * from "./${BG_FILE}";
 EOF
 
 	cat <<EOF >"$OUT_FOLDER/index.js"
-import {jsonnet_evaluate_snippet, jsonnet_destroy, jsonnet_make} from "./jsonnet_wasm"
-
-class Jsonnet {
-  constructor() {
-    this.vm = jsonnet_make();
-  }
-
-  evaluateSnippet(snippet) {
-    return jsonnet_evaluate_snippet(this.vm, snippet);
-  }
-
-  destroy() {
-    jsonnet_destroy(this.vm);
-  }
-}
+import Jsonnet from "./jsonnet.js";
 
 export default Jsonnet;
 EOF
@@ -99,6 +85,7 @@ declare class Jsonnet {
     constructor();
     evaluateSnippet(snippet: string): string;
     destroy(): void;
+	extString(key: string, value: string): this;
 }
 
 export default Jsonnet;

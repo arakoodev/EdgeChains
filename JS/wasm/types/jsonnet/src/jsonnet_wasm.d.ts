@@ -15,3 +15,10 @@ export function jsonnet_destroy(vm: number): void;
 * @returns {string}
 */
 export function jsonnet_evaluate_snippet(vm: number, filename: string, snippet: string): string;
+/**
+* @param {number} vm
+* @param {string} key
+* @param {string} value
+* @returns {number}
+*/
+export function ext_string(vm: number, key: string, value: string): number;
