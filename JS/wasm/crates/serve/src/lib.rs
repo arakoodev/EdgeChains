@@ -59,11 +59,15 @@ impl WorkerCtx {
         info!("Loading module from {:?}", module_path.as_ref());
         let mut binding = Config::default();
         let config = binding
-            .async_support(true)
-            .debug_info(true)
+            .async_support(true);
+        // check if env has debug flag
+        if env::var("DEBUG").is_ok() {
+            config.debug_info(true)
             .wasm_backtrace(true)
             .coredump_on_trap(true) // Enable core dumps on trap
             .wasm_backtrace_details(WasmBacktraceDetails::Enable);
+        }
+            
 
         let engine = Engine::new(&config)?;
         let module = Module::from_file(&engine, module_path)?;
@@ -261,6 +265,7 @@ fn tracing_subscriber() {
     let builder = FmtSubscriber::builder()
         .with_writer(std::io::stderr)
         .with_env_filter(EnvFilter::from_default_env())
+        .with_ansi(true)
         .with_target(false);
 
     match env::var("RUST_LOG_PRETTY") {

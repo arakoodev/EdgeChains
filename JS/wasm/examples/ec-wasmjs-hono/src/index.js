@@ -8,10 +8,18 @@ let jsonnet = new Jsonnet();
 const app = new Hono();
 const env = {};
 app.get("/", (c) => {
-  let result = jsonnet.evaluateSnippet("test.jsonnet", );
+  const code = `
+  local Person(name='Alice') = {
+    name: name,
+    welcome: 'Hello ' + name + '!',
+  };
+  {
+    person1: Person(),
+    person2: Person('Bob'),
+  }`;
+  let result = jsonnet.evaluateSnippet(code);
   return c.json(JSON.parse(result));
 });
-
 
 app.get("/:username", (c) => {
   const { username } = c.req.param();

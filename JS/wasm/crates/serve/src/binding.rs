@@ -10,6 +10,7 @@ use jrsonnet_evaluator::{
     FileImportResolver, State,
 };
 use jrsonnet_parser::IStr;
+use tracing::error;
 use wasi_common::WasiCtx;
 use wasmtime::*;
 
@@ -68,7 +69,8 @@ pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
                 trace_format: Box::new(CompactFormat::default()),
                 tla_args: GcHashMap::default(),
             };
-            let code = std::fs::read_to_string(path).unwrap();
+
+            let code = path;
             let out = match vm
                 .state
                 .evaluate_snippet("snippet", code)
