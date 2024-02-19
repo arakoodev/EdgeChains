@@ -45,6 +45,26 @@ impl<'a> WasmInput<'a> {
         }
     }
 
+    pub fn url(&self) -> &str {
+        &self.url
+    }
+
+    pub fn method(&self) -> &str {
+        self.method
+    }
+
+    pub fn headers(&self) -> &HashMap<String, String> {
+        &self.headers
+    }
+
+    pub fn body(&self) -> &str {
+        self.body
+    }
+
+    pub fn params(&self) -> &HashMap<String, String> {
+        &self.params
+    }
+
     fn build_url(request: &Parts) -> String {
         Uri::builder()
             .scheme("http")
@@ -80,5 +100,32 @@ impl WasmOutput {
             status_text: "OK".to_string(),
             body: Some(String::new()),
         }
+    }
+
+    pub async fn from_reqwest_response(response: reqwest::Response) -> anyhow::Result<Self> {
+        let headers = response.headers().clone();
+        let status = response.status().as_u16();
+        let status_text = response.status().to_string();
+        let body = response.text().await?;
+
+        Ok(Self {
+            headers: Self::build_headers_hash(&headers),
+            status,
+            status_text,
+            body: Some(body),
+        })
+    }
+
+    fn build_headers_hash(headers: &reqwest::header::HeaderMap) -> HashMap<String, String> {
+        let mut parsed_headers = HashMap::new();
+
+        for (key, value) in headers.iter() {
+            parsed_headers.insert(
+                key.as_str().to_string(),
+                value.to_str().unwrap_or_default().to_string(),
+            );
+        }
+
+        parsed_headers
     }
 }

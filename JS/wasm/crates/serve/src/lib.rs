@@ -117,7 +117,6 @@ impl WorkerCtx {
                     );
                 });
 
-                // let response = Response::new(Body::from(output.body()));
                 let response = response.body(Body::from(output.body())).unwrap();
                 Ok((response, None))
             }

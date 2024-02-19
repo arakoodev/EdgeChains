@@ -19,6 +19,5 @@ export function jsonnet_evaluate_snippet(vm: number, filename: string, snippet: 
 * @param {number} vm
 * @param {string} key
 * @param {string} value
-* @returns {number}
 */
-export function ext_string(vm: number, key: string, value: string): number;
+export function ext_string(vm: number, key: string, value: string): void;
