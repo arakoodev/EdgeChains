@@ -24,10 +24,8 @@ app.get("/", (c) => {
 
 app.get("/:username", (c) => {
   const { username } = c.req.param();
-  return c.html(
-    html`<!doctype html>
-      <h1>Hello! ${username}!</h1>`,
-  );
+  // redirect to /hello/:username
+  return c.redirect(`/hello/${username}`);
 });
 
 app.get("/hello/:name", async (c) => {

@@ -18,7 +18,7 @@ pub struct WasmOutput {
     pub status: u16,
     #[serde(rename = "statusText")]
     pub status_text: String,
-    body: String,
+    body: Option<String>,
 }
 
 impl<'a> WasmInput<'a> {
@@ -70,7 +70,7 @@ impl<'a> WasmInput<'a> {
 }
 impl WasmOutput {
     pub fn body(&self) -> String {
-        self.body.clone()
+        self.body.clone().unwrap_or_default()
     }
 
     pub(crate) fn new() -> Self {
@@ -78,7 +78,7 @@ impl WasmOutput {
             headers: HashMap::new(),
             status: 200,
             status_text: "OK".to_string(),
-            body: String::new(),
+            body: Some(String::new()),
         }
     }
 }

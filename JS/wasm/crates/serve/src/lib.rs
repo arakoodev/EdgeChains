@@ -9,10 +9,12 @@ use std::{
     net::SocketAddr,
     path::Path,
     pin::Pin,
+    str::FromStr,
     sync::{Arc, Mutex},
     task::{self, Poll},
 };
 
+use binding::add_fetch_to_linker;
 // use binding::add_exports_to_linker;
 use futures::future::{self, Ready};
 use hyper::{
@@ -31,7 +33,7 @@ use wasmtime_wasi::WasiCtxBuilder;
 use wasmtime::{Caller, Config, Engine, Extern, Linker, Module, Store, Trap, WasmBacktraceDetails};
 
 use crate::{
-    binding::add_exports_to_linker,
+    binding::add_jsonnet_to_linker,
     io::{WasmInput, WasmOutput},
 };
 
@@ -110,11 +112,13 @@ impl WorkerCtx {
                     .collect();
                 headers_vec.iter().for_each(|(key, value)| {
                     response.headers_mut().unwrap().insert(
-                        HeaderName::from_bytes(key.as_bytes()).unwrap(),
+                        HeaderName::from_str(key).unwrap(),
                         HeaderValue::from_str(value).unwrap(),
                     );
                 });
-                let response = Response::new(Body::from(output.body()));
+
+                // let response = Response::new(Body::from(output.body()));
+                let response = response.body(Body::from(output.body())).unwrap();
                 Ok((response, None))
             }
 
@@ -203,7 +207,8 @@ impl WorkerCtx {
         )?;
 
         // Add additional exports to the linker, such as Jsonnet evaluation functions.
-        add_exports_to_linker(&mut linker)?;
+        add_jsonnet_to_linker(&mut linker)?;
+        add_fetch_to_linker(&mut linker)?;
 
         // Create a WASI context builder with inherited standard output and error streams.
         let wasi_builder = WasiCtxBuilder::new()
