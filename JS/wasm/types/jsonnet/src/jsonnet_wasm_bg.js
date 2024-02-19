@@ -135,14 +135,12 @@ export function jsonnet_evaluate_snippet(vm, filename, snippet) {
 * @param {number} vm
 * @param {string} key
 * @param {string} value
-* @returns {number}
 */
 export function ext_string(vm, key, value) {
     const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     const ptr1 = passStringToWasm0(value, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.ext_string(vm, ptr0, len0, ptr1, len1);
-    return ret >>> 0;
+    wasm.ext_string(vm, ptr0, len0, ptr1, len1);
 }
 

@@ -12,11 +12,11 @@ if (!isArakoo) {
     }
 
     evaluateSnippet(snippet) {
-      return jsonnet_evaluate_snippet(this.vm, snippet);
+      return jsonnet_evaluate_snippet(this.vm, "snippet", snippet);
     }
 
     extString(key, value) {
-      this.vm = ext_string(this.vm, key, value);
+      ext_string(this.vm, key, value);
       return this;
     }
 
@@ -40,7 +40,7 @@ if (!isArakoo) {
       return __jsonnet_evaluate_snippet(vars, snippet);
     }
 
-    destroy() {}
+    destroy() { }
   };
 }
 

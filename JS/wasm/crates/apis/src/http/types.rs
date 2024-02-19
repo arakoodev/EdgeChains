@@ -18,3 +18,21 @@ pub struct Response {
     pub status_text: String,
     pub body: Option<String>,
 }
+
+impl Request {
+    pub fn new(
+        url: String,
+        method: String,
+        headers: HashMap<String, String>,
+        body: String,
+        params: HashMap<String, String>,
+    ) -> Self {
+        Self {
+            url,
+            method,
+            headers,
+            body,
+            params,
+        }
+    }
+}

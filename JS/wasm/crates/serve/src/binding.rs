@@ -11,9 +11,13 @@ use jrsonnet_evaluator::{
 };
 use jrsonnet_parser::IStr;
 use jrsonnet_stdlib::ContextInitializer;
+
+use tokio::runtime::Builder;
 use tracing::error;
 use wasi_common::WasiCtx;
 use wasmtime::*;
+
+use crate::io::{WasmInput, WasmOutput};
 
 pub struct VM {
     state: State,
@@ -160,11 +164,107 @@ pub fn add_jsonnet_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
 }
 
 pub fn add_fetch_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()> {
-    // let response:Arc<Mutex<Response>>=
+    let response: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+    let error: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+
+    let response_clone = response.clone();
+    let error_clone = error.clone();
     linker.func_wrap(
         "arakoo",
         "fetch",
-        move |mut caller: Caller<'_, WasiCtx>, request_ptr: i32, request_len: i32| {},
+        move |mut caller: Caller<'_, WasiCtx>, request_ptr: i32, request_len: i32| {
+            let response_arc = response_clone.clone();
+            let error = error_clone.clone();
+            let mem = match caller.get_export("memory") {
+                Some(Extern::Memory(mem)) => mem,
+                _ => {
+                    let mut error = error.lock().unwrap();
+                    *error = "Memory not found".to_string();
+                    return Err(Trap::NullReference.into());
+                }
+            };
+            let request_offset = request_ptr as u32 as usize;
+            let mut request_buffer = vec![0; request_len as usize];
+            let request = match mem.read(&caller, request_offset, &mut request_buffer) {
+                Ok(_) => match std::str::from_utf8(&request_buffer) {
+                    Ok(s) => s.to_string(), // Clone the string here
+                    Err(_) => {
+                        let mut error = error.lock().unwrap();
+                        *error = "Bad signature".to_string();
+                        return Err(Trap::BadSignature.into());
+                    }
+                },
+                _ => {
+                    let mut error = error.lock().unwrap();
+                    *error = "Memory out of bounds".to_string();
+                    return Err(Trap::MemoryOutOfBounds.into());
+                }
+            };
+
+            let thread_result = std::thread::spawn(move || {
+                Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                    .unwrap()
+                    .block_on(async {
+                        let request: WasmInput = match serde_json::from_str(&request) {
+                            Ok(r) => r,
+                            Err(e) => {
+                                return Err(anyhow::anyhow!("Error parsing request: {}", e));
+                            }
+                        };
+                        let method: reqwest::Method = match request.method().parse() {
+                            Ok(m) => m,
+                            Err(_) => {
+                                return Err(anyhow::anyhow!(
+                                    "Invalid method: {}",
+                                    request.method()
+                                ));
+                            }
+                        };
+                        let client = reqwest::Client::new();
+                        let mut builder = client.request(method, request.url());
+                        let header = request.headers();
+                        for (k, v) in header {
+                            builder = builder.header(k, v);
+                        }
+                        builder = builder.body(request.body().to_string());
+                        match builder.send().await {
+                            Ok(r) => {
+                                let response = WasmOutput::from_reqwest_response(r).await?;
+                                Ok(response)
+                            }
+                            Err(e) => {
+                                error!("Error sending request: {}", e);
+                                return Err(anyhow::anyhow!("Error sending request: {}", e));
+                            }
+                        }
+                    })
+            })
+            .join();
+            let response = match thread_result {
+                Ok(Ok(r)) => r,
+                Ok(Err(e)) => {
+                    let mut error = error.lock().unwrap();
+                    *error = format!("Error sending request: {}", e);
+                    error!("Error sending request: {}", e);
+                    return Err(Trap::BadSignature.into());
+                }
+                Err(_) => {
+                    let mut error = error.lock().unwrap();
+                    *error = "Error sending request: thread join error".to_string();
+                    error!("Error sending request: thread join error");
+                    return Err(Trap::BadSignature.into());
+                }
+            };
+
+            let res = serde_json::to_string(&response).unwrap();
+            let mut response = response_arc.lock().unwrap();
+            *response = res;
+            Ok(())
+        },
     )?;
+    // add the fetch_output_len and fetch_output functions here
+    // also add the fetch_error_len and fetch_error functions here
     Ok(())
 }

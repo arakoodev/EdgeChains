@@ -60,15 +60,12 @@ pub fn jsonnet_evaluate_snippet(vm: *mut VM, filename: &str, snippet: &str) -> S
 }
 
 #[wasm_bindgen]
-pub fn ext_string(vm: *mut VM, key: &str, value: &str) -> *mut VM {
+pub fn ext_string(vm: *mut VM, key: &str, value: &str) {
     let vm = unsafe { &mut *vm };
-    {
-        let any_initializer = vm.state.context_initializer();
-        any_initializer
-            .as_any()
-            .downcast_ref::<jrsonnet_stdlib::ContextInitializer>()
-            .unwrap()
-            .add_ext_var(key.into(), Val::Str(value.into()));
-    }
-    vm
+    let any_initializer = vm.state.context_initializer();
+    any_initializer
+        .as_any()
+        .downcast_ref::<jrsonnet_stdlib::ContextInitializer>()
+        .unwrap()
+        .add_ext_var(key.into(), Val::Str(value.into()));
 }
