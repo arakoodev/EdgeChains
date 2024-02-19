@@ -16,5 +16,5 @@ pub struct Response {
     pub status: u16,
     #[serde(rename = "statusText")]
     pub status_text: String,
-    pub body: String,
+    pub body: Option<String>,
 }

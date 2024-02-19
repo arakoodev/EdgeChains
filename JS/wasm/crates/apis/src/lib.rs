@@ -69,6 +69,9 @@ extern "C" {
     fn jsonnet_evaluate(var_ptr: *const u8, var_len: i32, code_ptr: *const u8, code_len: i32);
     fn jsonnet_output_len() -> i32;
     fn jsonnet_output(ptr: *mut u8);
+    fn fetch(request_pointer: *const u8, request_len: i32);
+    fn get_response_len() -> i32;
+    fn get_response(ptr: *mut u8);
 
 }
 
@@ -98,6 +101,6 @@ pub fn add_to_runtime(runtime: &Runtime, config: APIConfig) -> Result<()> {
     text_encoding::TextEncoding.register(runtime, &config)?;
     http::Http.register(runtime, &config)?;
     jsonnet::Jsonnet.register(runtime, &config)?;
-    
+
     Ok(())
 }

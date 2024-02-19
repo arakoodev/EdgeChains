@@ -10,6 +10,7 @@ use jrsonnet_evaluator::{
     FileImportResolver, State, Val,
 };
 use jrsonnet_parser::IStr;
+use jrsonnet_stdlib::ContextInitializer;
 use tracing::error;
 use wasi_common::WasiCtx;
 use wasmtime::*;
@@ -26,7 +27,7 @@ pub struct VM {
 /// functions to be called from WebAssembly. It sets up the necessary state and
 /// memory management for evaluating Jsonnet code and writing the output back to
 /// WebAssembly memory.
-pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()> {
+pub fn add_jsonnet_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()> {
     // Create a shared output buffer that will be used to store the result of the Jsonnet evaluation.
     let output: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
     let output_clone = output.clone();
@@ -82,11 +83,10 @@ pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
             // Initialize the Jsonnet VM state with default settings.
             let state = State::default();
             state.settings_mut().import_resolver = tb!(FileImportResolver::default());
-            state.settings_mut().context_initializer =
-                tb!(jrsonnet_stdlib::ContextInitializer::new(
-                    state.clone(),
-                    PathResolver::new_cwd_fallback(),
-                ));
+            state.settings_mut().context_initializer = tb!(ContextInitializer::new(
+                state.clone(),
+                PathResolver::new_cwd_fallback(),
+            ));
             // Create the Jsonnet VM with the default settings.
             let vm = VM {
                 state,
@@ -100,7 +100,7 @@ pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
             let any_initializer = vm.state.context_initializer();
             let context = any_initializer
                 .as_any()
-                .downcast_ref::<jrsonnet_stdlib::ContextInitializer>()
+                .downcast_ref::<ContextInitializer>()
                 .unwrap();
             for (key, value) in var_json.as_object().unwrap() {
                 context.add_ext_var(key.into(), Val::Str(value.as_str().unwrap().into()));
@@ -156,5 +156,15 @@ pub fn add_exports_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()>
         },
     )?;
 
+    Ok(())
+}
+
+pub fn add_fetch_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()> {
+    // let response:Arc<Mutex<Response>>=
+    linker.func_wrap(
+        "arakoo",
+        "fetch",
+        move |mut caller: Caller<'_, WasiCtx>, request_ptr: i32, request_len: i32| {},
+    )?;
     Ok(())
 }

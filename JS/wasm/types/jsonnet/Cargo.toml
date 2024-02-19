@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 wasm-bindgen = "0.2.84"
 # jsonnet-rs = "0.17"
-jrsonnet-evaluator = { version = "0.5.0-pre95"}
+jrsonnet-evaluator = { version = "0.5.0-pre95" }
 jrsonnet-parser = { version = "0.5.0-pre95" }
 jrsonnet-stdlib = { version = "0.5.0-pre95" }
 jrsonnet-gcmodule = { version = "0.3.6" }
@@ -19,7 +19,3 @@ serde = "1.0.195"
 serde_json = "1.0.111"
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
-
-[profile.release]
-# Tell `rustc` to optimize for small code size.
-opt-level = "s"
