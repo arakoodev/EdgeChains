@@ -3,9 +3,5 @@
   "version": "0.1.1",
   "main": "src/index.js",
   "type": "module",
-  "types": "src/index.d.ts",
-  "sideEffects": [
-    "./jsonnet_wasm.js",
-    "./snippets/*"
-  ]
+  "types": "src/index.d.ts"
 }
