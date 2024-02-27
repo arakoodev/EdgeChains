@@ -7,7 +7,7 @@ on:
       - reopened
       - synchronize
     paths:
-      - 'JS/**'
+      - 'JS/wasm/**'
 
 jobs:
   changes:
@@ -50,52 +50,30 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Cache wasmjs-engine
+      - name: Cache Javy Core
         uses: actions/cache@v2
         with:
-          path: ./JS/wasm/crates/wasmjs-engine/target
-          key: wasmjs-engine
+          path: ./target
+          key: javy-core
           restore-keys: |
-            wasmjs-engine
+            javy-core
 
-      - name: Check if wasmjs-engine is cached
-        id: wasmjs-engine-hit
+      - name: Check if Javy Core is cached
+        id: cache-hit
         run: |
-          echo "cache-hit=$(test -d ./JS/wasm/crates/wasmjs-engine/target && echo true || echo false)" >> $GITHUB_OUTPUT
+          # echo "cache-hit=$(test -d ./target && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "cache-hit=$(test -d ./target && echo true || echo false)" >> $GITHUB_OUTPUT
 
-      - name: Build wasmjs-engine
-        if: steps.wasmjs-engine-hit.outputs.cache-hit != 'true'
-        working-directory: ./JS/wasm/crates/wasmjs-engine
+      - name: Build Javy Core
+        if: 
+        working-directory: .
         run: |
-          npm install -g @go-task/cli
-          task build
-
-      - name: Cache wasmjs-runtime
-        uses: actions/cache@v2
-        with:
-          path: ./JS/wasm/crates/wasmjs-runtime/target
-          key: wasmjs-runtime
-          restore-keys: |
-            wasmjs-runtime
-
-      - name: Check if wasmjs-runtime is cached
-        id: wasmjs-runtime-hit
+          make add build-cors
+      - name: Build CLI
+        working-directory: .
         run: |
-          echo "cache-hit=$(test -d ./JS/wasm/crates/wasmjs-runtime/target && echo true || echo false)" >> $GITHUB_OUTPUT
-
-      - name: Build wasmjs-runtime
-        if: steps.wasmjs-runtime-hit.outputs.cache-hit != 'true'
-        working-directory: ./JS/wasm/crates/wasmjs-runtime
+          make
+      - name: Build Jsonnet
+        working-directory: .
         run: |
-          cargo build --release
-
-      - name: Build ec-wasmjs-hono
-        working-directory: ./JS/wasm/examples/ec-wasmjs-hono
-        run: |
-          npm install
-          npm run build
-
-      - name: Run ec-wasmjs-hono
-        working-directory: ./JS/wasm/crates/wasmjs-runtime
-        run: |
-          ./target/release/wasmjs-runtime run ../../examples/ec-wasmjs-hono/bin
+          make build-jsonnet
