@@ -41,3 +41,6 @@ build-example:
 
 clean-example:
 	@rm -r JS/wasm/examples/ec-wasmjs-hono/node_modules/ JS/wasm/examples/ec-wasmjs-hono/bin/
+
+build-jsonnet:
+	@cd JS/wasm/types/jsonnet && ./build.sh
