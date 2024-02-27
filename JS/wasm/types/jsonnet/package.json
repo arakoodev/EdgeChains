@@ -1,5 +1,5 @@
 {
-  "name": "arakoo-jsonnet",
+  "name": "@arakoodev/jsonnet",
   "version": "0.1.1",
   "main": "src/index.js",
   "type": "module",

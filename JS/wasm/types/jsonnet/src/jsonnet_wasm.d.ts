@@ -17,6 +17,12 @@ export function jsonnet_destroy(vm: number): void;
 export function jsonnet_evaluate_snippet(vm: number, filename: string, snippet: string): string;
 /**
 * @param {number} vm
+* @param {string} filename
+* @returns {string}
+*/
+export function jsonnet_evaluate_file(vm: number, filename: string): string;
+/**
+* @param {number} vm
 * @param {string} key
 * @param {string} value
 */

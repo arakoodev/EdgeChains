@@ -85,7 +85,8 @@ declare class Jsonnet {
     constructor();
     evaluateSnippet(snippet: string): string;
     destroy(): void;
-	extString(key: string, value: string): this;
+    extString(key: string, value: string): this;
+    evaluateFile(filename: string): string;
 }
 
 export default Jsonnet;
@@ -96,7 +97,6 @@ EOF
 update_package_json() {
 	local FILE="$1" # e.g., `index.js`
 	local OUTPUT_FILE="${OUT_FOLDER}/package.json"
-	echo $OUTPUT_FILE $FILE $OUT_JSON
 	jq '.module = "'${FILE}'"' "${OUT_JSON}" >temp.json
 	jq '.types = "'${FILE%.js}.d.ts'"' temp.json >temp2.json
 	jq '.files = ["'${FILE}'", "'${FILE%.js}.d.ts'"]' temp2.json >"${OUTPUT_FILE}"
@@ -105,6 +105,8 @@ update_package_json() {
 
 move_jsonnet_to_src() {
 	mv jsonnet/*.js jsonnet/*.wasm jsonnet/*.d.ts src/
+	rm -rf src/snippets
+	mv jsonnet/snippets/ src/
 	rm -rf jsonnet
 }
 

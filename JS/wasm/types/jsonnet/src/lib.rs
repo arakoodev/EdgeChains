@@ -10,6 +10,12 @@ use jrsonnet_evaluator::{
 use jrsonnet_parser::IStr;
 use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen(module = "/read-file.js")]
+extern "C" {
+    #[wasm_bindgen(catch)]
+    fn read_file(path: &str) -> Result<String, JsValue>;
+}
+
 pub struct VM {
     state: State,
     manifest_format: Box<dyn ManifestFormat>,
@@ -54,6 +60,30 @@ pub fn jsonnet_evaluate_snippet(vm: *mut VM, filename: &str, snippet: &str) -> S
         Err(e) => {
             let mut out = String::new();
             vm.trace_format.write_trace(&mut out, &e).unwrap();
+            out
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub fn jsonnet_evaluate_file(vm: *mut VM, filename: &str) -> String {
+    let vm = unsafe { &mut *vm };
+    match read_file(filename) {
+        Ok(content) => match vm
+            .state
+            .evaluate_snippet(filename, &content)
+            .and_then(|val| apply_tla(vm.state.clone(), &vm.tla_args, val))
+            .and_then(|val| val.manifest(&vm.manifest_format))
+        {
+            Ok(v) => v,
+            Err(e) => {
+                let mut out = String::new();
+                vm.trace_format.write_trace(&mut out, &e).unwrap();
+                out
+            }
+        },
+        Err(e) => {
+            let out = String::from(e.as_string().unwrap());
             out
         }
     }
