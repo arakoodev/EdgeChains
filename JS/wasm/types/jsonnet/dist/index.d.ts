@@ -6,4 +6,4 @@ declare class Jsonnet {
     evaluateFile(filename: string): string;
 }
 
-export default Jsonnet;
+export { Jsonnet as default };
