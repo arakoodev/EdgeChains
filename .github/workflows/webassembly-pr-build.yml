@@ -83,4 +83,4 @@ jobs:
       - name: Upload to GitHub Releases
         uses: actions/upload-rust-binary-action@v1
         with:
-          bin: your_binary_name
+          bin: arakoo
