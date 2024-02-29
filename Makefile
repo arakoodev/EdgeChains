@@ -24,7 +24,7 @@ build-cors: build-shims
 
 build-shims: shims-install
 	@echo "Building shims"
-	@cd JS/wasm/crates/apis/src/http/shims && npm install
+	@cd JS/wasm/crates/apis/src/http/shims && npm run build
 
 shims-install:
 	@echo "Installing deps of shims"
