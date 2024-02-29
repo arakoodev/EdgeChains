@@ -4,8 +4,8 @@
     "description": "",
     "main": "dist/index.js",
     "scripts": {
-        "build": "rm -rf dist && node esbuild.build.js",
-        "start": "node dist/index.js",
+        "build": "rm -rf dist && tsc",
+        "start": "node --experimental-wasm-modules dist/index.js",
         "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
         "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
         "test": "npx jest"
@@ -14,15 +14,17 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@arakoodev/jsonnet": "file:./../../../wasm/types/jsonnet",
         "@hono/node-server": "^1.2.0",
         "@types/dotenv": "^8.2.0",
         "hono": "^3.9.2",
         "pg": "^8.11.3",
         "reflect-metadata": "^0.1.13",
         "tsc": "^2.0.4",
-        "typescript": "^5.3.2"
+        "typescript": "^5.3.3"
     },
     "devDependencies": {
+        "@arakoodev/edgechains.js": "0.1.10",
         "@hanazuki/node-jsonnet": "^2.1.0",
         "@types/jest": "^29.5.8",
         "@types/node": "^20.9.4",
@@ -40,7 +42,6 @@
         "jest": "^29.7.0",
         "prettier": "^3.1.0",
         "react": "^18.2.0",
-        "@arakoodev/edgechains.js": "0.1.10",
         "ts-jest": "^29.1.1",
         "tsx": "^3.12.2",
         "typeorm": "^0.3.17",
