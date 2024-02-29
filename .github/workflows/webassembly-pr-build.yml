@@ -77,3 +77,10 @@ jobs:
         working-directory: .
         run: |
           make build-jsonnet
+      - name: Build Release Binary
+        run: cargo build --release
+
+      - name: Upload to GitHub Releases
+        uses: actions/upload-rust-binary-action@v1
+        with:
+          bin: your_binary_name
