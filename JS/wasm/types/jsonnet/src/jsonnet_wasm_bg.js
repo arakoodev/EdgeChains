@@ -212,14 +212,6 @@ export function ext_string(vm, key, value) {
     wasm.ext_string(vm, ptr0, len0, ptr1, len1);
 }
 
-export function __wbg_readfile_3df9f1d22ad880df() { return handleError(function (arg0, arg1, arg2) {
-    const ret = read_file(getStringFromWasm0(arg1, arg2));
-    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    getInt32Memory0()[arg0 / 4 + 1] = len1;
-    getInt32Memory0()[arg0 / 4 + 0] = ptr1;
-}, arguments) };
-
 export function __wbindgen_string_get(arg0, arg1) {
     const obj = getObject(arg1);
     const ret = typeof(obj) === 'string' ? obj : undefined;
@@ -228,6 +220,14 @@ export function __wbindgen_string_get(arg0, arg1) {
     getInt32Memory0()[arg0 / 4 + 1] = len1;
     getInt32Memory0()[arg0 / 4 + 0] = ptr1;
 };
+
+export function __wbg_readfile_3df9f1d22ad880df() { return handleError(function (arg0, arg1, arg2) {
+    const ret = read_file(getStringFromWasm0(arg1, arg2));
+    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    getInt32Memory0()[arg0 / 4 + 1] = len1;
+    getInt32Memory0()[arg0 / 4 + 0] = ptr1;
+}, arguments) };
 
 export function __wbindgen_object_drop_ref(arg0) {
     takeObject(arg0);

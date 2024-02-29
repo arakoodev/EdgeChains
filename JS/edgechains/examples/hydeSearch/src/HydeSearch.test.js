@@ -1,11 +1,9 @@
-import { ArkRequest } from "@arakoodev/edgechains.js";
 import dotenv from "dotenv";
 import { hydeSearchAdaEmbedding } from "./HydeSearch.js";
-
 dotenv.config({ path: ".env" });
 describe("Hyde Search", () => {
     it("should return a response", async () => {
-        const arkRequest: ArkRequest = {
+        const arkRequest = {
             topK: 5,
             metadataTable: "title_metadata",
             query: "tell me the top 5 programming languages currently",
@@ -23,14 +21,6 @@ describe("Hyde Search", () => {
             },
             orderRRF: "default",
         };
-        expect(
-            (
-                await hydeSearchAdaEmbedding(
-                    arkRequest,
-                    process.env.OPENAI_API_KEY!,
-                    process.env.OPENAI_ORG_ID!
-                )
-            ).finalAnswer
-        ).toContain("Java");
+        expect((await hydeSearchAdaEmbedding(arkRequest, process.env.OPENAI_API_KEY, process.env.OPENAI_ORG_ID)).finalAnswer).toContain("Java");
     }, 30000);
 });

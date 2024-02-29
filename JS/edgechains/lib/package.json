@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@hono/node-server": "^1.2.0",
+        "@arakoodev/jsonnet": "file:../../wasm/types/jsonnet",
         "@types/dotenv": "^8.2.0",
         "axios": "^1.6.2",
         "dotenv": "^16.3.1",
