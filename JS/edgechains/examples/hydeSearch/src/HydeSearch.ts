@@ -1,4 +1,4 @@
-import { Jsonnet } from "@hanazuki/node-jsonnet";
+import Jsonnet from "@arakoodev/jsonnet";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 import { PostgresClient } from "@arakoodev/edgechains.js";
 import type { ArkRequest } from "@arakoodev/edgechains.js";
@@ -45,12 +45,12 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
         const promptPath = path.join(__dirname, "../jsonnet/prompts.jsonnet");
         const hydePath = path.join(__dirname, "../jsonnet/hyde.jsonnet");
         // Load Jsonnet to extract args..
-        const promptLoader = await jsonnet.evaluateFile(promptPath);
+        const promptLoader = jsonnet.evaluateFile(promptPath);
 
         // Getting ${summary} basePrompt
         const promptTemplate = JSON.parse(promptLoader).summary;
         // Getting the updated promptTemplate with query
-        let hydeLoader = await jsonnet
+        let hydeLoader = jsonnet
             .extString("promptTemplate", promptTemplate)
             .extString("time", "")
             .extString("query", query)
@@ -106,7 +106,7 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
         // System prompt
         const ansPromptSystem = JSON.parse(promptLoader).ans_prompt_system;
 
-        hydeLoader = await jsonnet
+        hydeLoader = jsonnet
             .extString(promptTemplate, ansPromptSystem)
             .extString("time", formattedTime)
             .extString("qeury", retrievedDocs.join(""))
@@ -117,7 +117,7 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
         // User prompt
         const ansPromptUser = JSON.parse(promptLoader).ans_prompt_user;
 
-        hydeLoader = await jsonnet
+        hydeLoader = jsonnet
             .extString(promptTemplate, ansPromptUser)
             .extString("qeury", query)
             .evaluateFile(hydePath);
@@ -145,7 +145,7 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
 export { hydeSearchAdaEmbedding };
 
 HydeSearchRouter.get("/search", async (c) => {
-    const query = await c.req.query();
+    const query = c.req.query();
     const arkRequest = {
         topK: parseInt(query.topK ?? "5"),
         metadataTable: query.metadataTable,
@@ -180,35 +180,31 @@ HydeSearchRouter.get("/search", async (c) => {
         </div>
             <ul class="list-unstyled mb-0">
               ${data.responses.map(
-                  (item) => `
+        (item) => `
                   <li>
                     <div class="card">
                       <div class="card-body">
-                        ${
-                            item.rawText != null
-                                ? `<div class="card card-body">${item.rawText}</div>`
-                                : `<div class="card card-body">${item.metadata}</div>`
-                        }
-                        ${
-                            item.filename != null
-                                ? `<div class="card card-body" style="color: blue;">${item.filename}</div>`
-                                : ""
-                        }
-                        ${
-                            item.titleMetadata != null
-                                ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>`
-                                : ""
-                        }
-                        ${
-                            item.documentDate != null
-                                ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>`
-                                : ""
-                        }
+                        ${item.rawText != null
+                ? `<div class="card card-body">${item.rawText}</div>`
+                : `<div class="card card-body">${item.metadata}</div>`
+            }
+                        ${item.filename != null
+                ? `<div class="card card-body" style="color: blue;">${item.filename}</div>`
+                : ""
+            }
+                        ${item.titleMetadata != null
+                ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>`
+                : ""
+            }
+                        ${item.documentDate != null
+                ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>`
+                : ""
+            }
                       </div>
                     </div>
                   </li>
                 `
-              )}
+    )}
             </ul>
   </html>
     `);

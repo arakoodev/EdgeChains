@@ -1,6 +1,6 @@
 import { ArkRequest } from "@arakoodev/edgechains.js";
 import dotenv from "dotenv";
-import { hydeSearchAdaEmbedding } from "./HydeSearch";
+import { hydeSearchAdaEmbedding } from "./HydeSearch.js";
 
 dotenv.config({ path: ".env" });
 describe("Hyde Search", () => {
