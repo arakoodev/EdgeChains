@@ -1,5 +1,5 @@
 // Import necessary modules and libraries
-import { Jsonnet } from "@hanazuki/node-jsonnet";
+// import { Jsonnet } from "@hanazuki/node-jsonnet";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 import * as path from "path";
 import { Hono } from "hono";
@@ -8,8 +8,12 @@ import dotenv from "dotenv";
 // Load environment variables from a .env file
 dotenv.config();
 
+const getJsonnet = async () => {
+    let jsonnet = await import("@arakoodev/jsonnet")
+    return jsonnet.default
+}
+
 // Create instances of Jsonnet, Hono, and OpenAiEndpoint
-const jsonnet = new Jsonnet();
 export const ReactChainRouter = new Hono();
 
 const gpt3Endpoint = new OpenAiEndpoint(
@@ -27,6 +31,9 @@ const InterPath = path.join(__dirname, "../src/intermediate.jsonnet");
 
 // Function to make a GPT-3 call based on a given query
 export async function reactChainCall(query: string) {
+    // Load the Jsonnet module
+    const Jsonnet = await getJsonnet();
+    const jsonnet = new Jsonnet();
     try {
         // Load and parse the custom template from react-chain.jsonnet
         const promptLoader = await jsonnet.evaluateFile(promptPath);
@@ -54,7 +61,10 @@ export async function reactChainCall(query: string) {
 
 // Function to handle incoming HTTP requests with the given query
 export function UserInput(query: string) {
+    console.log("UserInput called");
+
     ReactChainRouter.get("/", async (res) => {
+        console.log("UserInput get called");
         res.json({ loading: true }); // Respond with a loading status
 
         try {

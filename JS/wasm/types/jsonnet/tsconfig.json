@@ -1,15 +1,27 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "lib": ["es6"],
-        "strict": true,
-        "baseUrl": ".",
-        "paths": { "arakoo-jsonnet": ["."] }
+  "compilerOptions": {
+    "module": "commonjs",
+    "lib": [
+      "es6"
+    ],
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "arakoo-jsonnet": [
+        "."
+      ]
     },
-    "typedocOptions": {
-        "entryPoints": ["index.d.ts"],
-        "out": "../docs",
-        "excludeExternals": true
-    },
-    "include": ["."]
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true
+  },
+  "typedocOptions": {
+    "entryPoints": [
+      "src/index.d.ts"
+    ],
+    "out": "../docs",
+    "excludeExternals": true
+  },
+  "include": [
+    "."
+  ]
 }

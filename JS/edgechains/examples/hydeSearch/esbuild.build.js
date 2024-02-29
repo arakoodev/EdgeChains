@@ -1,45 +1,51 @@
-const esbuild = require("esbuild");
-const path = require("path");
-const fs = require("fs");
-const { execSync } = require("child_process");
+import { build } from "esbuild";
+import { resolve, join } from "path";
+import { existsSync, mkdirSync, promises } from "fs";
 
-const outputDir = path.resolve(__dirname, "dist");
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const outputDir = resolve(__dirname, "dist");
+
+if (!existsSync(outputDir)) {
+    mkdirSync(outputDir);
 }
 
-const distPath = path.join(process.cwd(), "dist");
+const distPath = join(process.cwd(), "dist");
 
-fs.promises.mkdir(distPath, { recursive: true });
+promises.mkdir(distPath, { recursive: true });
 
-esbuild
-    .build({
-        entryPoints: ["./src/index.ts"],
-        bundle: true,
-        minify: true,
-        platform: "node",
-        outfile: "./dist/index.js",
-        tsconfig: "./tsconfig.json",
-        target: "node21.1.0",
-        external: [
-            "express",
-            "tsx",
-            "typescript",
-            "typeorm",
-            "react",
-            "react-dom",
-            "pg",
-            "jsdom",
-            "hono",
-            "@hanazuki/node-jsonnet",
-            "readline/promises",
-        ],
-        format: "cjs",
-        loader: {
-            ".html": "text",
-            ".css": "css",
-            ".jsonnet": "text",
-        },
-    })
+build({
+    entryPoints: ["./src/index.ts"],
+    bundle: true,
+    minify: true,
+    platform: "node",
+    outfile: "./dist/index.js",
+    tsconfig: "./tsconfig.json",
+    target: "node21.1.0",
+    external: [
+        "express",
+        "tsx",
+        "typescript",
+        "typeorm",
+        "react",
+        "react-dom",
+        "pg",
+        "jsdom",
+        "hono",
+        "@hanazuki/node-jsonnet",
+        "@arakoodev/jsonnet",
+        "readline/promises",
+    ],
+    format: "esm",
+    loader: {
+        ".html": "text",
+        ".css": "css",
+        ".jsonnet": "text",
+        ".wasm": "file",
+    },
+})
     .catch(() => process.exit(1));
