@@ -83,6 +83,7 @@ pub fn jsonnet_evaluate_file(vm: *mut VM, filename: &str) -> String {
             }
         },
         Err(e) => {
+            eprintln!("Error reading file: {}", e.as_string().unwrap());
             let out = String::from(e.as_string().unwrap());
             out
         }

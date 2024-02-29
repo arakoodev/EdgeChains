@@ -1,4 +1,4 @@
-import { Jsonnet } from "@hanazuki/node-jsonnet/lib/index.js";
+import Jsonnet from "@arakoodev/jsonnet";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 import { PostgresClient } from "@arakoodev/edgechains.js";
 import * as path from "path";

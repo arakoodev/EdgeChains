@@ -1,4 +1,4 @@
-import { Jsonnet } from "@hanazuki/node-jsonnet";
+import Jsonnet from "@arakoodev/jsonnet";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 import { PostgresClient } from "@arakoodev/edgechains.js";
 import type { ArkRequest } from "@arakoodev/edgechains.js";
@@ -32,12 +32,12 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
         const promptPath = path.join(__dirname, "../src/jsonnet/prompts.jsonnet");
         const hydePath = path.join(__dirname, "../src/jsonnet/hyde.jsonnet");
         // Load Jsonnet to extract args..
-        const promptLoader = await jsonnet.evaluateFile(promptPath);
+        const promptLoader = jsonnet.evaluateFile(promptPath);
 
         // Getting ${summary} basePrompt
         const promptTemplate = JSON.parse(promptLoader).summary;
         // Getting the updated promptTemplate with query
-        let hydeLoader = await jsonnet
+        let hydeLoader = jsonnet
             .extString("promptTemplate", promptTemplate)
             .extString("time", "")
             .extString("query", query)

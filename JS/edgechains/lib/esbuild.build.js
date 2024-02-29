@@ -33,6 +33,7 @@ esbuild
             "jsdom",
             "hono",
             "@hanazuki/node-jsonnet",
+            "@arakoodev/jsonnet",
             "readline/promises",
         ],
         format: "cjs",
