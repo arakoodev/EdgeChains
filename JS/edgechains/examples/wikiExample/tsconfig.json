@@ -1,6 +1,10 @@
 {
     "compilerOptions": {
-        "types": ["dotenv/config", "jest", "node"],
+        "types": [
+            "dotenv/config",
+            "jest",
+            "node"
+        ],
         "target": "ES2022",
         "module": "NodeNext",
         "esModuleInterop": true,
@@ -11,7 +15,11 @@
         "jsxImportSource": "hono/jsx",
         "noImplicitAny": false,
         "moduleResolution": "NodeNext",
-        "declaration": true
+        "declaration": true,
+        "outDir": "dist",
     },
-    "include": ["src/**/*.ts", "dist/**/*.d.ts"]
+    "include": [
+        "src/**/*.ts",
+        "dist/**/*.d.ts"
+    ]
 }
