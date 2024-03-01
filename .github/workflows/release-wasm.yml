@@ -1,0 +1,80 @@
+name: Release Java
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            wasm:
+              - 'JS/wasm/**'
+      - name: Build Javy Core
+        working-directory: .
+        run: |
+          make add build-cors
+      - name: Build CLI
+        working-directory: .
+        run: |
+          make
+      - name: Build Jsonnet
+        working-directory: .
+        run: |
+          make build-jsonnet
+      
+      - name: Create out directory
+        working-directory: .
+        run: |
+          mkdir bin/
+      
+      - name: Copy arakoo bin
+        working-directory: .
+        run: |
+          cp target/release/arakoo bin/
+      
+      - name: Upload Release Binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: arakoo
+          path: bin/arakoo
+      
+  release:
+    - name: Release javy
+      needs: build
+      if: startsWith(github.ref, 'refs/tags/')
+      runs-on: ubuntu-latest
+      steps:
+        - name: Download Release Binary
+          uses: actions/download-artifact@v2
+          with:
+            name: arakoo
+            path: bin
+        - name: Create Release
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag_name: ${{ github.ref }}
+            release_name: Release ${{ github.ref }}
+            body: |
+              Changes in this Release
+            draft: false
+            prerelease: false
+        - name: Upload Release Asset
+          id: upload-release-asset
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: bin/arakoo
+            asset_name: arakoo
+            asset_content_type: application/octet-stream
+          
