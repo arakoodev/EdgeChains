@@ -123,7 +123,7 @@ jobs:
           commit_user_name: GitHub Actions
           commit_user_email: actions@github.com
           commit_author: GitHub Actions <actions@github.com>
-          branch: ${{ github.head_ref }}
+          branch: ts
 
       - name: Checkout repository
         uses: actions/checkout@v3
