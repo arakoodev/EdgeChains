@@ -65,7 +65,6 @@ jobs:
           echo "cache-hit=$(test -d ./target && echo true || echo false)" >> $GITHUB_OUTPUT
 
       - name: Build Javy Core
-        if: 
         working-directory: .
         run: |
           make add build-cors
@@ -77,8 +76,6 @@ jobs:
         working-directory: .
         run: |
           make build-jsonnet
-      - name: Build Release Binary
-        run: cargo build --release
 
       - name: Create out directory
         working-directory: .
