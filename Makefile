@@ -1,5 +1,5 @@
 .PHONY: all
-all: build-arakoo
+all: build-javy
 
 add:
 	@echo "Adding wasm32-wasi target"
@@ -13,9 +13,13 @@ clean:
 
 clean-shims:
 	@rm -rf dist/ node_modules/
+	
+build-arakoo:
+	@echo "Building arakoo"
+	@cargo build -p serve -r
 
-build-arakoo: build-cors
-	@echo "Building arakoo cli"
+build-javy: build-cors
+	@echo "Building javy cli"
 	@CARGO_PROFILE_RELEASE_LTO=off cargo build -p cli -r
 
 build-cors: build-shims

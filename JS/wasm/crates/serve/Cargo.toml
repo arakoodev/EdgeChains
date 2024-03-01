@@ -3,6 +3,10 @@ name = "serve"
 edition.workspace = true
 version.workspace = true
 
+[[bin]]
+name = "arakoo"
+path = "src/main.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 wasi-common = { workspace = true }
