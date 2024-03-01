@@ -35,13 +35,13 @@ shims-install:
 	@cd JS/wasm/crates/apis/src/http/shims && npm install
 
 compile: build-example
-	./target/release/arakoo compile JS/wasm/examples/ec-wasmjs-hono/bin/app.js
+	./target/release/javy compile JS/wasm/examples/ec-wasmjs-hono/bin/app.js
 
 serve:
-	./target/release/arakoo serve index.wasm
+	./target/release/arakoo index.wasm
 
 build-example:
-	@cd /Users/rahulyadav/Documents/edgeCloud/EdgeChain/JS/wasm/examples/ec-wasmjs-hono && npm i && npm run build arakoo
+	@cd JS/wasm/examples/ec-wasmjs-hono && npm i && npm run build arakoo
 
 clean-example:
 	@rm -r JS/wasm/examples/ec-wasmjs-hono/node_modules/ JS/wasm/examples/ec-wasmjs-hono/bin/
