@@ -1,6 +1,6 @@
 {
     "name": "@arakoodev/jsonnet",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "main": "src/index.js",
     "type": "module",
     "types": "src/index.d.ts"
