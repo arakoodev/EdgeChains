@@ -1,21 +1,21 @@
 {
-  "name": "hono",
-  "type": "module",
-  "main": "bin/[...app].js",
-  "scripts": {
-    "build": "node ./build.js"
-  },
-  "devDependencies": {
-    "@planetscale/database": "^1.4.0",
-    "esbuild": "^0.19",
-    "hono": "^3.9"
-  },
-  "dependencies": {
-    "@hono/node-server": "^1.8.1",
-    "arakoo-jsonnet": "file:../../types/jsonnet",
-    "axios": "^1.6.2",
-    "crypto": "^1.0.1",
-    "http": "^0.0.1-security",
-    "stream": "^0.0.2"
-  }
+    "name": "hono",
+    "type": "module",
+    "main": "bin/[...app].js",
+    "scripts": {
+        "build": "node ./build.js"
+    },
+    "devDependencies": {
+        "@planetscale/database": "^1.4.0",
+        "esbuild": "^0.19",
+        "hono": "^3.9"
+    },
+    "dependencies": {
+        "@hono/node-server": "^1.8.1",
+        "arakoo-jsonnet": "file:../../types/jsonnet",
+        "axios": "^1.6.2",
+        "crypto": "^1.0.1",
+        "http": "^0.0.1-security",
+        "stream": "^0.0.2"
+    }
 }

@@ -1,6 +1,6 @@
-import Jsonnet from "./src/index.js"
+import Jsonnet from "./src/index.js";
 
-const jsonnet = new Jsonnet()
+const jsonnet = new Jsonnet();
 
-const json = jsonnet.evaluateFile("./example.jsonnet")
-console.log(json) // {"a":1,"b":2}
+const json = jsonnet.evaluateFile("./example.jsonnet");
+console.log(json); // {"a":1,"b":2}
