@@ -265,6 +265,15 @@ pub fn add_fetch_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()> {
         },
     )?;
     // add the fetch_output_len and fetch_output functions here
+    linker.func_wrap("arakoo", "get_response_len", move || -> i32 {
+        todo!("get_response_len")
+    })?;
+
     // also add the fetch_error_len and fetch_error functions here
+    linker.func_wrap(
+        "arakoo",
+        "get_response",
+        move |mut caller: Caller<'_, WasiCtx>, ptr: i32| todo!("get_response"),
+    )?;
     Ok(())
 }

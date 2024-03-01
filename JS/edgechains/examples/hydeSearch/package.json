@@ -21,7 +21,7 @@
         "pg": "^8.11.3",
         "reflect-metadata": "^0.1.13",
         "tsc": "^2.0.4",
-        "@arakoodev/jsonnet": "file:./../../../wasm/types/jsonnet"
+        "@arakoodev/jsonnet": "0.1.2"
     },
     "devDependencies": {
         "@arakoodev/edgechains.js": "^0.1.10",
