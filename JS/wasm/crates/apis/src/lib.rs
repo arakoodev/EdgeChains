@@ -72,7 +72,6 @@ extern "C" {
     fn fetch(request_pointer: *const u8, request_len: i32);
     fn get_response_len() -> i32;
     fn get_response(ptr: *mut u8);
-
 }
 
 pub(crate) trait JSApiSet {
