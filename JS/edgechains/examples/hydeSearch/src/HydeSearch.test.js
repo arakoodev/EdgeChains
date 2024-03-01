@@ -21,6 +21,14 @@ describe("Hyde Search", () => {
             },
             orderRRF: "default",
         };
-        expect((await hydeSearchAdaEmbedding(arkRequest, process.env.OPENAI_API_KEY, process.env.OPENAI_ORG_ID)).finalAnswer).toContain("Java");
+        expect(
+            (
+                await hydeSearchAdaEmbedding(
+                    arkRequest,
+                    process.env.OPENAI_API_KEY,
+                    process.env.OPENAI_ORG_ID
+                )
+            ).finalAnswer
+        ).toContain("Java");
     }, 30000);
 });

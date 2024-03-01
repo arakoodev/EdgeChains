@@ -5,7 +5,14 @@
     class TextDecoder {
         constructor(label = "utf-8", options = {}) {
             label = label.trim().toLowerCase();
-            const acceptedLabels = ["utf-8", "utf8", "unicode-1-1-utf-8", "unicode11utf8", "unicode20utf8", "x-unicode20utf8"];
+            const acceptedLabels = [
+                "utf-8",
+                "utf8",
+                "unicode-1-1-utf-8",
+                "unicode11utf8",
+                "unicode20utf8",
+                "x-unicode20utf8",
+            ];
             if (!acceptedLabels.includes(label)) {
                 // Not spec-compliant behaviour
                 throw new RangeError("The encoding label provided must be utf-8");
@@ -14,7 +21,7 @@
                 encoding: { value: "utf-8", enumerable: true, writable: false },
                 fatal: { value: !!options.fatal, enumerable: true, writable: false },
                 ignoreBOM: { value: !!options.ignoreBOM, enumerable: true, writable: false },
-            })
+            });
         }
 
         decode(input, options = {}) {
@@ -34,10 +41,18 @@
             }
 
             if (!(input instanceof ArrayBuffer)) {
-                throw new TypeError("The provided value is not of type '(ArrayBuffer or ArrayBufferView)'");
+                throw new TypeError(
+                    "The provided value is not of type '(ArrayBuffer or ArrayBufferView)'"
+                );
             }
 
-            return __javy_decodeUtf8BufferToString(input, byteOffset, byteLength, this.fatal, this.ignoreBOM);
+            return __javy_decodeUtf8BufferToString(
+                input,
+                byteOffset,
+                byteLength,
+                this.fatal,
+                this.ignoreBOM
+            );
         }
     }
 

@@ -2,8 +2,8 @@ import { build } from "esbuild";
 import { resolve, join } from "path";
 import { existsSync, mkdirSync, promises } from "fs";
 
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -47,5 +47,4 @@ build({
         ".jsonnet": "text",
         ".wasm": "file",
     },
-})
-    .catch(() => process.exit(1));
+}).catch(() => process.exit(1));
