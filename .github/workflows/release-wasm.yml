@@ -18,11 +18,11 @@ jobs:
       - name: Build Javy Core
         working-directory: .
         run: |
-          make add build-cors
+          make add all
       - name: Build CLI
         working-directory: .
         run: |
-          make
+          make build-arakoo
       - name: Build Jsonnet
         working-directory: .
         run: |
@@ -66,4 +66,5 @@ jobs:
         with:
           files: |
             ./Output/*
+
           tag_name: ${{ env.RELEASE_TAG }}

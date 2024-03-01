@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { connect } from "@planetscale/database";
-import { html } from "hono/html";
-import Jsonnet from "arakoo-jsonnet";
+
+import Jsonnet from "@arakoodev/jsonnet";
 
 let jsonnet = new Jsonnet();
 

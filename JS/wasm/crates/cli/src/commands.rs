@@ -9,7 +9,6 @@ pub enum Command {
     /// Emits the provider binary that is required to run dynamically
     /// linked WebAssembly modules.
     EmitProvider(EmitProviderCommandOpts),
-    Serve(ServeCommandOpts),
 }
 
 #[derive(Debug, StructOpt)]
@@ -46,27 +45,4 @@ pub struct EmitProviderCommandOpts {
     #[structopt(long = "out", short = "o")]
     /// Output path for the provider binary (default is stdout).
     pub out: Option<PathBuf>,
-}
-
-#[derive(Debug, StructOpt)]
-pub struct ServeCommandOpts {
-    input: PathBuf,
-    #[structopt(short, long, default_value = "127.0.0.1")]
-    hostname: String,
-    #[structopt(short, long, default_value = "8080")]
-    port: u16,
-}
-
-impl ServeCommandOpts {
-    /// The path to the service's Wasm binary.
-    pub fn input(&self) -> PathBuf {
-        PathBuf::from(&self.input)
-    }
-
-    /// The address to bind the server to.
-    pub fn addr(&self) -> std::net::SocketAddr {
-        format!("{}:{}", self.hostname, self.port)
-            .parse()
-            .expect("Invalid address")
-    }
 }

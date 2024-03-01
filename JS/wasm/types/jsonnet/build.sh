@@ -31,21 +31,6 @@ CARGO_PROFILE_RELEASE_OPT_LEVEL="z" wasm-pack build "--$WASM_BUILD_PROFILE" --ta
 
 mv "pkg/" $OUT_FOLDER
 
-WASM_OPT_ARGS=(
-	"-Os"                              # execute size-focused optimization passes
-	"--vacuum"                         # removes obviously unneeded code
-	"--duplicate-function-elimination" # removes duplicate functions
-	"--duplicate-import-elimination"   # removes duplicate imports
-	"--remove-unused-module-elements"  # removes unused module elements
-	"--dae-optimizing"                 # removes arguments to calls in an lto-like manner
-	"--remove-unused-names"            # removes names from location that are never branched to
-	"--rse"                            # removes redundant local.sets
-	"--gsi"                            # global struct inference, to optimize constant values
-	"--gufa-optimizing"                # optimize the entire program using type monomorphization
-	"--strip-dwarf"                    # removes DWARF debug information
-	"--strip-producers"                # removes the "producers" section
-	"--strip-target-features"          # removes the "target_features" section
-)
 sleep 1
 
 enable_cf_in_bindings() {
