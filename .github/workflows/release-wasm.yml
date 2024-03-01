@@ -45,7 +45,7 @@ jobs:
           path: bin/arakoo
       
   release:
-    name: release-java
+    name: release-wasm
     needs: build
     runs-on: ubuntu-latest
     steps:
