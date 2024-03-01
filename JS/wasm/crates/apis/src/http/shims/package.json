@@ -1,18 +1,18 @@
 {
-  "name": "shims",
-  "version": "1.0.0",
-  "description": "Shims for http",
-  "main": "index.js",
-  "type": "module",
-  "license": "MIT",
-  "scripts": {
-    "build": "node build.js"
-  },
-  "dependencies": {
-    "@sinonjs/text-encoding": "^0.7.2",
-    "esbuild": "^0.20.0",
-    "http-status": "^1.7.3",
-    "query-string": "^8.1.0",
-    "url-parse": "^1.5.10"
-  }
+    "name": "shims",
+    "version": "1.0.0",
+    "description": "Shims for http",
+    "main": "index.js",
+    "type": "module",
+    "license": "MIT",
+    "scripts": {
+        "build": "node build.js"
+    },
+    "dependencies": {
+        "@sinonjs/text-encoding": "^0.7.2",
+        "esbuild": "^0.20.0",
+        "http-status": "^1.7.3",
+        "query-string": "^8.1.0",
+        "url-parse": "^1.5.10"
+    }
 }

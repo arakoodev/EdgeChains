@@ -3,8 +3,7 @@ import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 import { PostgresClient } from "@arakoodev/edgechains.js";
 import * as path from "path";
 import { Hono } from "hono";
-import { fileURLToPath } from 'url';
-
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,7 +18,14 @@ var PostgresDistanceMetric;
 
 async function hydeSearchAdaEmbedding(arkRequest, apiKey, orgId) {
     try {
-        const gpt3endpoint = new OpenAiEndpoint("https://api.openai.com/v1/chat/completions", apiKey, orgId, "gpt-3.5-turbo", "user", parseInt("0.7"));
+        const gpt3endpoint = new OpenAiEndpoint(
+            "https://api.openai.com/v1/chat/completions",
+            apiKey,
+            orgId,
+            "gpt-3.5-turbo",
+            "user",
+            parseInt("0.7")
+        );
         // Get required params from API...
         const table = "ada_hyde_prod";
         const namespace = "360_docs";
@@ -47,17 +53,30 @@ async function hydeSearchAdaEmbedding(arkRequest, apiKey, orgId) {
         // Chain 1 ==> Get Gpt3Response & split
         const gpt3Responses = gptResponse.split("\n");
         // Chain 2 ==> Get Embeddings from OpenAI using Each Response
-        const embeddingsListChain = Promise.all(gpt3Responses.map(async (resp) => {
-            const embedding = await gpt3endpoint.embeddings(resp);
-            return embedding;
-        }));
+        const embeddingsListChain = Promise.all(
+            gpt3Responses.map(async (resp) => {
+                const embedding = await gpt3endpoint.embeddings(resp);
+                return embedding;
+            })
+        );
         // Chain 5 ==> Query via EmbeddingChain
-        const dbClient = new PostgresClient(await embeddingsListChain, PostgresDistanceMetric.IP, topK, 20, table, namespace, arkRequest, 15);
+        const dbClient = new PostgresClient(
+            await embeddingsListChain,
+            PostgresDistanceMetric.IP,
+            topK,
+            20,
+            table,
+            namespace,
+            arkRequest,
+            15
+        );
         const queryResult = await dbClient.dbQuery();
         // Chain 6 ==> Create Prompt using Embeddings
         const retrievedDocs = [];
         for (const embeddings of queryResult) {
-            retrievedDocs.push(`${embeddings.raw_text}\n score:${embeddings.score}\n filename:${embeddings.filename}\n`);
+            retrievedDocs.push(
+                `${embeddings.raw_text}\n score:${embeddings.score}\n filename:${embeddings.filename}\n`
+            );
         }
         if (retrievedDocs.join("").length > 4096) {
             retrievedDocs.length = 4096;
@@ -89,8 +108,7 @@ async function hydeSearchAdaEmbedding(arkRequest, apiKey, orgId) {
             finalAnswer: finalAnswer,
         };
         return response;
-    }
-    catch (error) {
+    } catch (error) {
         // Handle errors here
         console.error(error);
         throw error;
@@ -117,7 +135,11 @@ HydeSearchRouter.get("/search", async (c) => {
         },
         orderRRF: query.orderRRF,
     };
-    const answer = await hydeSearchAdaEmbedding(arkRequest, process.env.OPENAI_API_KEY, process.env.OPENAI_ORG_ID);
+    const answer = await hydeSearchAdaEmbedding(
+        arkRequest,
+        process.env.OPENAI_API_KEY,
+        process.env.OPENAI_ORG_ID
+    );
     const final_answer = answer.finalAnswer;
     const responses = answer.wordEmbeddings;
     const data = { responses, final_answer };
@@ -128,26 +150,36 @@ HydeSearchRouter.get("/search", async (c) => {
             <div class="card-body">${data.final_answer}</div>
         </div>
             <ul class="list-unstyled mb-0">
-              ${data.responses.map((item) => `
+              ${data.responses.map(
+                  (item) => `
                   <li>
                     <div class="card">
                       <div class="card-body">
-                        ${item.rawText != null
-            ? `<div class="card card-body">${item.rawText}</div>`
-            : `<div class="card card-body">${item.metadata}</div>`}
-                        ${item.filename != null
-            ? `<div class="card card-body" style="color: blue;">${item.filename}</div>`
-            : ""}
-                        ${item.titleMetadata != null
-            ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>`
-            : ""}
-                        ${item.documentDate != null
-            ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>`
-            : ""}
+                        ${
+                            item.rawText != null
+                                ? `<div class="card card-body">${item.rawText}</div>`
+                                : `<div class="card card-body">${item.metadata}</div>`
+                        }
+                        ${
+                            item.filename != null
+                                ? `<div class="card card-body" style="color: blue;">${item.filename}</div>`
+                                : ""
+                        }
+                        ${
+                            item.titleMetadata != null
+                                ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>`
+                                : ""
+                        }
+                        ${
+                            item.documentDate != null
+                                ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>`
+                                : ""
+                        }
                       </div>
                     </div>
                   </li>
-                `)}
+                `
+              )}
             </ul>
   </html>
     `);

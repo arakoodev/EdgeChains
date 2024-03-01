@@ -4,9 +4,9 @@ import { Hono } from "hono";
 import axios from "axios";
 
 const getJsonnet = async () => {
-    let jsonnet = await import("@arakoodev/jsonnet")
-    return jsonnet.default
-}
+    let jsonnet = await import("@arakoodev/jsonnet");
+    return jsonnet.default;
+};
 
 export const WikiRouter = new Hono();
 
@@ -30,7 +30,7 @@ const gpt3endpoint = new OpenAiEndpoint(
 
 export async function wikiSummary(input: string) {
     const Jsonnet = await getJsonnet();
-    const jsonnet = new Jsonnet()
+    const jsonnet = new Jsonnet();
     const wikiResponse = await axios
         .post(
             "https://en.wikipedia.org/w/api.php",
