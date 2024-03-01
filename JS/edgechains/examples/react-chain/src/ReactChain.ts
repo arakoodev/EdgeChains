@@ -9,9 +9,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const getJsonnet = async () => {
-    let jsonnet = await import("@arakoodev/jsonnet")
-    return jsonnet.default
-}
+    let jsonnet = await import("@arakoodev/jsonnet");
+    return jsonnet.default;
+};
 
 // Create instances of Jsonnet, Hono, and OpenAiEndpoint
 export const ReactChainRouter = new Hono();

@@ -11,7 +11,11 @@ export interface HydeFragmentData {
     }>;
     final_answer?: string;
 }
-declare function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, orgId: string): Promise<{
+declare function hydeSearchAdaEmbedding(
+    arkRequest: ArkRequest,
+    apiKey: string,
+    orgId: string
+): Promise<{
     wordEmbeddings: any;
     finalAnswer: any;
 }>;
