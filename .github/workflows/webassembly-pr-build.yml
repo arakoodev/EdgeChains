@@ -77,6 +77,7 @@ jobs:
         working-directory: .
         run: |
           make build-jsonnet
+
       - name: Create out directory
         working-directory: .
         run: |
