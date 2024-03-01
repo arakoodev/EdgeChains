@@ -1,20 +1,22 @@
 [package]
-name = "arakoo-jsonnet"
-version = "0.1.0"
-license = "ISC"
-edition = "2018"
-exclude = ["index.node"]
+name = "arakoo"
+edition.workspace = true
+version.workspace = true
 
-[lib]
-crate-type = ["cdylib"]
-path = "src/lib.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
-jsonnet-rs = "0.17"
-serde_json = "1.0.111"
+[lib]
+crate-type = ["cdylib", "rlib"]
 
-[dependencies.neon]
-version = "0.10"
-default-features = false
-features = ["napi-6"]
+[dependencies]
+wasm-bindgen = "0.2.84"
+jrsonnet-evaluator = { version = "0.5.0-pre95" }
+jrsonnet-parser = { version = "0.5.0-pre95" }
+jrsonnet-stdlib = { version = "0.5.0-pre95" }
+jrsonnet-gcmodule = { version = "0.3.6" }
+serde = "1.0.195"
+serde_json = "1.0.111"
+wasm-bindgen-file-reader = "1"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.34"

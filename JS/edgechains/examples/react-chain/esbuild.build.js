@@ -40,6 +40,7 @@ esbuild
             ".html": "text",
             ".css": "css",
             ".jsonnet": "text",
+            ".wasm": "file",
         },
     })
     .catch(() => process.exit(1));

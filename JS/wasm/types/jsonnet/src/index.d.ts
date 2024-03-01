@@ -1,14 +1,9 @@
-export function jsonnet(filename: string): Promise<string>;
+declare class Jsonnet {
+    constructor();
+    evaluateSnippet(snippet: string): string;
+    destroy(): void;
+    extString(key: string, value: string): this;
+    evaluateFile(filename: string): string;
+}
 
-/**
- * useage:
- * const extVars = JSON.stringify({
- *  a: 1,
- *  b: 2,
- *  });
- *  await jsonnetExtVars(filename, extVars);
- */
-export function jsonnetExtVars(
-  filename: string,
-  extVars: string,
-): Promise<string>;
+export default Jsonnet;

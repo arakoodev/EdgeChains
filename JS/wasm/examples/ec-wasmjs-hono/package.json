@@ -1,10 +1,7 @@
 {
     "name": "hono",
     "type": "module",
-    "main": "bin/[...app].js",
-    "scripts": {
-        "build": "node ./build.js"
-    },
+    "main": "bin/app.js",
     "devDependencies": {
         "@planetscale/database": "^1.4.0",
         "esbuild": "^0.19",

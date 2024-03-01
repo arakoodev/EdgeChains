@@ -1,10 +1,12 @@
-import { Jsonnet } from "@hanazuki/node-jsonnet";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 import * as path from "path";
 import { Hono } from "hono";
 import axios from "axios";
 
-const jsonnet = new Jsonnet();
+const getJsonnet = async () => {
+    let jsonnet = await import("@arakoodev/jsonnet");
+    return jsonnet.default;
+};
 
 export const WikiRouter = new Hono();
 
@@ -27,6 +29,8 @@ const gpt3endpoint = new OpenAiEndpoint(
 );
 
 export async function wikiSummary(input: string) {
+    const Jsonnet = await getJsonnet();
+    const jsonnet = new Jsonnet();
     const wikiResponse = await axios
         .post(
             "https://en.wikipedia.org/w/api.php",

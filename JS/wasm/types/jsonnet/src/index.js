@@ -1,6 +1,3 @@
-const { jsonnet, jsonnetExtVars } = require("../index.node");
+import Jsonnet from "./jsonnet.js";
 
-module.exports = {
-  jsonnet,
-  jsonnetExtVars,
-};
+export default Jsonnet;

@@ -1,25 +1,7 @@
 {
-  "name": "arakoo-jsonnet",
-  "version": "0.1.0",
-  "description": "",
-  "main": "index.node",
-  "scripts": {
-    "build": "cargo-cp-artifact -nc index.node -- cargo build --message-format=json-render-diagnostics",
-    "build-debug": "npm run build --",
-    "build-release": "npm run build -- --release",
-    "test": "cargo test",
-    "preinstall": "npm install cargo-cp-artifact --no-save"
-  },
-  "types": "src/index.d.ts",
-  "author": "",
-  "exports": {
-    ".": {
-      "require": "./src/index.js",
-      "default": "./src/module.mjs"
-    }
-  },
-  "license": "ISC",
-  "devDependencies": {
-    "cargo-cp-artifact": "^0.1"
-  }
+    "name": "@arakoodev/jsonnet",
+    "version": "0.1.1",
+    "main": "src/index.js",
+    "type": "module",
+    "types": "src/index.d.ts"
 }

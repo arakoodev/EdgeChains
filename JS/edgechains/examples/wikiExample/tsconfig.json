@@ -12,6 +12,7 @@
         "noImplicitAny": false,
         "moduleResolution": "NodeNext",
         "declaration": true,
+        "outDir": "dist"
     },
-    "include": ["src/**/*.ts", "dist/**/*.d.ts"],
+    "include": ["src/**/*.ts", "dist/**/*.d.ts"]
 }

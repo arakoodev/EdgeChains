@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "types": ["dotenv/config", "jest", "node"],
+        "outDir": "dist",
         "target": "ES2022",
         "module": "NodeNext",
         "esModuleInterop": true,
