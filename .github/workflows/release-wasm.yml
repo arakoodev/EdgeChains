@@ -38,11 +38,21 @@ jobs:
         run: |
           cp target/release/arakoo bin/
       
+      - name: Copy jsonnet bin
+        working-directory: .
+        run: |
+          cp JS/wasm/types/jsonnet/ bin/
+      
+      - name: Copy Javy bin
+        working-directory: .
+        run: |
+          cp target/release/javy bin/
+      
       - name: Upload Release Binary
         uses: actions/upload-artifact@v2
         with:
-          name: arakoo
-          path: bin/arakoo
+          name: arakoo-${{ env.RELEASE_TAG }}-x86_64
+          path: bin
       
   release:
     name: release-wasm
@@ -52,7 +62,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
-          name: arakoo
+          name: arakoo-${{ env.RELEASE_TAG }}-x86_64
           path: Output
       - name: Display structure of downloaded files
         run: ls -R
