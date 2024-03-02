@@ -17,6 +17,7 @@ function get_package_json(options) {
                 author: "",
                 license: "ISC",
                 dependencies: {
+                    "@arakoodev/jsonnet": "0.1.2",
                     "@hono/node-server": "^1.2.0",
                     "@types/dotenv": "^8.2.0",
                     hono: "^3.9.2",
@@ -43,7 +44,7 @@ function get_package_json(options) {
                     jest: "^29.7.0",
                     prettier: "^3.1.0",
                     react: "^18.2.0",
-                    "@arakoodev/edgechains.js": "0.1.10",
+                    "@arakoodev/edgechains.js": "0.1.19",
                     "ts-jest": "^29.1.1",
                     tsx: "^3.12.2",
                     typeorm: "^0.3.17",
