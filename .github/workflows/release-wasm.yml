@@ -41,12 +41,12 @@ jobs:
       - name: Copy jsonnet bin
         working-directory: .
         run: |
-          cp JS/wasm/types/jsonnet/ bin/
+          cp -r JS/wasm/types/jsonnet/ bin/
       
       - name: Copy Javy bin
         working-directory: .
         run: |
-          cp -r target/release/javy bin/
+          cp target/release/javy bin/
       
       - name: Upload Release Binary
         uses: actions/upload-artifact@v2
