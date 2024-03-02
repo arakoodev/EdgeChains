@@ -1,6 +1,6 @@
 {
     "name": "@arakoodev/edgechains.js",
-    "version": "0.1.18",
+    "version": "0.1.21",
     "main": "dist/index.js",
     "files": [
         "dist",
@@ -20,8 +20,8 @@
         "create-edgechains": "./create-edgechains/scripts/create-edgechains.js"
     },
     "dependencies": {
-        "@hono/node-server": "^1.2.0",
         "@arakoodev/jsonnet": "file:../../wasm/types/jsonnet",
+        "@hono/node-server": "^1.2.0",
         "@types/dotenv": "^8.2.0",
         "axios": "^1.6.2",
         "dotenv": "^16.3.1",
@@ -36,6 +36,7 @@
         "@types/jest": "^29.5.8",
         "@types/node": "^20.9.4",
         "dts-bundle-generator": "^8.1.2",
+        "eslint": "^8.57.0",
         "jest": "^29.7.0",
         "react": "^18.2.0",
         "ts-jest": "^29.1.1",
