@@ -61,9 +61,6 @@ impl<'a> WasmInput<'a> {
         self.body
     }
 
-    pub fn params(&self) -> &HashMap<String, String> {
-        &self.params
-    }
 
     fn build_url(request: &Parts) -> String {
         Uri::builder()

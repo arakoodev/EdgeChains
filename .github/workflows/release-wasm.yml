@@ -14,6 +14,7 @@ jobs:
           filters: |
             wasm:
               - 'JS/wasm/**'
+    # start of the build job
       - name: Build Javy Core
         working-directory: .
         run: |
@@ -26,12 +27,12 @@ jobs:
         working-directory: .
         run: |
           make build-jsonnet
-
+    # start of the release job
       - name: Create out directory
         working-directory: .
         run: |
           mkdir bin/
-
+    
       - name: Copy arakoo bin
         working-directory: .
         run: |
@@ -42,7 +43,9 @@ jobs:
       - name: Zip Jsonnet
         working-directory: .
         run: |
-          zip -qq jsonnet.zip -d JS/wasm/types/jsonnet/
+          # remove node_modules
+          rm -rf JS/jsonnet/node_modules
+          zip -qq jsonnet.zip -d JS/jsonnet/
 
       - name: Copy jsonnet bin
         working-directory: .
