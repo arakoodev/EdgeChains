@@ -44,7 +44,12 @@ jobs:
           filename: 'jsonnet.zip'
           exclusions: '*.git* /*node_modules/* .editorconfig'
           path: 'JS/jsonnet'
-          
+      
+      - name: Copy Jsonnet
+        working-directory: .
+        run: |
+          cp jsonnet.zip bin/
+
       - name: Copy Javy bin
         working-directory: .
         run: |
