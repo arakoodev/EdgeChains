@@ -273,7 +273,7 @@ pub fn add_fetch_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()> {
     linker.func_wrap(
         "arakoo",
         "get_response",
-        move |mut caller: Caller<'_, WasiCtx>, ptr: i32| todo!("get_response"),
+        move |mut _caller: Caller<'_, WasiCtx>, _ptr: i32| todo!("get_response"),
     )?;
     Ok(())
 }
