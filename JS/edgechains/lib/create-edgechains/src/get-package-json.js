@@ -44,7 +44,7 @@ function get_package_json(options) {
                     jest: "^29.7.0",
                     prettier: "^3.1.0",
                     react: "^18.2.0",
-                    "@arakoodev/edgechains.js": "0.1.21",
+                    "@arakoodev/edgechains.js": "0.1.22",
                     "ts-jest": "^29.1.1",
                     tsx: "^3.12.2",
                     typeorm: "^0.3.17",
