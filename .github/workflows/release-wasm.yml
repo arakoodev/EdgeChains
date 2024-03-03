@@ -1,7 +1,6 @@
 name: Release Wasm
 
-on:
-  workflow_dispatch
+on: workflow_dispatch
 
 jobs:
   build:
@@ -27,33 +26,40 @@ jobs:
         working-directory: .
         run: |
           make build-jsonnet
-      
+
       - name: Create out directory
         working-directory: .
         run: |
           mkdir bin/
-      
+
       - name: Copy arakoo bin
         working-directory: .
         run: |
           cp target/release/arakoo bin/
-      
+      - name: Install zip
+        uses: montudor/action-zip@v1
+
+      - name: Zip Jsonnet
+        working-directory: .
+        run: |
+          zip -qq jsonnet.zip -d JS/wasm/types/jsonnet/
+
       - name: Copy jsonnet bin
         working-directory: .
         run: |
-          cp -r JS/wasm/types/jsonnet/ bin/
-      
+          cp -r jsonnet.zip bin/
+
       - name: Copy Javy bin
         working-directory: .
         run: |
           cp target/release/javy bin/
-      
+
       - name: Upload Release Binary
         uses: actions/upload-artifact@v2
         with:
           name: arakoo-${{ env.RELEASE_TAG }}-x86_64
           path: bin
-      
+
   release:
     name: release-wasm
     needs: build
@@ -66,7 +72,7 @@ jobs:
           path: Output
       - name: Display structure of downloaded files
         run: ls -R
-        
+
       - name: Get variables
         id: vars
         run: echo "tag_name=${{ env.RELEASE_TAG }}" >> $GITHUB_ENV
