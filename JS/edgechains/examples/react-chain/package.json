@@ -23,7 +23,7 @@
         "tsc": "^2.0.4"
     },
     "devDependencies": {
-        "@arakoodev/edgechains.js": "0.1.10",
+        "@arakoodev/edgechains.js": "0.1.22",
         "@babel/preset-env": "^7.23.8",
         "@babel/preset-typescript": "^7.23.3",
         "@hanazuki/node-jsonnet": "^2.1.0",

@@ -4,7 +4,7 @@ members = [
   "JS/wasm/crates/arakoo-core",
   "JS/wasm/crates/cli",
   "JS/wasm/crates/serve",
-  "JS/wasm/types/jsonnet",
+  "JS/jsonnet",
 ]
 resolver = "2"
 
