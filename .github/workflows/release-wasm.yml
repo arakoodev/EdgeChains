@@ -46,11 +46,7 @@ jobs:
           # remove node_modules
           rm -rf JS/jsonnet/node_modules
           zip -qq jsonnet.zip -d JS/jsonnet/
-
-      - name: Copy jsonnet bin
-        working-directory: .
-        run: |
-          cp -r jsonnet.zip bin/
+          cp jsonnet.zip bin/
 
       - name: Copy Javy bin
         working-directory: .
