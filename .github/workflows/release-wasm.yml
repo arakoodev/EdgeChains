@@ -37,17 +37,14 @@ jobs:
         working-directory: .
         run: |
           cp target/release/arakoo bin/
-      - name: Install zip
-        uses: montudor/action-zip@v1
-
       - name: Zip Jsonnet
-        working-directory: .
-        run: |
-          # remove node_modules
-          rm -rf JS/jsonnet/node_modules
-          zip -qq jsonnet.zip -d JS/jsonnet/
-          cp jsonnet.zip bin/
-
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'zip'
+          filename: 'jsonnet.zip'
+          exclusions: '*.git* /*node_modules/* .editorconfig'
+          path: 'JS/jsonnet'
+          
       - name: Copy Javy bin
         working-directory: .
         run: |
