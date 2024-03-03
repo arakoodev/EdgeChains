@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { connect } from "@planetscale/database";
 
-import Jsonnet from "arakoo-jsonnet";
+import Jsonnet from "@arakoodev/jsonnet";
 
 let jsonnet = new Jsonnet();
 

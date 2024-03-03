@@ -1,6 +1,7 @@
 {
     "dependencies": {
         "@hanazuki/node-jsonnet": "^2.1.0",
+        "@arakoodev/jsonnet": "0.1.2",
         "@hono/node-server": "^1.2.0",
         "hono": "^3.9.2",
         "path": "^0.12.7"
