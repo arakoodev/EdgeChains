@@ -1,11 +1,11 @@
 use jrsonnet_evaluator::{
     apply_tla,
-    function::TlaArg,
+    function::{builtin, TlaArg},
     gc::GcHashMap,
     manifest::{JsonFormat, ManifestFormat},
     tb,
     trace::{CompactFormat, PathResolver, TraceFormat},
-    FileImportResolver, State, Val,
+    FileImportResolver, ObjValueBuilder, State, Thunk, Val,
 };
 use jrsonnet_parser::IStr;
 use wasm_bindgen::prelude::*;
@@ -14,6 +14,13 @@ use wasm_bindgen::prelude::*;
 extern "C" {
     #[wasm_bindgen(catch)]
     fn read_file(path: &str) -> Result<String, JsValue>;
+}
+
+// console log
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
 }
 
 pub struct VM {
@@ -31,6 +38,7 @@ pub fn jsonnet_make() -> *mut VM {
         state.clone(),
         PathResolver::new_cwd_fallback(),
     ));
+    add_namespace(&state);
     Box::into_raw(Box::new(VM {
         state,
         manifest_format: Box::new(JsonFormat::default()),
@@ -99,4 +107,65 @@ pub fn ext_string(vm: *mut VM, key: &str, value: &str) {
         .downcast_ref::<jrsonnet_stdlib::ContextInitializer>()
         .unwrap()
         .add_ext_var(key.into(), Val::Str(value.into()));
+}
+
+fn add_namespace(state: &State) {
+    let mut bobj = ObjValueBuilder::new();
+    bobj.method("join", join::INST);
+    bobj.method("regexMatch", regex_match::INST);
+    state.add_global("arakoo".into(), Thunk::evaluated(Val::Obj(bobj.build())))
+}
+
+#[builtin]
+fn join(a: String, b: String) -> String {
+    format!("{}{}", a, b)
+}
+
+#[builtin]
+fn regex_match(a: String, b: String) -> Vec<String> {
+    log(&a);
+    log(&b);
+    let re = regex::Regex::new(&b).unwrap();
+    let mut matches = Vec::new();
+    for cap in re.captures_iter(&a) {
+        if cap.len() == 0 {
+            continue;
+        }
+        if cap.len() == 1 {
+            matches.push(cap[0].to_string());
+            continue;
+        }
+        matches.push(cap[1].to_string());
+    }
+    if matches.len() == 0 {
+        matches.push("".to_string());
+    }
+    matches
+}
+
+#[cfg(test)]
+mod test {
+    use regex::Regex;
+
+    #[test]
+    fn do_regex_test() {
+        let hay = r"Question: Which magazine was started first Arthur's Magazine or First for Women?
+        Thought 1: I need to search Arthur's Magazine and First for Women, and find which was
+        started first.
+        Action 1: Search[Arthur's Magazine]
+        Observation 1: Arthur's Magazine (1844-1846) was an American literary periodical published
+        in Philadelphia in the 19th century.
+        Thought 2: Arthur's Magazine was started in 1844. I need to search First for Women
+        next.
+        Action 2: Search[First for Women]";
+        // get words in Search[]
+        let re = Regex::new(r"Observation 1: (.*)\.").unwrap();
+
+        let mut search = Vec::new();
+        for cap in re.captures_iter(hay) {
+            search.push(cap[1].to_string());
+        }
+
+        println!("{:?}", search);
+    }
 }
