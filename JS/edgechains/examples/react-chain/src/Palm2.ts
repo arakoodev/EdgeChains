@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import dotenv from "dotenv";
-import { Palm2ChatFn } from "@arakoodev/edgechains.js"
+import { Palm2Endpoint } from "@arakoodev/edgechains.js"
 
 // Load environment variables from a .env file
 dotenv.config();
@@ -15,7 +15,7 @@ async function Palm2Call(query: string) {
     // Load the Jsonnet module
     try {
 
-        const palm2Response = await Palm2ChatFn(query, process.env.PALM2_API_KEY || "AIzaSyB2Cc5yX0q5HCOgMWtdsh5mALBorAiLlxE");
+        const palm2Response = await Palm2Endpoint(query, process.env.PALM2_API_KEY || "");
 
         // Return the  response
         return palm2Response;
@@ -49,7 +49,7 @@ function UserInput(query: string) {
 
 // Example usage: Make a UserInput call with a specific query
 UserInput(
-    "How is shyam raghuwanshi?"
+    "Author David Chanoff has collaborated with a U.S. Navy admiral who served as the ambassador to the United Kingdom under which President?"
 );
 
 // let query="Author David Chanoff has collaborated with a U.S. Navy admiral who served as the ambassador to the United Kingdom under which President?"

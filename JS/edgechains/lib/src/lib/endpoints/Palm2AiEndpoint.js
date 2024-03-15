@@ -1,5 +1,5 @@
 
-export async function Palm2ChatFn(prompt, apiKey, temperature = 0.1) {
+export async function Palm2Endpoint(prompt, apiKey, temperature = 0.1) {
     const LANGUAGE_MODEL_URL = `https://generativelanguage.googleapis.com/v1beta1/models/chat-bison-001:generateMessage?key=${apiKey}`
 
     const payload = {

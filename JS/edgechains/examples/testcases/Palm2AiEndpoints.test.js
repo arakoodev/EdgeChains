@@ -1,5 +1,5 @@
 const palm2Prompts = require("./palm2Prompts.json");
-const Palm2ChatFn = require("../../lib/src/lib/endpoints/Palm2AiEndpoint")
+const Palm2Endpoint = require("@arakoodev/edgechains.js")
 
 it('should return a string when called with valid parameters', async () => {
     // Arrange
@@ -14,7 +14,7 @@ it('should return a string when called with valid parameters', async () => {
         })
     });
 
-    const result = await Palm2ChatFn(prompt, apiKey, temperature);
+    const result = await Palm2Endpoint(prompt, apiKey, temperature);
 
     expect(typeof result).toBe("string");
 });
@@ -30,7 +30,7 @@ it('should return a string when called with valid parameters', async () => {
         })
     });
 
-    const result = await Palm2ChatFn(prompt, apiKey, temperature);
+    const result = await Palm2Endpoint(prompt, apiKey, temperature);
 
     expect(typeof result).toBe("string");
 });
@@ -46,7 +46,7 @@ it('should return a string when called with valid parameters', async () => {
         })
     });
 
-    const result = await Palm2ChatFn(prompt, apiKey, temperature);
+    const result = await Palm2Endpoint(prompt, apiKey, temperature);
 
     console.log(result)
 
