@@ -19,6 +19,9 @@ apis = { path = "../apis", features = [
     "text_encoding",
     "random",
     "stream_io",
+    "http",
+    "jsonnet",
+    "prisma"
 ] }
 serde_json = { workspace = true }
 [features]

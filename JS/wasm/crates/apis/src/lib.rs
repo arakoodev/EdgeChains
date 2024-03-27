@@ -60,9 +60,12 @@ mod runtime_ext;
 mod stream_io;
 #[cfg(feature = "text_encoding")]
 mod text_encoding;
-
+#[cfg(feature = "http")]
 pub mod http;
+#[cfg(feature = "jsonnet")]
 mod jsonnet;
+#[cfg(feature = "prisma")]
+mod prisma;
 
 #[link(wasm_import_module = "arakoo")]
 extern "C" {
@@ -98,8 +101,11 @@ pub fn add_to_runtime(runtime: &Runtime, config: APIConfig) -> Result<()> {
     stream_io::StreamIO.register(runtime, &config)?;
     #[cfg(feature = "text_encoding")]
     text_encoding::TextEncoding.register(runtime, &config)?;
+    #[cfg(feature = "http")]
     http::Http.register(runtime, &config)?;
+    #[cfg(feature = "jsonnet")]
     jsonnet::Jsonnet.register(runtime, &config)?;
-
+    #[cfg(feature = "prisma")]
+    
     Ok(())
 }
