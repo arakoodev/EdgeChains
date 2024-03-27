@@ -10,6 +10,9 @@ console = []
 random = ["dep:fastrand"]
 stream_io = []
 text_encoding = []
+http = []
+jsonnet=[]
+prisma=[]
 
 [dependencies]
 anyhow = { workspace = true }
