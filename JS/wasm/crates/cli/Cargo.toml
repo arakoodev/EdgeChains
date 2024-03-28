@@ -17,7 +17,8 @@ experimental_event_loop = []
 wizer = { workspace = true }
 structopt = "0.3"
 anyhow = { workspace = true }
-binaryen = { git = "https://github.com/pepyakin/binaryen-rs", rev = "00c98174843f957681ba0bc5cdcc9d15f5d0cb23" }
+binaryen = "0.13.0"
+# binaryen = { git = "https://github.com/pepyakin/binaryen-rs", rev = "00c98174843f957681ba0bc5cdcc9d15f5d0cb23" }
 brotli = "3.4.0"
 wasmprinter = { version = "0.2.75", optional = true }
 wasmtime = { workspace = true }
