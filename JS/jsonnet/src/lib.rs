@@ -38,7 +38,7 @@ pub fn jsonnet_make() -> *mut VM {
         state.clone(),
         PathResolver::new_cwd_fallback(),
     ));
-    add_namespace(&state);
+    // add_namespace(&state);
     Box::into_raw(Box::new(VM {
         state,
         manifest_format: Box::new(JsonFormat::default()),
@@ -105,7 +105,7 @@ pub fn ext_string(vm: *mut VM, key: &str, value: &str) {
     any_initializer
         .as_any()
         .downcast_ref::<jrsonnet_stdlib::ContextInitializer>()
-        .unwrap()
+        .expect("only stdlib context initializer supported")
         .add_ext_var(key.into(), Val::Str(value.into()));
 }
 
@@ -145,7 +145,39 @@ fn regex_match(a: String, b: String) -> Vec<String> {
 
 #[cfg(test)]
 mod test {
+    use super::*;
     use regex::Regex;
+    #[test]
+    // #[wasm_bindgen]
+    pub fn test() {
+        let vm = jsonnet_make();
+        // let filename = CString::new("filename").unwrap();
+        let filename = "filename";
+
+        let snippet = r#"
+    local username = std.extVar('name');
+    local Person(name='Alice') = {
+      name: name,
+      welcome: 'Hello ' + name + '!',
+    };
+    {
+      person1: Person(username),
+      person2: Person('Bob'),
+    }"#;
+
+        // .unwrap();
+        unsafe {
+            ext_string(
+                &mut *vm, // name.as_ptr() as *const c_char,
+                "name",   // value.as_ptr() as *const c_char,
+                "afshan",
+            );
+        }
+
+        let result = unsafe { jsonnet_evaluate_snippet(&mut *vm, filename, snippet) };
+        println!("{}", result);
+        // }
+    }
 
     #[test]
     fn do_regex_test() {
@@ -166,6 +198,7 @@ mod test {
             search.push(cap[1].to_string());
         }
 
-        println!("{:?}", search);
+        println!("pattern found {:?}", search);
     }
+
 }
