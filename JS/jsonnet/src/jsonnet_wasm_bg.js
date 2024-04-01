@@ -1,16 +1,17 @@
-import { read_file } from './snippets/arakoo-07ad5af4ed8e3fe0/read-file.js';
+import { read_file } from "./snippets/arakoo-07ad5af4ed8e3fe0/read-file.js";
 
 let wasm;
 export function __wbg_set_wasm(val) {
     wasm = val;
 }
 
-
 const heap = new Array(128).fill(undefined);
 
 heap.push(undefined, null, true, false);
 
-function getObject(idx) { return heap[idx]; }
+function getObject(idx) {
+    return heap[idx];
+}
 
 let WASM_VECTOR_LEN = 0;
 
@@ -23,29 +24,32 @@ function getUint8Memory0() {
     return cachedUint8Memory0;
 }
 
-const lTextEncoder = typeof TextEncoder === 'undefined' ? (0, module.require)('util').TextEncoder : TextEncoder;
+const lTextEncoder =
+    typeof TextEncoder === "undefined" ? (0, module.require)("util").TextEncoder : TextEncoder;
 
-let cachedTextEncoder = new lTextEncoder('utf-8');
+let cachedTextEncoder = new lTextEncoder("utf-8");
 
-const encodeString = (typeof cachedTextEncoder.encodeInto === 'function'
-    ? function (arg, view) {
-    return cachedTextEncoder.encodeInto(arg, view);
-}
-    : function (arg, view) {
-    const buf = cachedTextEncoder.encode(arg);
-    view.set(buf);
-    return {
-        read: arg.length,
-        written: buf.length
-    };
-});
+const encodeString =
+    typeof cachedTextEncoder.encodeInto === "function"
+        ? function (arg, view) {
+              return cachedTextEncoder.encodeInto(arg, view);
+          }
+        : function (arg, view) {
+              const buf = cachedTextEncoder.encode(arg);
+              view.set(buf);
+              return {
+                  read: arg.length,
+                  written: buf.length,
+              };
+          };
 
 function passStringToWasm0(arg, malloc, realloc) {
-
     if (realloc === undefined) {
         const buf = cachedTextEncoder.encode(arg);
         const ptr = malloc(buf.length, 1) >>> 0;
-        getUint8Memory0().subarray(ptr, ptr + buf.length).set(buf);
+        getUint8Memory0()
+            .subarray(ptr, ptr + buf.length)
+            .set(buf);
         WASM_VECTOR_LEN = buf.length;
         return ptr;
     }
@@ -59,7 +63,7 @@ function passStringToWasm0(arg, malloc, realloc) {
 
     for (; offset < len; offset++) {
         const code = arg.charCodeAt(offset);
-        if (code > 0x7F) break;
+        if (code > 0x7f) break;
         mem[ptr + offset] = code;
     }
 
@@ -67,7 +71,7 @@ function passStringToWasm0(arg, malloc, realloc) {
         if (offset !== 0) {
             arg = arg.slice(offset);
         }
-        ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
+        ptr = realloc(ptr, len, (len = offset + arg.length * 3), 1) >>> 0;
         const view = getUint8Memory0().subarray(ptr + offset, ptr + len);
         const ret = encodeString(arg, view);
 
@@ -106,9 +110,10 @@ function takeObject(idx) {
     return ret;
 }
 
-const lTextDecoder = typeof TextDecoder === 'undefined' ? (0, module.require)('util').TextDecoder : TextDecoder;
+const lTextDecoder =
+    typeof TextDecoder === "undefined" ? (0, module.require)("util").TextDecoder : TextDecoder;
 
-let cachedTextDecoder = new lTextDecoder('utf-8', { ignoreBOM: true, fatal: true });
+let cachedTextDecoder = new lTextDecoder("utf-8", { ignoreBOM: true, fatal: true });
 
 cachedTextDecoder.decode();
 
@@ -134,26 +139,26 @@ function handleError(f, args) {
     }
 }
 /**
-* @returns {number}
-*/
+ * @returns {number}
+ */
 export function jsonnet_make() {
     const ret = wasm.jsonnet_make();
     return ret >>> 0;
 }
 
 /**
-* @param {number} vm
-*/
+ * @param {number} vm
+ */
 export function jsonnet_destroy(vm) {
     wasm.jsonnet_destroy(vm);
 }
 
 /**
-* @param {number} vm
-* @param {string} filename
-* @param {string} snippet
-* @returns {string}
-*/
+ * @param {number} vm
+ * @param {string} filename
+ * @param {string} snippet
+ * @returns {string}
+ */
 export function jsonnet_evaluate_snippet(vm, filename, snippet) {
     let deferred3_0;
     let deferred3_1;
@@ -176,10 +181,10 @@ export function jsonnet_evaluate_snippet(vm, filename, snippet) {
 }
 
 /**
-* @param {number} vm
-* @param {string} filename
-* @returns {string}
-*/
+ * @param {number} vm
+ * @param {string} filename
+ * @returns {string}
+ */
 export function jsonnet_evaluate_file(vm, filename) {
     let deferred2_0;
     let deferred2_1;
@@ -200,10 +205,10 @@ export function jsonnet_evaluate_file(vm, filename) {
 }
 
 /**
-* @param {number} vm
-* @param {string} key
-* @param {string} value
-*/
+ * @param {number} vm
+ * @param {string} key
+ * @param {string} value
+ */
 export function ext_string(vm, key, value) {
     const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
@@ -214,22 +219,25 @@ export function ext_string(vm, key, value) {
 
 export function __wbindgen_string_get(arg0, arg1) {
     const obj = getObject(arg1);
-    const ret = typeof(obj) === 'string' ? obj : undefined;
-    var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const ret = typeof obj === "string" ? obj : undefined;
+    var ptr1 = isLikeNone(ret)
+        ? 0
+        : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     var len1 = WASM_VECTOR_LEN;
     getInt32Memory0()[arg0 / 4 + 1] = len1;
     getInt32Memory0()[arg0 / 4 + 0] = ptr1;
-};
+}
 
-export function __wbg_readfile_3df9f1d22ad880df() { return handleError(function (arg0, arg1, arg2) {
-    const ret = read_file(getStringFromWasm0(arg1, arg2));
-    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    getInt32Memory0()[arg0 / 4 + 1] = len1;
-    getInt32Memory0()[arg0 / 4 + 0] = ptr1;
-}, arguments) };
+export function __wbg_readfile_3df9f1d22ad880df() {
+    return handleError(function (arg0, arg1, arg2) {
+        const ret = read_file(getStringFromWasm0(arg1, arg2));
+        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        getInt32Memory0()[arg0 / 4 + 1] = len1;
+        getInt32Memory0()[arg0 / 4 + 0] = ptr1;
+    }, arguments);
+}
 
 export function __wbindgen_object_drop_ref(arg0) {
     takeObject(arg0);
-};
-
+}
