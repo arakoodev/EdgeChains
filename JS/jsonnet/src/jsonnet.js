@@ -10,6 +10,9 @@ if (!isArakoo) {
         jsonnet_make,
         ext_string,
         jsonnet_evaluate_file,
+        get_func,
+        set_func,
+        register_native_callback,
     } = await module;
     Jsonnet = class Jsonnet {
         constructor() {
@@ -27,6 +30,24 @@ if (!isArakoo) {
 
         evaluateFile(filename) {
             return jsonnet_evaluate_file(this.vm, filename);
+        }
+
+        javascriptCallback(name, func) {
+            let numOfArgs = func.length;
+            if (numOfArgs > 0) {
+                set_func(name, (args)=>{
+                    let result = eval(func)(...JSON.parse(args));
+                    return result.toString();
+                });
+            }
+            else {
+                set_func(name, ()=>{
+                    let result = eval(func)();
+                    return result;
+                });
+            }
+            register_native_callback(this.vm, name, numOfArgs);
+            return this;
         }
 
         destroy() {
@@ -48,7 +69,7 @@ if (!isArakoo) {
             return __jsonnet_evaluate_snippet(vars, snippet);
         }
 
-        destroy() {}
+        destroy() { }
     };
 }
 

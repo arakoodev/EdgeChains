@@ -4,6 +4,7 @@ declare class Jsonnet {
     destroy(): void;
     extString(key: string, value: string): this;
     evaluateFile(filename: string): string;
+    javascriptCallback(name: string, func: Function): this;
 }
 
 export default Jsonnet;

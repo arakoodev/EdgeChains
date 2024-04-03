@@ -1,17 +1,23 @@
 {
-    "name": "test",
-    "version": "1.0.0",
-    "description": "",
-    "main": "test.js",
-    "type": "module",
-    "scripts": {
-        "test": "node --experimental-wasm-modules ./node_modules/mocha/bin/mocha"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "devDependencies": {
-        "chai": "^5.1.0",
-        "mocha": "^10.4.0"
-    }
+  "name": "test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test.js",
+  "scripts": {
+    "test": "tsc && node --experimental-wasm-modules ./node_modules/mocha/bin/mocha dist/test.js"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@arakoodev/jsonnet":"file:../"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.14",
+    "@types/mocha": "^10.0.6",
+    "chai": "^5.1.0",
+    "mocha": "^10.4.0",
+    "typescript": "^5.4.3"
+  }
 }
