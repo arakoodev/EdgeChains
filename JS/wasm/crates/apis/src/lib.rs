@@ -74,6 +74,8 @@ extern "C" {
     fn get_response(ptr: *mut u8);
 }
 
+mod pdfparse;
+
 pub(crate) trait JSApiSet {
     fn register(&self, runtime: &Runtime, config: &APIConfig) -> Result<()>;
 }
@@ -100,6 +102,6 @@ pub fn add_to_runtime(runtime: &Runtime, config: APIConfig) -> Result<()> {
     text_encoding::TextEncoding.register(runtime, &config)?;
     http::Http.register(runtime, &config)?;
     jsonnet::Jsonnet.register(runtime, &config)?;
-
+    pdfparse::PDFPARSER.register(runtime, &config)?;
     Ok(())
 }

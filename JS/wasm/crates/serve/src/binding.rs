@@ -265,15 +265,31 @@ pub fn add_fetch_to_linker(linker: &mut Linker<WasiCtx>) -> anyhow::Result<()> {
         },
     )?;
     // add the fetch_output_len and fetch_output functions here
+    let response_clone = response.clone();
     linker.func_wrap("arakoo", "get_response_len", move || -> i32 {
-        todo!("get_response_len")
+        let response_clone = response_clone.clone();
+        let response = response_clone.lock().unwrap().clone();
+        response.len() as i32
     })?;
 
     // also add the fetch_error_len and fetch_error functions here
     linker.func_wrap(
         "arakoo",
         "get_response",
-        move |mut _caller: Caller<'_, WasiCtx>, _ptr: i32| todo!("get_response"),
+        move |mut _caller: Caller<'_, WasiCtx>, ptr: i32| {
+            let response_clone = response.clone();
+            let mem = match _caller.get_export("memory") {
+                Some(Extern::Memory(mem)) => mem,
+                _ => return Err(Trap::NullReference.into()),
+            };
+            let offset = ptr as u32 as usize;
+            let response = response_clone.lock().unwrap().clone();
+            match mem.write(&mut _caller, offset, response.as_bytes()) {
+                Ok(_) => {}
+                _ => return Err(Trap::MemoryOutOfBounds.into()),
+            };
+            Ok(())
+        },
     )?;
     Ok(())
 }

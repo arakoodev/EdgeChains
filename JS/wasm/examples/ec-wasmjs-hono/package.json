@@ -1,5 +1,5 @@
 {
-    "name": "hono",
+    "name": "ec-hono",
     "type": "module",
     "main": "bin/app.js",
     "scripts": {

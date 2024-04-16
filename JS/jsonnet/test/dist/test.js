@@ -143,31 +143,13 @@ describe("Testing join function of jsonnet library", () => {
         expect(result).to.eql(expected);
     });
 });
-// describe("Call native function ", () => {
-//   it("Call native add function", function () {
-//     function add(a, b) {
-//       console.log("a = ", a, " and b = ", b)
-//       return a + b
-//     }
-//     // native: {
-//     function hello() {
-//       console.log("hello")
-//     }
-//     // }
-//     // let result = jsonnet.javascriptNative("add", [1, 2]);
-//     let result = jsonnet.javascriptNative("hello", this);
-//     // let result = eval("add(1,2)")
-//     let expected = 3
-//     expect(result).to.equal(expected)
-//   })
-// })
 describe("Testing javascript native function of jsonnet library", () => {
     it("Test javascript native function using arithematic operations : add", () => {
         function add(a, b, c) {
             return a + b + c;
         }
         let result = JSON.parse(jsonnet.javascriptCallback("add", add).evaluateSnippet(`{
-			"result": "Output "+std.native("add")(1,2,3),
+			"result": "Output "+arakoo.native("add")(1,2,3),
 			"name":"Alice"
 		}`));
         expect(result).to.eql({
@@ -185,7 +167,7 @@ describe("Testing javascript native function of jsonnet library", () => {
             return sum;
         }
         let result = JSON.parse(jsonnet.javascriptCallback("arrsum", calcSum).evaluateSnippet(`{
-			"result": "Output "+std.native("arrsum")(${JSON.stringify(numArr)}),
+			"result": "Output "+arakoo.native("arrsum")(${JSON.stringify(numArr)}),
 			"name":"Alice"
 		}`));
         expect(result).to.eql({
@@ -198,7 +180,7 @@ describe("Testing javascript native function of jsonnet library", () => {
             return a + b;
         }
         let result = JSON.parse(jsonnet.javascriptCallback("concat", concat).evaluateSnippet(`{
-			"result": "Output "+std.native("concat")("Hello ","World"),
+			"result": "Output "+arakoo.native("concat")("Hello ","World"),
 			"name":"Alice"
 		}`));
         expect(result).to.eql({

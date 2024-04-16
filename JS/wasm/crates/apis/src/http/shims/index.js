@@ -301,3 +301,8 @@ const requestToHandler = (input) => {
 globalThis.entrypoint = requestToHandler;
 globalThis.result = {};
 globalThis.error = null;
+
+globalThis.fetch = async (resource , options = {method : "GET"}) => {
+    let response = await fetch_internal(resource,options);
+    return Promise.resolve(new Response(response.body,response));
+}

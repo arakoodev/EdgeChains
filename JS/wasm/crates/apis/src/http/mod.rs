@@ -12,11 +12,10 @@ pub(super) struct Http;
 impl JSApiSet for Http {
     fn register(&self, runtime: &javy::Runtime, _config: &crate::APIConfig) -> Result<()> {
         let context = runtime.context();
+        context.eval_global("http.js", include_str!("shims/dist/index.js"))?;
         let global = context.global_object()?;
         global.set_property("arakoo", context.value_from_bool(true)?)?;
-        global.set_property("fetch", context.wrap_callback(fetch_callback())?)?;
-        context.eval_global("http.js", include_str!("shims/dist/index.js"))?;
-
+        global.set_property("fetch_internal", context.wrap_callback(fetch_callback())?)?;
         Ok(())
     }
 }
@@ -71,7 +70,29 @@ fn fetch_callback(
                 ));
             }
         };
-
-        todo!("fetch");
+        let mut headers_map: HashMap<String, JSValue> = HashMap::new();
+        for (key, value) in response["headers"].as_object().unwrap() {
+            headers_map.insert(
+                key.to_string(),
+                JSValue::String(value.as_str().unwrap().to_string()),
+            );
+        }
+        let mut response_map: HashMap<String, JSValue> = HashMap::new();
+        response_map.insert(
+            "status".to_string(),
+            JSValue::Int(response["status"].as_i64().unwrap().try_into().unwrap()),
+        );
+        response_map.insert(
+            "statusText".to_string(),
+            JSValue::String(response["statusText"].as_str().unwrap().to_string()),
+        );
+        response_map.insert(
+            "body".to_string(),
+            JSValue::String(response["body"].as_str().unwrap().to_string()),
+        );
+        response_map.insert("headers".to_string(), JSValue::Object(headers_map));
+        let response_obj = JSValue::Object(response_map);
+        // todo!("fetch");
+        Ok(response_obj)
     }
 }

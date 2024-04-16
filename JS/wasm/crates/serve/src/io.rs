@@ -8,7 +8,7 @@ pub struct WasmInput<'a> {
     url: String,
     method: &'a str,
     headers: HashMap<String, String>,
-    body: &'a str,
+    body: String,
     params: HashMap<String, String>,
 }
 
@@ -22,7 +22,7 @@ pub struct WasmOutput {
 }
 
 impl<'a> WasmInput<'a> {
-    pub fn new(request: &'a Parts, body: &'a str) -> Self {
+    pub fn new(request: &'a Parts, body: String) -> Self {
         let mut params = HashMap::new();
 
         if let Some(query) = request.uri.query() {
@@ -58,7 +58,7 @@ impl<'a> WasmInput<'a> {
     }
 
     pub fn body(&self) -> &str {
-        self.body
+        &self.body
     }
 
 

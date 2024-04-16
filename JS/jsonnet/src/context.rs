@@ -40,8 +40,14 @@ fn regex_match(a: String, b: String) -> Vec<String> {
     matches
 }
 
-fn arakoolib_uncached() -> ObjValue {
+fn arakoolib_uncached(settings: Rc<RefCell<Settings>>) -> ObjValue {
     let mut builder = ObjValueBuilder::new();
+    builder.method(
+		"native",
+		builtin_native {
+			settings: settings.clone(),
+		},
+	);
     builder.method("join", join::INST);
     builder.method("regexMatch", regex_match::INST);
     builder.build()
@@ -62,6 +68,18 @@ fn extvar_source(name: &str, code: impl Into<IStr>) -> Source {
 	Source::new_virtual(source_name.into(), code.into())
 }
 
+#[builtin(fields(
+	settings: Rc<RefCell<Settings>>,
+))]
+pub fn builtin_native(this: &builtin_native, x: IStr) -> Val {
+	this.settings
+		.borrow()
+		.ext_natives
+		.get(&x)
+		.cloned()
+		.map_or(Val::Null, Val::Func)
+}
+
 impl ArakooContextInitializer {
     pub fn new(_s: State, resolver: PathResolver) -> Self {
         let settings = jrsonnet_stdlib::Settings {
@@ -74,7 +92,7 @@ impl ArakooContextInitializer {
         let stdlib_obj = jrsonnet_stdlib::stdlib_uncached(settings.clone());
         
         let stdlib_thunk = Thunk::evaluated(Val::Obj(stdlib_obj));
-        let arakoolib_obj = arakoolib_uncached();
+        let arakoolib_obj = arakoolib_uncached(settings.clone());
         let arakoolib_thunk = Thunk::evaluated(Val::Obj(arakoolib_obj));
         Self {
             context: {

@@ -99,7 +99,7 @@ impl WorkerCtx {
         info!("Handling request: {:?} {:?}", parts.method, parts.uri);
         let body = hyper::body::to_bytes(body).await.unwrap();
         let body_str = String::from_utf8_lossy(&body).to_string();
-        let result = self.run(&parts, &body_str).await;
+        let result = self.run(&parts, body_str).await;
         match result {
             Ok(output) => {
                 let mut response = Response::builder();
@@ -137,7 +137,7 @@ impl WorkerCtx {
     /// This function sets up the necessary state and memory management for running the WebAssembly
     /// module, including setting up the input and output buffers, and wrapping the necessary
     /// functions to be called from WebAssembly.
-    async fn run(&self, parts: &Parts, body: &str) -> anyhow::Result<WasmOutput> {
+    async fn run(&self, parts: &Parts, body: String) -> anyhow::Result<WasmOutput> {
         // Serialize the request parts and body into a JSON input for the WebAssembly module.
         let input = serde_json::to_vec(&WasmInput::new(parts, body)).unwrap();
         let mem_len = input.len() as i32;
