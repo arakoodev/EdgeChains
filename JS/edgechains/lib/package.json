@@ -1,7 +1,8 @@
 {
-    "name": "@arakoodev/edgechains.js",
+    "name": "@arakoodev/openai",
     "version": "0.1.22",
     "main": "dist/index.js",
+    "type": "module",
     "files": [
         "dist",
         "create-edgechains/scripts",
@@ -9,6 +10,11 @@
         "create-edgechains/__common",
         "node_modules/"
     ],
+    "jest": {
+        "setupFiles": [
+            "<rootDir>/setupTests.js"
+        ]
+    },
     "scripts": {
         "build": "rm -rf dist && node esbuild.build.js",
         "start": "node dist/index.js",
@@ -20,34 +26,37 @@
         "create-edgechains": "./create-edgechains/scripts/create-edgechains.js"
     },
     "dependencies": {
-        "@arakoodev/jsonnet": "0.1.2",
+        "@arakoodev/edgechains.js": "^0.1.22",
+        "@arakoodev/jsonnet": "^0.1.2",
+        "@babel/core": "^7.24.4",
+        "@babel/preset-env": "^7.24.4",
         "@hono/node-server": "^1.2.0",
         "@types/dotenv": "^8.2.0",
         "axios": "^1.6.2",
-        "dotenv": "^16.3.1",
-        "hono": "^3.9.2",
+        "axios-retry": "^4.1.0",
+        "dotenv": "^16.4.5",
+        "esbuild": "^0.20.2",
+        "eventsource-parser": "^1.1.2",
         "inquirer": "^9.2.12",
+        "milsymbol": "^2.2.0",
+        "msw": "^2.2.13",
+        "node-fetch": "^3.3.2",
         "prettier": "^3.1.0",
+        "regenerator-runtime": "^0.14.1",
+        "retry": "^0.13.1",
         "typeorm": "^0.3.17"
     },
     "devDependencies": {
-        "@hanazuki/node-jsonnet": "^2.1.0",
         "@types/inquirer": "^9.0.7",
         "@types/jest": "^29.5.8",
         "@types/node": "^20.9.4",
         "dts-bundle-generator": "^8.1.2",
         "eslint": "^8.57.0",
         "jest": "^29.7.0",
+        "jest-fetch-mock": "^3.0.3",
         "react": "^18.2.0",
-        "ts-jest": "^29.1.1",
+        "ts-jest": "^29.1.2",
         "tsup": "^7.2.0",
         "typescript": "^5.0.2"
-    },
-    "jest": {
-        "preset": "ts-jest",
-        "testEnvironment": "node",
-        "setupFiles": [
-            "./src/setupTests.ts"
-        ]
     }
 }

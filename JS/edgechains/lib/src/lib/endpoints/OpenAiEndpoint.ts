@@ -1,33 +1,39 @@
 import axios from "axios";
+import { config } from "dotenv";
+config();
+const openAI_url = "https://api.openai.com/v1/chat/completions"
 
-export class OpenAiEndpoint {
+interface ChatOpenAiOptions {
+    url?: string;
+    openAIApiKey?: string;
+    orgId?: string;
+    model?: string;
+    role?: string;
+    temperature?: number;
+}
+
+export class ChatOpenAi {
     url: string;
-    apiKey: string;
+    openAIApiKey: string;
     orgId: string;
     model: string;
     role: string;
-    temprature: number;
+    temperature: number;
 
     constructor(
-        url: string,
-        apiKey: string,
-        orgId: string,
-        model: string,
-        role: string,
-        temprature: number
+        options: ChatOpenAiOptions = {}
     ) {
-        this.url = url;
-        this.apiKey = apiKey;
-        this.orgId = orgId;
-        this.model = model;
-        this.role = role;
-        this.temprature = temprature;
+        this.url = options.url || openAI_url;
+        this.openAIApiKey = options.openAIApiKey || process.env.OPENAI_API_KEY!; // and check it's there
+        this.orgId = options.orgId || "";
+        this.model = options.model || "gpt-3.5-turbo";
+        this.role = options.role || "user";
+        this.temperature = options.temperature || 0.5;
     }
 
-    async gptFn(prompt: string): Promise<string> {
+    async generateResponse(prompt: string): Promise<string> {
         const responce = await axios
-            .post(
-                "https://api.openai.com/v1/chat/completions",
+            .post(openAI_url,
                 {
                     model: this.model,
                     messages: [
@@ -36,24 +42,24 @@ export class OpenAiEndpoint {
                             content: prompt,
                         },
                     ],
-                    temperature: this.temprature,
+                    temperature: this.temperature,
                 },
                 {
                     headers: {
-                        Authorization: "Bearer " + this.apiKey,
+                        Authorization: "Bearer " + this.openAIApiKey,
                         "content-type": "application/json",
                     },
                 }
             )
-            .then(function (response) {
+            .then((response) => {
                 return response.data.choices;
             })
-            .catch(function (error) {
+            .catch((error) => {
                 if (error.response) {
                     console.log("Server responded with status code:", error.response.status);
                     console.log("Response data:", error.response.data);
                 } else if (error.request) {
-                    console.log("No response received:", error.request);
+                    console.log("No response received:", error);
                 } else {
                     console.log("Error creating request:", error.message);
                 }
@@ -61,25 +67,24 @@ export class OpenAiEndpoint {
         return responce[0].message.content;
     }
 
-    async embeddings(resp: string): Promise<number[]> {
-        const responce = await axios
-            .post(
-                "https://api.openai.com/v1/embeddings",
+    async generateEmbeddings(resp): Promise<any> {
+        const response = await axios
+            .post("https://api.openai.com/v1/embeddings",
                 {
                     model: "text-embedding-ada-002",
                     input: resp,
                 },
                 {
                     headers: {
-                        Authorization: "Bearer " + this.apiKey,
+                        Authorization: `Bearer ${this.openAIApiKey}`,
                         "content-type": "application/json",
                     },
                 }
             )
-            .then(function (response) {
-                return response.data.data[0].embedding;
+            .then((response) => {
+                return response.data.data;
             })
-            .catch(function (error) {
+            .catch((error) => {
                 if (error.response) {
                     console.log("Server responded with status code:", error.response.status);
                     console.log("Response data:", error.response.data);
@@ -89,30 +94,30 @@ export class OpenAiEndpoint {
                     console.log("Error creating request:", error.message);
                 }
             });
-
-        return responce;
+        return response;
     }
 
-    async gptFnChat(chatMessages: any) {
-        const responce = await axios
-            .post(
-                "https://api.openai.com/v1/chat/completions",
+    async chatWithAI(chatMessages: any) {
+        const response = await axios
+            .post(openAI_url,
                 {
                     model: this.model,
                     messages: chatMessages,
-                    temperature: this.temprature,
+                    temperature: this.temperature,
                 },
                 {
                     headers: {
-                        Authorization: "Bearer " + this.apiKey,
+                        Authorization: "Bearer " + this.openAIApiKey,
                         "content-type": "application/json",
                     },
                 }
             )
-            .then(function (response) {
+            .then((response) => {
+                console.log({ response })
                 return response.data.choices;
             })
-            .catch(function (error) {
+            .catch((error) => {
+                console.log({ error })
                 if (error.response) {
                     console.log("Server responded with status code:", error.response.status);
                     console.log("Response data:", error.response.data);
@@ -123,13 +128,12 @@ export class OpenAiEndpoint {
                 }
             });
 
-        return responce[0].message.content;
+        return response
     }
 
-    async gptFnTestGenerator(prompt: string): Promise<string> {
+    async testResponseGeneration(prompt: string): Promise<string> {
         const responce = await axios
-            .post(
-                "https://api.openai.com/v1/chat/completions",
+            .post(openAI_url,
                 {
                     model: this.model,
                     messages: [
@@ -138,11 +142,11 @@ export class OpenAiEndpoint {
                             content: prompt,
                         },
                     ],
-                    temperature: this.temprature,
+                    temperature: this.temperature,
                 },
                 {
                     headers: {
-                        Authorization: "Bearer " + this.apiKey,
+                        Authorization: "Bearer " + this.openAIApiKey,
                         "content-type": "application/json",
                     },
                 }

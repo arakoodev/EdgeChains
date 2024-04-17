@@ -1,6 +1,9 @@
 {
     "compilerOptions": {
-        "types": ["dotenv/config", "jest", "node"],
+        "types": [
+            "dotenv/config",
+            "node"
+        ],
         "target": "ES2022",
         "module": "NodeNext",
         "esModuleInterop": true,
@@ -12,5 +15,10 @@
         "noImplicitAny": false,
         "moduleResolution": "NodeNext",
         "declaration": true
-    }
+    },
+    "exclude": [
+        "node_modules",
+        "dist",
+        "./**/*.test.ts"
+    ]
 }

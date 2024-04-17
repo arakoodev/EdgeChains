@@ -1,20 +1,22 @@
-export declare class OpenAiEndpoint {
+interface ChatOpenAiOptions {
+    url?: string;
+    openAIApiKey?: string;
+    orgId?: string;
+    model?: string;
+    role?: string;
+    temperature?: number;
+}
+export declare class ChatOpenAi {
     url: string;
-    apiKey: string;
+    openAIApiKey: string;
     orgId: string;
     model: string;
     role: string;
-    temprature: number;
-    constructor(
-        url: string,
-        apiKey: string,
-        orgId: string,
-        model: string,
-        role: string,
-        temprature: number
-    );
-    gptFn(prompt: string): Promise<string>;
-    embeddings(resp: string): Promise<number[]>;
-    gptFnChat(chatMessages: any): Promise<any>;
-    gptFnTestGenerator(prompt: string): Promise<string>;
+    temperature: number;
+    constructor(options?: ChatOpenAiOptions);
+    generateResponse(prompt: string): Promise<string>;
+    generateEmbeddings(resp: any): Promise<any>;
+    chatWithAI(chatMessages: any): Promise<any>;
+    testResponseGeneration(prompt: string): Promise<string>;
 }
+export {};

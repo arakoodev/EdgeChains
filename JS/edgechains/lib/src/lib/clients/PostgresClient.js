@@ -8,16 +8,7 @@ export class PostgresClient {
     namespace;
     arkRequest;
     upperLimit;
-    constructor(
-        wordEmbeddings,
-        metric,
-        topK,
-        probes,
-        tableName,
-        namespace,
-        arkRequest,
-        upperLimit
-    ) {
+    constructor(wordEmbeddings, metric, topK, probes, tableName, namespace, arkRequest, upperLimit) {
         this.wordEmbeddings = wordEmbeddings;
         this.metric = metric;
         this.topK = topK;
@@ -76,17 +67,19 @@ export class PostgresClient {
             }
             if (this.wordEmbeddings.length > 1) {
                 query = `SELECT * FROM (SELECT DISTINCT ON (result.id) * FROM ( ${query} ) result) subquery ORDER BY rrf_score DESC LIMIT ${this.upperLimit};`;
-            } else {
+            }
+            else {
                 query += ` ORDER BY rrf_score DESC LIMIT ${this.topK};`;
             }
             const results = await entityManager.query(query);
             return results;
-        } finally {
+        }
+        finally {
             await connection.close();
         }
     }
 }
-var PostgresDistanceMetric;
+export var PostgresDistanceMetric;
 (function (PostgresDistanceMetric) {
     PostgresDistanceMetric["COSINE"] = "COSINE";
     PostgresDistanceMetric["IP"] = "IP";

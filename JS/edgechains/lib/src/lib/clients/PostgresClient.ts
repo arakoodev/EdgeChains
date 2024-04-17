@@ -99,7 +99,7 @@ export class PostgresClient {
     }
 }
 
-enum PostgresDistanceMetric {
+export enum PostgresDistanceMetric {
     COSINE = "COSINE",
     IP = "IP",
     L2 = "L2",

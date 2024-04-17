@@ -1,19 +1,11 @@
-import { Jsonnet } from "../../../../../examples/hydeSearch/node_modules/@hanazuki/node-jsonnet/lib/index.js";
+import Jsonnet from "@arakoodev/jsonnet";
 import * as path from "path";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 const jsonnet = new Jsonnet();
 const promptPath = path.join(process.cwd(), "./src/testGeneration/prompts.jsonnet");
 const testGeneratorPath = path.join(process.cwd(), "./src/testGeneration/testGenerator.jsonnet");
-const gpt3endpoint = new OpenAiEndpoint(
-    "https://api.openai.com/v1/chat/completions",
-    "",
-    "",
-    "gpt-3.5-turbo",
-    "user",
-    0.7
-);
-const classText =
-    "public class ChatMessage {\n" +
+const gpt3endpoint = new OpenAiEndpoint("https://api.openai.com/v1/chat/completions", "", "", "gpt-3.5-turbo", "user", 0.7);
+const classText = "public class ChatMessage {\n" +
     "  String role;\n" +
     "  String content;\n\n" +
     "  public ChatMessage(String role, String content) {\n" +
@@ -50,7 +42,8 @@ export async function getContent() {
         finalResponse += await gpt3endpoint.gptFnTestGenerator(responce);
         console.log("Final Response.......\n\n");
         return finalResponse;
-    } catch (error) {
+    }
+    catch (error) {
         console.log(error);
     }
 }

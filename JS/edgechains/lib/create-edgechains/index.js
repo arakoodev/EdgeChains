@@ -24,13 +24,9 @@ const prompts = [
 ];
 async function ask_questions() {
     try {
-        const answers = await inquirer.prompt(prompts);
-        return {
-            name: answers.name,
-            new_dir_name: answers.new_dir_name,
-        };
-        // return await inquirer.prompt(prompts);
-    } catch (error) {
+        return await inquirer.prompt(prompts);
+    }
+    catch (error) {
         console.error("\nError:", error);
     }
 }
@@ -52,12 +48,11 @@ async function main() {
     console.log("\nWorking...");
     try {
         const new_dir_path = path.join(process.cwd(), choices.new_dir_name);
-        const dir_already_exists =
-            fs.existsSync(new_dir_path) && fs.statSync(new_dir_path).isDirectory();
+        const dir_already_exists = fs.existsSync(new_dir_path) && fs.statSync(new_dir_path).isDirectory();
         if (dir_already_exists) {
             throw new Error(`Directory ${new_dir_path} already exists.`);
         }
-        function handle_file_copy({ code, destination_without_extension, extension }) {
+        function handle_file_copy({ code, destination_without_extension, extension, }) {
             return handle_file_copy_low_level({
                 code,
                 destination_without_extension,
@@ -73,25 +68,15 @@ async function main() {
         fs.mkdirSync(path.join(new_dir_path, "src/service"), { recursive: true });
         fs.mkdirSync(path.join(new_dir_path, "src/types"), { recursive: true });
         fs.mkdirSync(path.join(new_dir_path, "src/layouts"), { recursive: true });
-        fs.mkdirSync(path.join(new_dir_path, "src/testGeneration"), {
-            recursive: true,
-        });
+        fs.mkdirSync(path.join(new_dir_path, "src/testGeneration"), { recursive: true });
         // tsconfig
-        fs.writeFileSync(
-            path.join(new_dir_path, "tsconfig.json"),
-            await format(get_ts_config(), {
-                parser: "json",
-            }),
-            "utf8"
-        );
+        fs.writeFileSync(path.join(new_dir_path, "tsconfig.json"), await format(get_ts_config(), {
+            parser: "json",
+        }), "utf8");
         // package.json
-        fs.writeFileSync(
-            path.join(new_dir_path, "package.json"),
-            await format(get_package_json(options), {
-                parser: "json",
-            }),
-            "utf8"
-        );
+        fs.writeFileSync(path.join(new_dir_path, "package.json"), await format(get_package_json(options), {
+            parser: "json",
+        }), "utf8");
         //gitignore
         fs.writeFileSync(path.join(new_dir_path, ".gitignore"), get_gitignore(), "utf8");
         //.env
@@ -99,116 +84,78 @@ async function main() {
         const root_dir_path = path.join(dirname_from_import_meta(import.meta.url), `../`);
         const layout_file = "ExampleLayout";
         handle_file_copy({
-            code: fs.readFileSync(
-                path.join(root_dir_path, "__common/src/layouts/" + layout_file + ".ts"),
-                "utf8"
-            ),
+            code: fs.readFileSync(path.join(root_dir_path, "__common/src/layouts/" + layout_file + ".ts"), "utf8"),
             destination_without_extension: "src/layouts/" + layout_file,
             extension: ".ts",
         });
         const route_file = "hydeSearch.route";
         handle_file_copy({
-            code: fs.readFileSync(
-                path.join(root_dir_path, "__common/src/routes/" + route_file + ".ts"),
-                "utf8"
-            ),
+            code: fs.readFileSync(path.join(root_dir_path, "__common/src/routes/" + route_file + ".ts"), "utf8"),
             destination_without_extension: "src/routes/" + route_file,
             extension: ".ts",
         });
         const service_files = ["HydeSearchService", "HydeSearchService.test"];
-        await Promise.all(
-            service_files.map(async (file) => {
-                return handle_file_copy({
-                    code: fs.readFileSync(
-                        path.join(root_dir_path, "__common/src/service/" + file + ".ts"),
-                        "utf8"
-                    ),
-                    destination_without_extension: "src/service/" + file,
-                    extension: ".ts",
-                });
-            })
-        );
+        await Promise.all(service_files.map(async (file) => {
+            return handle_file_copy({
+                code: fs.readFileSync(path.join(root_dir_path, "__common/src/service/" + file + ".ts"), "utf8"),
+                destination_without_extension: "src/service/" + file,
+                extension: ".ts",
+            });
+        }));
         const type_file = "HydeFragmentData";
         handle_file_copy({
-            code: fs.readFileSync(
-                path.join(root_dir_path, "__common/src/types/" + type_file + ".ts"),
-                "utf8"
-            ),
+            code: fs.readFileSync(path.join(root_dir_path, "__common/src/types/" + type_file + ".ts"), "utf8"),
             destination_without_extension: "src/types/" + type_file,
             extension: ".ts",
         });
         const test_file = "TestGenerator";
         handle_file_copy({
-            code: fs.readFileSync(
-                path.join(root_dir_path, "__common/src/testGeneration/" + test_file + ".ts"),
-                "utf8"
-            ),
+            code: fs.readFileSync(path.join(root_dir_path, "__common/src/testGeneration/" + test_file + ".ts"), "utf8"),
             destination_without_extension: "src/testGeneration/" + test_file,
             extension: ".ts",
         });
         const index_file = "index";
         handle_file_copy({
-            code: fs.readFileSync(
-                path.join(root_dir_path, "__common/src/" + index_file + ".ts"),
-                "utf8"
-            ),
+            code: fs.readFileSync(path.join(root_dir_path, "__common/src/" + index_file + ".ts"), "utf8"),
             destination_without_extension: "src/" + index_file,
             extension: ".ts",
         });
         const jsonnet_files = ["hyde", "prompts"];
-        await Promise.all(
-            jsonnet_files.map(async (file) => {
-                return handle_file_copy({
-                    code: fs.readFileSync(
-                        path.join(root_dir_path, "__common/src/jsonnet/" + file + ".jsonnet"),
-                        "utf8"
-                    ),
-                    destination_without_extension: "src/jsonnet/" + file,
-                    extension: ".jsonnet",
-                });
-            })
-        );
-        await Promise.all(
-            jsonnet_files.map(async (file) => {
-                return handle_file_copy({
-                    code: fs.readFileSync(
-                        path.join(root_dir_path, "__common/src/jsonnet/" + file + ".jsonnet"),
-                        "utf8"
-                    ),
-                    destination_without_extension: "src/testGeneration/" + file,
-                    extension: ".jsonnet",
-                });
-            })
-        );
+        await Promise.all(jsonnet_files.map(async (file) => {
+            return handle_file_copy({
+                code: fs.readFileSync(path.join(root_dir_path, "__common/src/jsonnet/" + file + ".jsonnet"), "utf8"),
+                destination_without_extension: "src/jsonnet/" + file,
+                extension: ".jsonnet",
+            });
+        }));
+        await Promise.all(jsonnet_files.map(async (file) => {
+            return handle_file_copy({
+                code: fs.readFileSync(path.join(root_dir_path, "__common/src/jsonnet/" + file + ".jsonnet"), "utf8"),
+                destination_without_extension: "src/testGeneration/" + file,
+                extension: ".jsonnet",
+            });
+        }));
         const build_file = "esbuild.build";
         handle_file_copy({
-            code: fs.readFileSync(
-                path.join(root_dir_path, "__common/" + build_file + ".js"),
-                "utf8"
-            ),
+            code: fs.readFileSync(path.join(root_dir_path, "__common/" + build_file + ".js"), "utf8"),
             destination_without_extension: "/" + build_file,
             extension: ".js",
         });
         const html_js_file = "htmljs";
         handle_file_copy({
-            code: fs.readFileSync(
-                path.join(root_dir_path, "__common/" + html_js_file + ".ts"),
-                "utf8"
-            ),
+            code: fs.readFileSync(path.join(root_dir_path, "__common/" + html_js_file + ".ts"), "utf8"),
             destination_without_extension: "/" + html_js_file,
             extension: ".ts",
         });
         const orm_file = "ormconfig";
         handle_file_copy({
-            code: fs.readFileSync(
-                path.join(root_dir_path, "__common/" + orm_file + ".json"),
-                "utf8"
-            ),
+            code: fs.readFileSync(path.join(root_dir_path, "__common/" + orm_file + ".json"), "utf8"),
             destination_without_extension: "/" + orm_file,
             extension: ".json",
         });
         console.log("\nFinished...");
-    } catch (e) {
+    }
+    catch (e) {
         return e;
     }
 }
@@ -216,15 +163,6 @@ async function runMain() {
     await main();
 }
 runMain();
-async function handle_file_copy_low_level({
-    code,
-    destination_without_extension,
-    new_dir_path,
-    extension,
-}) {
-    fs.writeFileSync(
-        path.join(new_dir_path, destination_without_extension + extension),
-        code,
-        "utf8"
-    );
+async function handle_file_copy_low_level({ code, destination_without_extension, new_dir_path, extension, }) {
+    fs.writeFileSync(path.join(new_dir_path, destination_without_extension + extension), code, "utf8");
 }

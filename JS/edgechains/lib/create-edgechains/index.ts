@@ -22,7 +22,7 @@ type Prompts = Parameters<(typeof inquirer)["prompt"]>[0];
 
 const prompts: Prompts[] = [
     {
-        type: "",
+        type: "number",
         name: "new_dir_name",
         message: `Enter a name for your project's new directory:`,
         prefix: "\n",
@@ -33,12 +33,7 @@ const prompts: Prompts[] = [
     },
 ];
 
-async function ask_questions(): Promise<
-    | {
-          new_dir_name: string;
-      }
-    | undefined
-> {
+async function ask_questions(): Promise<any> {
     try {
         return await inquirer.prompt(prompts);
     } catch (error) {
