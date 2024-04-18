@@ -96,7 +96,6 @@ export class Supabase {
             operation.attempt(async (currentAttempt) => {
                 try {
                     let res = await client.rpc(functionNameToCall, args);
-                    console.log(res)
                     if (res.status == 200) {
                         resolve(res.data);
                     } else {
