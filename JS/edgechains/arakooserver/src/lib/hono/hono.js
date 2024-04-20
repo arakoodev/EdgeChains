@@ -12,12 +12,15 @@ class ArakooServer {
     }
     listen(port) {
         const portNumber = port || 3000;
-        (0, node_server_1.serve)({
-            fetch: this.app.fetch,
-            port: portNumber
-        }, () => {
-            console.log(`Server running on port ${portNumber}`);
-        });
+        (0, node_server_1.serve)(
+            {
+                fetch: this.app.fetch,
+                port: portNumber,
+            },
+            () => {
+                console.log(`Server running on port ${portNumber}`);
+            }
+        );
     }
 }
 exports.ArakooServer = ArakooServer;

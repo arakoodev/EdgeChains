@@ -1,5 +1,4 @@
 export class TextSplitter {
-  
     splitTextIntoChunks(text: string, chunkSize: number): Promise<string[]> {
         return new Promise((resolve, reject) => {
             try {
@@ -10,7 +9,7 @@ export class TextSplitter {
                 }
                 resolve(chunks);
             } catch (error) {
-                console.error('Error splitting text into chunks:', error);
+                console.error("Error splitting text into chunks:", error);
                 reject(error);
             }
         });

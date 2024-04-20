@@ -1,7 +1,7 @@
 import { Supabase } from "../../lib/supabase/supabase.js";
 
-const MOCK_SUPABASE_API_KEY = 'mock-api-key';
-const MOCK_SUPABASE_URL = 'https://mock-supabase.co';
+const MOCK_SUPABASE_API_KEY = "mock-api-key";
+const MOCK_SUPABASE_URL = "https://mock-supabase.co";
 
 // Mock the getDataById method of the Supabase class
 jest.mock("../../lib/supabase/supabase.js", () => {
@@ -48,7 +48,6 @@ describe("getDataById", () => {
     });
 
     it("should throw an error if data with the provided id is not found", async () => {
-
         // Call the getDataById method with an id that does not exist in the mock data
         await expect(
             supabase.getDataById({

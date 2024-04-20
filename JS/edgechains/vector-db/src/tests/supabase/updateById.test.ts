@@ -1,7 +1,7 @@
 import { Supabase } from "../../lib/supabase/supabase.js";
 
-const MOCK_SUPABASE_API_KEY = 'mock-api-key';
-const MOCK_SUPABASE_URL = 'https://mock-supabase.co';
+const MOCK_SUPABASE_API_KEY = "mock-api-key";
+const MOCK_SUPABASE_URL = "https://mock-supabase.co";
 // Mock the updateById method of the Supabase class
 jest.mock("../../lib/supabase/supabase.js", () => {
     return {
@@ -11,16 +11,18 @@ jest.mock("../../lib/supabase/supabase.js", () => {
                 from: jest.fn().mockReturnThis(),
             })),
 
-            updateById: jest.fn().mockImplementation(async ({ client, tableName, id, updatedContent }) => {
-                // Mock response for a successful update
-                const mockResponse = {
-                    id: id, // Assuming the id remains the same after update
-                    ...updatedContent, // Assuming updatedContent contains updated fields
-                };
+            updateById: jest
+                .fn()
+                .mockImplementation(async ({ client, tableName, id, updatedContent }) => {
+                    // Mock response for a successful update
+                    const mockResponse = {
+                        id: id, // Assuming the id remains the same after update
+                        ...updatedContent, // Assuming updatedContent contains updated fields
+                    };
 
-                // Return the mocked response
-                return mockResponse;
-            }),
+                    // Return the mocked response
+                    return mockResponse;
+                }),
         })),
     };
 });

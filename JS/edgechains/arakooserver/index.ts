@@ -1,1 +1,1 @@
-export { ArakooServer } from "./src/lib/hono/hono.js"
+export { ArakooServer } from "./src/lib/hono/hono.js";

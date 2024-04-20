@@ -52,7 +52,6 @@ esbuild
         });
 
         console.log("TypeScript compilation and index.d.ts generation successful.");
-
     })
     .catch(() => {
         console.error("TypeScript compilation or index.d.ts generation failed.");

@@ -33,16 +33,16 @@ const supabaseUrl = await JSON.parse(secretsLoader).supabase_url;
 const supabase = new Supabase(supabaseUrl, supabaseApiKey);
 const client = supabase.createClient();
 const llm = new ChatOpenAi({
-    openAIApiKey: openAIApiKey
+    openAIApiKey: openAIApiKey,
 });
 async function getEmbeddings(content) {
     const embeddings = await llm.generateEmbeddings(content);
     return embeddings;
 }
 async function InsertToSupabase(content) {
-    var spinner = new Spinner('Inserting to Supabase.. %s');
+    var spinner = new Spinner("Inserting to Supabase.. %s");
     try {
-        spinner.setSpinnerString('|/-\\');
+        spinner.setSpinnerString("|/-\\");
         spinner.start();
         const response = await getEmbeddings(content);
         for (let i = 0; i < response?.length; i++) {
@@ -54,7 +54,7 @@ async function InsertToSupabase(content) {
                 client,
                 tableName: "documents",
                 content: content[i].toLowerCase(),
-                embedding: element
+                embedding: element,
             });
             // console.log(data)
         }
@@ -62,11 +62,9 @@ async function InsertToSupabase(content) {
             return console.log("Error inserting to Supabase");
         }
         console.log("Inserted to Supabase");
-    }
-    catch (error) {
+    } catch (error) {
         console.log("Error inserting to Supabase", error);
-    }
-    finally {
+    } finally {
         spinner.stop();
     }
 }
@@ -82,7 +80,7 @@ ChatRouter.get("/", async (c) => {
         functionNameToCall: "match_documents",
         query_embedding: embeddingsArr[0].embedding,
         similarity_threshold: 0.5,
-        match_count: 2
+        match_count: 2,
     });
     const contentArr = [];
     for (let i = 0; i < response?.length; i++) {

@@ -1,1 +1,1 @@
-export { Cors } from "./src/lib/cores/cors.js"
+export { Cors } from "./src/lib/cores/cors.js";

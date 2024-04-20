@@ -1,10 +1,10 @@
-import { ArakooServer } from '../../lib/hono/hono.js';
-import { Hono } from 'hono';
+import { ArakooServer } from "../../lib/hono/hono.js";
+import { Hono } from "hono";
 
-describe('ArakooServer', () => {
+describe("ArakooServer", () => {
     let arakooServer = new ArakooServer();
 
-    test('createApp should return an instance of Hono', () => {
+    test("createApp should return an instance of Hono", () => {
         const app = arakooServer.createApp();
 
         expect(app).toBeInstanceOf(Hono);

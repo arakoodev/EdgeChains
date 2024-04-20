@@ -1,1 +1,1 @@
-export { TextSplitter } from "./src/lib/text-splitter/textSplitter.js"
+export { TextSplitter } from "./src/lib/text-splitter/textSplitter.js";

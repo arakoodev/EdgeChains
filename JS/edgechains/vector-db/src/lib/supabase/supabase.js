@@ -1,7 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+var __importDefault =
+    (this && this.__importDefault) ||
+    function (mod) {
+        return mod && mod.__esModule ? mod : { default: mod };
+    };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Supabase = void 0;
 const supabase_js_1 = require("@supabase/supabase-js");
@@ -20,14 +22,14 @@ class Supabase {
         return (0, supabase_js_1.createClient)(this.SUPABASE_URL, this.SUPABASE_API_KEY);
     }
     /**
-  * Insert data into a vector database using a Supabase client.
-  * @param client The Supabase client instance.
-  * @param relation The name of the relation (table) to insert data into.
-  * @param content The content to insert.
-  * @param embedding The embedding data to insert.
-  * @returns The inserted data if successful.
-  * @throws Error if insertion fails.
-  */
+     * Insert data into a vector database using a Supabase client.
+     * @param client The Supabase client instance.
+     * @param relation The name of the relation (table) to insert data into.
+     * @param content The content to insert.
+     * @param embedding The embedding data to insert.
+     * @returns The inserted data if successful.
+     * @throws Error if insertion fails.
+     */
     async insertVectorData({ client, tableName, ...args }) {
         return new Promise((resolve, reject) => {
             const operation = retry_1.default.operation({
@@ -41,16 +43,18 @@ class Supabase {
                 try {
                     const res = await client.from(tableName).insert(args);
                     if (res.error?.message) {
-                        if (operation.retry(new Error)) {
+                        if (operation.retry(new Error())) {
                             return;
                         }
-                        reject(new Error(`Failed to insert ${JSON.stringify(args)} with error message "${res.error.message}"`));
-                    }
-                    else {
+                        reject(
+                            new Error(
+                                `Failed to insert ${JSON.stringify(args)} with error message "${res.error.message}"`
+                            )
+                        );
+                    } else {
                         resolve(res);
                     }
-                }
-                catch (error) {
+                } catch (error) {
                     if (operation.retry(error)) {
                         return;
                     }
@@ -82,16 +86,16 @@ class Supabase {
                     console.log(res);
                     if (res.status == 200) {
                         resolve(res.data);
+                    } else {
+                        if (operation.retry(new Error())) return;
+                        reject(
+                            new Error(
+                                `Failed with ErrorCode:${res.statusText} and ErrorMessage:${res.data}`
+                            )
+                        );
                     }
-                    else {
-                        if (operation.retry(new Error))
-                            return;
-                        reject(new Error(`Failed with ErrorCode:${res.statusText} and ErrorMessage:${res.data}`));
-                    }
-                }
-                catch (error) {
-                    if (operation.retry(error))
-                        return;
+                } catch (error) {
+                    if (operation.retry(error)) return;
                     reject(error);
                 }
             });
@@ -120,13 +124,10 @@ class Supabase {
                     if (data) {
                         resolve(data);
                     }
-                    if (operation.retry(new Error))
-                        return;
+                    if (operation.retry(new Error())) return;
                     reject(error);
-                }
-                catch (error) {
-                    if (operation.retry(new Error))
-                        return;
+                } catch (error) {
+                    if (operation.retry(new Error())) return;
                     reject(error);
                 }
             });
@@ -148,8 +149,7 @@ class Supabase {
                 return data;
             }
             return error;
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Error inserting data into vector database:", error);
             throw error;
         }
@@ -165,13 +165,17 @@ class Supabase {
     async updateById({ client, tableName, id, updatedContent }) {
         try {
             // Insert data into the specified relation
-            const { data, error } = await client.from(tableName).update(updatedContent).eq("id", id).select().single();
+            const { data, error } = await client
+                .from(tableName)
+                .update(updatedContent)
+                .eq("id", id)
+                .select()
+                .single();
             if (data) {
                 return data;
             }
             return error;
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Error inserting data into vector database:", error);
             throw error;
         }
@@ -189,8 +193,7 @@ class Supabase {
             // Insert data into the specified relation
             const res = await client.from(tableName).delete().eq("id", id);
             return { status: res.status, messages: res.statusText };
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Error inserting data into vector database:", error);
             throw error;
         }

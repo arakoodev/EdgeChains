@@ -35,13 +35,12 @@ if (!isArakoo) {
         javascriptCallback(name, func) {
             let numOfArgs = func.length;
             if (numOfArgs > 0) {
-                set_func(name, (args)=>{
+                set_func(name, (args) => {
                     let result = eval(func)(...JSON.parse(args));
                     return result.toString();
                 });
-            }
-            else {
-                set_func(name, ()=>{
+            } else {
+                set_func(name, () => {
                     let result = eval(func)();
                     return result;
                 });
@@ -69,7 +68,7 @@ if (!isArakoo) {
             return __jsonnet_evaluate_snippet(vars, snippet);
         }
 
-        destroy() { }
+        destroy() {}
     };
 }
 

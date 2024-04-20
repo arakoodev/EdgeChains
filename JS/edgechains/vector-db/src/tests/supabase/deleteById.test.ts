@@ -1,7 +1,7 @@
 import { Supabase } from "../../lib/supabase/supabase.js";
 
-const MOCK_SUPABASE_API_KEY = 'mock-api-key';
-const MOCK_SUPABASE_URL = 'https://mock-supabase.co';
+const MOCK_SUPABASE_API_KEY = "mock-api-key";
+const MOCK_SUPABASE_URL = "https://mock-supabase.co";
 
 // Mock the deleteById method of the Supabase class
 jest.mock("../../lib/supabase/supabase.js", () => {
@@ -15,7 +15,7 @@ jest.mock("../../lib/supabase/supabase.js", () => {
             deleteById: jest.fn().mockImplementation(async ({ client, tableName, id }) => {
                 // Mock response for a successful deletion
                 const mockResponse = {
-                    status: 200, 
+                    status: 200,
                     message: "Deleted successfully", // Message indicating successful deletion
                 };
 
@@ -38,7 +38,8 @@ describe("deleteById", () => {
         });
 
         // Check if the response indicates successful deletion
-        expect(res).toEqual(expect.objectContaining({ status: 200, message: "Deleted successfully" }));
+        expect(res).toEqual(
+            expect.objectContaining({ status: 200, message: "Deleted successfully" })
+        );
     });
-
 });

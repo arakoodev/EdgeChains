@@ -11,9 +11,8 @@ class TextSplitter {
                     chunks.push(text.substring(i, i + chunkSize));
                 }
                 resolve(chunks);
-            }
-            catch (error) {
-                console.error('Error splitting text into chunks:', error);
+            } catch (error) {
+                console.error("Error splitting text into chunks:", error);
                 reject(error);
             }
         });

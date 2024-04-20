@@ -1,33 +1,33 @@
 {
-  "name": "@arakoodev/vector-db",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
-  "files": [
-    "dist",
-    "node_modules/"
-  ],
-  "scripts": {
-    "build": "rm -rf dist && node esbuild.build.js",
-    "start": "node dist/index.js",
-    "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
-    "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
-    "test": "npx jest --detectOpenHandles"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "types": "./index.d.ts",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.42.3",
-    "dotenv": "^16.4.5",
-    "esbuild": "^0.20.2",
-    "jest": "^29.7.0",
-    "retry": "^0.13.1"
-  },
-  "devDependencies": {
-    "@types/jest": "^29.5.12",
-    "@types/retry": "^0.12.5",
-    "ts-jest": "^29.1.2"
-  }
+    "name": "@arakoodev/vector-db",
+    "version": "1.0.0",
+    "description": "",
+    "main": "dist/index.js",
+    "files": [
+        "dist",
+        "node_modules/"
+    ],
+    "scripts": {
+        "build": "rm -rf dist && node esbuild.build.js",
+        "start": "node dist/index.js",
+        "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
+        "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
+        "test": "npx jest --detectOpenHandles"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "types": "./index.d.ts",
+    "dependencies": {
+        "@supabase/supabase-js": "^2.42.3",
+        "dotenv": "^16.4.5",
+        "esbuild": "^0.20.2",
+        "jest": "^29.7.0",
+        "retry": "^0.13.1"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.12",
+        "@types/retry": "^0.12.5",
+        "ts-jest": "^29.1.2"
+    }
 }

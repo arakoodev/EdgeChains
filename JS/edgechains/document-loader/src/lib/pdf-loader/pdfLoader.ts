@@ -1,4 +1,4 @@
-import pdf from "pdf-parse/lib/pdf-parse"
+import pdf from "pdf-parse/lib/pdf-parse";
 
 export class PdfLoader {
     pdfBuffer: Buffer;
@@ -10,7 +10,7 @@ export class PdfLoader {
         try {
             // Convert Buffer to ArrayBuffer
             const arrayBuffer = this.bufferToArrayBuffer(this.pdfBuffer);
-            
+
             // Parse PDF using pdf-parse library
             const pdfData = await pdf(arrayBuffer);
             return pdfData.text;
@@ -20,10 +20,10 @@ export class PdfLoader {
         }
     }
 
-    bufferToArrayBuffer(buffer:Buffer) {
+    bufferToArrayBuffer(buffer: Buffer) {
         // Create a new Uint8Array based on the Buffer
         const uint8Array = new Uint8Array(buffer);
-        
+
         // Create ArrayBuffer from Uint8Array
         return uint8Array.buffer;
     }
