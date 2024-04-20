@@ -93,7 +93,7 @@ jobs:
         run: npm install prettier
       - name: Install ESLint
         run: >
-          npm install eslint@latest && 
+          npm install eslint@^8 && 
           npm install @microsoft/eslint-formatter-sarif@latest eslint-config-google@latest eslint-plugin-import@latest @typescript-eslint/eslint-plugin@latest @typescript-eslint/parser@latest eslint-config-prettier@latest eslint-plugin-prettier@latest
       - name: Get cache date
         id: get-date
