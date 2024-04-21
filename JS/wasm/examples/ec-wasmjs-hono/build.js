@@ -27,8 +27,8 @@ build({
     target: "esnext",
     platform: "node",
     // external: ["arakoo"],
-    loader:{
-        ".jsonnet":"copy"
+    loader: {
+        ".jsonnet": "copy",
     },
     define: {
         "process.env.arakoo": JSON.stringify(runtime === "arakoo"),

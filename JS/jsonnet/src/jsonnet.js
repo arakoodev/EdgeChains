@@ -67,7 +67,7 @@ if (!isArakoo) {
             let vars = JSON.stringify(this.vars);
             return __jsonnet_evaluate_snippet(vars, snippet);
         }
-        evaluateFile(filename){
+        evaluateFile(filename) {
             let vars = JSON.stringify(this.vars);
             return __jsonnet_evaluate_file(vars, filename);
         }

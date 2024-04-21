@@ -1,4 +1,4 @@
-import { read_file } from './snippets/arakoo-jsonnet-17c737407ebd2d3c/read-file.js';
+import { read_file } from "./snippets/arakoo-jsonnet-17c737407ebd2d3c/read-file.js";
 
 let wasm;
 export function __wbg_set_wasm(val) {
@@ -334,13 +334,15 @@ export function __wbindgen_string_new(arg0, arg1) {
     return addHeapObject(ret);
 }
 
-export function __wbg_readfile_5b48d0f7e3518df2() { return handleError(function (arg0, arg1, arg2) {
-    const ret = read_file(getStringFromWasm0(arg1, arg2));
-    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    getInt32Memory0()[arg0 / 4 + 1] = len1;
-    getInt32Memory0()[arg0 / 4 + 0] = ptr1;
-}, arguments) };
+export function __wbg_readfile_5b48d0f7e3518df2() {
+    return handleError(function (arg0, arg1, arg2) {
+        const ret = read_file(getStringFromWasm0(arg1, arg2));
+        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        getInt32Memory0()[arg0 / 4 + 1] = len1;
+        getInt32Memory0()[arg0 / 4 + 0] = ptr1;
+    }, arguments);
+}
 
 export function __wbindgen_object_clone_ref(arg0) {
     const ret = getObject(arg0);
