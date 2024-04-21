@@ -130,15 +130,7 @@ pub fn ext_string(vm: *mut VM, key: &str, value: &str) {
     // let context_initializer_ref = vm.state.context_initializer();
 
     // Dereference the Ref to access the trait object
-    let context_initializer = &*vm.state.context_initializer();
-    println!("{:?}", context_initializer.as_any().type_id());
-
     let context_initializer = vm.state.context_initializer();
-
-    println!(
-        "Type of context initializer: {:?}",
-        std::any::type_name_of_val(&*context_initializer)
-    );
 
     context_initializer
         .as_any()

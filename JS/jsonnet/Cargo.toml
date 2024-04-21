@@ -1,5 +1,5 @@
 [package]
-name = "arakoo"
+name = "arakoo-jsonnet"
 edition.workspace = true
 version.workspace = true
 

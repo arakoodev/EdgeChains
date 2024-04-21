@@ -22,6 +22,18 @@ app.get("/", (c) => {
     return c.json(JSON.parse(result));
 });
 
+app.get('/file', (c)=>{
+    try {
+        let result = jsonnet.extString("extName","Mohan").evaluateFile("example.jsonnet");
+        return c.json(JSON.parse(result));
+    } catch (error) {
+        console.log("Error occured");
+        console.log(error);
+        return c.json("Unable to evaluate File")
+    }
+
+})
+
 app.get("/:username", (c) => {
     const { username } = c.req.param();
     // redirect to /hello/:username
