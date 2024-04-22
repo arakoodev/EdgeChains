@@ -60,7 +60,7 @@ Each prompt or chain has a token cost associated with it. You may think that a c
 ---
 
 # Setup
-1. Clone the repo into a public GitHub repository (or fork [https://github.com/calcom/cal.com/fork](https://github.com/arakoodev/EdgeChains/fork)).
+1. Clone the repo into a public GitHub repository (or fork [https://github.com/arakoodev/EdgeChains/fork](https://github.com/arakoodev/EdgeChains/fork)).
 
 ``` 
   git clone https://github.com/arakoodev/EdgeChains/
