@@ -25,7 +25,6 @@
     },
     "devDependencies": {
         "@arakoodev/edgechains.js": "0.1.22",
-        "@hanazuki/node-jsonnet": "^2.1.0",
         "@types/jest": "^29.5.8",
         "@types/node": "^20.9.4",
         "@typescript-eslint/eslint-plugin": "^6.11.0",

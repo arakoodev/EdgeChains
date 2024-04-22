@@ -20,7 +20,7 @@ const gpt3Endpoint = new OpenAiEndpoint(
     "https://api.openai.com/v1/chat/completions",
     process.env.OPENAI_API_KEY!,
     "",
-    "gpt-4",
+    "gpt-3.5-turbo",
     "user",
     parseInt("0.7")
 );

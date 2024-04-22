@@ -7,8 +7,7 @@
         "build": "rm -rf dist/ && tsc",
         "start": "node --experimental-wasm-modules dist/index.js",
         "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
-        "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
-        "test": "npx jest"
+        "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
     },
     "keywords": [],
     "author": "",
@@ -26,7 +25,6 @@
         "@arakoodev/edgechains.js": "0.1.22",
         "@babel/preset-env": "^7.23.8",
         "@babel/preset-typescript": "^7.23.3",
-        "@hanazuki/node-jsonnet": "^2.1.0",
         "@types/jest": "^29.5.8",
         "@types/node": "^20.9.4",
         "@typescript-eslint/eslint-plugin": "^6.11.0",

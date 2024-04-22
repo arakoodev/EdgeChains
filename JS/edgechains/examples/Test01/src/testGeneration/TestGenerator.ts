@@ -1,4 +1,4 @@
-import { Jsonnet } from "@hanazuki/node-jsonnet";
+import Jsonnet from "@arakoodev/jsonnet";
 import * as path from "path";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
 
