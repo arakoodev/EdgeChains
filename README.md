@@ -57,127 +57,55 @@ One of the big challenge in production is how to keep testing your prompts & cha
 Each prompt or chain has a token cost associated with it. You may think that a certain prompt is very good...but it may be consuming a huge amount of tokens. For example, Chain-of-Thought style prompts consume atleast 3X as many **output tokens** as a normal prompt. you need to have fine-grained tracking and measurement built into your framework to be able to manage this. Edgechains has this built in.
 
 
-
-<!-- Demo if present -->
-
----
-## Installation and Usage
-
-### [Stuck?? Try the Docs](https://www.arakoo.ai/doc/category/getting-started)
-
-### Initial setup
-
-To set up EdgeChains, you will need to download the release jar.
-
-### Downloading the release jar
-
-> **Note:** EdgeChains requires Java version 17 or above to run. Please make sure you have Java 17 installed on your system before proceeding.
-
-You can download the release jars and associated files from the [latest release](https://github.com/arakoodev/EdgeChains/releases/tag/0.3.0). Make sure to download the `flyfly.jar`, `edgechain-app-1.0.0.jar` and the `Source code.zip` file from the assets section. 
-
-Once downloaded, Follow these steps:
-
-1. Create a new folder in your desired location and add the jar files into the newly created folder.
-
-2. Copy all the contents from the _Examples_ folder and paste into your folder. The _Examples_ folder includes all the Jsonnet files and `EdgeChainApplication.java` file.    
-
-4. Navigate to the directory in which you have extracted the files within the IntelliJ IDE. Make sure to use a **JBang project**. 
 ---
 
-### Run EdgeChains
+# Setup
+1. Clone the repo into a public GitHub repository (or fork [https://github.com/calcom/cal.com/fork](https://github.com/arakoodev/EdgeChains/fork)).
 
-To run EdgeChains successfully, you will need to ensure that you have the necessary configurations in place. Follow the steps below to set up your EdgeChains application:
-
-1. **Prepare your OpenAI Key:** EdgeChains requires a valid OpenAI key to interact with the language models. Make sure you have your OpenAI Auth Key available, as you will need to add it to the Starter class in `EdgeChainApplication.java` file.
-
-2. **Configure Redis Connection:** locate the redisenv method in the Redisenv class in `EdgeChainApplication.java` file. Add your Redis URL, port, and password to the appropriate fields in the method.
-
-Once you have completed these configuration steps, you are ready to run EdgeChains. 
-
-To start the application, execute the following command in your terminal:
-
-```bash
-# To start the application.
-java -jar flyfly.jar jbang EdgeChainApplication.java edgechain-app-1.0.0.jar
-```
----
-### Tutorial - Document-based Chatting with EdgeChains
-
-Sometimes the best way to understand a complicated system is to start by understanding a basic example. The following example illustrates how to run your own Automata agent. The agent will be initialized with a trivial instruction, and will then attempt to write code to fulfill the instruction. The agent will then return the result of its attempt.
-
-EdgeChains can be used to chat with a document. For example, you can chat with a document about the topic of "Bitcoin" or "Machine Learning" or any topic of your choice. For this, you can use the `EdgeChainService` class. 
-
-1. Fill in the `EdgeChainApplication.java` file with the appropriate OpenAI and Redis credentials.
-2. Run the following command in the terminal:   
-  
-  ```bash
-  java -jar flyfly.jar jbang EdgeChainServiceApplication.java edgechain-app-1.0.0.jar
-  ```
-
-Now, you have to create a chat context, similar to a Chat Session in ChatGPT. Use the following command:
-
-  ```bash
-  curl  -X POST \
-  'localhost:8080/v1/examples/historycontext' \
-  --header 'Accept: /' \
-  --header 'User-Agent: Thunder Client (https://www.thunderclient.com/)' \
-  --header 'Content-Type: application/json' \
-  --data-raw '{
-    "maxTokens": 4096
-  }'
-  ```
-
-You'll get a response like:
-
-<details>
-<summary>Click to see the sample response</summary>
-
-```json
-{
-  "id": "historycontext-571b0c2c-8d07-452b-a1d8-96bd5f82234e",
-  "maxTokens": 4096,
-  "message": "Session is created. Now you can start conversational question and answer"
-}
-```
-</details>
-
-You will receive a response containing an `id` for the created session. Make sure to save this `id` for future use.
-
-Now, Upsert a document to EdgeChains using the following command:
-
-```bash
-curl  -X POST \
-  'localhost:8080/v1/redis/openai/upsert' \
-  --header 'Accept: */*' \
-  --header 'User-Agent: Thunder Client (https://www.thunderclient.com)' \
-  --form 'file=@./8946-Article Text-12474-1-2-20201228.pdf'
+``` 
+  git clone https://github.com/arakoodev/EdgeChains/
 ```
 
-Now, it's time to start chatting with the document by asking questions. For example, to inquire about the "transformer architecture," use the following command:
-
-```bash
-curl --location 'localhost:8080/v1/examples/redis/openai/chat?query=What%20is%20the%20transformer%20architecture%3F&namespace=machine-learning&id=historycontext%3A50756d25-e7e4-4d7c-862c-f81bf3f8eea0' \
---header 'Content-Type: application/json' \
- --data-raw '{
-    "query": "What is the transformer architecture?"
-}
+2. Go to the project folder
+```
+  cd EdgeChains
 ```
 
-# Run the chatWithPdf example
+# Run the ChatWithPdf example
 
 This section provides instructions for developers on how to utilize the chat with PDF feature. By following these steps, you can integrate the functionality seamlessly into your projects.
 
 ---
 
-## Overview
+1. Go to the ChatWithPdfExample
+```
+  cd JS/edgechains/examples/chat-with-pdf/
+```
 
-Arakoo.ai provides a powerful feature that allows developers to match query embeddings against document embeddings stored in a PostgreSQL database. 
+2. Install packages with npm
 
----
+``` 
+  npm install
+```
 
-## Setup Instructions
+3. Setup you secrets in `secrets.jsonnet`
+```
+  local SUPABASE_API_KEY = "your supabase api key here";
 
-### 1. Database Configuration
+
+  local OPENAI_API_KEY = "your openai api key here";
+    
+  local SUPABASE_URL = "your supabase url here";
+    
+  {
+    "supabase_api_key":SUPABASE_API_KEY,
+    "supabase_url":SUPABASE_URL,
+    "openai_api_key":OPENAI_API_KEY,
+  }
+   
+```
+
+4. Database Configuration
 
 - Ensure that you have a PostgreSQL Vector database set up at [Supabase](https://supabase.com/vector).
 - Go to the SQL Editor tab in Supabase.
@@ -218,10 +146,17 @@ as $$
 - You should see a success message in the Result tab.
 ![image](https://github.com/Shyam-Raghuwanshi/EdgeChains/assets/94217498/052d9a15-838f-4e68-9888-072cecb78a13)
 
+5. Run the example
+
+```
+  npm run start
+```
+   
 - Then you can run the ChatWithPdf example using npm run start and continue chatting with the example.pdf.
   
-Remember: Comment out the InsertToSupabase function if you are running the code again; otherwise, the PDF data will be pushed again to the Supabase vector data.
+⚠️👉Remember: Comment out the InsertToSupabase function if you are running the code again; otherwise, the PDF data will be pushed again to the Supabase vector data.
 
+---
 
 ## Contribution guidelines
 
