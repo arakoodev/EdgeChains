@@ -7,7 +7,7 @@ This project aim to running Jsonnet in Wasm. The code is written in Rust and com
 -   [x] Jsonnet Snippet evaluation
 -   [x] External variable support
 -   [ ] External function support
--   [ ] Jsonnet file evaluation
+-   [x] Jsonnet file evaluation
 
 ## Usage
 
