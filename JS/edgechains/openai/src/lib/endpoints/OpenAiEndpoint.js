@@ -19,129 +19,137 @@ export class ChatOpenAi {
     }
     async generateResponse(prompt) {
         const responce = await axios
-            .post(openAI_url, {
-            model: this.model,
-            messages: [
+            .post(
+                openAI_url,
                 {
-                    role: this.role,
-                    content: prompt,
+                    model: this.model,
+                    messages: [
+                        {
+                            role: this.role,
+                            content: prompt,
+                        },
+                    ],
+                    temperature: this.temperature,
                 },
-            ],
-            temperature: this.temperature,
-        }, {
-            headers: {
-                Authorization: "Bearer " + this.openAIApiKey,
-                "content-type": "application/json",
-            },
-        })
+                {
+                    headers: {
+                        Authorization: "Bearer " + this.openAIApiKey,
+                        "content-type": "application/json",
+                    },
+                }
+            )
             .then((response) => {
-            return response.data.choices;
-        })
+                return response.data.choices;
+            })
             .catch((error) => {
-            if (error.response) {
-                console.log("Server responded with status code:", error.response.status);
-                console.log("Response data:", error.response.data);
-            }
-            else if (error.request) {
-                console.log("No response received:", error);
-            }
-            else {
-                console.log("Error creating request:", error.message);
-            }
-        });
+                if (error.response) {
+                    console.log("Server responded with status code:", error.response.status);
+                    console.log("Response data:", error.response.data);
+                } else if (error.request) {
+                    console.log("No response received:", error);
+                } else {
+                    console.log("Error creating request:", error.message);
+                }
+            });
         return responce[0].message.content;
     }
     async generateEmbeddings(resp) {
         const response = await axios
-            .post("https://api.openai.com/v1/embeddings", {
-            model: "text-embedding-ada-002",
-            input: resp,
-        }, {
-            headers: {
-                Authorization: `Bearer ${this.openAIApiKey}`,
-                "content-type": "application/json",
-            },
-        })
+            .post(
+                "https://api.openai.com/v1/embeddings",
+                {
+                    model: "text-embedding-ada-002",
+                    input: resp,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${this.openAIApiKey}`,
+                        "content-type": "application/json",
+                    },
+                }
+            )
             .then((response) => {
-            return response.data.data;
-        })
+                return response.data.data;
+            })
             .catch((error) => {
-            if (error.response) {
-                console.log("Server responded with status code:", error.response.status);
-                console.log("Response data:", error.response.data);
-            }
-            else if (error.request) {
-                console.log("No response received:", error.request);
-            }
-            else {
-                console.log("Error creating request:", error.message);
-            }
-        });
+                if (error.response) {
+                    console.log("Server responded with status code:", error.response.status);
+                    console.log("Response data:", error.response.data);
+                } else if (error.request) {
+                    console.log("No response received:", error.request);
+                } else {
+                    console.log("Error creating request:", error.message);
+                }
+            });
         return response;
     }
     async chatWithAI(chatMessages) {
         const response = await axios
-            .post(openAI_url, {
-            model: this.model,
-            messages: chatMessages,
-            temperature: this.temperature,
-        }, {
-            headers: {
-                Authorization: "Bearer " + this.openAIApiKey,
-                "content-type": "application/json",
-            },
-        })
+            .post(
+                openAI_url,
+                {
+                    model: this.model,
+                    messages: chatMessages,
+                    temperature: this.temperature,
+                },
+                {
+                    headers: {
+                        Authorization: "Bearer " + this.openAIApiKey,
+                        "content-type": "application/json",
+                    },
+                }
+            )
             .then((response) => {
-            console.log({ response });
-            return response.data.choices;
-        })
+                console.log({ response });
+                return response.data.choices;
+            })
             .catch((error) => {
-            console.log({ error });
-            if (error.response) {
-                console.log("Server responded with status code:", error.response.status);
-                console.log("Response data:", error.response.data);
-            }
-            else if (error.request) {
-                console.log("No response received:", error.request);
-            }
-            else {
-                console.log("Error creating request:", error.message);
-            }
-        });
+                console.log({ error });
+                if (error.response) {
+                    console.log("Server responded with status code:", error.response.status);
+                    console.log("Response data:", error.response.data);
+                } else if (error.request) {
+                    console.log("No response received:", error.request);
+                } else {
+                    console.log("Error creating request:", error.message);
+                }
+            });
         return response;
     }
     async testResponseGeneration(prompt) {
         const responce = await axios
-            .post(openAI_url, {
-            model: this.model,
-            messages: [
+            .post(
+                openAI_url,
                 {
-                    role: this.role,
-                    content: prompt,
+                    model: this.model,
+                    messages: [
+                        {
+                            role: this.role,
+                            content: prompt,
+                        },
+                    ],
+                    temperature: this.temperature,
                 },
-            ],
-            temperature: this.temperature,
-        }, {
-            headers: {
-                Authorization: "Bearer " + this.openAIApiKey,
-                "content-type": "application/json",
-            },
-        })
+                {
+                    headers: {
+                        Authorization: "Bearer " + this.openAIApiKey,
+                        "content-type": "application/json",
+                    },
+                }
+            )
             .then(function (response) {
-            return response.data.choices;
-        })
+                return response.data.choices;
+            })
             .catch(function (error) {
-            if (error.response) {
-                console.log("Server responded with status code:", error.response.status);
-                console.log("Response data:", error.response.data);
-            }
-            else if (error.request) {
-                console.log("No response received:", error.request);
-            }
-            else {
-                console.log("Error creating request:", error.message);
-            }
-        });
+                if (error.response) {
+                    console.log("Server responded with status code:", error.response.status);
+                    console.log("Response data:", error.response.data);
+                } else if (error.request) {
+                    console.log("No response received:", error.request);
+                } else {
+                    console.log("Error creating request:", error.message);
+                }
+            });
         return responce[0].message.content;
     }
 }

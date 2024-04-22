@@ -10,7 +10,14 @@ var PostgresDistanceMetric;
 })(PostgresDistanceMetric || (PostgresDistanceMetric = {}));
 async function hydeSearchAdaEmbedding(arkRequest, apiKey, orgId) {
     try {
-        const gpt3endpoint = new OpenAiEndpoint("https://api.openai.com/v1/chat/completions", apiKey, orgId, "gpt-3.5-turbo", "user", parseInt("0.7"));
+        const gpt3endpoint = new OpenAiEndpoint(
+            "https://api.openai.com/v1/chat/completions",
+            apiKey,
+            orgId,
+            "gpt-3.5-turbo",
+            "user",
+            parseInt("0.7")
+        );
         // Get required params from API...
         const table = "ada_hyde_prod";
         const namespace = "360_docs";
@@ -37,17 +44,30 @@ async function hydeSearchAdaEmbedding(arkRequest, apiKey, orgId) {
         // Chain 1 ==> Get Gpt3Response & split
         const gpt3Responses = gptResponse.split("\n");
         // Chain 2 ==> Get Embeddings from OpenAI using Each Response
-        const embeddingsListChain = Promise.all(gpt3Responses.map(async (resp) => {
-            const embedding = await gpt3endpoint.embeddings(resp);
-            return embedding;
-        }));
+        const embeddingsListChain = Promise.all(
+            gpt3Responses.map(async (resp) => {
+                const embedding = await gpt3endpoint.embeddings(resp);
+                return embedding;
+            })
+        );
         // Chain 5 ==> Query via EmbeddingChain
-        const dbClient = new PostgresClient(await embeddingsListChain, PostgresDistanceMetric.IP, topK, 20, table, namespace, arkRequest, 15);
+        const dbClient = new PostgresClient(
+            await embeddingsListChain,
+            PostgresDistanceMetric.IP,
+            topK,
+            20,
+            table,
+            namespace,
+            arkRequest,
+            15
+        );
         const queryResult = await dbClient.dbQuery();
         // Chain 6 ==> Create Prompt using Embeddings
         const retrievedDocs = [];
         for (const embeddings of queryResult) {
-            retrievedDocs.push(`${embeddings.raw_text}\n score:${embeddings.score}\n filename:${embeddings.filename}\n`);
+            retrievedDocs.push(
+                `${embeddings.raw_text}\n score:${embeddings.score}\n filename:${embeddings.filename}\n`
+            );
         }
         if (retrievedDocs.join("").length > 4096) {
             retrievedDocs.length = 4096;
@@ -79,8 +99,7 @@ async function hydeSearchAdaEmbedding(arkRequest, apiKey, orgId) {
             finalAnswer: finalAnswer,
         };
         return response;
-    }
-    catch (error) {
+    } catch (error) {
         // Handle errors here
         console.error(error);
         throw error;
