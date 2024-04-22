@@ -22,11 +22,9 @@ export const rootLayout = (layoutToApply) => {
 export const layout = (layoutToApply) => {
     return async (c, next) => {
         await next();
-        if (
-            (c.req.header("HX-Request") === "true" &&
-                (c.req.header("HX-Boosted") === "true" || !c.req.header("HX-Target"))) ||
-            c.req.header("HX-Request") !== "true"
-        ) {
+        if ((c.req.header("HX-Request") === "true" &&
+            (c.req.header("HX-Boosted") === "true" || !c.req.header("HX-Target"))) ||
+            c.req.header("HX-Request") !== "true") {
             // Req is regular req or boosted link, so we apply layouts
             const curBody = await c.res.text();
             c.res = undefined; // To overwrite res, set it to undefined before setting new value https://github.com/honojs/hono/pull/970 released in https://github.com/honojs/hono/releases/tag/v3.1.0
@@ -38,7 +36,7 @@ export const layout = (layoutToApply) => {
 };
 export const Link = ({ to, "hx-target": hxTarget, class: className, children }) => {
     if (hxTarget) {
-        return html`<a
+        return html `<a
             href="${to}"
             class="${className}"
             hx-get="${to}"
@@ -47,7 +45,8 @@ export const Link = ({ to, "hx-target": hxTarget, class: className, children }) 
             hx-swap="morph"
             >${children}</a
         >`;
-    } else {
-        return html`<a href="${to}" class="${className}" hx-boost="true">${children}</a>`;
+    }
+    else {
+        return html `<a href="${to}" class="${className}" hx-boost="true">${children}</a>`;
     }
 };

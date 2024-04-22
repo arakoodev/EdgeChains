@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "types": ["dotenv/config", "node"],
+        "types": ["jest", "node"],
         "target": "ES2022",
         "module": "NodeNext",
         "esModuleInterop": true,
@@ -11,7 +11,9 @@
         "jsxImportSource": "hono/jsx",
         "noImplicitAny": false,
         "moduleResolution": "NodeNext",
-        "declaration": true
+        "declaration": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
     },
-    "exclude": ["node_modules", "dist", "./**/*.test.ts"]
+    "exclude": ["node_modules", "dist", "./**/*.test.ts", "./setupTests.js"]
 }

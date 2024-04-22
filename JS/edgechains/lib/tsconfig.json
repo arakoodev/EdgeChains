@@ -1,6 +1,9 @@
 {
     "compilerOptions": {
-        "types": ["dotenv/config", "node"],
+        "types": [
+            "dotenv/config",
+            "node"
+        ],
         "target": "ES2022",
         "module": "NodeNext",
         "esModuleInterop": true,
@@ -13,5 +16,9 @@
         "moduleResolution": "NodeNext",
         "declaration": true
     },
-    "exclude": ["node_modules", "dist", "./**/*.test.ts"]
+    "exclude": [
+        "node_modules",
+        "dist",
+        "./**/*.test.ts"
+    ]
 }

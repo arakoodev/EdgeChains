@@ -21,11 +21,7 @@ HydeSearchRouter.get("/search", async (c) => {
         },
         orderRRF: query.orderRRF,
     };
-    const answer = await hydeSearchAdaEmbedding(
-        arkRequest,
-        process.env.OPENAI_API_KEY,
-        process.env.OPENAI_ORG_ID
-    );
+    const answer = await hydeSearchAdaEmbedding(arkRequest, process.env.OPENAI_API_KEY, process.env.OPENAI_ORG_ID);
     const final_answer = answer.finalAnswer;
     const responses = answer.wordEmbeddings;
     const data = { responses, final_answer };
@@ -36,36 +32,26 @@ HydeSearchRouter.get("/search", async (c) => {
             <div class="card-body">${data.final_answer}</div>
         </div>
             <ul class="list-unstyled mb-0">
-              ${data.responses.map(
-                  (item) => `
+              ${data.responses.map((item) => `
                   <li>
                     <div class="card">
                       <div class="card-body">
-                        ${
-                            item.rawText != null
-                                ? `<div class="card card-body">${item.rawText}</div>`
-                                : `<div class="card card-body">${item.metadata}</div>`
-                        }
-                        ${
-                            item.filename != null
-                                ? `<div class="card card-body" style="color: blue;">${item.filename}</div>`
-                                : ""
-                        }
-                        ${
-                            item.titleMetadata != null
-                                ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>`
-                                : ""
-                        }
-                        ${
-                            item.documentDate != null
-                                ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>`
-                                : ""
-                        }
+                        ${item.rawText != null
+        ? `<div class="card card-body">${item.rawText}</div>`
+        : `<div class="card card-body">${item.metadata}</div>`}
+                        ${item.filename != null
+        ? `<div class="card card-body" style="color: blue;">${item.filename}</div>`
+        : ""}
+                        ${item.titleMetadata != null
+        ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>`
+        : ""}
+                        ${item.documentDate != null
+        ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>`
+        : ""}
                       </div>
                     </div>
                   </li>
-                `
-              )}
+                `)}
             </ul>
   </html>
     `);

@@ -1,8 +1,12 @@
-import { createParser, ParsedEvent, ReconnectInterval } from "eventsource-parser";
+import {
+    createParser,
+    ParsedEvent,
+    ReconnectInterval,
+} from "eventsource-parser";
 
 export interface OpenAIStreamPayload {
     model?: string;
-    OpenApiKey?: string;
+    OpenApiKey?: string
     temperature?: number;
     top_p?: number;
     frequency_penalty?: number;
@@ -35,7 +39,7 @@ export class Stream {
     }
 
     public encoder = new TextEncoder();
-    public decoder = new TextDecoder();
+    public decoder = new TextDecoder()
     async OpenAIStream(prompt: string): Promise<any> {
         try {
             const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -45,17 +49,17 @@ export class Stream {
                     "content-type": "application/json",
                 },
                 body: JSON.stringify({
-                    model: this.model,
-                    messages: [{ role: "user", content: prompt }],
-                    stream: this.stream,
-                    temperature: this.temperature,
-                    top_p: this.top_p,
-                    n: this.n,
-                    presence_penalty: this.presence_penalty,
-                    frequency_penalty: this.frequency_penalty,
-                    max_tokens: this.max_tokens,
+                    "model": this.model,
+                    "messages": [{ role: "user", content: prompt }],
+                    "stream": this.stream,
+                    "temperature": this.temperature,
+                    "top_p": this.top_p,
+                    "n": this.n,
+                    "presence_penalty": this.presence_penalty,
+                    "frequency_penalty": this.frequency_penalty,
+                    "max_tokens": this.max_tokens
                 }),
-            });
+            })
             const readableStream = new ReadableStream({
                 start: async (controller) => {
                     // callback
@@ -64,7 +68,7 @@ export class Stream {
                             const data = event.data;
                             controller.enqueue(this.encoder.encode(data));
                         }
-                    };
+                    }
 
                     // optimistic error handling
                     if (res.status !== 200) {
@@ -72,10 +76,10 @@ export class Stream {
                             status: res.status,
                             statusText: res.statusText,
                             body: await res.text(),
-                        };
+                        }
                         console.log(`Error: recieved non-200 status code, ${JSON.stringify(data)}`);
                         controller.close();
-                        return;
+                        return
                     }
 
                     // stream response (SSE) from OpenAI may be fragmented into multiple chunks
@@ -114,7 +118,7 @@ export class Stream {
                         counter++;
                     } catch (e) {
                         // maybe parse error
-                        console.log(e);
+                        console.log(e)
                         controller.error(e);
                     }
                 },
@@ -122,7 +126,7 @@ export class Stream {
 
             return readableStream.pipeThrough(transformStream).getReader();
         } catch (error) {
-            console.log(error);
+            console.log(error)
         }
     }
 }

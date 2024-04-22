@@ -7,7 +7,7 @@
     "scripts": {
         "test": "npx jest",
         "build": "node build.js",
-        "start": "tsc -b && node --experimental-wasm-modules src/index.js"
+        "start": "tsc -b && node --experimental-wasm-modules dist/index.js"
     },
     "jest": {
         "setupFiles": [
@@ -18,13 +18,9 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@arakoodev/arakooserver": "file:../../arakooserver",
-        "@arakoodev/document-loader": "file:../../document-loader",
-        "@arakoodev/openai": "file:../../lib",
-        "@arakoodev/splitter": "file:../../splitter",
-        "@arakoodev/vector-db": "file:../../vector-db",
         "@babel/preset-env": "^7.24.4",
         "@types/jest": "^29.5.12",
+        "arakoodev": "1.0.2",
         "axios-retry": "^4.1.0",
         "cli-spinner": "^0.2.10",
         "dotenv": "^16.4.5",

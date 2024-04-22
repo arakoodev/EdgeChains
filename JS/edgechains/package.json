@@ -1,12 +1,34 @@
 {
+    "name": "arakoodev",
+    "version": "1.0.2",
+    "main": "index.js",
+    "files": [
+        "arakooserver/dist",
+        "arakooserver/package.json",
+        "db/dist",
+        "db/package.json",
+        "document-loader/dist",
+        "document-loader/package.json",
+        "middleware/dist",
+        "middleware/package.json",
+        "openai/dist",
+        "openai/package.json",
+        "splitter/dist",
+        "splitter/package.json",
+        "vector-db/dist",
+        "vector-db/package.json",
+        "README.md"
+    ],
     "dependencies": {
-        "@hanazuki/node-jsonnet": "^2.1.0",
-        "@arakoodev/jsonnet": "0.1.2",
-        "@hono/node-server": "^1.2.0",
-        "hono": "^3.9.2",
-        "path": "^0.12.7"
+        "@arakoodev/arakooserver": "file:arakooserver",
+        "@arakoodev/db": "file:db",
+        "@arakoodev/document-loader": "file:document-loader",
+        "@arakoodev/middleware": "file:middleware",
+        "@arakoodev/openai": "file:openai",
+        "@arakoodev/splitter": "file:splitter",
+        "@arakoodev/vector-db": "file:vector-db"
     },
-    "devDependencies": {
-        "@types/node": "^20.8.10"
-    }
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
 }

@@ -11,7 +11,9 @@
         "jsxImportSource": "hono/jsx",
         "noImplicitAny": false,
         "moduleResolution": "NodeNext",
-        "declaration": true
+        "declaration": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
     },
     "exclude": ["node_modules", "dist", "./**/*.test.ts"]
 }
