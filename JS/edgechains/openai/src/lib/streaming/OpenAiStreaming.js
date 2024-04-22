@@ -1,4 +1,4 @@
-import { createParser } from "eventsource-parser";
+import { createParser, } from "eventsource-parser";
 export class Stream {
     model;
     OpenApiKey;
@@ -31,15 +31,15 @@ export class Stream {
                     "content-type": "application/json",
                 },
                 body: JSON.stringify({
-                    model: this.model,
-                    messages: [{ role: "user", content: prompt }],
-                    stream: this.stream,
-                    temperature: this.temperature,
-                    top_p: this.top_p,
-                    n: this.n,
-                    presence_penalty: this.presence_penalty,
-                    frequency_penalty: this.frequency_penalty,
-                    max_tokens: this.max_tokens,
+                    "model": this.model,
+                    "messages": [{ role: "user", content: prompt }],
+                    "stream": this.stream,
+                    "temperature": this.temperature,
+                    "top_p": this.top_p,
+                    "n": this.n,
+                    "presence_penalty": this.presence_penalty,
+                    "frequency_penalty": this.frequency_penalty,
+                    "max_tokens": this.max_tokens
                 }),
             });
             const readableStream = new ReadableStream({
@@ -95,7 +95,8 @@ export class Stream {
                         // );
                         controller.enqueue(payload.text);
                         counter++;
-                    } catch (e) {
+                    }
+                    catch (e) {
                         // maybe parse error
                         console.log(e);
                         controller.error(e);
@@ -103,7 +104,8 @@ export class Stream {
                 },
             });
             return readableStream.pipeThrough(transformStream).getReader();
-        } catch (error) {
+        }
+        catch (error) {
             console.log(error);
         }
     }

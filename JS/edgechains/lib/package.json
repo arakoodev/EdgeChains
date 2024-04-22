@@ -1,5 +1,5 @@
 {
-    "name": "@arakoodev/openai",
+    "name": "@arakoodev/create-edgechains",
     "version": "0.1.22",
     "main": "dist/index.js",
     "type": "module",
