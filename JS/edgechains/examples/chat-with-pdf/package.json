@@ -20,7 +20,7 @@
     "dependencies": {
         "@babel/preset-env": "^7.24.4",
         "@types/jest": "^29.5.12",
-        "arakoodev": "1.0.2",
+        "arakoodev": "^1.0.6",
         "axios-retry": "^4.1.0",
         "cli-spinner": "^0.2.10",
         "dotenv": "^16.4.5",
