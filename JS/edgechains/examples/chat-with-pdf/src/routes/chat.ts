@@ -85,7 +85,7 @@ async function InsertToSupabase(content) {
     }
 }
 // this should run only once for uploding pdf data to supabase then you can continue with the chatbot functionality
-// await InsertToSupabase(splitedDocs);
+await InsertToSupabase(splitedDocs);
 
 ChatRouter.get("/", async (c) => {
     const searchStr = c.req.query("question").toLowerCase();
