@@ -6,8 +6,8 @@
     "type": "module",
     "scripts": {
         "test": "npx jest",
-        "build": "node build.js",
-        "start": "tsc -b && node --experimental-wasm-modules dist/index.js"
+        "build": "tsc -b",
+        "start": "node --experimental-wasm-modules dist/index.js"
     },
     "jest": {
         "setupFiles": [
@@ -18,9 +18,9 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@arakoodev/jsonnet": "^0.2.0",
         "@babel/preset-env": "^7.24.4",
-        "@types/jest": "^29.5.12",
-        "arakoodev": "^1.0.6",
+        "arakoodev": "^1.0.7",
         "axios-retry": "^4.1.0",
         "cli-spinner": "^0.2.10",
         "dotenv": "^16.4.5",
@@ -31,6 +31,7 @@
     },
     "devDependencies": {
         "@types/cli-spinner": "^0.2.3",
+        "@types/jest": "^29.5.12",
         "esbuild": "^0.20.2"
     }
 }

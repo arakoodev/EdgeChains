@@ -1,0 +1,63 @@
+{
+  "name": "arakoodev",
+  "version": "1.0.7",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    "./openai": "./dist/openai/src/index.js",
+    "./vector-db": "./dist/vector-db/src/index.js",
+    "./document-loader": "./dist/document-loader/src/index.js",
+    "./splitter": "./dist/splitter/src/index.js",
+    "./arakooserver": "./dist/arakooserver/src/index.js",
+    "./db": "./dist/db/src/index.js",
+    "./middleware": "./dist/middleware/src/index.js"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -b",
+    "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
+    "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
+    "test": "npx jest"
+  },
+  "dependencies": {
+    "@babel/core": "^7.24.4",
+    "@babel/preset-env": "^7.24.4",
+    "@hono/node-server": "^1.11.0",
+    "@supabase/supabase-js": "^2.42.3",
+    "@types/dotenv": "^8.2.0",
+    "axios": "^1.6.2",
+    "axios-retry": "^4.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "dts-bundle-generator": "^9.3.1",
+    "esbuild": "^0.20.2",
+    "eventsource-parser": "^1.1.2",
+    "hono": "^4.2.2",
+    "jest-environment-jsdom": "^29.7.0",
+    "node-fetch": "^3.3.2",
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.11.5",
+    "prettier": "^3.2.5",
+    "regenerator-runtime": "^0.14.1",
+    "retry": "^0.13.1",
+    "text-encoding": "^0.7.0",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.20",
+    "vitest": "^1.5.1",
+    "web-streams-polyfill": "^4.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/preset-typescript": "^7.24.1",
+    "@types/cors": "^2.8.17",
+    "@types/jest": "^29.5.12",
+    "@types/pdf-parse": "^1.1.4",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.5"
+  }
+}
