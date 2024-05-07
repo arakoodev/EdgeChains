@@ -1,25 +1,19 @@
 {
-  "compilerOptions": {
-      "types": ["dotenv/config","jest", "node"],
-      "target": "ES2022",
-      "module": "NodeNext",
-      "esModuleInterop": true,
-      "forceConsistentCasingInFileNames": true,
-      "strict": true,
-      "skipLibCheck": true,
-      "jsx": "react-jsx",
-      "jsxImportSource": "hono/jsx",
-      "noImplicitAny": false,
-      "moduleResolution": "NodeNext",
-      "declaration": true,
-      "outDir": "./dist",
-      "rootDir": "./src",
-  },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "jest.config.cjs",
-    "./**/*.test.ts",
-    "./**/*.test.d.ts",
-  ]
+    "compilerOptions": {
+        "types": ["dotenv/config", "jest", "node"],
+        "target": "ES2022",
+        "module": "NodeNext",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "jsx": "react-jsx",
+        "jsxImportSource": "hono/jsx",
+        "noImplicitAny": false,
+        "moduleResolution": "NodeNext",
+        "declaration": true,
+        "outDir": "./dist",
+        "rootDir": "./src"
+    },
+    "exclude": ["node_modules", "dist", "jest.config.cjs", "./**/*.test.ts", "./**/*.test.d.ts"]
 }
