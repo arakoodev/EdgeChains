@@ -6,7 +6,8 @@ import { describe, it } from "mocha";
 let jsonnet = new Jsonnet();
 describe("Testing evaluateSnippet function of jsonnet library", () => {
     it("self reference", () => {
-        let result = JSON.parse(jsonnet.evaluateSnippet(`{
+        let result = JSON.parse(
+            jsonnet.evaluateSnippet(`{
           Martini: {
             local drink = self,
             ingredients: [
@@ -19,7 +20,8 @@ describe("Testing evaluateSnippet function of jsonnet library", () => {
             garnish: 'Olive',
             served: 'Straight Up',
           },
-        }`));
+        }`)
+        );
         let expected = {
             Martini: {
                 garnish: "Olive",
@@ -40,13 +42,15 @@ describe("Testing evaluateSnippet function of jsonnet library", () => {
         expect(result).to.eql(expected);
     });
     it("math operations", () => {
-        let result = JSON.parse(jsonnet.evaluateSnippet(`{
+        let result = JSON.parse(
+            jsonnet.evaluateSnippet(`{
 		  a: 1 + 2,
 		  b: 3 * 4,
 		  c: 5 / 6,
 		  d: 7 % 8,
 		  e: 9 - 10,
-		}`));
+		}`)
+        );
         let expected = {
             a: 3,
             b: 12,
@@ -88,7 +92,8 @@ describe("Testing evaluateFile function of jsonnet library", () => {
 });
 describe("Testing extString function of jsonnet library", () => {
     it("Test extString function", () => {
-        let result = JSON.parse(jsonnet.extString("name", "Alice").evaluateSnippet(`local username = std.extVar('name');
+        let result = JSON.parse(
+            jsonnet.extString("name", "Alice").evaluateSnippet(`local username = std.extVar('name');
 		local Person(name='Alice') = {
 		  name: name,
 		  welcome: 'Hello ' + name + '!',
@@ -96,7 +101,8 @@ describe("Testing extString function of jsonnet library", () => {
 		{
 		  person1: Person(username),
 		  person2: Person('Bob'),
-		}`));
+		}`)
+        );
         let expected = {
             person1: {
                 name: "Alice",
@@ -129,11 +135,13 @@ describe("Testing regex function of jsonnet library", () => {
 });
 describe("Testing join function of jsonnet library", () => {
     it("Test join function", () => {
-        let result = JSON.parse(jsonnet.evaluateSnippet(`local a  = "open";
+        let result = JSON.parse(
+            jsonnet.evaluateSnippet(`local a  = "open";
         local b = "source";
         {
             "joined string":arakoo.join(a,b)
-        }`));
+        }`)
+        );
         let expected = {
             "joined string": "opensource",
         };
@@ -145,10 +153,12 @@ describe("Testing javascript native function of jsonnet library", () => {
         function add(a, b, c) {
             return a + b + c;
         }
-        let result = JSON.parse(jsonnet.javascriptCallback("add", add).evaluateSnippet(`{
+        let result = JSON.parse(
+            jsonnet.javascriptCallback("add", add).evaluateSnippet(`{
 			"result": "Output "+arakoo.native("add")(1,2,3),
 			"name":"Alice"
-		}`));
+		}`)
+        );
         expect(result).to.eql({
             result: "Output 6",
             name: "Alice",
@@ -163,10 +173,12 @@ describe("Testing javascript native function of jsonnet library", () => {
             }
             return sum;
         }
-        let result = JSON.parse(jsonnet.javascriptCallback("arrsum", calcSum).evaluateSnippet(`{
+        let result = JSON.parse(
+            jsonnet.javascriptCallback("arrsum", calcSum).evaluateSnippet(`{
 			"result": "Output "+arakoo.native("arrsum")(${JSON.stringify(numArr)}),
 			"name":"Alice"
-		}`));
+		}`)
+        );
         expect(result).to.eql({
             result: "Output 15",
             name: "Alice",
@@ -176,10 +188,12 @@ describe("Testing javascript native function of jsonnet library", () => {
         function concat(a, b) {
             return a + b;
         }
-        let result = JSON.parse(jsonnet.javascriptCallback("concat", concat).evaluateSnippet(`{
+        let result = JSON.parse(
+            jsonnet.javascriptCallback("concat", concat).evaluateSnippet(`{
 			"result": "Output "+arakoo.native("concat")("Hello ","World"),
 			"name":"Alice"
-		}`));
+		}`)
+        );
         expect(result).to.eql({
             result: "Output Hello World",
             name: "Alice",
@@ -188,11 +202,13 @@ describe("Testing javascript native function of jsonnet library", () => {
 });
 describe("Testing includes function of jsonnet library", () => {
     it("Test includes function", () => {
-        let result = JSON.parse(jsonnet.evaluateSnippet(`{
+        let result = JSON.parse(
+            jsonnet.evaluateSnippet(`{
             "result":arakoo.includes("open source is awesome","source")
-        }`));
+        }`)
+        );
         let expected = {
-            "result": true,
+            result: true,
         };
         expect(result).to.eql(expected);
     });

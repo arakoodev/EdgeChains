@@ -1,3 +1,3 @@
-import Jsonnet  from "./jsonnet.js";
+import Jsonnet from "./jsonnet.js";
 
 export default Jsonnet;

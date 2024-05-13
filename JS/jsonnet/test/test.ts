@@ -211,12 +211,14 @@ describe("Testing javascript native function of jsonnet library", () => {
 
 describe("Testing includes function of jsonnet library", () => {
     it("Test includes function", () => {
-        let result = JSON.parse(jsonnet.evaluateSnippet(`{
+        let result = JSON.parse(
+            jsonnet.evaluateSnippet(`{
             "result":arakoo.includes("open source is awesome","source")
-        }`));
+        }`)
+        );
         let expected = {
-            "result": true,
+            result: true,
         };
         expect(result).to.eql(expected);
     });
-})
+});
