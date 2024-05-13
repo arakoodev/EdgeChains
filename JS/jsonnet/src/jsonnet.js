@@ -3,7 +3,7 @@ const isArakoo = process.env.arakoo;
 let Jsonnet;
 
 if (!isArakoo) {
-    let module = import("./jsonnet_wasm.js");
+    let module = require("./jsonnet_wasm.js");
     let {
         jsonnet_evaluate_snippet,
         jsonnet_destroy,
@@ -13,7 +13,7 @@ if (!isArakoo) {
         get_func,
         set_func,
         register_native_callback,
-    } = await module;
+    } = module;
     Jsonnet = class Jsonnet {
         constructor() {
             this.vm = jsonnet_make();
@@ -76,4 +76,4 @@ if (!isArakoo) {
     };
 }
 
-export default Jsonnet;
+module.exports = Jsonnet;

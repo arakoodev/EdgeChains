@@ -19,6 +19,16 @@ fn join(a: String, b: String) -> String {
 }
 
 #[builtin]
+fn includes(a: String, b: String) -> bool {
+    if a.contains(&b) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+#[builtin]
 fn regex_match(a: String, b: String) -> Vec<String> {
     // log(&a);
     // log(&b);
@@ -50,6 +60,7 @@ fn arakoolib_uncached(settings: Rc<RefCell<Settings>>) -> ObjValue {
 	);
     builder.method("join", join::INST);
     builder.method("regexMatch", regex_match::INST);
+    builder.method("includes", includes::INST);
     builder.build()
 }
 

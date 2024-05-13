@@ -1,7 +1,14 @@
 {
     "name": "@arakoodev/jsonnet",
     "version": "0.2.0",
-    "main": "src/index.js",
-    "type": "module",
-    "types": "src/index.d.ts"
+    "exports":{
+        "import":{
+            "default":"./src/index.mjs",
+            "types":"./src/index.d.mts"
+        },
+        "require":{
+            "default":"./src/index.js",
+            "types":"./src/index.d.ts"
+        }
+    }
 }

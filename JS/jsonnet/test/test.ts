@@ -1,4 +1,6 @@
 import Jsonnet from "@arakoodev/jsonnet";
+// import Jsonnet from "../src/index.js"
+// import Jsonnet from "../src/index.mjs"
 import { expect } from "chai";
 import { describe, it } from "mocha";
 
@@ -206,3 +208,15 @@ describe("Testing javascript native function of jsonnet library", () => {
         });
     });
 });
+
+describe("Testing includes function of jsonnet library", () => {
+    it("Test includes function", () => {
+        let result = JSON.parse(jsonnet.evaluateSnippet(`{
+            "result":arakoo.includes("open source is awesome","source")
+        }`));
+        let expected = {
+            "result": true,
+        };
+        expect(result).to.eql(expected);
+    });
+})

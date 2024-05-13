@@ -17,6 +17,7 @@ use jrsonnet_gcmodule::Trace;
 use jrsonnet_parser::IStr;
 use std::alloc;
 use wasm_bindgen::prelude::*;
+use console_error_panic_hook;
 
 mod context;
 
@@ -59,6 +60,7 @@ pub fn jsonnet_make() -> *mut VM {
         });
     }
     let state = State::default();
+    console_error_panic_hook::set_once();
     state.settings_mut().import_resolver = tb!(FileImportResolver::default());
     state.set_context_initializer(context::ArakooContextInitializer::new(
         state.clone(),
@@ -138,43 +140,6 @@ pub fn ext_string(vm: *mut VM, key: &str, value: &str) {
         .expect("only arakoo context initializer supported")
         .add_ext_var(key.into(), Val::Str(value.into()));
 }
-
-// #[wasm_bindgen]
-// pub struct CallBackClass {
-//     arg: String,
-//     func: js_sys::Function
-// }
-
-// #[wasm_bindgen]
-// impl CallBackClass {
-//     #[wasm_bindgen(constructor)]
-//     pub extern "C" fn new(f: &js_sys::Function) -> CallBackClass {
-//         CallBackClass {
-//             arg: String::from(""),
-//             func: f.clone(),
-//         }
-//     }
-
-//     pub extern "C" fn call_native_js_func(&self) -> Result<JsValue, JsValue> {
-//         let this = JsValue::null();
-//         // for x in self.args {
-//         // let x = JsValue::from(x);
-//         let result = self.func.call1(&this, &JsValue::from_str(&self.arg));
-//         println!("Result of calling JS function: {:?}", result);
-//         return result;
-//         // }
-//     }
-
-//     #[wasm_bindgen(getter)]
-//     pub extern "C" fn arg(&self) -> String {
-//         self.arg.clone()
-//     }
-
-//     #[wasm_bindgen(setter)]
-//     pub extern "C" fn set_arg(&mut self, arg: String) {
-//         self.arg = arg;
-//     }
-// }
 
 #[wasm_bindgen]
 pub fn get_func(name: &str) -> Option<js_sys::Function> {

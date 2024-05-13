@@ -11,11 +11,14 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@arakoodev/jsonnet": "file:../"
+        "synchronized-promise": "^0.3.1",
+        "util": "^0.12.5"
     },
     "devDependencies": {
         "@types/chai": "^4.3.14",
+        "@arakoodev/jsonnet":"file:../",
         "@types/mocha": "^10.0.6",
+        "@types/node": "^20.12.7",
         "chai": "^5.1.0",
         "mocha": "^10.4.0",
         "typescript": "^5.4.3"

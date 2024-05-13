@@ -14,7 +14,7 @@ if [ "$1" != "false" ]; then
 fi
 OUT_FOLDER="jsonnet"
 OUT_JSON="${OUT_FOLDER}/package.json"
-OUT_TARGET="bundler"
+OUT_TARGET="nodejs"
 OUT_NPM_NAME="arakoo"
 WASM_BUILD_PROFILE="release"
 
@@ -40,8 +40,8 @@ enable_cf_in_bindings() {
 	# - Cloudflare Workers / Miniflare
 
 	local FILE="$1" # e.g., `query_engine.js`
-	local BG_FILE="jsonnet_wasm_bg.js"
-	local OUTPUT_FILE="${OUT_FOLDER}/jsonnet_wasm.js"
+	local BG_FILE="jsonnet_wasm.js"
+	local OUTPUT_FILE="${OUT_FOLDER}/jsonnet_wasm_binding.js"
 
 	cat <<EOF >"$OUTPUT_FILE"
 import * as imports from "./${BG_FILE}";
@@ -59,8 +59,8 @@ if ((typeof process !== 'undefined') && (process.release.name === 'node')) {
 export * from "./${BG_FILE}";
 EOF
 
-	cat <<EOF >"$OUT_FOLDER/index.js"
-import Jsonnet from "./jsonnet.js";
+	cat <<EOF >"$OUT_FOLDER/index.mjs"
+const {Jsonnet} = await import("./jsonnet.js")
 
 export default Jsonnet;
 EOF
@@ -96,6 +96,6 @@ move_jsonnet_to_src() {
 	rm -rf jsonnet
 }
 
-enable_cf_in_bindings "jsonnet_wasm_bg.js"
+# enable_cf_in_bindings "jsonnet_wasm_bg.js"
 update_package_json "index.js"
 move_jsonnet_to_src

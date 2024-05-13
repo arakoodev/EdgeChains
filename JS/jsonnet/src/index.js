@@ -1,3 +1,2 @@
-import Jsonnet from "./jsonnet.js";
-
-export default Jsonnet;
+const Jsonnet = require("./jsonnet.js")
+module.exports = Jsonnet;
