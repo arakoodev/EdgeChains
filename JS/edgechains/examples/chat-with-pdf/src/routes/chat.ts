@@ -6,7 +6,7 @@ import { Supabase } from "arakoodev/vector-db";
 import { PdfLoader } from "arakoodev/document-loader";
 import { TextSplitter } from "arakoodev/splitter";
 import { ArakooServer } from "arakoodev/arakooserver";
-import { Spinner } from "cli-spinner"
+import { Spinner } from "cli-spinner";
 const server = new ArakooServer();
 
 const __dirname = fileURLToPath(import.meta.url);

@@ -1,4 +1,3 @@
-
 import { ArakooServer } from "arakoodev/arakooserver";
 import { ReactChainRouter } from "./routes/react-chain.js";
 
@@ -8,5 +7,4 @@ const app = server.createApp();
 
 app.route("/", ReactChainRouter);
 
-server.listen(5000)
-
+server.listen(5000);

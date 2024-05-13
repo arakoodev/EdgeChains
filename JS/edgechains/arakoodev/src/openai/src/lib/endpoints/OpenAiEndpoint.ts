@@ -52,17 +52,14 @@ export class ChatOpenAi {
                         Authorization: "Bearer " + this.openAIApiKey,
                         "content-type": "application/json",
                     },
-                },
+                }
             )
             .then((response) => {
                 return response.data.choices;
             })
             .catch((error) => {
                 if (error.response) {
-                    console.log(
-                        "Server responded with status code:",
-                        error.response.status,
-                    );
+                    console.log("Server responded with status code:", error.response.status);
                     console.log("Response data:", error.response.data);
                 } else if (error.request) {
                     console.log("No response received:", error);
@@ -86,17 +83,14 @@ export class ChatOpenAi {
                         Authorization: `Bearer ${this.openAIApiKey}`,
                         "content-type": "application/json",
                     },
-                },
+                }
             )
             .then((response) => {
                 return response.data.data;
             })
             .catch((error) => {
                 if (error.response) {
-                    console.log(
-                        "Server responded with status code:",
-                        error.response.status,
-                    );
+                    console.log("Server responded with status code:", error.response.status);
                     console.log("Response data:", error.response.data);
                 } else if (error.request) {
                     console.log("No response received:", error.request);
@@ -121,7 +115,7 @@ export class ChatOpenAi {
                         Authorization: "Bearer " + this.openAIApiKey,
                         "content-type": "application/json",
                     },
-                },
+                }
             )
             .then((response) => {
                 return response.data.choices;
@@ -129,10 +123,7 @@ export class ChatOpenAi {
             .catch((error) => {
                 console.log({ error });
                 if (error.response) {
-                    console.log(
-                        "Server responded with status code:",
-                        error.response.status,
-                    );
+                    console.log("Server responded with status code:", error.response.status);
                     console.log("Response data:", error.response.data);
                 } else if (error.request) {
                     console.log("No response received:", error.request);
@@ -163,17 +154,14 @@ export class ChatOpenAi {
                         Authorization: "Bearer " + this.openAIApiKey,
                         "content-type": "application/json",
                     },
-                },
+                }
             )
             .then(function (response) {
                 return response.data.choices;
             })
             .catch(function (error) {
                 if (error.response) {
-                    console.log(
-                        "Server responded with status code:",
-                        error.response.status,
-                    );
+                    console.log("Server responded with status code:", error.response.status);
                     console.log("Response data:", error.response.data);
                 } else if (error.request) {
                     console.log("No response received:", error.request);
