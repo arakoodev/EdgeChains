@@ -1,3 +1,4 @@
+//@ts-ignore
 import { createParser, ParsedEvent, ReconnectInterval } from "eventsource-parser";
 
 export interface OpenAIStreamPayload {

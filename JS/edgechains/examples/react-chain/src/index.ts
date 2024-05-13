@@ -1,12 +1,12 @@
-import "dotenv/config";
-import { serve } from "@hono/node-server";
-import { Hono } from "hono";
-import { ReactChainRouter } from "./ReactChain.js";
 
-const app = new Hono();
+import { ArakooServer } from "arakoodev/arakooserver";
+import { ReactChainRouter } from "./routes/react-chain.js";
+
+const server = new ArakooServer();
+
+const app = server.createApp();
 
 app.route("/", ReactChainRouter);
 
-serve(app, () => {
-    console.log("server running on port 3000");
-});
+server.listen(5000)
+

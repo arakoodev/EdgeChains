@@ -1,8 +1,2 @@
-# standard exclusions
-node_modules
-  
-# build artifacts
 dist
-  
-# environment files
-.env
+node_modules

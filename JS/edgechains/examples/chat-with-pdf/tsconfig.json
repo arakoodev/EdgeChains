@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "types": ["dotenv/config", "node"],
         "target": "ES2022",
         "module": "NodeNext",
         "esModuleInterop": true,

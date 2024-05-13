@@ -6,7 +6,7 @@ import { Supabase } from "arakoodev/vector-db";
 import { PdfLoader } from "arakoodev/document-loader";
 import { TextSplitter } from "arakoodev/splitter";
 import { ArakooServer } from "arakoodev/arakooserver";
-import { Spinner } from "cli-spinner";
+import { Spinner } from "cli-spinner"
 const server = new ArakooServer();
 
 const __dirname = fileURLToPath(import.meta.url);
@@ -84,7 +84,7 @@ async function InsertToSupabase(content) {
     }
 }
 // this should run only once for uploding pdf data to supabase then you can continue with the chatbot functionality
-await InsertToSupabase(splitedDocs);
+// await InsertToSupabase(splitedDocs);
 
 ChatRouter.get("/", async (c) => {
     const searchStr = c.req.query("question").toLowerCase();

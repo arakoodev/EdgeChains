@@ -5,7 +5,6 @@
     "files": [
         "dist"
     ],
-    "type": "module",
     "exports": {
         "./openai": "./dist/openai/src/index.js",
         "./vector-db": "./dist/vector-db/src/index.js",
