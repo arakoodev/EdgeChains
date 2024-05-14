@@ -1,24 +1,24 @@
 {
-    "name": "react-chain",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "type": "module",
-    "scripts": {
-        "start": "tsc && node --experimental-wasm-modules ./dist/index.js",
-        "test": "npx vitest"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "@arakoodev/jsonnet": "file:../../../jsonnet",
-        "arakoodev": "file:../../arakoodev",
-        "axios": "^1.6.8",
-        "sync-rpc": "^1.3.6"
-    },
-    "devDependencies": {
-        "@types/deasync": "^0.1.5",
-        "vitest": "^1.5.3"
-    }
+  "name": "react-chain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsc && node --experimental-wasm-modules ./dist/index.js",
+    "test": "npx vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@arakoodev/jsonnet": "^0.2.1",
+    "arakoodev": "^1.0.8",
+    "axios": "^1.6.8",
+    "sync-rpc": "^1.3.6"
+  },
+  "devDependencies": {
+    "@types/deasync": "^0.1.5",
+    "vitest": "^1.5.3"
+  }
 }

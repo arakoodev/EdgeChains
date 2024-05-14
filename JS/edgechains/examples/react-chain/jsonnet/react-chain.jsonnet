@@ -133,28 +133,14 @@ local extractThought(text, actionNumber) =
     get_search_string;
 
 
-
 local extractAction(text, actionNumber) = 
     local searchPattern = "Action " +  std.toString(actionNumber) + ": " + "(.*)";
     local get_search_string = arakoo.regexMatch(text, searchPattern)[0];
     get_search_string;
 
 
-local findMatch(text, searchString) = 
-    local match = arakoo.includes(searchString, text) || arakoo.includes(text, searchString);
-    match;
-
-
 local getObservation(searchTitle) = 
-    if std.isEmpty(searchTitle) then
-        "no text found for observation"
-    else
-        local dataArr = std.parseJson(arakoo.native("callWikipediaApi")(searchTitle));
-        local serviceIndex = [
-        if findMatch(searchTitle, dataArr[x].title) then {title: dataArr[x].title, pageId: dataArr[x].pageid} for x in std.range(0, std.length(dataArr) - 1)
-        ];
-        
-        local pageId = std.toString(serviceIndex[0].pageId);
+        local pageId = arakoo.native("callWikipediaApi")(searchTitle);
         local extractedSummary = arakoo.native("getExtractedSummary")(pageId);
         extractedSummary;    
 
@@ -170,9 +156,6 @@ local checkIfFinish(text) =
 
 
 local extractMatch(text) =
-    if std.isEmpty(text) then
-        "no text found for match"
-    else
         local searchPattern = "\\[(.*)\\]";
         local get_match = arakoo.regexMatch(text, searchPattern)[0];
         get_match;
@@ -195,7 +178,7 @@ local main() =
                             if (!std.isEmpty(action) && !std.isEmpty(thought)) then
 
                                 if checkIfFinish(action) then
-                                            acc + '\nThought' + actionNumber + ':' + thought + '\nAction' + actionNumber + ':' + action
+                                            acc + '\nThought ' + actionNumber + ':' + thought + '\nAction ' + actionNumber + ': ' + action
 
                                 else
                                     local match = extractMatch(action);
