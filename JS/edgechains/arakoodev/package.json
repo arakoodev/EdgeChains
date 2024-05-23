@@ -1,6 +1,6 @@
 {
     "name": "arakoodev",
-    "version": "1.0.7",
+    "version": "1.0.9",
     "main": "dist/index.js",
     "files": [
         "dist"
@@ -12,7 +12,7 @@
         "./splitter": "./dist/splitter/src/index.js",
         "./arakooserver": "./dist/arakooserver/src/index.js",
         "./db": "./dist/db/src/index.js",
-        "./middleware": "./dist/middleware/src/index.js"
+        "./scraper": "./dist/scraper/src/index.js"
     },
     "scripts": {
         "build": "rm -rf dist && tsc -b",
@@ -28,11 +28,13 @@
         "@types/dotenv": "^8.2.0",
         "axios": "^1.6.2",
         "axios-retry": "^4.1.0",
+        "cheerio": "^1.0.0-rc.12",
         "cors": "^2.8.5",
         "dotenv": "^16.4.5",
         "dts-bundle-generator": "^9.3.1",
         "esbuild": "^0.20.2",
         "eventsource-parser": "^1.1.2",
+        "faiss-node": "^0.5.1",
         "hono": "^4.2.2",
         "jest-environment-jsdom": "^29.7.0",
         "node-fetch": "^3.3.2",
@@ -40,12 +42,14 @@
         "pg": "^8.11.5",
         "prettier": "^3.2.5",
         "regenerator-runtime": "^0.14.1",
+        "request": "^2.88.2",
         "retry": "^0.13.1",
         "text-encoding": "^0.7.0",
         "ts-node": "^10.9.2",
         "typeorm": "^0.3.20",
         "vitest": "^1.5.1",
-        "web-streams-polyfill": "^4.0.0"
+        "web-streams-polyfill": "^4.0.0",
+        "youtube-transcript": "^1.2.1"
     },
     "keywords": [],
     "author": "",

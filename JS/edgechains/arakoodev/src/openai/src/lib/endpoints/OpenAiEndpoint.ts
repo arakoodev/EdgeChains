@@ -3,63 +3,85 @@ import { config } from "dotenv";
 config();
 const openAI_url = "https://api.openai.com/v1/chat/completions";
 
-interface ChatOpenAiOptions {
-    url?: string;
-    openAIApiKey?: string;
-    orgId?: string;
-    model?: string;
-    role?: string;
-    max_tokens: number;
-    temperature?: number;
+interface OpenAIConstructionOptions {
+    apiKey?: string;
 }
 
-export class ChatOpenAi {
-    url: string;
-    openAIApiKey: string;
-    orgId: string;
-    model: string;
+interface messageOption {
     role: string;
-    max_tokens: number;
-    temperature: number;
+    content: string;
+    name?: string;
+}
 
-    constructor(options: ChatOpenAiOptions) {
-        this.url = options.url || openAI_url;
-        this.max_tokens = options.max_tokens || 256;
-        this.openAIApiKey = options.openAIApiKey || process.env.OPENAI_API_KEY!;
-        this.orgId = options.orgId || "";
-        this.model = options.model || "gpt-3.5-turbo";
-        this.role = options.role || "user";
-        this.temperature = options.temperature || 0.5;
+interface OpenAIChatOptions {
+    model?: string;
+    role?: string;
+    max_tokens?: number;
+    temperature?: number;
+    prompt?: string;
+    messages?: messageOption[];
+}
+
+interface chatWithFunctionOptions {
+    model?: string;
+    role?: string;
+    max_tokens?: number;
+    temperature?: number;
+    prompt?: string;
+    functions?: object | Array<object>;
+    messages?: messageOption[];
+    function_call?: string;
+}
+
+interface chatWithFunctionReturnOptions {
+    content: string;
+    function_call: {
+        name: string;
+        arguments: string;
+    };
+}
+
+interface OpenAIChatReturnOptions {
+    content: string;
+}
+
+export class OpenAI {
+    apiKey: string;
+    constructor(options: OpenAIConstructionOptions) {
+        this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || "";
     }
 
-    async generateResponse(prompt: string): Promise<string> {
+    async chat(chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
         const responce = await axios
             .post(
                 openAI_url,
                 {
-                    model: this.model,
-                    messages: [
+                    model: chatOptions.model || "gpt-3.5-turbo",
+                    messages: chatOptions.prompt ? [
                         {
-                            role: this.role,
-                            content: prompt,
+                            role: chatOptions.role || "user",
+                            content: chatOptions.prompt,
                         },
-                    ],
-                    max_tokens: this.max_tokens,
-                    temperature: this.temperature,
+                    ] : chatOptions.messages,
+                    max_tokens: chatOptions.max_tokens || 256,
+                    temperature: chatOptions.temperature || 0.7,
                 },
                 {
                     headers: {
-                        Authorization: "Bearer " + this.openAIApiKey,
+                        Authorization: "Bearer " + this.apiKey,
                         "content-type": "application/json",
                     },
-                }
+                },
             )
             .then((response) => {
                 return response.data.choices;
             })
             .catch((error) => {
                 if (error.response) {
-                    console.log("Server responded with status code:", error.response.status);
+                    console.log(
+                        "Server responded with status code:",
+                        error.response.status,
+                    );
                     console.log("Response data:", error.response.data);
                 } else if (error.request) {
                     console.log("No response received:", error);
@@ -67,7 +89,50 @@ export class ChatOpenAi {
                     console.log("Error creating request:", error.message);
                 }
             });
-        return responce[0].message.content;
+        return responce[0].message;
+    }
+
+    async chatWithFunction(chatOptions: chatWithFunctionOptions): Promise<chatWithFunctionReturnOptions> {
+        const responce = await axios
+            .post(
+                openAI_url,
+                {
+                    model: chatOptions.model || "gpt-3.5-turbo",
+                    messages: chatOptions.prompt ? [
+                        {
+                            role: chatOptions.role || "user",
+                            content: chatOptions.prompt,
+                        },
+                    ] : chatOptions.messages,
+                    max_tokens: chatOptions.max_tokens || 256,
+                    temperature: chatOptions.temperature || 0.7,
+                    functions: chatOptions.functions,
+                    function_call: chatOptions.function_call || "auto"
+                },
+                {
+                    headers: {
+                        Authorization: "Bearer " + this.apiKey,
+                        "content-type": "application/json",
+                    },
+                },
+            )
+            .then((response) => {
+                return response.data.choices;
+            })
+            .catch((error) => {
+                if (error.response) {
+                    console.log(
+                        "Server responded with status code:",
+                        error.response.status,
+                    );
+                    console.log("Response data:", error.response.data);
+                } else if (error.request) {
+                    console.log("No response received:", error);
+                } else {
+                    console.log("Error creating request:", error.message);
+                }
+            });
+        return responce[0].message;
     }
 
     async generateEmbeddings(resp): Promise<any> {
@@ -80,17 +145,20 @@ export class ChatOpenAi {
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${this.openAIApiKey}`,
+                        Authorization: `Bearer ${this.apiKey}`,
                         "content-type": "application/json",
                     },
-                }
+                },
             )
             .then((response) => {
                 return response.data.data;
             })
             .catch((error) => {
                 if (error.response) {
-                    console.log("Server responded with status code:", error.response.status);
+                    console.log(
+                        "Server responded with status code:",
+                        error.response.status,
+                    );
                     console.log("Response data:", error.response.data);
                 } else if (error.request) {
                     console.log("No response received:", error.request);
@@ -101,74 +169,5 @@ export class ChatOpenAi {
         return response;
     }
 
-    async chatWithAI(chatMessages: any) {
-        const response = await axios
-            .post(
-                openAI_url,
-                {
-                    model: this.model,
-                    messages: chatMessages,
-                    temperature: this.temperature,
-                },
-                {
-                    headers: {
-                        Authorization: "Bearer " + this.openAIApiKey,
-                        "content-type": "application/json",
-                    },
-                }
-            )
-            .then((response) => {
-                return response.data.choices;
-            })
-            .catch((error) => {
-                console.log({ error });
-                if (error.response) {
-                    console.log("Server responded with status code:", error.response.status);
-                    console.log("Response data:", error.response.data);
-                } else if (error.request) {
-                    console.log("No response received:", error.request);
-                } else {
-                    console.log("Error creating request:", error.message);
-                }
-            });
-
-        return response;
-    }
-
-    async testResponseGeneration(prompt: string): Promise<string> {
-        const responce = await axios
-            .post(
-                openAI_url,
-                {
-                    model: this.model,
-                    messages: [
-                        {
-                            role: this.role,
-                            content: prompt,
-                        },
-                    ],
-                    temperature: this.temperature,
-                },
-                {
-                    headers: {
-                        Authorization: "Bearer " + this.openAIApiKey,
-                        "content-type": "application/json",
-                    },
-                }
-            )
-            .then(function (response) {
-                return response.data.choices;
-            })
-            .catch(function (error) {
-                if (error.response) {
-                    console.log("Server responded with status code:", error.response.status);
-                    console.log("Response data:", error.response.data);
-                } else if (error.request) {
-                    console.log("No response received:", error.request);
-                } else {
-                    console.log("Error creating request:", error.message);
-                }
-            });
-        return responce[0].message.content;
-    }
 }
+

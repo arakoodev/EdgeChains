@@ -1,11 +1,20 @@
+// src/arakooServer.ts
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { stream } from "hono/streaming";
-export class ArakooServer {
-    app = new Hono();
-    Stream = stream;
+import { cors } from "hono/cors";
 
-    createApp() {
+export class ArakooServer {
+    app: Hono;
+
+    constructor() {
+        this.app = new Hono();
+    }
+
+    useCors(allowedEndpoints?:string, options?: any) {
+        this.app.use(allowedEndpoints || "*", cors(options));
+    }
+
+    createApp(): Hono {
         return this.app;
     }
 
