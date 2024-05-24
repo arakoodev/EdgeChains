@@ -1,8 +1,8 @@
-import request from 'request';
-import cheerio from 'cheerio';
+import request from "request";
+import cheerio from "cheerio";
 
 export class WebScraper {
-    constructor() { }
+    constructor() {}
     async getContent(url: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             request(url, (error: any, response: any, html: string) => {
@@ -10,14 +10,14 @@ export class WebScraper {
                     const $ = cheerio.load(html);
                     const contentArr: string[] = [];
 
-                    $('p').each((index: number, element:any) => {
+                    $("p").each((index: number, element: any) => {
                         const paragraphText: string = $(element).text();
                         contentArr.push(paragraphText);
                     });
 
-                    resolve(contentArr.join(' ').trim());
+                    resolve(contentArr.join(" ").trim());
                 } else {
-                    reject('Error: ' + error);
+                    reject("Error: " + error);
                 }
             });
         });

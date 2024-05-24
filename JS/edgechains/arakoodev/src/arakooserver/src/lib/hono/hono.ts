@@ -10,7 +10,7 @@ export class ArakooServer {
         this.app = new Hono();
     }
 
-    useCors(allowedEndpoints?:string, options?: any) {
+    useCors(allowedEndpoints?: string, options?: any) {
         this.app.use(allowedEndpoints || "*", cors(options));
     }
 

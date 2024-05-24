@@ -57,12 +57,14 @@ export class OpenAI {
                 openAI_url,
                 {
                     model: chatOptions.model || "gpt-3.5-turbo",
-                    messages: chatOptions.prompt ? [
-                        {
-                            role: chatOptions.role || "user",
-                            content: chatOptions.prompt,
-                        },
-                    ] : chatOptions.messages,
+                    messages: chatOptions.prompt
+                        ? [
+                              {
+                                  role: chatOptions.role || "user",
+                                  content: chatOptions.prompt,
+                              },
+                          ]
+                        : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
                 },
@@ -71,17 +73,14 @@ export class OpenAI {
                         Authorization: "Bearer " + this.apiKey,
                         "content-type": "application/json",
                     },
-                },
+                }
             )
             .then((response) => {
                 return response.data.choices;
             })
             .catch((error) => {
                 if (error.response) {
-                    console.log(
-                        "Server responded with status code:",
-                        error.response.status,
-                    );
+                    console.log("Server responded with status code:", error.response.status);
                     console.log("Response data:", error.response.data);
                 } else if (error.request) {
                     console.log("No response received:", error);
@@ -92,39 +91,40 @@ export class OpenAI {
         return responce[0].message;
     }
 
-    async chatWithFunction(chatOptions: chatWithFunctionOptions): Promise<chatWithFunctionReturnOptions> {
+    async chatWithFunction(
+        chatOptions: chatWithFunctionOptions
+    ): Promise<chatWithFunctionReturnOptions> {
         const responce = await axios
             .post(
                 openAI_url,
                 {
                     model: chatOptions.model || "gpt-3.5-turbo",
-                    messages: chatOptions.prompt ? [
-                        {
-                            role: chatOptions.role || "user",
-                            content: chatOptions.prompt,
-                        },
-                    ] : chatOptions.messages,
+                    messages: chatOptions.prompt
+                        ? [
+                              {
+                                  role: chatOptions.role || "user",
+                                  content: chatOptions.prompt,
+                              },
+                          ]
+                        : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
                     functions: chatOptions.functions,
-                    function_call: chatOptions.function_call || "auto"
+                    function_call: chatOptions.function_call || "auto",
                 },
                 {
                     headers: {
                         Authorization: "Bearer " + this.apiKey,
                         "content-type": "application/json",
                     },
-                },
+                }
             )
             .then((response) => {
                 return response.data.choices;
             })
             .catch((error) => {
                 if (error.response) {
-                    console.log(
-                        "Server responded with status code:",
-                        error.response.status,
-                    );
+                    console.log("Server responded with status code:", error.response.status);
                     console.log("Response data:", error.response.data);
                 } else if (error.request) {
                     console.log("No response received:", error);
@@ -148,17 +148,14 @@ export class OpenAI {
                         Authorization: `Bearer ${this.apiKey}`,
                         "content-type": "application/json",
                     },
-                },
+                }
             )
             .then((response) => {
                 return response.data.data;
             })
             .catch((error) => {
                 if (error.response) {
-                    console.log(
-                        "Server responded with status code:",
-                        error.response.status,
-                    );
+                    console.log("Server responded with status code:", error.response.status);
                     console.log("Response data:", error.response.data);
                 } else if (error.request) {
                     console.log("No response received:", error.request);
@@ -168,6 +165,4 @@ export class OpenAI {
             });
         return response;
     }
-
 }
-
