@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Translator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-10">
+    <div class="max-w-md mx-auto bg-white p-5 rounded-md shadow-md">
+        <h2 class="text-2xl font-bold mb-4">Language Translator</h2>
+        <div class="mb-4">
+            <label for="language" class="block text-sm font-medium text-gray-700">Select Language</label>
+            <select id="language" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="text" class="block text-sm font-medium text-gray-700">Text to Translate</label>
+            <textarea id="text" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+        </div>
+        <button id="translateButton" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-700">Translate</button>
+        <div id="translatedText" class="mt-4 p-2 bg-gray-100 border border-gray-300 rounded-md"></div>
+    </div>
+
+    <script src="translator.js"></script>
+</body>
+</html>

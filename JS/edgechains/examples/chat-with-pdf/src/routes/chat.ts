@@ -1,12 +1,14 @@
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import { ChatOpenAi } from "arakoodev/openai";
+import { OpenAI } from "arakoodev/openai";
 import { Supabase } from "arakoodev/vector-db";
 import { PdfLoader } from "arakoodev/document-loader";
 import { TextSplitter } from "arakoodev/splitter";
 import { ArakooServer } from "arakoodev/arakooserver";
-import { Spinner } from "cli-spinner";
+import { Spinner } from "cli-spinner"
+import { z } from "zod";
+
 const server = new ArakooServer();
 
 const __dirname = fileURLToPath(import.meta.url);
@@ -43,8 +45,8 @@ const supabase = new Supabase(supabaseUrl, supabaseApiKey);
 
 const client = supabase.createClient();
 
-const llm = new ChatOpenAi({
-    openAIApiKey: openAIApiKey,
+const llm = new OpenAI({
+    apiKey: openAIApiKey,
 });
 
 async function getEmbeddings(content) {
@@ -84,7 +86,11 @@ async function InsertToSupabase(content) {
     }
 }
 // this should run only once for uploding pdf data to supabase then you can continue with the chatbot functionality
-// await InsertToSupabase(splitedDocs);
+await InsertToSupabase(splitedDocs);
+
+const chatSchema = z.object({
+    answer: z.string().describe("The answer to the question")
+})
 
 ChatRouter.get("/", async (c) => {
     const searchStr = c.req.query("question").toLowerCase();
@@ -115,6 +121,6 @@ ChatRouter.get("/", async (c) => {
         .evaluateFile(InterPath);
 
     const prompt = JSON.parse(InterLoader).prompt;
-    const res = await llm.generateResponse(prompt);
-    return c.json({ res });
+    const res = await llm.zodSchemaResponse({ schema: chatSchema, prompt: prompt })
+    return c.json(res);
 });

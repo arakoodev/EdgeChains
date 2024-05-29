@@ -13,8 +13,7 @@
     "license": "ISC",
     "dependencies": {
         "@arakoodev/jsonnet": "^0.2.1",
-        "arakoodev": "^1.0.8",
-        "axios": "^1.6.8",
+        "arakoodev": "^1.0.10",
         "sync-rpc": "^1.3.6"
     },
     "devDependencies": {

@@ -26,7 +26,7 @@ ReactChainRouter.get("/", async (c: any) => {
         let response = jsonnet
             .javascriptCallback("callWikipediaApi", callWikipediaApi)
             .evaluateFile(path.join(__dirname, "../../../jsonnet/react-chain.jsonnet"));
-
+        console.log({ response })
         return c.json(response);
     } catch (error) {
         return c.json({

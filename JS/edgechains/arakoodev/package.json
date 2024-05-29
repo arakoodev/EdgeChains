@@ -1,6 +1,6 @@
 {
     "name": "arakoodev",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "main": "dist/index.js",
     "files": [
         "dist"
@@ -26,7 +26,6 @@
         "@hono/node-server": "^1.11.0",
         "@supabase/supabase-js": "^2.42.3",
         "@types/dotenv": "^8.2.0",
-        "axios": "^1.6.2",
         "axios-retry": "^4.1.0",
         "cheerio": "^1.0.0-rc.12",
         "cors": "^2.8.5",
@@ -49,7 +48,8 @@
         "typeorm": "^0.3.20",
         "vitest": "^1.5.1",
         "web-streams-polyfill": "^4.0.0",
-        "youtube-transcript": "^1.2.1"
+        "youtube-transcript": "^1.2.1",
+        "zod-to-ts": "^1.2.0"
     },
     "keywords": [],
     "author": "",
