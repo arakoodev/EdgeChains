@@ -26,9 +26,9 @@ Edgechains is built on top of jsonnet, originally built by Google based on their
 
 Edgechains gives you:
 
-* **Just One Script File**: EdgeChains is engineered to be extremely simple (whether Java, Python or JS). Executing production-ready GenAI applications is just one script file and one jsonnet file. You'll be pleasantly surprised!
+* **Just One Script File**: EdgeChains is engineered to be extremely simple - Executing production-ready GenAI applications is just one script file and one jsonnet file. You'll be pleasantly surprised!
 * **Versioning for Prompts**: Prompts are written in jsonnet. Makes them easily versionable and diffable. 
-* **Automatic parallelism**: EdgeChains automatically parallelizes LLM chains & chain-of-thought tasks across CPUs, GPUs, and TPUs using the JVM.
+* **Automatic parallelism**: EdgeChains automatically parallelizes LLM chains & chain-of-thought tasks across CPUs, GPUs, and TPUs using the WebAssembly runtime.
 * **Fault tolerance**: EdgeChains is designed to be fault-tolerant, and can continue to retry & backoff even if some of the requests in the system fail.
 * **Scalability**: EdgeChains is designed to be scalable, and can be used to write your chain-of-thought applications on large number of APIs, prompt lengths and vector datasets.
 
