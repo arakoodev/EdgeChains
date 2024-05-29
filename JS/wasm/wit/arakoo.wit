@@ -1,5 +1,7 @@
-use * from http-types
+package arakoo:edgechains;
 
-
-fetch-request: func(request: http-request) -> expected<http-response, http-request-error>
-
+world reactor {
+    import http;
+    import jsonnet;
+    export inbound-http;
+}

@@ -2,47 +2,20 @@
 name = "cli"
 edition.workspace = true
 version.workspace = true
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [[bin]]
-name = "javy"
+name = "arakoo-compiler"
 path = "src/main.rs"
-
-[features]
-dump_wat = ["dep:wasmprinter"]
-experimental_event_loop = []
 
 [dependencies]
 wizer = { workspace = true }
-structopt = "0.3"
 anyhow = { workspace = true }
-binaryen = "0.13.0"
-# binaryen = { git = "https://github.com/pepyakin/binaryen-rs", rev = "00c98174843f957681ba0bc5cdcc9d15f5d0cb23" }
-brotli = "3.4.0"
-wasmprinter = { version = "0.2.75", optional = true }
-wasmtime = { workspace = true }
-wasmtime-wasi = { workspace = true }
-wasi-common = { workspace = true }
-walrus = "0.20.3"
-swc_core = { version = "0.87.19", features = [
-  "common_sourcemap",
-  "ecma_ast",
-  "ecma_parser",
-] }
-wit-parser = "0.13.0"
-convert_case = "0.6.0"
-wat = "1.0.85"
-
-[dev-dependencies]
-serde_json = "1.0"
-uuid = { version = "1.6", features = ["v4"] }
-lazy_static = "1.4"
-serde = { version = "1.0", default-features = false, features = ["derive"] }
-criterion = "0.5"
-num-format = "0.4.4"
-tempfile = "3.9.0"
-wasmparser = "0.118.1"
+clap = { version = "4.1.4", features = ["derive"] }
+binaryen = { git = "https://github.com/pepyakin/binaryen-rs" }
+wit-component = { version = "0.208.1" }
 
 [build-dependencies]
 anyhow = "1.0.79"

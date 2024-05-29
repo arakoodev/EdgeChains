@@ -1,5 +1,5 @@
 let imports = {};
-imports["__wbindgen_placeholder__"] = module.exports;
+imports['__wbindgen_placeholder__'] = module.exports;
 let wasm;
 const { read_file } = require(String.raw`./snippets/arakoo-jsonnet-17c737407ebd2d3c/read-file.js`);
 const { TextEncoder, TextDecoder } = require(`util`);
@@ -8,9 +8,7 @@ const heap = new Array(128).fill(undefined);
 
 heap.push(undefined, null, true, false);
 
-function getObject(idx) {
-    return heap[idx];
-}
+function getObject(idx) { return heap[idx]; }
 
 let WASM_VECTOR_LEN = 0;
 
@@ -23,29 +21,27 @@ function getUint8Memory0() {
     return cachedUint8Memory0;
 }
 
-let cachedTextEncoder = new TextEncoder("utf-8");
+let cachedTextEncoder = new TextEncoder('utf-8');
 
-const encodeString =
-    typeof cachedTextEncoder.encodeInto === "function"
-        ? function (arg, view) {
-              return cachedTextEncoder.encodeInto(arg, view);
-          }
-        : function (arg, view) {
-              const buf = cachedTextEncoder.encode(arg);
-              view.set(buf);
-              return {
-                  read: arg.length,
-                  written: buf.length,
-              };
-          };
+const encodeString = (typeof cachedTextEncoder.encodeInto === 'function'
+    ? function (arg, view) {
+    return cachedTextEncoder.encodeInto(arg, view);
+}
+    : function (arg, view) {
+    const buf = cachedTextEncoder.encode(arg);
+    view.set(buf);
+    return {
+        read: arg.length,
+        written: buf.length
+    };
+});
 
 function passStringToWasm0(arg, malloc, realloc) {
+
     if (realloc === undefined) {
         const buf = cachedTextEncoder.encode(arg);
         const ptr = malloc(buf.length, 1) >>> 0;
-        getUint8Memory0()
-            .subarray(ptr, ptr + buf.length)
-            .set(buf);
+        getUint8Memory0().subarray(ptr, ptr + buf.length).set(buf);
         WASM_VECTOR_LEN = buf.length;
         return ptr;
     }
@@ -59,7 +55,7 @@ function passStringToWasm0(arg, malloc, realloc) {
 
     for (; offset < len; offset++) {
         const code = arg.charCodeAt(offset);
-        if (code > 0x7f) break;
+        if (code > 0x7F) break;
         mem[ptr + offset] = code;
     }
 
@@ -67,7 +63,7 @@ function passStringToWasm0(arg, malloc, realloc) {
         if (offset !== 0) {
             arg = arg.slice(offset);
         }
-        ptr = realloc(ptr, len, (len = offset + arg.length * 3), 1) >>> 0;
+        ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
         const view = getUint8Memory0().subarray(ptr + offset, ptr + len);
         const ret = encodeString(arg, view);
 
@@ -106,7 +102,7 @@ function takeObject(idx) {
     return ret;
 }
 
-let cachedTextDecoder = new TextDecoder("utf-8", { ignoreBOM: true, fatal: true });
+let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
 
 cachedTextDecoder.decode();
 
@@ -127,39 +123,39 @@ function addHeapObject(obj) {
 function debugString(val) {
     // primitive types
     const type = typeof val;
-    if (type == "number" || type == "boolean" || val == null) {
-        return `${val}`;
+    if (type == 'number' || type == 'boolean' || val == null) {
+        return  `${val}`;
     }
-    if (type == "string") {
+    if (type == 'string') {
         return `"${val}"`;
     }
-    if (type == "symbol") {
+    if (type == 'symbol') {
         const description = val.description;
         if (description == null) {
-            return "Symbol";
+            return 'Symbol';
         } else {
             return `Symbol(${description})`;
         }
     }
-    if (type == "function") {
+    if (type == 'function') {
         const name = val.name;
-        if (typeof name == "string" && name.length > 0) {
+        if (typeof name == 'string' && name.length > 0) {
             return `Function(${name})`;
         } else {
-            return "Function";
+            return 'Function';
         }
     }
     // objects
     if (Array.isArray(val)) {
         const length = val.length;
-        let debug = "[";
+        let debug = '[';
         if (length > 0) {
             debug += debugString(val[0]);
         }
-        for (let i = 1; i < length; i++) {
-            debug += ", " + debugString(val[i]);
+        for(let i = 1; i < length; i++) {
+            debug += ', ' + debugString(val[i]);
         }
-        debug += "]";
+        debug += ']';
         return debug;
     }
     // Test for built-in
@@ -171,14 +167,14 @@ function debugString(val) {
         // Failed to match the standard '[object ClassName]'
         return toString.call(val);
     }
-    if (className == "Object") {
+    if (className == 'Object') {
         // we're a user defined class or Object
         // JSON.stringify avoids problems with cycles, and is generally much
         // easier than looping through ownProperties of `val`.
         try {
-            return "Object(" + JSON.stringify(val) + ")";
+            return 'Object(' + JSON.stringify(val) + ')';
         } catch (_) {
-            return "Object";
+            return 'Object';
         }
     }
     // errors
@@ -197,27 +193,27 @@ function handleError(f, args) {
     }
 }
 /**
- * @returns {number}
- */
-module.exports.jsonnet_make = function () {
+* @returns {number}
+*/
+module.exports.jsonnet_make = function() {
     const ret = wasm.jsonnet_make();
     return ret >>> 0;
 };
 
 /**
- * @param {number} vm
- */
-module.exports.jsonnet_destroy = function (vm) {
+* @param {number} vm
+*/
+module.exports.jsonnet_destroy = function(vm) {
     wasm.jsonnet_destroy(vm);
 };
 
 /**
- * @param {number} vm
- * @param {string} filename
- * @param {string} snippet
- * @returns {string}
- */
-module.exports.jsonnet_evaluate_snippet = function (vm, filename, snippet) {
+* @param {number} vm
+* @param {string} filename
+* @param {string} snippet
+* @returns {string}
+*/
+module.exports.jsonnet_evaluate_snippet = function(vm, filename, snippet) {
     let deferred3_0;
     let deferred3_1;
     try {
@@ -239,11 +235,11 @@ module.exports.jsonnet_evaluate_snippet = function (vm, filename, snippet) {
 };
 
 /**
- * @param {number} vm
- * @param {string} filename
- * @returns {string}
- */
-module.exports.jsonnet_evaluate_file = function (vm, filename) {
+* @param {number} vm
+* @param {string} filename
+* @returns {string}
+*/
+module.exports.jsonnet_evaluate_file = function(vm, filename) {
     let deferred2_0;
     let deferred2_1;
     try {
@@ -263,23 +259,23 @@ module.exports.jsonnet_evaluate_file = function (vm, filename) {
 };
 
 /**
- * @param {number} vm
- * @param {string} key
- * @param {string} value
- */
-module.exports.ext_string = function (vm, key, value) {
+* @param {number} vm
+* @param {string} key
+* @param {string} value
+*/
+module.exports.jsonnet_ext_string = function(vm, key, value) {
     const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     const ptr1 = passStringToWasm0(value, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
-    wasm.ext_string(vm, ptr0, len0, ptr1, len1);
+    wasm.jsonnet_ext_string(vm, ptr0, len0, ptr1, len1);
 };
 
 /**
- * @param {string} name
- * @returns {Function | undefined}
- */
-module.exports.get_func = function (name) {
+* @param {string} name
+* @returns {Function | undefined}
+*/
+module.exports.get_func = function(name) {
     const ptr0 = passStringToWasm0(name, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.get_func(ptr0, len0);
@@ -287,81 +283,73 @@ module.exports.get_func = function (name) {
 };
 
 /**
- * @param {string} name
- * @param {Function} func
- */
-module.exports.set_func = function (name, func) {
+* @param {string} name
+* @param {Function} func
+*/
+module.exports.set_func = function(name, func) {
     const ptr0 = passStringToWasm0(name, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     wasm.set_func(ptr0, len0, addHeapObject(func));
 };
 
 /**
- * @param {number} vm
- * @param {string} name
- * @param {number} args_num
- */
-module.exports.register_native_callback = function (vm, name, args_num) {
+* @param {number} vm
+* @param {string} name
+* @param {number} args_num
+*/
+module.exports.register_native_callback = function(vm, name, args_num) {
     const ptr0 = passStringToWasm0(name, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     wasm.register_native_callback(vm, ptr0, len0, args_num);
 };
 
-module.exports.__wbindgen_string_get = function (arg0, arg1) {
+module.exports.__wbindgen_string_get = function(arg0, arg1) {
     const obj = getObject(arg1);
-    const ret = typeof obj === "string" ? obj : undefined;
-    var ptr1 = isLikeNone(ret)
-        ? 0
-        : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const ret = typeof(obj) === 'string' ? obj : undefined;
+    var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     var len1 = WASM_VECTOR_LEN;
     getInt32Memory0()[arg0 / 4 + 1] = len1;
     getInt32Memory0()[arg0 / 4 + 0] = ptr1;
 };
 
-module.exports.__wbindgen_object_drop_ref = function (arg0) {
+module.exports.__wbindgen_object_drop_ref = function(arg0) {
     takeObject(arg0);
 };
 
-module.exports.__wbindgen_string_new = function (arg0, arg1) {
+module.exports.__wbindgen_string_new = function(arg0, arg1) {
     const ret = getStringFromWasm0(arg0, arg1);
     return addHeapObject(ret);
 };
 
-module.exports.__wbg_readfile_5b48d0f7e3518df2 = function () {
-    return handleError(function (arg0, arg1, arg2) {
-        const ret = read_file(getStringFromWasm0(arg1, arg2));
-        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        getInt32Memory0()[arg0 / 4 + 1] = len1;
-        getInt32Memory0()[arg0 / 4 + 0] = ptr1;
-    }, arguments);
-};
+module.exports.__wbg_readfile_5b48d0f7e3518df2 = function() { return handleError(function (arg0, arg1, arg2) {
+    const ret = read_file(getStringFromWasm0(arg1, arg2));
+    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    getInt32Memory0()[arg0 / 4 + 1] = len1;
+    getInt32Memory0()[arg0 / 4 + 0] = ptr1;
+}, arguments) };
 
-module.exports.__wbindgen_object_clone_ref = function (arg0) {
+module.exports.__wbindgen_object_clone_ref = function(arg0) {
     const ret = getObject(arg0);
     return addHeapObject(ret);
 };
 
-module.exports.__wbg_call_27c0f87801dedf93 = function () {
-    return handleError(function (arg0, arg1) {
-        const ret = getObject(arg0).call(getObject(arg1));
-        return addHeapObject(ret);
-    }, arguments);
-};
+module.exports.__wbg_call_27c0f87801dedf93 = function() { return handleError(function (arg0, arg1) {
+    const ret = getObject(arg0).call(getObject(arg1));
+    return addHeapObject(ret);
+}, arguments) };
 
-module.exports.__wbg_call_b3ca7c6051f9bec1 = function () {
-    return handleError(function (arg0, arg1, arg2) {
-        const ret = getObject(arg0).call(getObject(arg1), getObject(arg2));
-        return addHeapObject(ret);
-    }, arguments);
-};
+module.exports.__wbg_call_b3ca7c6051f9bec1 = function() { return handleError(function (arg0, arg1, arg2) {
+    const ret = getObject(arg0).call(getObject(arg1), getObject(arg2));
+    return addHeapObject(ret);
+}, arguments) };
 
-module.exports.__wbg_new_abda76e883ba8a5f = function () {
+module.exports.__wbg_new_abda76e883ba8a5f = function() {
     const ret = new Error();
     return addHeapObject(ret);
 };
 
-module.exports.__wbg_stack_658279fe44541cf6 = function (arg0, arg1) {
+module.exports.__wbg_stack_658279fe44541cf6 = function(arg0, arg1) {
     const ret = getObject(arg1).stack;
     const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
@@ -369,7 +357,7 @@ module.exports.__wbg_stack_658279fe44541cf6 = function (arg0, arg1) {
     getInt32Memory0()[arg0 / 4 + 0] = ptr1;
 };
 
-module.exports.__wbg_error_f851667af71bcfc6 = function (arg0, arg1) {
+module.exports.__wbg_error_f851667af71bcfc6 = function(arg0, arg1) {
     let deferred0_0;
     let deferred0_1;
     try {
@@ -381,7 +369,7 @@ module.exports.__wbg_error_f851667af71bcfc6 = function (arg0, arg1) {
     }
 };
 
-module.exports.__wbindgen_debug_string = function (arg0, arg1) {
+module.exports.__wbindgen_debug_string = function(arg0, arg1) {
     const ret = debugString(getObject(arg1));
     const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
@@ -389,14 +377,15 @@ module.exports.__wbindgen_debug_string = function (arg0, arg1) {
     getInt32Memory0()[arg0 / 4 + 0] = ptr1;
 };
 
-module.exports.__wbindgen_throw = function (arg0, arg1) {
+module.exports.__wbindgen_throw = function(arg0, arg1) {
     throw new Error(getStringFromWasm0(arg0, arg1));
 };
 
-const path = require("path").join(__dirname, "jsonnet_wasm_bg.wasm");
-const bytes = require("fs").readFileSync(path);
+const path = require('path').join(__dirname, 'jsonnet_wasm_bg.wasm');
+const bytes = require('fs').readFileSync(path);
 
 const wasmModule = new WebAssembly.Module(bytes);
 const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
 wasm = wasmInstance.exports;
 module.exports.__wasm = wasm;
+

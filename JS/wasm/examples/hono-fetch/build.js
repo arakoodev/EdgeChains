@@ -6,7 +6,7 @@ build({
     entryPoints: ["src/index.js"],
     bundle: true,
     minify: false,
-    outfile: "bin/app.js",
+    outfile: "bin/index.js",
     format: "esm",
     target: "esnext",
     platform: "node",

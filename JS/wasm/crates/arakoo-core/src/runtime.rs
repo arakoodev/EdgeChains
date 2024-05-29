@@ -1,6 +1,6 @@
 use anyhow::Result;
-use apis::{APIConfig, LogStream, RuntimeExt};
 use javy::{Config, Runtime};
+use super::apis::{APIConfig, LogStream, RuntimeExt};
 
 pub fn new_runtime() -> Result<Runtime> {
     let mut api_config = APIConfig::default();

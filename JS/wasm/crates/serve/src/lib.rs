@@ -1,8 +1,13 @@
 // mod binding;
+use wit::arakoo::edgechains::http as outbound_http;
+use wit::arakoo::edgechains::http_types::HttpError;
+use wit::arakoo::edgechains::jsonnet;
+
 mod binding;
 mod io;
 
 use std::{
+    collections::HashMap,
     convert::Infallible,
     env,
     future::Future,
@@ -14,7 +19,8 @@ use std::{
     task::{self, Poll},
 };
 
-use binding::add_fetch_to_linker;
+use anyhow::Context;
+// use binding::add_fetch_to_linker;
 // use binding::add_exports_to_linker;
 use futures::future::{self, Ready};
 use hyper::{
@@ -27,15 +33,26 @@ use hyper::{
 
 use tracing::{error, event, info, Level};
 use tracing_subscriber::{filter::EnvFilter, FmtSubscriber};
-use wasi_common::WasiCtx;
-use wasmtime_wasi::WasiCtxBuilder;
+// use wasi_common::WasiCtx;
+use wasmtime_wasi::{bindings, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
 
-use wasmtime::{Caller, Config, Engine, Extern, Linker, Module, Store, Trap, WasmBacktraceDetails};
+use wasmtime::component::{Component, Linker};
+use wasmtime::{Config, Engine, Store, WasmBacktraceDetails};
+use wit::arakoo::edgechains::http_types;
+use wit::exports::arakoo::edgechains::inbound_http::{self};
 
 use crate::{
-    binding::add_jsonnet_to_linker,
+    // binding::add_jsonnet_to_linker,
     io::{WasmInput, WasmOutput},
 };
+
+mod wit {
+    wasmtime::component::bindgen!({
+        path:"../../wit",
+        world:"reactor",
+        async:true
+    });
+}
 
 #[derive(Clone)]
 pub struct RequestService {
@@ -52,15 +69,33 @@ impl RequestService {
 #[derive(Clone)]
 pub struct WorkerCtx {
     engine: Engine,
-    module: Module,
+    component: Component,
 }
 
+struct Host {
+    table: ResourceTable,
+    wasi: WasiCtx,
+    client: Option<reqwest::Client>,
+}
+
+impl WasiView for Host {
+    fn table(&mut self) -> &mut ResourceTable {
+        &mut self.table
+    }
+
+    fn ctx(&mut self) -> &mut wasmtime_wasi::WasiCtx {
+        &mut self.wasi
+    }
+}
+
+impl http_types::Host for Host {}
+
 impl WorkerCtx {
-    pub fn new(module_path: impl AsRef<Path>) -> anyhow::Result<Self> {
+    pub fn new(component_path: impl AsRef<Path>) -> anyhow::Result<Self> {
         tracing_subscriber();
-        info!("Loading module from {:?}", module_path.as_ref());
+        info!("Loading Component from {:?}", component_path.as_ref());
         let mut binding = Config::default();
-        let config = binding.async_support(true);
+        let config = binding.async_support(true).wasm_component_model(true);
         // check if env has debug flag
         if env::var("DEBUG").is_ok() {
             config
@@ -71,18 +106,20 @@ impl WorkerCtx {
         }
 
         let engine = Engine::new(&config)?;
-        let module = Module::from_file(&engine, module_path)?;
+        let component = Component::from_file(&engine, component_path)
+            .with_context(|| format!("Failed to load component : invalid path"))?;
 
-        Ok(Self { engine, module })
+        Ok(Self { engine, component })
     }
 
-    pub fn module(&self) -> &Module {
-        &self.module
+    pub fn component(&self) -> &Component {
+        &self.component
     }
 
     pub fn engine(&self) -> &Engine {
         &self.engine
     }
+
     pub async fn serve(self, addr: SocketAddr) -> Result<(), hyper::Error> {
         info!("Starting server ...");
         let server = hyper::Server::bind(&addr).serve(self);
@@ -100,6 +137,7 @@ impl WorkerCtx {
         let body = hyper::body::to_bytes(body).await.unwrap();
         let body_str = String::from_utf8_lossy(&body).to_string();
         let result = self.run(&parts, body_str).await;
+
         match result {
             Ok(output) => {
                 let mut response = Response::builder();
@@ -122,7 +160,7 @@ impl WorkerCtx {
             }
 
             Err(e) => {
-                error!("Error: {}", e);
+                error!("Error: {:?}", e);
                 let response = Response::builder()
                     .status(500)
                     .body(Body::from("Internal Server Error"))
@@ -139,105 +177,182 @@ impl WorkerCtx {
     /// functions to be called from WebAssembly.
     async fn run(&self, parts: &Parts, body: String) -> anyhow::Result<WasmOutput> {
         // Serialize the request parts and body into a JSON input for the WebAssembly module.
-        let input = serde_json::to_vec(&WasmInput::new(parts, body)).unwrap();
-        let mem_len = input.len() as i32;
+        // let input = serde_json::to_vec(&WasmInput::new(parts, body)).unwrap();
+        // let mem_len = input.len() as i32;
 
         // Create a new linker with the WASI context.
-        let mut linker: Linker<WasiCtx> = Linker::new(self.engine());
-        wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
+        let mut linker = Linker::new(self.engine());
+        // wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
+        bindings::cli::environment::add_to_linker(&mut linker, |x| x)
+            .expect("Unable to add environment");
+        bindings::cli::exit::add_to_linker(&mut linker, |x| x).expect("Unable to add cli");
+        bindings::io::error::add_to_linker(&mut linker, |x| x).expect("Unable to add io error");
+        // bindings::sync::io::streams::add_to_linker(&mut linker, |x| x)
+        //     .expect("Unable to add io streams");
+        bindings::io::streams::add_to_linker(&mut linker, |x| x).expect("Unable to add io streams");
+        bindings::cli::stdin::add_to_linker(&mut linker, |x| x).expect("Unable to add cli stdin");
+        bindings::cli::stdout::add_to_linker(&mut linker, |x| x).expect("Unable to add cli stdout");
+        bindings::cli::stderr::add_to_linker(&mut linker, |x| x).expect("Unable to add cli stderr");
+        bindings::cli::terminal_input::add_to_linker(&mut linker, |x| x)
+            .expect("Unable to add cli terminal input");
+        bindings::cli::terminal_output::add_to_linker(&mut linker, |x| x)
+            .expect("Unable to add cli terminal output");
+        bindings::cli::terminal_stdin::add_to_linker(&mut linker, |x| x)
+            .expect("Unable to add cli terminal stdin");
+        bindings::cli::terminal_stdout::add_to_linker(&mut linker, |x| x)
+            .expect("Unable to add cli terminal stdout");
+        bindings::cli::terminal_stderr::add_to_linker(&mut linker, |x| x)
+            .expect("Unable to add cli terminal stderr");
+        bindings::clocks::monotonic_clock::add_to_linker(&mut linker, |x| x)
+            .expect("Unable to add clocks monotonic clock");
+        bindings::clocks::wall_clock::add_to_linker(&mut linker, |x| x)
+            .expect("Unable to add clocks wallclock");
+        // bindings::sync::filesystem::types::add_to_linker(&mut linker, |x| x)
+        //     .expect("Unable to add filesystem types");
+        bindings::filesystem::types::add_to_linker(&mut linker, |x| x)
+            .expect("Unable to add filesystem types");
+        bindings::filesystem::preopens::add_to_linker(&mut linker, |x| x)
+            .expect("Unable to add filesystem preopens");
+        bindings::random::random::add_to_linker(&mut linker, |x| x).expect("Unable to add random");
 
         // Wrap the `get_request_len` function to be called from WebAssembly.
         // This function returns the length of the input buffer.
-        linker.func_wrap("arakoo", "get_request_len", move || -> i32 { mem_len })?;
+        // linker.func_wrap("arakoo", "get_request_len", move || -> i32 { mem_len })?;
 
         // Wrap the `get_request` function to be called from WebAssembly.
         // This function writes the input buffer to the specified memory location.
-        match linker.func_wrap(
-            "arakoo",
-            "get_request",
-            move |mut caller: Caller<'_, WasiCtx>, ptr: i32| {
-                let mem = match caller.get_export("memory") {
-                    Some(Extern::Memory(mem)) => mem,
-                    _ => return Err(Trap::NullReference.into()),
-                };
-                let offset = ptr as u32 as usize;
-                match mem.write(&mut caller, offset, &input) {
-                    Ok(_) => {}
-                    _ => return Err(Trap::MemoryOutOfBounds.into()),
-                };
-                Ok(())
-            },
-        ) {
-            Ok(_) => {}
-            Err(e) => {
-                println!("Error adding get_request: {}", e);
-            }
-        }
+        // match linker.func_wrap(
+        //     "arakoo",
+        //     "get_request",
+        //     move |mut caller: Caller<'_, WasiCtx>, ptr: i32| {
+        //         let mem = match caller.get_export("memory") {
+        //             Some(Extern::Memory(mem)) => mem,
+        //             _ => return Err(Trap::NullReference.into()),
+        //         };
+        //         let offset = ptr as u32 as usize;
+        //         match mem.write(&mut caller, offset, &input) {
+        //             Ok(_) => {}
+        //             _ => return Err(Trap::MemoryOutOfBounds.into()),
+        //         };
+        //         Ok(())
+        //     },
+        // ) {
+        //     Ok(_) => {}
+        //     Err(e) => {
+        //         println!("Error adding get_request: {}", e);
+        //     }
+        // }
 
         // Create a shared output buffer that will be used to store the result of the WebAssembly execution.
-        let output: Arc<Mutex<WasmOutput>> = Arc::new(Mutex::new(WasmOutput::new()));
-        let output_clone = output.clone();
+        // let output: Arc<Mutex<WasmOutput>> = Arc::new(Mutex::new(WasmOutput::new()));
+        // let output_clone = output.clone();
 
         // Wrap the `set_output` function to be called from WebAssembly.
         // This function reads the output buffer from the specified memory location and updates the shared output buffer.
-        linker.func_wrap(
-            "arakoo",
-            "set_output",
-            move |mut caller: Caller<'_, WasiCtx>, ptr: i32, len: i32| {
-                let output = output_clone.clone();
-                let mem = match caller.get_export("memory") {
-                    Some(Extern::Memory(mem)) => mem,
-                    _ => return Err(Trap::NullReference.into()),
-                };
-                let offset = ptr as u32 as usize;
-                let mut buffer = vec![0; len as usize];
-                match mem.read(&caller, offset, &mut buffer) {
-                    Ok(_) => match serde_json::from_slice::<WasmOutput>(&buffer) {
-                        Ok(parsed_output) => {
-                            let mut output = output.lock().unwrap();
-                            *output = parsed_output;
-                            Ok(())
-                        }
-                        Err(_e) => Err(Trap::BadSignature.into()),
-                    },
-                    _ => Err(Trap::MemoryOutOfBounds.into()),
-                }
-            },
-        )?;
+        // linker.func_wrap(
+        //     "arakoo",
+        //     "set_output",
+        //     move |mut caller: Caller<'_, WasiCtx>, ptr: i32, len: i32| {
+        //         let output = output_clone.clone();
+        //         let mem = match caller.get_export("memory") {
+        //             Some(Extern::Memory(mem)) => mem,
+        //             _ => return Err(Trap::NullReference.into()),
+        //         };
+        //         let offset = ptr as u32 as usize;
+        //         let mut buffer = vec![0; len as usize];
+        //         match mem.read(&caller, offset, &mut buffer) {
+        //             Ok(_) => match serde_json::from_slice::<WasmOutput>(&buffer) {
+        //                 Ok(parsed_output) => {
+        //                     let mut output = output.lock().unwrap();
+        //                     *output = parsed_output;
+        //                     Ok(())
+        //                 }
+        //                 Err(_e) => Err(Trap::BadSignature.into()),
+        //             },
+        //             _ => Err(Trap::MemoryOutOfBounds.into()),
+        //         }
+        //     },
+        // )?;
 
         // Add additional exports to the linker, such as Jsonnet evaluation functions.
-        add_jsonnet_to_linker(&mut linker)?;
-        add_fetch_to_linker(&mut linker)?;
+        // add_jsonnet_to_linker(&mut linker)?;
+        // add_fetch_to_linker(&mut linker)?;
 
         // Create a WASI context builder with inherited standard output and error streams.
-        let wasi_builder = WasiCtxBuilder::new()
+        let wasi = WasiCtxBuilder::new()
             .inherit_stdout()
             .inherit_stderr()
             .build();
 
+        let table: ResourceTable = ResourceTable::new();
+
         // Create a new store with the WASI context.
-        let mut store = Store::new(self.engine(), wasi_builder);
+        let mut store = Store::new(
+            self.engine(),
+            Host {
+                table,
+                wasi,
+                client: None,
+            },
+        );
 
         // Instantiate the WebAssembly module with the linker and store.
-        linker.module(&mut store, "", self.module())?;
+        // linker.module(&mut store, "", self.module())?;
 
         // Get the entrypoint function from the WebAssembly instance and call it.
-        let instance = linker
-            .instantiate_async(&mut store, self.module())
-            .await
-            .map_err(anyhow::Error::msg)?;
-        let run_entrypoint_fn = instance.get_typed_func::<(), ()>(&mut store, "run_entrypoint")?;
-        run_entrypoint_fn
-            .call_async(&mut store, ())
-            .await
-            .map_err(anyhow::Error::msg)?;
+        // let instance = linker
+        //     .instantiate_async(&mut store, self.module())
+        //     .await
+        //     .map_err(anyhow::Error::msg)?;
+        // let run_entrypoint_fn = instance.get_typed_func::<(), ()>(&mut store, "run_entrypoint")?;
+        // run_entrypoint_fn
+        //     .call_async(&mut store, ())
+        //     .await
+        //     .map_err(anyhow::Error::msg)?;
+        let wasm_input = WasmInput::new(parts, body);
+        let request = inbound_http::Request {
+            method: match wasm_input.method {
+                io::Method::GET => http_types::Method::Get,
+                io::Method::POST => http_types::Method::Post,
+                io::Method::PUT => http_types::Method::Put,
+                io::Method::DELETE => http_types::Method::Delete,
+                io::Method::PATCH => http_types::Method::Patch,
+                io::Method::HEAD => http_types::Method::Head,
+                io::Method::OPTIONS => http_types::Method::Options,
+            },
+            uri: wasm_input.uri,
+            headers: wasm_input.headers,
+            params: wasm_input.params,
+            body: wasm_input.body,
+        };
+        wit::Reactor::add_to_linker(&mut linker, |x| x)?;
+        let (reactor, instance) =
+            wit::Reactor::instantiate_async(&mut store, self.component(), &linker).await?;
+        let guest = reactor.arakoo_edgechains_inbound_http();
+        let result: Result<http_types::Response, anyhow::Error> =
+            guest.call_handle_request(&mut store, &request).await;
+        let mut wasm_output = WasmOutput::new();
+        // println!("Result of guest calling: {:?}", &result);
+        match result {
+            Ok(res) => {
+                wasm_output.status = res.status;
+                wasm_output.status_text = res.status_text;
+                let mut headers_map = HashMap::new();
+                for (key, val) in res.headers.unwrap().iter() {
+                    headers_map.insert(key.to_owned(), val.to_owned());
+                }
+                wasm_output.headers = headers_map;
+                let body_vec = res.body.unwrap();
+                if body_vec.len() > 0 {
+                    wasm_output.body = Some(String::from_utf8(body_vec).unwrap());
+                }
+            }
+            Err(err) => println!("Error occured : {:?}", err),
+        };
 
         // Drop the store to release resources.
         drop(store);
-
-        // Lock the output buffer and return a clone of the result.
-        let output = output.lock().unwrap().clone();
-        Ok(output)
+        Ok(wasm_output)
     }
     fn make_service(&self) -> RequestService {
         RequestService::new(self.clone())

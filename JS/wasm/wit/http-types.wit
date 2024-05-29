@@ -1,45 +1,42 @@
-  type uri = string
-  type http-status = u16
-  type http-header = tuple<string, string>
-  type http-headers = list<http-header>
-  enum http-method {
-    get,
-    post,
-    put,
-    patch,
-    delete,
-    options,
-    head
-  }
-  type http-param = tuple<string, string>
-  type http-params = list<http-param>
-  type http-body = list<u8>
-  record http-request {
-    body: option<http-body>,
-    headers: http-headers,
-    method: http-method,
-    params: http-params,
-    uri: uri,
-  }
-  record http-request-error {
-    error: http-error,
-    message: string
-  }
-  record http-response {
-    body: option<http-body>,
-    headers: http-headers,
-    status: http-status,
-  }
-  enum http-error {
-    invalid-request,
-    invalid-request-body,
-    invalid-response-body,
-    not-allowed,
-    internal-error,
-    timeout,
-    redirect-loop,
-  }
-  enum file-error {
-    not-found,
-    invalid-path,
-  }
+interface http-types {
+   type http-status = u16;
+   type body = list<u8>;
+   type headers = list<tuple<string, string>>;
+   type params = list<tuple<string, string>>;
+   type uri = string;
+
+    enum method {
+        get,
+        post,
+        put,
+        delete,
+        patch,
+        head,
+        options,
+    }
+
+    record request {
+        method: method,
+        uri: uri,
+        headers: headers,
+        params: params,
+        body: option<body>,
+    }
+
+    record response {
+        status: http-status,
+        headers: option<headers>,
+        body: option<body>,
+        status-text: string,
+    }
+
+    enum http-error {
+        success,
+        destination-not-allowed,
+        invalid-url,
+        request-error,
+        runtime-error,
+        too-many-requests,
+    }
+}
+

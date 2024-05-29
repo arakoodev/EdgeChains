@@ -15,18 +15,20 @@ app.get("/hello", (c) => {
 
 app.get("/post", async (c) => {
     try {
-        let response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+        let response = await fetch("https://dummy.restapiexample.com/api/v1/create", {
             method: "POST",
             body: JSON.stringify({
-                title: "foo",
-                body: "bar",
-                userId: 1,
+                name: "test",
+                salary: "123",
+                age: "23"
             }),
             headers: {
                 "Content-type": "application/json",
             },
         });
-        return c.json(response);
+        let data = await response.json();
+        console.log("data",data)
+        return c.json(data);
     } catch (error) {
         console.log("error occured");
         console.log(error);
@@ -36,13 +38,13 @@ app.get("/post", async (c) => {
 
 app.get("/get", async (c) => {
     try {
-        let response = await fetch("https://jsonplaceholder.typicode.com/todos/1");
+        let response = await fetch("https://fakerestapi.azurewebsites.net/api/v1/Activities");
         let body = await response.json();
         return c.json(body);
     } catch (error) {
         console.log("error occured");
         console.log(error);
-        return c.json(output);
+        return c.json(error);
     }
 });
 

@@ -1,49 +1,109 @@
-mod bytecode;
-mod commands;
-mod exports;
-mod js;
-mod wasm_generator;
-mod wit;
-
-use crate::commands::{Command, EmitProviderCommandOpts};
-use crate::wasm_generator::r#static as static_generator;
-use anyhow::{bail, Result};
-use js::JS;
+use anyhow::bail;
+use anyhow::Context;
+use anyhow::Result;
+use binaryen::CodegenConfig;
+use binaryen::Module;
+use clap::Parser;
 use std::fs;
-use std::fs::File;
-use std::io::Write;
-use structopt::StructOpt;
-use wasm_generator::dynamic as dynamic_generator;
+use std::io::Read;
+use std::process::Command;
+use std::{env, fs::File, path::PathBuf};
+use wit_component::ComponentEncoder;
+use wizer::Wizer;
 
-fn main() -> Result<()> {
-    let cmd = Command::from_args();
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-    match &cmd {
-        Command::EmitProvider(opts) => emit_provider(opts),
-        Command::Compile(opts) => {
-            let js = JS::from_file(&opts.input)?;
-            let exports = match (&opts.wit, &opts.wit_world) {
-                (None, None) => Ok(vec![]),
-                (None, Some(_)) => Ok(vec![]),
-                (Some(_), None) => bail!("Must provide WIT world when providing WIT file"),
-                (Some(wit), Some(world)) => exports::process_exports(&js, wit, world),
-            }?;
-            let wasm = if opts.dynamic {
-                dynamic_generator::generate(&js, exports, opts.no_source_compression)?
-            } else {
-                static_generator::generate(&js, exports, opts.no_source_compression)?
-            };
-            fs::write(&opts.output, wasm)?;
-            Ok(())
-        }
-    }
+#[derive(Debug, Parser)]
+#[clap(
+    about = "A utility to convert js to arakoo runtime compatible wasm component",
+    version = VERSION
+)]
+pub struct Options {
+    pub input: PathBuf,
+    #[arg(short = 'o', default_value = "index.wasm")]
+    pub output: PathBuf,
 }
 
-fn emit_provider(opts: &EmitProviderCommandOpts) -> Result<()> {
-    let mut file: Box<dyn Write> = match opts.out.as_ref() {
-        Some(path) => Box::new(File::create(path)?),
-        _ => Box::new(std::io::stdout()),
-    };
-    file.write_all(bytecode::QUICKJS_PROVIDER_MODULE)?;
+fn main() -> Result<()> {
+    let opts = Options::parse();
+    if env::var("EDECHAINS_JS_WIZEN").eq(&Ok("1".into())) {
+        env::remove_var("EDECHAINS_JS_WIZEN");
+        // remove unnecessary env var except RUST_LOG
+        for (key, _) in env::vars() {
+            if key.eq("RUST_LOG") || key.eq("JS_LOG") {
+            } else {
+                env::remove_var(&key);
+            }
+        }
+
+        println!("\nStarting to build arakoo compatible module");
+        let wasm: Vec<u8> =
+            if let Ok(wasm_bytes) = std::fs::read(concat!(env!("OUT_DIR"), "/engine.wasm")) {
+                wasm_bytes
+            } else {
+                // Provide a fallback wasm binary if the file is not found
+                panic!("Engine wasm not found");
+            };
+
+        println!("Preinitializing using Wizer");
+        let mut wasm = Wizer::new()
+            .allow_wasi(true)?
+            .inherit_stdio(true)
+            .wasm_bulk_memory(true)
+            .inherit_env(true)
+            .run(wasm.as_slice())?;
+
+        let codegen_config = CodegenConfig {
+            optimization_level: 3,
+            shrink_level: 0,
+            debug_info: false,
+        };
+
+        println!("Optimizing wasm binary using wasm-opt");
+
+        if let Ok(mut module) = Module::read(&wasm) {
+            module.optimize(&codegen_config);
+            module
+                .run_optimization_passes(vec!["strip"], &codegen_config)
+                .expect("Unable to optimize");
+            wasm = module.write();
+        } else {
+            bail!("Unable to read wasm binary for wasm-opt optimizations");
+        }
+
+        println!("Adapting module for component model");
+        let adapter_path = concat!(env!("OUT_DIR"), "/adapter.wasm");
+        wasm = ComponentEncoder::default()
+            .validate(true)
+            .module(&wasm)?
+            .adapter(
+                "wasi_snapshot_preview1",
+                &fs::read(adapter_path).expect("Unable to read adapter"),
+            )?
+            .encode()?;
+
+        fs::write(&opts.output, wasm)?;
+        return Ok(());
+    }
+
+    let script = File::open(&opts.input)
+        .with_context(|| format!("Failed to open input file {}", opts.input.display()))?;
+
+    let self_cmd = env::args().next().expect("No self command");
+    env::set_var("EDECHAINS_JS_WIZEN", "1");
+
+    let status = Command::new(self_cmd)
+        .arg(&opts.input)
+        .arg("-o")
+        .arg(&opts.output)
+        .stdin(script)
+        .status()?;
+
+    if !status.success() {
+        anyhow::bail!("Failed to convert js to wasm");
+    }
+
+    println!("Arakoo compatible module built successfully");
+
     Ok(())
 }

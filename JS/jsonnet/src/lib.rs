@@ -127,7 +127,7 @@ pub fn jsonnet_evaluate_file(vm: *mut VM, filename: &str) -> String {
 }
 
 #[wasm_bindgen]
-pub fn ext_string(vm: *mut VM, key: &str, value: &str) {
+pub fn jsonnet_ext_string(vm: *mut VM, key: &str, value: &str) {
     let vm = unsafe { &mut *vm };
     // let context_initializer_ref = vm.state.context_initializer();
 
@@ -226,7 +226,7 @@ mod test {
 
         // .unwrap();
         unsafe {
-            ext_string(
+            jsonnet_ext_string(
                 &mut *vm, // name.as_ptr() as *const c_char,
                 "name",   // value.as_ptr() as *const c_char,
                 "afshan",
