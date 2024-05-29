@@ -1,6 +1,6 @@
 {
-    "name": "arakoodev",
-    "version": "1.0.10",
+    "name": "@arakoodev/edgechains.js",
+    "version": "0.1.23",
     "main": "dist/index.js",
     "files": [
         "dist"

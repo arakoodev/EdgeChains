@@ -1,4 +1,4 @@
-import { ArakooServer } from "arakoodev/arakooserver";
+import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
 import { ReactChainRouter } from "./routes/react-chain.js";
 
 const server = new ArakooServer();

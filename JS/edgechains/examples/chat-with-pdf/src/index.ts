@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { ArakooServer } from "arakoodev/arakooserver";
+import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
 import { ChatRouter } from "./routes/chat.js";
 const server = new ArakooServer();
 

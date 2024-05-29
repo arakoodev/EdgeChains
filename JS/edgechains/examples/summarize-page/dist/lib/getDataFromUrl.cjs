@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const { WebScraper } = require("arakoodev/scraper");
+const { WebScraper } = require("@arakoodev/edgechains.js/scraper");
 const scraper = new WebScraper();
 function getPageContent() {
     return (url) => {

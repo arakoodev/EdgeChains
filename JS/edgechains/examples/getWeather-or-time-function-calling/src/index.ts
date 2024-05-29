@@ -1,7 +1,7 @@
-import { ArakooServer } from "arakoodev/arakooserver";
-import { fileURLToPath } from "url";
-import Jsonnet from "@arakoodev/jsonnet";
-import path from "path";
+import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
+import { fileURLToPath } from "url"
+import Jsonnet from "@arakoodev/jsonnet"
+import path from "path"
 
 //@ts-ignore
 import createClient from "sync-rpc";

@@ -1,4 +1,5 @@
-const { WebScraper } = require("arakoodev/scraper");
+
+const { WebScraper } = require("@arakoodev/edgechains.js/scraper")
 
 const scraper = new WebScraper();
 

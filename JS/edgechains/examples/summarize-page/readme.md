@@ -1,7 +1,7 @@
 ## Video
 
     ```
-    https://drive.google.com/file/d/14t8B_A6MGgDE5E2j3YPM4DnO3r_WOUun/view
+    https://youtu.be/4gouiNUuBr4
     ```
 
 ## Installation

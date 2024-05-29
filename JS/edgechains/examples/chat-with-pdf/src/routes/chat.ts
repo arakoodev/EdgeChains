@@ -1,12 +1,13 @@
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import { OpenAI } from "arakoodev/openai";
-import { Supabase } from "arakoodev/vector-db";
-import { PdfLoader } from "arakoodev/document-loader";
-import { TextSplitter } from "arakoodev/splitter";
-import { ArakooServer } from "arakoodev/arakooserver";
-import { Spinner } from "cli-spinner";
+import { OpenAI } from "@arakoodev/edgechains.js/openai";
+import { Supabase } from "@arakoodev/edgechains.js/vector-db";
+import { PdfLoader } from "@arakoodev/edgechains.js/document-loader";
+import { TextSplitter } from "@arakoodev/edgechains.js/splitter";
+import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
+import { Spinner } from "cli-spinner"
+
 import { z } from "zod";
 
 const server = new ArakooServer();

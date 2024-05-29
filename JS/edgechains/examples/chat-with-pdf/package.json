@@ -13,9 +13,9 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@arakoodev/edgechains.js": "^0.1.23",
         "@arakoodev/jsonnet": "^0.2.0",
         "@babel/preset-env": "^7.24.4",
-        "arakoodev": "^1.0.10",
         "cli-spinner": "^0.2.10",
         "regenerator-runtime": "^0.14.1",
         "zod": "^3.23.8"

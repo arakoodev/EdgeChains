@@ -1,4 +1,4 @@
-import { ArakooServer } from "arakoodev/arakooserver";
+import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
 //@ts-ignore
 import Jsonnet from "@arakoodev/jsonnet";
 import { fileURLToPath } from "url";
