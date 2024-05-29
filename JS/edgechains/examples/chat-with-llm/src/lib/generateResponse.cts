@@ -5,13 +5,13 @@ const Jsonnet = require("@arakoodev/jsonnet");
 const jsonnet = new Jsonnet();
 
 const secretsPath = path.join(__dirname, "../../jsonnet/secrets.jsonnet");
-const openAIApiKey = JSON.parse(jsonnet.evaluateFile(secretsPath)).openai_api_key
+const openAIApiKey = JSON.parse(jsonnet.evaluateFile(secretsPath)).openai_api_key;
 
-const openai = new OpenAI({ apiKey: openAIApiKey })
+const openai = new OpenAI({ apiKey: openAIApiKey });
 
 const schema = z.object({
-    answer: z.string().describe("The answer to the question")
-})
+    answer: z.string().describe("The answer to the question"),
+});
 
 // ** Example schema for a horse object, You can unComment the following code if you want to test the complex schema based answer**
 // const genderOrStage = ["mare", "stallion", "gelding", "foal"]; // Example values
@@ -37,17 +37,15 @@ const schema = z.object({
 // });
 
 function openAICall() {
-
     return function (prompt: string) {
         try {
             return openai.zodSchemaResponse({ prompt, schema: schema }).then((res: any) => {
-                return JSON.stringify(res)
-            })
+                return JSON.stringify(res);
+            });
         } catch (error) {
             return error;
         }
-    }
+    };
 }
-
 
 module.exports = openAICall;

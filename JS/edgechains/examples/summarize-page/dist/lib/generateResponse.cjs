@@ -8,7 +8,7 @@ const jsonnet = new Jsonnet();
 const secretsPath = path.join(__dirname, "../../jsonnet/secrets.jsonnet");
 const openAIApiKey = JSON.parse(jsonnet.evaluateFile(secretsPath)).openai_api_key;
 const schema = zod_1.z.object({
-    answer: zod_1.z.string().describe("The answer to the question")
+    answer: zod_1.z.string().describe("The answer to the question"),
 });
 const openai = new OpenAI({
     apiKey: openAIApiKey,
@@ -21,8 +21,7 @@ function openAICall() {
                 console.log({ res });
                 return JSON.stringify(res);
             });
-        }
-        catch (error) {
+        } catch (error) {
             return error;
         }
     };

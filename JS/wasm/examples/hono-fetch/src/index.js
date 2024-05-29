@@ -20,14 +20,14 @@ app.get("/post", async (c) => {
             body: JSON.stringify({
                 name: "test",
                 salary: "123",
-                age: "23"
+                age: "23",
             }),
             headers: {
                 "Content-type": "application/json",
             },
         });
         let data = await response.json();
-        console.log("data",data)
+        console.log("data", data);
         return c.json(data);
     } catch (error) {
         console.log("error occured");

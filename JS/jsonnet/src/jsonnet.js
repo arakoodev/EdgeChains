@@ -80,7 +80,7 @@ if (!isArakoo) {
             return __jsonnet_evaluate_file(vm, filename);
         }
 
-        destroy() { 
+        destroy() {
             let vm = this.#getVm();
             __jsonnet_destroy(vm);
         }

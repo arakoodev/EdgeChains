@@ -1,10 +1,9 @@
-
 import { ArakooServer } from "arakoodev/arakooserver";
 import Jsonnet from "@arakoodev/jsonnet";
 //@ts-ignore
-import createClient from 'sync-rpc';
+import createClient from "sync-rpc";
 
-import { fileURLToPath } from "url"
+import { fileURLToPath } from "url";
 import path from "path";
 const server = new ArakooServer();
 
@@ -16,7 +15,6 @@ const __dirname = fileURLToPath(import.meta.url);
 const openAICall = createClient(path.join(__dirname, "../lib/generateResponse.cjs"));
 const getPageContent = createClient(path.join(__dirname, "../lib/getDataFromUrl.cjs"));
 
-
 app.get("/", async (c: any) => {
     const pageUrl = c.req.query("pageUrl");
     jsonnet.extString("pageUrl", pageUrl || "");
@@ -26,5 +24,4 @@ app.get("/", async (c: any) => {
     return c.json(response);
 });
 
-server.listen(3000)
-
+server.listen(3000);

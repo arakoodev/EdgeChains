@@ -9,7 +9,7 @@ const secretsPath = path.join(__dirname, "../../jsonnet/secrets.jsonnet");
 const openAIApiKey = JSON.parse(jsonnet.evaluateFile(secretsPath)).openai_api_key;
 const openai = new OpenAI({ apiKey: openAIApiKey });
 const schema = zod_1.z.object({
-    answer: zod_1.z.string().describe("The answer to the question")
+    answer: zod_1.z.string().describe("The answer to the question"),
 });
 // ** Example schema for a horse object, You can unComment the following code if you want to test the complex schema based answer**
 // const genderOrStage = ["mare", "stallion", "gelding", "foal"]; // Example values
@@ -38,8 +38,7 @@ function openAICall() {
             return openai.zodSchemaResponse({ prompt, schema: schema }).then((res) => {
                 return JSON.stringify(res);
             });
-        }
-        catch (error) {
+        } catch (error) {
             return error;
         }
     };

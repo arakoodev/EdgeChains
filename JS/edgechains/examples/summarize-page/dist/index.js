@@ -1,7 +1,7 @@
 import { ArakooServer } from "arakoodev/arakooserver";
 import Jsonnet from "@arakoodev/jsonnet";
 //@ts-ignore
-import createClient from 'sync-rpc';
+import createClient from "sync-rpc";
 import { fileURLToPath } from "url";
 import path from "path";
 const server = new ArakooServer();

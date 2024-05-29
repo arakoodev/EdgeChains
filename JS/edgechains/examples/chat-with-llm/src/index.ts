@@ -1,10 +1,9 @@
-
 import { ArakooServer } from "arakoodev/arakooserver";
 import Jsonnet from "@arakoodev/jsonnet";
 //@ts-ignore
-import createClient from 'sync-rpc';
+import createClient from "sync-rpc";
 
-import { fileURLToPath } from "url"
+import { fileURLToPath } from "url";
 import path from "path";
 const server = new ArakooServer();
 
@@ -23,5 +22,4 @@ app.post("/chat", async (c: any) => {
     return c.json(JSON.parse(response));
 });
 
-server.listen(3000)
-
+server.listen(3000);

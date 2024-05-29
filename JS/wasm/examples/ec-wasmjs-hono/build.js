@@ -28,13 +28,11 @@ build({
     // define:{
     //     "export":"_export"
     // },
-    plugins:[
+    plugins: [
         textReplace({
-            include:/src\/index.js$/,
-            pattern:[
-                ["export default","_export = "]
-            ]
-        })
+            include: /src\/index.js$/,
+            pattern: [["export default", "_export = "]],
+        }),
     ],
     format: "esm",
     target: "esnext",

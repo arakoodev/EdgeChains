@@ -1,12 +1,10 @@
 import httpStatus from "http-status";
 import Url from "url-parse";
 import _queryString from "query-string";
-import "fast-text-encoding"
+import "fast-text-encoding";
 
-
-let encoder = new TextEncoder()
-let decoder = new TextDecoder()
-
+let encoder = new TextEncoder();
+let decoder = new TextDecoder();
 
 class URL {
     constructor(urlStr, base = undefined) {
@@ -173,8 +171,7 @@ class Request {
         this.headers = new Headers(input.headers || {});
         let bodyArray = new Uint8Array(input.body);
         let bodyString = decoder.decode(bodyArray);
-        if (bodyString != undefined && bodyString.length > 0)
-            this.body = JSON.parse(bodyString);
+        if (bodyString != undefined && bodyString.length > 0) this.body = JSON.parse(bodyString);
         this.params = input.params || {};
         this.geo = input.geo || {};
     }
@@ -284,7 +281,7 @@ const requestToHandler = (input) => {
         request,
         response: {},
         respondWith(res) {
-            console.debug(res.constructor.name)
+            console.debug(res.constructor.name);
             this.response = res;
         },
     };
@@ -320,12 +317,12 @@ globalThis.error = null;
 // };
 
 function encodeBody(body) {
-    if (typeof (body) == "string") {
-        return encoder.encode(body).buffer
+    if (typeof body == "string") {
+        return encoder.encode(body).buffer;
     } else if (ArrayBuffer.isView(body)) {
-        return body.buffer
+        return body.buffer;
     } else {
-        return body
+        return body;
     }
 }
 
@@ -344,16 +341,17 @@ function encodeBody(body) {
 // }
 
 function fetch(uri, options) {
-    console.debug("In fetch function", uri, options)
-    let encodedBodyData = (options && options.body) ? encodeBody(options.body) : new Uint8Array().buffer
+    console.debug("In fetch function", uri, options);
+    let encodedBodyData =
+        options && options.body ? encodeBody(options.body) : new Uint8Array().buffer;
     const { status, headers, body } = __internal_http_send({
         method: (options && options.method) || "GET",
-        uri: (uri instanceof URL) ? uri.toString() : uri,
+        uri: uri instanceof URL ? uri.toString() : uri,
         headers: (options && options.headers) || {},
         body: encodedBodyData,
         params: (options && options.params) || {},
-    })
-    console.debug("Response from fetch", status, headers, body)
+    });
+    console.debug("Response from fetch", status, headers, body);
     let obj;
     try {
         obj = {
@@ -361,20 +359,20 @@ function fetch(uri, options) {
             headers: {
                 entries: () => Object.entries(headers || {}),
                 get: (key) => (headers && headers[key]) || null,
-                has: (key) => (headers && headers[key]) ? true : false
+                has: (key) => (headers && headers[key] ? true : false),
             },
             arrayBuffer: () => Promise.resolve(body),
-            ok: (status > 199 && status < 300),
+            ok: status > 199 && status < 300,
             statusText: httpStatus[status],
             text: () => Promise.resolve(new TextDecoder().decode(body || new Uint8Array())),
             json: () => {
-                let text = new TextDecoder().decode(body || new Uint8Array())
-                return Promise.resolve(JSON.parse(text))
-            }
-        }
+                let text = new TextDecoder().decode(body || new Uint8Array());
+                return Promise.resolve(JSON.parse(text));
+            },
+        };
     } catch (error) {
-        console.log("Error occured in sending response from fetch")
-        console.log(error)
+        console.log("Error occured in sending response from fetch");
+        console.log(error);
     }
     return Promise.resolve(obj);
 }

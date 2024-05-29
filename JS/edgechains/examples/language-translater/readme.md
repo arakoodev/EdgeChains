@@ -1,4 +1,5 @@
-## Video 
+## Video
+
     ```
     https://drive.google.com/file/d/1QclGlD6mDEN9PMDEXAMkdZb0wY5uew8p/view
     ```
@@ -11,7 +12,7 @@ This is a Language Translate app
 
 ### Configuration
 
-1  Add OpenAiApi key in secrets.jsonnet
+1 Add OpenAiApi key in secrets.jsonnet
 
     ```
      local OPENAI_API_KEY = "sk-****";
@@ -28,14 +29,13 @@ This is a Language Translate app
 
 ### Run With frontend
 
-1. Open the frontend/index.html file with live server 
+1. Open the frontend/index.html file with live server
 
 2. Hit the endpoint in your browser if you're running the app from our examples
 
     ```bash
     http://localhost:5500/JS/edgechains/examples/language-translater/frontend/
     ```
-
 
 ### Run With endpoint
 
@@ -45,7 +45,7 @@ This is a Language Translate app
 http://localhost:3000/translate
 
 body={
-    "language":"hindi", 
+    "language":"hindi",
     "text":"hi, how are you"
 }
 ```
