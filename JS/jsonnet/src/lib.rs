@@ -19,7 +19,7 @@ use std::alloc;
 use wasm_bindgen::prelude::*;
 use console_error_panic_hook;
 
-mod context;
+pub mod context;
 
 #[wasm_bindgen(module = "/read-file.js")]
 extern "C" {
@@ -35,7 +35,7 @@ extern "C" {
 }
 
 pub struct VM {
-    state: State,
+    pub state: State,
     manifest_format: Box<dyn ManifestFormat>,
     trace_format: Box<dyn TraceFormat>,
     tla_args: GcHashMap<IStr, TlaArg>,

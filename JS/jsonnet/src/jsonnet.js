@@ -64,6 +64,10 @@ if (!isArakoo) {
             return this.vm;
         }
 
+        #setFunc(name, func) {
+            __jsonnet_func_map[name] = func;
+        }
+
         evaluateSnippet(snippet) {
             let vm = this.#getVm();
             return __jsonnet_evaluate_snippet(vm, snippet);
@@ -78,6 +82,42 @@ if (!isArakoo) {
         evaluateFile(filename) {
             let vm = this.#getVm();
             return __jsonnet_evaluate_file(vm, filename);
+        }
+        
+        javascriptCallback(name, func) {
+            let numOfArgs = func.length;
+            console.debug("Constructor name is: ", func.constructor.name);
+            if (func.constructor && func.constructor.name === "AsyncFunction"){
+                console.debug("In if part")
+                if (numOfArgs > 0) {
+                    this.#setFunc(name,async (args) => {
+                        console.debug("Args recieved in async function: ", args)
+                        let result = await eval(func)(...JSON.parse(args));
+                        return result.toString();
+                    });
+                } else {
+                    this.#setFunc(name, async () => {
+                        let result = await eval(func)();
+                        return result;
+                    });
+                }
+            } else {
+                console.debug("In else part")
+                if (numOfArgs > 0) {
+                    this.#setFunc(name, (args) => {
+                        console.debug("Args recieved: ", args)
+                        let result = eval(func)(...JSON.parse(args));
+                        return result.toString();
+                    });
+                } else {
+                    this.#setFunc(name, () => {
+                        let result = eval(func)();
+                        return result;
+                    });
+                }
+            }
+            __jsonnet_register_func(this.vm, name, numOfArgs);
+            return this;
         }
 
         destroy() {

@@ -11,7 +11,9 @@ use reqwest::Url;
 // use arakoo_jsonnet::{
 //     ext_string, jsonnet_destroy, jsonnet_evaluate_file, jsonnet_evaluate_snippet, jsonnet_make,
 // };
-use jrsonnet_evaluator::{function::TlaArg, gc::GcHashMap, manifest::ManifestFormat, trace::TraceFormat, State};
+use jrsonnet_evaluator::{
+    function::TlaArg, gc::GcHashMap, manifest::ManifestFormat, trace::TraceFormat, State,
+};
 use jrsonnet_parser::IStr;
 
 use std::{fs, io};
@@ -19,42 +21,17 @@ use std::{fs, io};
 use tracing::error;
 // use wasmtime::*;
 
-use crate::io::{WasmInput, WasmOutput};
-
 
 #[async_trait]
-impl super::jsonnet::Host for super::Host{
-    async fn jsonnet_make(&mut self,) ->  wasmtime::Result<u64> {
-        let ptr = arakoo_jsonnet::jsonnet_make();
-        Ok(ptr as u64)
-    }
-
-    async fn jsonnet_evaluate_snippet(&mut self, vm: u64,file:String, code: String) -> wasmtime::Result<String> {
-        let out = arakoo_jsonnet::jsonnet_evaluate_snippet(vm as *mut arakoo_jsonnet::VM, &file, &code);
-        Ok(out)
-    }    
-
-    async fn jsonnet_evaluate_file(&mut self, vm: u64, path: String) -> wasmtime::Result<String> {
+impl super::utils::Host for super::Host {
+    async fn read_file(&mut self, path: String) -> wasmtime::Result<String> {
         let code = fs::read_to_string(&path).map_err(|e| {
             error!("Failed to read file {}: {}", path, e);
             io::Error::new(io::ErrorKind::Other, e)
         })?;
-        let out = arakoo_jsonnet::jsonnet_evaluate_snippet(vm as *mut arakoo_jsonnet::VM, "snippet", &code);
-        Ok(out)
-    }
-
-    async fn jsonnet_ext_string(&mut self, vm: u64, key: String, value: String) -> wasmtime::Result<()> {
-        arakoo_jsonnet::jsonnet_ext_string(vm as *mut arakoo_jsonnet::VM, &key, &value);
-        Ok(())
-    }
-
-    async fn jsonnet_destroy(&mut self, vm: u64) -> wasmtime::Result<()> {
-        arakoo_jsonnet::jsonnet_destroy(vm as *mut arakoo_jsonnet::VM);
-        Ok(())
+        Ok(code)
     }
 }
-
-// Bindings for jsonnet 
 
 #[async_trait]
 impl super::outbound_http::Host for super::Host {
@@ -68,8 +45,7 @@ impl super::outbound_http::Host for super::Host {
 
             let method = method_from(req.method);
             let url = Url::parse(&req.uri).map_err(|_| HttpError::InvalidUrl)?;
-            let headers =
-                request_headers(req.headers).map_err(|_| HttpError::RuntimeError)?;
+            let headers = request_headers(req.headers).map_err(|_| HttpError::RuntimeError)?;
             let body = req.body.unwrap_or_default().to_vec();
 
             if !req.params.is_empty() {

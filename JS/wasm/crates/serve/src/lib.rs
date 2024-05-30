@@ -1,7 +1,6 @@
 // mod binding;
 use wit::arakoo::edgechains::http as outbound_http;
 use wit::arakoo::edgechains::http_types::HttpError;
-use wit::arakoo::edgechains::jsonnet;
 
 mod binding;
 mod io;
@@ -40,6 +39,7 @@ use wasmtime::component::{Component, Linker};
 use wasmtime::{Config, Engine, Store, WasmBacktraceDetails};
 use wit::arakoo::edgechains::http_types;
 use wit::exports::arakoo::edgechains::inbound_http::{self};
+use wit::arakoo::edgechains::utils;
 
 use crate::{
     // binding::add_jsonnet_to_linker,

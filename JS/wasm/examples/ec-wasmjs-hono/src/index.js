@@ -6,6 +6,11 @@ import Jsonnet from "@arakoodev/jsonnet";
 let jsonnet = new Jsonnet();
 
 const app = new Hono();
+
+function greet() {
+  return "Hello from JS";
+}
+
 const env = {};
 
 app.get("/hello", (c) => {
@@ -25,6 +30,64 @@ app.get("/", (c) => {
   }`;
     let result = jsonnet.extString("name", "ll").evaluateSnippet(code);
     return c.json(JSON.parse(result));
+});
+
+app.get("/func", (c) => {
+  const code = `
+  local username = std.extVar('name');
+  local Person(name='Alice') = {
+    name: name,
+    welcome: 'Hello ' + name + '!',
+  };
+  {
+    person1: Person(username),
+    person2: Person('Bob'),
+    result : arakoo.native("greet")()
+  }`;
+  let result = jsonnet.extString("name", "ll").javascriptCallback("greet", greet).evaluateSnippet(code);
+  return c.json(JSON.parse(result));
+});
+
+app.get("/async-func/:id", async (c) => {
+  let id = c.req.param("id");
+  async function asyncGetAtodo(id) {
+    try {
+      let response = await fetch(`https://jsonplaceholder.typicode.com/todos/${id}`);
+      let body = await response.json();
+      return JSON.stringify(body);
+    } catch (error) {
+      console.log("error occured");
+      console.log(error);
+      return c.json(output);
+    }
+  }
+
+  let result = jsonnet.extString("id", id).javascriptCallback("getAtodo", asyncGetAtodo).evaluateSnippet(`
+    local todo = std.parseJson(arakoo.native("getAtodo")(std.extVar("id")));
+  {
+    result : todo.title
+  }`);
+  return c.json(JSON.parse(result));
+});
+
+app.get("/add", (c) => {
+  function add(arg1, arg2, arg3) {
+    console.log("Args recieved: ", arg1, arg2, arg3);
+    return arg1 + arg2 + arg3;
+  }
+  const code = `
+  local username = std.extVar('name');
+  local Person(name='Alice') = {
+    name: name,
+    welcome: 'Hello ' + name + '!',
+  };
+  {
+    person1: Person(username),
+    person2: Person('Bob'),
+    result : arakoo.native("add")(1,2,3)
+  }`;
+  let result = jsonnet.extString("name", "ll").javascriptCallback("add", add).evaluateSnippet(code);
+  return c.json(JSON.parse(result));
 });
 
 app.get("/file", (c) => {
@@ -76,3 +139,4 @@ app.notFound((c) => {
 });
 
 app.fire();
+// globalThis._export = app;

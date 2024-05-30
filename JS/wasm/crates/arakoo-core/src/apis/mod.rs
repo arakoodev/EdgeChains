@@ -50,6 +50,8 @@ pub use api_config::APIConfig;
 pub use console::LogStream;
 pub use runtime_ext::RuntimeExt;
 
+use super::CONTEXT;
+
 pub mod http;
 pub mod types;
 

@@ -34,7 +34,7 @@ build({
             pattern: [["export default", "_export = "]],
         }),
     ],
-    format: "esm",
+    format: "cjs",
     target: "esnext",
     platform: "node",
     // external: ["arakoo"],

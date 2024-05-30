@@ -2,6 +2,6 @@ package arakoo:edgechains;
 
 world reactor {
     import http;
-    import jsonnet;
+    import utils;
     export inbound-http;
 }

@@ -71,7 +71,7 @@ static mut RUNTIME_INSTANCE: Option<Runtime> = None;
 // fn on_reject(context: &JSContextRef, _this: JSValueRef, args: &[JSValueRef]) -> Result<JSValue> {
 //     // (*args).clone_into(&mut cloned_args);
 //     let mut qjs_value = Option::None;
-//     if (args.len() > 0) {
+//     if args.len() > 0 {
 //         for arg in args {
 //             qjs_value = Some(from_qjs_value(*arg).unwrap());
 //             println!("Arg reject : {:?}", qjs_value.as_ref().unwrap());
