@@ -83,15 +83,15 @@ if (!isArakoo) {
             let vm = this.#getVm();
             return __jsonnet_evaluate_file(vm, filename);
         }
-        
+
         javascriptCallback(name, func) {
             let numOfArgs = func.length;
             console.debug("Constructor name is: ", func.constructor.name);
-            if (func.constructor && func.constructor.name === "AsyncFunction"){
-                console.debug("In if part")
+            if (func.constructor && func.constructor.name === "AsyncFunction") {
+                console.debug("In if part");
                 if (numOfArgs > 0) {
-                    this.#setFunc(name,async (args) => {
-                        console.debug("Args recieved in async function: ", args)
+                    this.#setFunc(name, async (args) => {
+                        console.debug("Args recieved in async function: ", args);
                         let result = await eval(func)(...JSON.parse(args));
                         return result.toString();
                     });
@@ -102,10 +102,10 @@ if (!isArakoo) {
                     });
                 }
             } else {
-                console.debug("In else part")
+                console.debug("In else part");
                 if (numOfArgs > 0) {
                     this.#setFunc(name, (args) => {
-                        console.debug("Args recieved: ", args)
+                        console.debug("Args recieved: ", args);
                         let result = eval(func)(...JSON.parse(args));
                         return result.toString();
                     });
