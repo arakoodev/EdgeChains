@@ -6,7 +6,7 @@ import { Supabase } from "@arakoodev/edgechains.js/vector-db";
 import { PdfLoader } from "@arakoodev/edgechains.js/document-loader";
 import { TextSplitter } from "@arakoodev/edgechains.js/splitter";
 import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
-import { Spinner } from "cli-spinner"
+import { Spinner } from "cli-spinner";
 
 import { z } from "zod";
 
