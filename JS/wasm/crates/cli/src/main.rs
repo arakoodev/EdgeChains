@@ -37,13 +37,14 @@ fn main() -> Result<()> {
         }
 
         println!("\nStarting to build arakoo compatible module");
-        let wasm: Vec<u8> =
-            if let Ok(wasm_bytes) = std::fs::read(concat!(env!("OUT_DIR"), "/engine.wasm")) {
-                wasm_bytes
-            } else {
-                // Provide a fallback wasm binary if the file is not found
-                panic!("Engine wasm not found");
-            };
+        // let wasm: Vec<u8> =
+        //     if let Ok(wasm_bytes) = std::fs::read(concat!(env!("OUT_DIR"), "/engine.wasm")) {
+        //         wasm_bytes
+        //     } else {
+        //         // Provide a fallback wasm binary if the file is not found
+        //         panic!("Engine wasm not found");
+        //     };
+        let wasm: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/engine.wasm"));
 
         println!("Preinitializing using Wizer");
         let mut wasm = Wizer::new()
@@ -51,7 +52,7 @@ fn main() -> Result<()> {
             .inherit_stdio(true)
             .wasm_bulk_memory(true)
             .inherit_env(true)
-            .run(wasm.as_slice())?;
+            .run(wasm)?;
 
         let codegen_config = CodegenConfig {
             optimization_level: 3,
@@ -72,13 +73,12 @@ fn main() -> Result<()> {
         }
 
         println!("Adapting module for component model");
-        let adapter_path = concat!(env!("OUT_DIR"), "/adapter.wasm");
         wasm = ComponentEncoder::default()
             .validate(true)
             .module(&wasm)?
             .adapter(
                 "wasi_snapshot_preview1",
-                &fs::read(adapter_path).expect("Unable to read adapter"),
+                include_bytes!(concat!(env!("OUT_DIR"), "/adapter.wasm"))
             )?
             .encode()?;
 

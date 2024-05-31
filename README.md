@@ -164,9 +164,9 @@ as $$
  1. Select latest successful workflow run from [here](https://github.com/arakoodev/EdgeChains/actions/workflows/release-wasm.yml) .
  2. Then scroll to bottom and download artifact . A zip will be downloaded to your system 
  3. Extract the zip . 
- 4. You will have two binaries `arakoo` *(this is runtime)* and `javy` *(this is our extended javy compiler)*
+ 4. You will have two binaries `arakoo` *(this is runtime)* and `arakoo-compiler` *(this is our extended javy compiler)*
  5. Copy these two binaries to `~/.local/bin` or `/usr/bin` *(if you want all users to access the binaries )*
- 6. Open terminal and grant executable permission to installed binaries by running `chmod +x "<path of installed javy>"` and `chmod +x "<path of installed arakoo>"`
+ 6. Open terminal and grant executable permission to copied binaries by running `chmod +x "<path of copied arakoo-compiler>"` and `chmod +x "<path of copied arakoo>"`
 
  *You are now good to go ! Have look at below  section which describe how you can create apis in hono and compile them to wasm*
  
@@ -212,7 +212,7 @@ build({
 ```
 12. Now compile bundled file with javy 
 ```
-javy compile dist.js 
+arakoo-compiler dist.js 
 ```
 13. You should see a new file `index.wasm` in the directory
 
