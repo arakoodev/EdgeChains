@@ -1,6 +1,6 @@
 {
     "name": "@arakoodev/jsonnet",
-    "version": "0.2.1",
+    "version": "0.3.0",
     "exports": {
         "import": {
             "default": "./src/index.mjs",
