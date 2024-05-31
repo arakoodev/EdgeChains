@@ -1,5 +1,5 @@
 .PHONY: all
-all: build-javy
+all: build-cli
 
 add:
 	@echo "Adding wasm32-wasi target"
@@ -18,21 +18,21 @@ build-arakoo:
 	@echo "Building arakoo"
 	@cargo build -p serve -r
 
-build-javy: build-cors
+build-cli: build-engine
 	@echo "Building javy cli"
 	@CARGO_PROFILE_RELEASE_LTO=off cargo build -p cli -r
 
-build-cors: build-shims
-	@echo "Building arakoo core"
-	@cargo build -p arakoo-core --target=wasm32-wasi -r --features experimental_event_loop
+build-engine: build-shims
+	@echo "Building arakoo engine"
+	@cargo build -p arakoo-js-engine --target=wasm32-wasi -r
 
 build-shims: shims-install
 	@echo "Building shims"
-	@cd JS/wasm/crates/apis/src/http/shims && npm run build
+	@cd JS/wasm/crates/arakoo-core/src/apis/http/shims && npm run build
 
 shims-install:
 	@echo "Installing deps of shims"
-	@cd JS/wasm/crates/apis/src/http/shims && npm install
+	@cd JS/wasm/crates/arakoo-core/src/apis/http/shims && npm install
 
 compile: build-example
 	./target/release/javy compile JS/wasm/examples/ec-wasmjs-hono/bin/app.js

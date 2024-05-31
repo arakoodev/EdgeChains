@@ -15,7 +15,7 @@ anyhow = { workspace = true }
 serde = { workspace = true }
 serde_json = "1"
 tokio = { version = "1.21.2", features = ["full"] }
-tracing = "0.1.37"
+tracing = { version = "0.1.37" , features = ["log"] }
 hyper = { version = "0.14.26", features = ["full"] }
 futures = "0.3.24"
 tracing-subscriber = { version = "^0.3.18", features = ["env-filter", "fmt"] }

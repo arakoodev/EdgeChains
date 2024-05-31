@@ -2,6 +2,9 @@ name: Release Wasm
 
 on: workflow_dispatch
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,7 +18,7 @@ jobs:
             wasm:
               - 'JS/wasm/**'
     # start of the build job
-      - name: Build Javy Core
+      - name: Build Engine
         working-directory: .
         run: |
           make add all
@@ -53,7 +56,7 @@ jobs:
       - name: Copy Javy bin
         working-directory: .
         run: |
-          cp target/release/javy bin/
+          cp target/release/arakoo-compiler bin/
 
       - name: Upload Release Binary
         uses: actions/upload-artifact@v2
