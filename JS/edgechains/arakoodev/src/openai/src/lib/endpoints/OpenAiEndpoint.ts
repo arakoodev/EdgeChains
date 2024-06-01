@@ -1,8 +1,6 @@
 import axios from "axios";
-import { config } from "dotenv";
 import { printNode, zodToTs } from "zod-to-ts";
 import { z } from "zod";
-config();
 const openAI_url = "https://api.openai.com/v1/chat/completions";
 
 type role = "user" | "assistant" | "system";
