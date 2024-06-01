@@ -139,11 +139,30 @@ local extractAction(text, actionNumber) =
     local get_search_string = arakoo.regexMatch(text, searchPattern)[0];
     get_search_string;
 
+local findMatch(text, searchString) = 
+    local match = arakoo.includes(searchString, text) || arakoo.includes(text, searchString);
+    match;
 
 local getObservation(searchTitle) = 
-        local pageId = arakoo.native("callWikipediaApi")(searchTitle);
-        local extractedSummary = arakoo.native("getExtractedSummary")(pageId);
-        extractedSummary;    
+        local url = "https://en.wikipedia.org/w/api.php";
+        local apiUrl = url + "?action=query&format=json&list=search&formatversion=2&srsearch=" + searchTitle;
+        local wikiConfig = {
+            url: apiUrl,
+        };
+        local wikipediaResponse = std.parseJson(arakoo.native("apiCall")(wikiConfig)).query.search;
+        local data = [
+        if findMatch(searchTitle, wikipediaResponse[x].title) then {title: wikipediaResponse[x].title, pageId: wikipediaResponse[x].pageid} for x in std.range(0, std.length(wikipediaResponse) - 1)
+        ];
+
+        local pageId = std.toString(data[0].pageId);
+        local summaryUrl = url + "?action=query&format=json&exintro&explaintext&prop=extracts&redirects=1&pageids=" + pageId;
+
+        local summaryConfig = {
+            url: summaryUrl,
+        };
+        local extractedSummary = std.parseJson(arakoo.native("apiCall")(summaryConfig)).query.pages[pageId].extract;
+        
+        extractedSummary;
 
 
 local extractAnswer(text, actionNumber) = 

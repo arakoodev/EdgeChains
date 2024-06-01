@@ -19,8 +19,7 @@ const openai = new OpenAI({
 function openAICall() {
     return function (prompt: string) {
         try {
-            return openai.zodSchemaResponse({ prompt, schema: schema }).then((res: any) => {
-                console.log({ res });
+            return openai.zodSchemaResponse({ prompt, schema }).then((res: any) => {
                 return JSON.stringify(res);
             });
         } catch (error) {
