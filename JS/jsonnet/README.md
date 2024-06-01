@@ -14,6 +14,7 @@ This project aim to running Jsonnet in Wasm. The code is written in Rust and com
 ```bash
 npm install arakoo-jsonnet
 ```
+
 ### You can evaluate snippet as follows -
 
 ```javascript
@@ -48,33 +49,35 @@ console.log(result);
     }
 }
 ```
+
 ### You can evaluate functions directly from jsonnet as follows -
 
 ```javascript
-  import Jsonnet from "arakoo-jsonnet";
+import Jsonnet from "arakoo-jsonnet";
 
-  let jsonnet = new Jsonnet();
-  function addSomeNumber(a, b, c) {
-    return a+b+c
-  }
-  let result = jsonnet
-  .javascriptCallback("addSomeNumber",addSomeNumber)
-  .evaluateSnippet(`{
+let jsonnet = new Jsonnet();
+function addSomeNumber(a, b, c) {
+    return a + b + c;
+}
+let result = jsonnet.javascriptCallback("addSomeNumber", addSomeNumber).evaluateSnippet(`{
         result : arakoo.native("addSomeNumber")(3,4,5)
-    }`)
+    }`);
 ```
+
 First you need to register the javascript function you wish to call from jsonnet by calling javascriptCallback method of jsonnet instance . Then you can call the registered function by using arakoo.native method.
 
 ### Output
+
 ```json
 {
-  "result": "12"
+    "result": "12"
 }
 ```
 
-> Note - 
->1. You can only return string from the function which you are calling from jsonnet . If you need to return any other type than you can JSON.stringify it and then std.parseJson in jsonnet. 
->2. You need to add  ```--experimental-wasm-modules``` flag while running the js file where you imported / required this jsonnet package
+> Note -
+>
+> 1.  You can only return string from the function which you are calling from jsonnet . If you need to return any other type than you can JSON.stringify it and then std.parseJson in jsonnet.
+> 2.  You need to add `--experimental-wasm-modules` flag while running the js file where you imported / required this jsonnet package
 
 ## Build
 
