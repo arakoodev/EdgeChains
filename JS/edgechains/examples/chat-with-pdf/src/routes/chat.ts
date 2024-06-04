@@ -1,7 +1,7 @@
 import path from "path";
 //@ts-ignore
-import createClient from "sync-rpc"
-import fileURLToPath from "file-uri-to-path"
+import createClient from "sync-rpc";
+import fileURLToPath from "file-uri-to-path";
 import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
 import { InsertToSupabase, splitedDocs } from "../lib/InsertToSupabase.js";
 
@@ -22,13 +22,15 @@ const getEmbeddings = createClient(path.join(__dirname, "../../lib/getEmbeddings
 export const ChatRouter: any = server.createApp();
 
 ChatRouter.get("/", async (c: any) => {
-    console.time("ExecutionTime")
+    console.time("ExecutionTime");
     const searchStr = c.req.query("question").toLowerCase();
     jsonnet.extString("query", searchStr);
     jsonnet.javascriptCallback("getEmbeddings", getEmbeddings);
     jsonnet.javascriptCallback("getQueryMatch", getQueryMatch);
     jsonnet.javascriptCallback("openAICall", openAICall);
-    const response = JSON.parse(jsonnet.evaluateFile(path.join(__dirname, "../../../jsonnet/main.jsonnet")));
+    const response = JSON.parse(
+        jsonnet.evaluateFile(path.join(__dirname, "../../../jsonnet/main.jsonnet"))
+    );
     console.timeEnd("ExecutionTime");
     return c.json(response);
 });

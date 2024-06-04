@@ -89,7 +89,6 @@ as $$
 -   You should see a success message in the Result tab.
     ![image](https://github.com/Shyam-Raghuwanshi/EdgeChains/assets/94217498/052d9a15-838f-4e68-9888-072cecb78a13)
 
-
 ## Usage
 
 1. Start the server:

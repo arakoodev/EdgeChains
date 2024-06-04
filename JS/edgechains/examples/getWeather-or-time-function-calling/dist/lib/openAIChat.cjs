@@ -14,20 +14,19 @@ function openAIChat() {
         try {
             const completion = openai
                 .chat({
-                model: "gpt-3.5-turbo-0613",
-                messages: [
-                    { role: "user", content: "Summarize the following input." + prompt },
-                ],
-            })
+                    model: "gpt-3.5-turbo-0613",
+                    messages: [
+                        { role: "user", content: "Summarize the following input." + prompt },
+                    ],
+                })
                 .then((completion) => {
-                return JSON.stringify(completion);
-            })
+                    return JSON.stringify(completion);
+                })
                 .catch((error) => {
-                console.error(error);
-            });
+                    console.error(error);
+                });
             return completion;
-        }
-        catch (error) {
+        } catch (error) {
             console.error(error);
         }
     };

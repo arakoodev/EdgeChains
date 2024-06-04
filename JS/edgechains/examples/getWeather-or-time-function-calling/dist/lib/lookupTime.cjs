@@ -8,17 +8,16 @@ function lookupTime() {
             const response = axios
                 .get(`http://worldtimeapi.org/api/timezone/${location}`)
                 .then((response) => {
-                const { datetime } = response.data;
-                const dateTime = moment.tz(datetime, location).format("h:mmA");
-                const timeResponse = `The current time in ${location} is ${dateTime}.`;
-                return timeResponse;
-            })
+                    const { datetime } = response.data;
+                    const dateTime = moment.tz(datetime, location).format("h:mmA");
+                    const timeResponse = `The current time in ${location} is ${dateTime}.`;
+                    return timeResponse;
+                })
                 .catch((error) => {
-                console.error(error);
-            });
+                    console.error(error);
+                });
             return response;
-        }
-        catch (error) {
+        } catch (error) {
             console.error(error);
         }
     };

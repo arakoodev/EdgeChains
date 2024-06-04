@@ -38,8 +38,7 @@ function openAICall() {
             return openai.zodSchemaResponse({ prompt, schema: schema }).then((res) => {
                 return JSON.stringify(res);
             });
-        }
-        catch (error) {
+        } catch (error) {
             return error;
         }
     };

@@ -1,16 +1,16 @@
-import fileURLToPath from "file-uri-to-path"
-import { Spinner } from "cli-spinner"
+import fileURLToPath from "file-uri-to-path";
+import { Spinner } from "cli-spinner";
 import { PdfLoader } from "@arakoodev/edgechains.js/document-loader";
 import { TextSplitter } from "@arakoodev/edgechains.js/splitter";
-import { createRequire } from 'module';
+import { createRequire } from "module";
 import { Supabase } from "@arakoodev/edgechains.js/vector-db";
 import Jsonnet from "@arakoodev/jsonnet";
-import path from "path"
+import path from "path";
 import fs from "fs";
 
-const require = createRequire(import.meta.url)
+const require = createRequire(import.meta.url);
 
-const getEmbeddings = require("./getEmbeddings.cjs")
+const getEmbeddings = require("./getEmbeddings.cjs");
 
 const __dirname = fileURLToPath(import.meta.url);
 

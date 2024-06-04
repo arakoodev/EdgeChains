@@ -8,8 +8,7 @@ function getPageContent() {
             return scraper.getContent(url).then((res) => {
                 return res;
             });
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
         }
     };

@@ -4,7 +4,6 @@ const z = require("zod");
 const Jsonnet = require("@arakoodev/jsonnet");
 const jsonnet = new Jsonnet();
 
-
 const secretsPath = path.join(__dirname, "../../jsonnet/secrets.jsonnet");
 const openAIApiKey = JSON.parse(jsonnet.evaluateFile(secretsPath)).openai_api_key;
 

@@ -23,20 +23,19 @@ function lookupWeather() {
             const response = axios
                 .request(options)
                 .then((response) => {
-                const weather = response.data;
-                const weatherForecast = `Location: ${weather.location.name} \
+                    const weather = response.data;
+                    const weatherForecast = `Location: ${weather.location.name} \
                                         Current Temperature: ${weather.current.temp_c} \
                                         Condition: ${weather.current.condition.text}. \
                                         Low Today: ${weather.forecast.forecastday[0].day.mintemp_c} \
                                         High Today: ${weather.forecast.forecastday[0].day.maxtemp_c}`;
-                return weatherForecast;
-            })
+                    return weatherForecast;
+                })
                 .catch((error) => {
-                console.error(error);
-            });
+                    console.error(error);
+                });
             return response;
-        }
-        catch (error) {
+        } catch (error) {
             console.error(error);
             return "No forecast found";
         }
