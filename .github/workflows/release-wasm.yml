@@ -30,6 +30,11 @@ jobs:
         working-directory: .
         run: |
           make build-jsonnet
+      - name: Build Edgechains
+        working-directory: .
+        run: |
+          make build-edgechains
+
     # start of the release job
       - name: Create out directory
         working-directory: .
@@ -52,6 +57,19 @@ jobs:
         working-directory: .
         run: |
           cp jsonnet.zip bin/
+      
+      - name: Zip edgechains
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'zip'
+          filename: 'edgechains.zip'
+          exclusions: '*.git* /*node_modules/* .editorconfig'
+          path: 'JS/edgechains/arakoodev'
+        
+      - name: copy edgechains
+        working-directory: .
+        run: |
+          cp edgechains.zip bin/
 
       - name: Copy Javy bin
         working-directory: .

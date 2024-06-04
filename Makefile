@@ -48,3 +48,6 @@ clean-example:
 
 build-jsonnet:
 	@cd JS/jsonnet && ./build.sh
+
+build-edgechains:
+	@cp README.md JS/edgechains/arakoodev && cd JS/edgechains/arakoodev && npm install && npm run build && rm -rf src/
