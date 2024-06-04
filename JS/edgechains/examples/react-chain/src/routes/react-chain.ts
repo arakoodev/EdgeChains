@@ -1,6 +1,6 @@
 import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
 import Jsonnet from "@arakoodev/jsonnet";
-import { fileURLToPath } from "url";
+import fileURLToPath from "file-uri-to-path"
 import path from "path";
 //@ts-ignore
 import createClient from "sync-rpc";
@@ -9,8 +9,6 @@ const server = new ArakooServer();
 const jsonnet = new Jsonnet();
 const __dirname = fileURLToPath(import.meta.url);
 
-// const getExtractedSummary = createClient(path.join(__dirname, "../../lib/getExtractedSummary.cjs"));
-// const callWikipediaApi = createClient(path.join(__dirname, "../../lib/callWikipediaApi.cjs"));
 const openAICall = createClient(path.join(__dirname, "../../lib/generateResponse.cjs"));
 const apiCall = createClient(path.join(__dirname, "../../lib/apiCall.cjs"));
 

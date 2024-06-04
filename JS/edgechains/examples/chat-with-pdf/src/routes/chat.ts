@@ -1,7 +1,7 @@
 import path from "path";
 //@ts-ignore
 import createClient from "sync-rpc"
-import { fileURLToPath } from "url";
+import fileURLToPath from "file-uri-to-path"
 import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
 import { InsertToSupabase, splitedDocs } from "../lib/InsertToSupabase.js";
 
@@ -17,7 +17,7 @@ const getQueryMatch = createClient(path.join(__dirname, "../../lib/getQueryMatch
 const getEmbeddings = createClient(path.join(__dirname, "../../lib/getEmbeddings.cjs"));
 
 // this should run only once for uploding pdf data to supabase then you can continue with the chatbot functionality
-await InsertToSupabase(splitedDocs);
+// await InsertToSupabase(splitedDocs);
 
 export const ChatRouter: any = server.createApp();
 

@@ -89,11 +89,20 @@ as $$
 -   You should see a success message in the Result tab.
     ![image](https://github.com/Shyam-Raghuwanshi/EdgeChains/assets/94217498/052d9a15-838f-4e68-9888-072cecb78a13)
 
-5. Run the example
 
-```
-  npm run start
-```
+## Usage
+
+1. Start the server:
+
+    ```bash
+    npm run start
+    ```
+
+2. Hit the `GET` endpoint.
+
+    ```bash
+    http://localhost:3000/chatWithpdf?question=who is nirmala sitaraman
+    ```
 
 -   Then you can run the ChatWithPdf example using npm run start and continue chatting with the example.pdf.
 

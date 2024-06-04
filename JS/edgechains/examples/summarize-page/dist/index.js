@@ -2,7 +2,7 @@ import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
 import Jsonnet from "@arakoodev/jsonnet";
 //@ts-ignore
 import createClient from "sync-rpc";
-import { fileURLToPath } from "url";
+import fileURLToPath from "file-uri-to-path";
 import path from "path";
 const server = new ArakooServer();
 const app = server.createApp();
@@ -16,6 +16,7 @@ app.get("/", async (c) => {
     jsonnet.javascriptCallback("openAICall", openAICall);
     jsonnet.javascriptCallback("getPageContent", getPageContent);
     let response = jsonnet.evaluateFile(path.join(__dirname, "../../jsonnet/main.jsonnet"));
+    console.log(response);
     return c.json(response);
 });
 server.listen(3000);

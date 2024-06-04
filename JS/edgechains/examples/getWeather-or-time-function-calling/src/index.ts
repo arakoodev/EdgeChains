@@ -1,5 +1,5 @@
 import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
-import { fileURLToPath } from "url";
+import fileURLToPath from "file-uri-to-path"
 import Jsonnet from "@arakoodev/jsonnet";
 import path from "path";
 

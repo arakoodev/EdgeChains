@@ -18,7 +18,7 @@ export class ArakooServer {
         return this.app;
     }
 
-    listen(port: number) {
+    listen(port?: number) {
         const portNumber = port || 3000;
 
         serve(

@@ -1,4 +1,4 @@
-import { fileURLToPath } from "url";
+import fileURLToPath from "file-uri-to-path"
 import { Spinner } from "cli-spinner"
 import { PdfLoader } from "@arakoodev/edgechains.js/document-loader";
 import { TextSplitter } from "@arakoodev/edgechains.js/splitter";
@@ -32,7 +32,7 @@ const supabaseUrl = await JSON.parse(secretsLoader).supabase_url;
 const supabase = new Supabase(supabaseUrl, supabaseApiKey);
 const client = supabase.createClient();
 
-export async function InsertToSupabase(content:any) {
+export async function InsertToSupabase(content: any) {
     var spinner = new Spinner("Inserting to Supabase.. %s");
     try {
         spinner.setSpinnerString("|/-\\");

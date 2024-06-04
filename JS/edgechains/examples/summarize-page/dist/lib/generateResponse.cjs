@@ -17,11 +17,11 @@ const openai = new OpenAI({
 function openAICall() {
     return function (prompt) {
         try {
-            return openai.zodSchemaResponse({ prompt, schema: schema }).then((res) => {
-                console.log({ res });
+            return openai.zodSchemaResponse({ prompt, schema }).then((res) => {
                 return JSON.stringify(res);
             });
-        } catch (error) {
+        }
+        catch (error) {
             return error;
         }
     };
