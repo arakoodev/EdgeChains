@@ -47,7 +47,7 @@ clean-example:
 	@rm -r JS/wasm/examples/ec-wasmjs-hono/node_modules/ JS/wasm/examples/ec-wasmjs-hono/bin/
 
 build-jsonnet:
-	@cd JS/jsonnet && ./build.sh
+	@cd JS/jsonnet && ./build.sh && npm version $(TAG)
 
 build-edgechains:
-	@cp README.md JS/edgechains/arakoodev && cd JS/edgechains/arakoodev && npm install && npm run build && rm -rf src/
+	@cp README.md JS/edgechains/arakoodev && cd JS/edgechains/arakoodev && npm install && npm run build && npm version $(TAG) && rm -rf src/

@@ -29,11 +29,11 @@ jobs:
       - name: Build Jsonnet
         working-directory: .
         run: |
-          make build-jsonnet
+          make build-jsonnet TAG=${{ github.ref_name }}
       - name: Build Edgechains
         working-directory: .
         run: |
-          make build-edgechains
+          make build-edgechains TAG=${{ github.ref_name }}
 
     # start of the release job
       - name: Create out directory
@@ -79,7 +79,7 @@ jobs:
       - name: Upload Release Binary
         uses: actions/upload-artifact@v2
         with:
-          name: arakoo-${{ env.RELEASE_TAG }}-x86_64
+          name: arakoo-${{ github.ref_name }}-x86_64
           path: bin
 
   release:
@@ -90,19 +90,13 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
-          name: arakoo-${{ env.RELEASE_TAG }}-x86_64
+          name: arakoo-${{ github.ref_name }}-x86_64
           path: Output
       - name: Display structure of downloaded files
         run: ls -R
-
-      - name: Get variables
-        id: vars
-        run: echo "tag_name=${{ env.RELEASE_TAG }}" >> $GITHUB_ENV
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             ./Output/*
-
-          tag_name: ${{ env.RELEASE_TAG }}
