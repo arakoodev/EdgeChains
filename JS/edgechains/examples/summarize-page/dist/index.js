@@ -16,7 +16,6 @@ app.get("/", async (c) => {
     jsonnet.javascriptCallback("openAICall", openAICall);
     jsonnet.javascriptCallback("getPageContent", getPageContent);
     let response = jsonnet.evaluateFile(path.join(__dirname, "../../jsonnet/main.jsonnet"));
-    console.log(response);
     return c.json(response);
 });
 server.listen(3000);

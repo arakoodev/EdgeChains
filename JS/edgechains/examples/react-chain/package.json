@@ -12,8 +12,8 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@arakoodev/edgechains.js": "^0.1.23",
-        "@arakoodev/jsonnet": "^0.3.1",
+        "@arakoodev/edgechains.js": "^0.23.6",
+        "@arakoodev/jsonnet": "^0.23.6",
         "axios": "^1.7.2",
         "file-uri-to-path": "^2.0.0",
         "path": "^0.12.7",

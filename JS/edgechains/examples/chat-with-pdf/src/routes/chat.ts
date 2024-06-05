@@ -17,7 +17,7 @@ const getQueryMatch = createClient(path.join(__dirname, "../../lib/getQueryMatch
 const getEmbeddings = createClient(path.join(__dirname, "../../lib/getEmbeddings.cjs"));
 
 // this should run only once for uploding pdf data to supabase then you can continue with the chatbot functionality
-// await InsertToSupabase(splitedDocs);
+await InsertToSupabase(splitedDocs);
 
 export const ChatRouter: any = server.createApp();
 

@@ -13,8 +13,8 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@arakoodev/edgechains.js": "^0.1.23",
-        "@arakoodev/jsonnet": "^0.3.1",
+        "@arakoodev/edgechains.js": "^0.23.6",
+        "@arakoodev/jsonnet": "^0.23.6",
         "@babel/preset-env": "^7.24.4",
         "cli-spinner": "^0.2.10",
         "file-uri-to-path": "^2.0.0",

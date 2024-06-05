@@ -1,25 +1,25 @@
 {
-    "name": "summarizer-app",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "type": "module",
-    "keywords": [],
-    "author": "",
-    "scripts": {
-        "start": "tsc && node --experimental-wasm-modules ./dist/index.js"
-    },
-    "license": "ISC",
-    "dependencies": {
-        "@arakoodev/edgechains.js": "^0.1.23",
-        "@arakoodev/jsonnet": "^0.3.1",
-        "file-uri-to-path": "^2.0.0",
-        "path": "^0.12.7",
-        "sync-rpc": "^1.3.6",
-        "zod": "^3.23.8"
-    },
-    "devDependencies": {
-        "@types/node": "^20.14.1",
-        "@types/request": "^2.48.12"
-    }
+  "name": "summarizer-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "scripts": {
+    "start": "tsc && node --experimental-wasm-modules ./dist/index.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@arakoodev/edgechains.js": "^0.23.6",
+    "@arakoodev/jsonnet": "^0.23.6",
+    "file-uri-to-path": "^2.0.0",
+    "path": "^0.12.7",
+    "sync-rpc": "^1.3.6",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.1",
+    "@types/request": "^2.48.12"
+  }
 }
