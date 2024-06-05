@@ -1,9 +1,8 @@
 import axios from "axios";
-import { printNode, zodToTs } from "zod-to-ts";
+import { zodToJsonSchema } from 'zod-to-json-schema';
 import { z } from "zod";
+import { ChatModel, role } from "../../types/index"
 const openAI_url = "https://api.openai.com/v1/chat/completions";
-
-type role = "user" | "assistant" | "system";
 
 interface OpenAIConstructionOptions {
     apiKey?: string;
@@ -17,7 +16,7 @@ interface messageOption {
 [];
 
 interface OpenAIChatOptions {
-    model?: string;
+    model?: ChatModel;
     role?: role;
     max_tokens?: number;
     temperature?: number;
@@ -26,7 +25,7 @@ interface OpenAIChatOptions {
 }
 
 interface chatWithFunctionOptions {
-    model?: string;
+    model?: ChatModel;
     role?: role;
     max_tokens?: number;
     temperature?: number;
@@ -37,12 +36,11 @@ interface chatWithFunctionOptions {
 }
 
 interface ZodSchemaResponseOptions<S extends z.ZodTypeAny> {
-    model?: string;
+    model?: ChatModel;
     role?: role;
     max_tokens?: number;
     temperature?: number;
-    prompt?: string;
-    messages?: messageOption;
+    prompt: string;
     schema: S;
 }
 
@@ -72,11 +70,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                              {
-                                  role: chatOptions.role || "user",
-                                  content: chatOptions.prompt,
-                              },
-                          ]
+                            {
+                                role: chatOptions.role || "user",
+                                content: chatOptions.prompt,
+                            },
+                        ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
@@ -114,11 +112,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                              {
-                                  role: chatOptions.role || "user",
-                                  content: chatOptions.prompt,
-                              },
-                          ]
+                            {
+                                role: chatOptions.role || "user",
+                                content: chatOptions.prompt,
+                            },
+                        ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
@@ -182,41 +180,35 @@ export class OpenAI {
     async zodSchemaResponse<S extends z.ZodTypeAny>(
         chatOptions: ZodSchemaResponseOptions<S>
     ): Promise<S> {
-        const { node } = zodToTs(chatOptions.schema, "User");
-
+        const jsonSchema = zodToJsonSchema(chatOptions.schema, { $refStrategy: 'none' });
+        const openAIFunctionCallDefinition = {
+            name: "generateSchema",
+            description: "Generate a schema based on provided details.",
+            parameters: jsonSchema
+        };
+        // Remembrer if any field like url or link is not available please create a dummy link based on the following prompt
         const content = `
-                    Analyze the text enclosed in triple backticks below. Your task is to fill in the data as described, and respond only with a JSON object that strictly conforms to the following TypeScript schema. Do not include any additional text or explanations outside of the JSON object, as this will cause parsing errors.
-
-                    Schema:
-                    \`\`\`
-                    ${printNode(node)}
-                    \`\`\`
-
-                    User Prompt:
-                    \`\`\`
-                    ${chatOptions.prompt || "No prompt provided."}
-                    \`\`\`
-                    `;
+                        You are a Schema generator that can generate answer based on given prompt and then return the response based on the give schema 
+                        Remembrer if any field like url or link is not available please create a dummy link based on the following prompt
+                        
+                        prompt:
+                        ${chatOptions.prompt || ""}
+                        `;
 
         const response = await axios
             .post(
                 openAI_url,
                 {
                     model: chatOptions.model || "gpt-3.5-turbo",
-                    messages: chatOptions.prompt
-                        ? [
-                              {
-                                  role: chatOptions.role || "user",
-                                  content,
-                              },
-                          ]
-                        : [
-                              {
-                                  role: chatOptions?.messages?.role || "user",
-                                  content,
-                              },
-                          ],
-                    max_tokens: chatOptions.max_tokens || 256,
+                    messages: [
+                        {
+                            role: chatOptions.role || "user",
+                            content
+                        },
+                    ],
+                    functions: [openAIFunctionCallDefinition],
+                    function_call: "auto",
+                    max_tokens: chatOptions.max_tokens || 1000,
                     temperature: chatOptions.temperature || 0.7,
                 },
                 {
@@ -227,7 +219,7 @@ export class OpenAI {
                 }
             )
             .then((response) => {
-                return response.data.choices[0].message.content;
+                return response.data.choices[0].message
             })
             .catch((error) => {
                 if (error.response) {
@@ -239,10 +231,12 @@ export class OpenAI {
                     console.log("Error creating request:", error.message);
                 }
             });
-        if (typeof response === "string") {
-            return chatOptions.schema.parse(JSON.parse(response));
+        if (response) {
+            if (response.content) return response.content
+            return chatOptions.schema.parse(JSON.parse(response.function_call.arguments));
+
         } else {
-            throw Error("response must be a string");
+            throw new Error("Response did not contain valid JSON.");
         }
     }
 }
