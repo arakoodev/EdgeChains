@@ -1,7 +1,7 @@
 import axios from "axios";
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { z } from "zod";
-import { ChatModel, role } from "../../types/index"
+import { ChatModel, role } from "../../types/index";
 const openAI_url = "https://api.openai.com/v1/chat/completions";
 
 interface OpenAIConstructionOptions {
@@ -70,11 +70,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                            {
-                                role: chatOptions.role || "user",
-                                content: chatOptions.prompt,
-                            },
-                        ]
+                              {
+                                  role: chatOptions.role || "user",
+                                  content: chatOptions.prompt,
+                              },
+                          ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
@@ -112,11 +112,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                            {
-                                role: chatOptions.role || "user",
-                                content: chatOptions.prompt,
-                            },
-                        ]
+                              {
+                                  role: chatOptions.role || "user",
+                                  content: chatOptions.prompt,
+                              },
+                          ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
@@ -180,11 +180,11 @@ export class OpenAI {
     async zodSchemaResponse<S extends z.ZodTypeAny>(
         chatOptions: ZodSchemaResponseOptions<S>
     ): Promise<S> {
-        const jsonSchema = zodToJsonSchema(chatOptions.schema, { $refStrategy: 'none' });
+        const jsonSchema = zodToJsonSchema(chatOptions.schema, { $refStrategy: "none" });
         const openAIFunctionCallDefinition = {
             name: "generateSchema",
             description: "Generate a schema based on provided details.",
-            parameters: jsonSchema
+            parameters: jsonSchema,
         };
         // Remembrer if any field like url or link is not available please create a dummy link based on the following prompt
         const content = `
@@ -203,7 +203,7 @@ export class OpenAI {
                     messages: [
                         {
                             role: chatOptions.role || "user",
-                            content
+                            content,
                         },
                     ],
                     functions: [openAIFunctionCallDefinition],
@@ -219,7 +219,7 @@ export class OpenAI {
                 }
             )
             .then((response) => {
-                return response.data.choices[0].message
+                return response.data.choices[0].message;
             })
             .catch((error) => {
                 if (error.response) {
@@ -232,9 +232,8 @@ export class OpenAI {
                 }
             });
         if (response) {
-            if (response.content) return response.content
+            if (response.content) return response.content;
             return chatOptions.schema.parse(JSON.parse(response.function_call.arguments));
-
         } else {
             throw new Error("Response did not contain valid JSON.");
         }
