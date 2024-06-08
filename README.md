@@ -19,6 +19,12 @@ Leveraging the full potential of Large language models (LLMs) often requires int
 
 EdgeChains is an open-source chain-of-thought engineering framework tailored for Large Language Models (LLMs)- like OpenAI GPT, LLama2, Falcon, etc. - With a focus on enterprise-grade deployability and scalability. 
 
+## Is EdgeChains production ready ?
+unlike a lot of frameworks  - we built it on top of honojs and  jsonnet, both of which are built by cloudflare and google respectively.
+so even if u dont trust me...u can trust them ;)
+
+we dont build our own flavor of json or a specific DSL (that is inherently fragile) and give u compilation steps. Our underlying libraries are rock solid and stable.
+
 ## Understanding EdgeChains
 
 At EdgeChains, we take a unique approach to Generative AI - we think Generative AI is a deployment and configuration management challenge rather than a UI and library design pattern challenge. We build on top of a tech that has solved this problem in a different domain - Kubernetes Config Management - and bring that to Generative AI.
