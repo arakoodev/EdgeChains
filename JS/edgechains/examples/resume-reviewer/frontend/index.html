@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume-reviewer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.7.0"></script>
+    <script src="https://unpkg.com/@tabler/icons@1.40.0/icons-react.min.js"></script>
+</head>
+
+<body class="bg-gray-900">
+    <div class="flex">
+        <div style="width: 50%;" class="h-screen flex justify-center item-center flex-col border-r">
+
+            <div class="flex flex-col space-y-4 p-8 px-20">
+                <input id="name" placeholder="Enter your Name"
+                    class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background  file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-transparent border border-gray-300 text-white" />
+                <input id="email" placeholder="Enter your Email"
+                    class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-transparent text-white" />
+                <input id="resumeInput" type="file" name="q" hx-get="/trigger_delay"
+                    hx-trigger="keyup changed delay:500ms" hx-target="#search-results" placeholder="Search..."
+                    class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-transparent text-white" />
+                <button
+                    class="text-sm sm:text-base text-neutral-900 border-2 border-gray-300 font-semibold rounded-lg px-4 py-2 bg-gray-200 hover:bg-neutral-300 focus:outline-none focus:ring-1 focus:ring-neutral-300"
+                    onclick="handleResume()">
+                    Upload
+                </button>
+            </div>
+
+            <div class="flex flex-col rounded-lg px-2 sm:p-4 text-white text-center text-3xl border-neutral-300" id="chat-messages">
+            </div>
+        </div>
+        <div style="width: 50%;" class="w-24 h-screen">
+            <div>
+                <h1 class="text-5xl text-center mt-2 text-white border-b">Ranks</h1>
+            </div>
+            <div id="ranksdiv" style="height: 40rem; overflow-y: auto;" class=" mt-10">
+
+            </div>
+        </div>
+    </div>
+
+</body>
+<script src="./script.js"></script>
+
+</html>
