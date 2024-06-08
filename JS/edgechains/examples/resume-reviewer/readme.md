@@ -1,4 +1,4 @@
-# React Chain Example
+# Resume Reviewer Example
 
 This is an example project that demonstrates the usage of Resume-Reviewer
 
