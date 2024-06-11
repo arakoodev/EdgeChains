@@ -164,14 +164,16 @@ class Headers {
 }
 
 class Request {
-    constructor(input) {
-        // console.log("In constructor of request input body len",input.body.byteLength);
-        this.url = input.uri;
+    constructor(url, input) {
+        console.debug("Request constructor called with ", JSON.stringify(url), input)
+        if (typeof url === "string") {
+            this.url = url
+        } else {
+            throw new Error("url in Request constructor is not a string")
+        }
+        this.headers = input.headers;
         this.method = input.method;
-        this.headers = new Headers(input.headers || {});
-        let bodyArray = new Uint8Array(input.body);
-        let bodyString = decoder.decode(bodyArray);
-        if (bodyString != undefined && bodyString.length > 0) this.body = JSON.parse(bodyString);
+        this.body = input.body;
         this.params = input.params || {};
         this.geo = input.geo || {};
     }
@@ -274,8 +276,8 @@ globalThis.addEventListener = (_eventName, handler) => {
     handlerFunction = handler;
 };
 
-const requestToHandler = (input) => {
-    const request = new Request(input);
+const requestToHandler = (inputReq) => {
+    const request = new Request(inputReq.uri,inputReq);
     console.debug("Request recieved ", JSON.stringify(request));
     const event = {
         request,
@@ -340,18 +342,30 @@ function encodeBody(body) {
 //     return event;
 // }
 
+
 function fetch(uri, options) {
-    console.debug("In fetch function", uri, options);
-    let encodedBodyData =
-        options && options.body ? encodeBody(options.body) : new Uint8Array().buffer;
+    console.info("constructor name of uri ", uri.constructor.name);
+    console.info("uri is ", JSON.stringify(uri))
+    if (uri.constructor.name == "Request") {
+        console.info("uri is instance of Request")
+        options = {}
+        options.headers = uri.headers;
+        options.method = uri.method;
+        options.params = uri.params;
+        options.body = uri.body;
+        options.geo = uri.geo;
+        uri = uri.url;
+    }
+    console.info("In fetch function", uri, options)
+    let encodedBodyData = (options && options.body) ? encodeBody(options.body) : new Uint8Array().buffer
     const { status, headers, body } = __internal_http_send({
         method: (options && options.method) || "GET",
-        uri: uri instanceof URL ? uri.toString() : uri,
+        uri: (uri instanceof URL) ? uri.toString() : uri,
         headers: (options && options.headers) || {},
         body: encodedBodyData,
         params: (options && options.params) || {},
-    });
-    console.debug("Response from fetch", status, headers, body);
+    })
+    console.info("Response from fetch", status, headers, body)
     let obj;
     try {
         obj = {
@@ -359,20 +373,20 @@ function fetch(uri, options) {
             headers: {
                 entries: () => Object.entries(headers || {}),
                 get: (key) => (headers && headers[key]) || null,
-                has: (key) => (headers && headers[key] ? true : false),
+                has: (key) => (headers && headers[key]) ? true : false
             },
             arrayBuffer: () => Promise.resolve(body),
-            ok: status > 199 && status < 300,
+            ok: (status > 199 && status < 300),
             statusText: httpStatus[status],
             text: () => Promise.resolve(new TextDecoder().decode(body || new Uint8Array())),
             json: () => {
-                let text = new TextDecoder().decode(body || new Uint8Array());
-                return Promise.resolve(JSON.parse(text));
-            },
-        };
+                let text = new TextDecoder().decode(body || new Uint8Array())
+                return Promise.resolve(JSON.parse(text))
+            }
+        }
     } catch (error) {
-        console.log("Error occured in sending response from fetch");
-        console.log(error);
+        console.log("Error occured in sending response from fetch")
+        console.log(error)
     }
     return Promise.resolve(obj);
 }

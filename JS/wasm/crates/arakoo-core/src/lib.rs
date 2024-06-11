@@ -173,7 +173,7 @@ impl wit::inbound_http::Guest for Guest {
         let entrypoint = **HANDLER.get().unwrap();
         entrypoint
             .call(global, &[request_value])
-            .expect("Unable to call requestToEvent");
+            .expect("Unable to call handler");
         // let event_request = event
         //     .get_property("request")
         //     .expect("Unable to get request from event");

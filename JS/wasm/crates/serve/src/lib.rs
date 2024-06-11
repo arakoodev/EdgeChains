@@ -38,8 +38,8 @@ use wasmtime_wasi::{bindings, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
 use wasmtime::component::{Component, Linker};
 use wasmtime::{Config, Engine, Store, WasmBacktraceDetails};
 use wit::arakoo::edgechains::http_types;
-use wit::exports::arakoo::edgechains::inbound_http::{self};
 use wit::arakoo::edgechains::utils;
+use wit::exports::arakoo::edgechains::inbound_http::{self};
 
 use crate::{
     // binding::add_jsonnet_to_linker,
@@ -189,6 +189,7 @@ impl WorkerCtx {
         bindings::io::error::add_to_linker(&mut linker, |x| x).expect("Unable to add io error");
         // bindings::sync::io::streams::add_to_linker(&mut linker, |x| x)
         //     .expect("Unable to add io streams");
+        bindings::io::poll::add_to_linker(&mut linker, |x| x).expect("unable to add io poll");
         bindings::io::streams::add_to_linker(&mut linker, |x| x).expect("Unable to add io streams");
         bindings::cli::stdin::add_to_linker(&mut linker, |x| x).expect("Unable to add cli stdin");
         bindings::cli::stdout::add_to_linker(&mut linker, |x| x).expect("Unable to add cli stdout");

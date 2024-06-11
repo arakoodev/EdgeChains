@@ -42,9 +42,9 @@
 //!   invoked for the first time.
 //! * `stream_io` - Registers implementations of `Javy.IO.readSync` and `Javy.IO.writeSync`.
 
+use super::wit;
 use anyhow::Result;
 use javy::Runtime;
-use super::wit;
 
 pub use api_config::APIConfig;
 pub use console::LogStream;
@@ -56,14 +56,16 @@ pub mod http;
 pub mod types;
 
 mod api_config;
+mod axios;
 mod console;
+mod fetch;
+mod jsonnet;
+mod pdfparse;
 mod random;
 mod runtime_ext;
 mod stream_io;
 mod text_encoding;
-mod pdfparse;
-mod fetch;
-mod jsonnet;
+
 pub(crate) trait JSApiSet {
     fn register(&self, runtime: &Runtime, config: &APIConfig) -> Result<()>;
 }
@@ -88,5 +90,6 @@ pub fn add_to_runtime(runtime: &Runtime, config: APIConfig) -> Result<()> {
     jsonnet::Jsonnet.register(runtime, &config)?;
     pdfparse::PDFPARSER.register(runtime, &config)?;
     fetch::Fetch.register(runtime, &config)?;
+    axios::Axios.register(runtime, &config)?;
     Ok(())
 }
