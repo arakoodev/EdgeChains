@@ -20,10 +20,10 @@ https://youtu.be/eBUWRL9vNYc
 
 1. Install the dependencies:
 
-   ```bash
-   cd backend
-   npm install
-   ```
+    ```bash
+    cd backend
+    npm install
+    ```
 
 2 Run the Database (When you run db it should be running, don't close it otherwise you don't able to get database access)
 
@@ -41,12 +41,12 @@ https://youtu.be/eBUWRL9vNYc
 
 1. Start the server:
 
-   ```bash
-   npm run start
-   ```
+    ```bash
+    npm run start
+    ```
 
 2. Open the frontend/index.html with live server
 
-   ```bash
-       http://localhost:5500/JS/edgechains/examples/resume-reviewer/frontend/
-   ```
+    ```bash
+        http://localhost:5500/JS/edgechains/examples/resume-reviewer/frontend/
+    ```
