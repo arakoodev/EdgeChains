@@ -5,7 +5,7 @@ This is an example project that demonstrates the usage of Resume-Reviewer
 ## Video Link
 
 ```bash
-https://youtu.be/eBUWRL9vNYc
+https://youtu.be/xy3DRI4Y898
 ```
 
 ## Configuration
