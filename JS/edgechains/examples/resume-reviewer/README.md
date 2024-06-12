@@ -26,10 +26,10 @@ https://youtu.be/eBUWRL9vNYc
 
 1. Install the dependencies:
 
-   ```bash
-   cd backend
-   npm install
-   ```
+    ```bash
+    cd backend
+    npm install
+    ```
 
 3 Run the migrations
 
@@ -41,12 +41,12 @@ https://youtu.be/eBUWRL9vNYc
 
 1. Start the server:
 
-   ```bash
-   npm run start
-   ```
+    ```bash
+    npm run start
+    ```
 
 2. hit this endpoint
 
-   ```bash
-       http://localhost:3000
-   ```
+    ```bash
+        http://localhost:3000
+    ```
