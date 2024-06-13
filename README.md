@@ -1,19 +1,18 @@
-# EdgeChains Packages <img src="https://img.shields.io/npm/v/%40arakoodev%2Fedgechains.js?style=flat-square&label=npmjs%3A%20%40arakoodev%2Fedgechains.js&link=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2F%40arakoodev%2Fedgechains.js" /> <img src="https://img.shields.io/npm/v/%40arakoodev%2Fjsonnet?style=flat-square&label=npmjs%3A%20%40arakoodev%2Fjsonnet&link=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2F%40arakoodev%2Fjsonnet" />
-
+# EdgeChains Packages [![](https://img.shields.io/npm/v/%40arakoodev%2Fedgechains.js?style=flat-square&label=npmjs%3A%20%40arakoodev%2Fedgechains.js&link=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2F%40arakoodev%2Fedgechains.js)](https://www.npmjs.com/package/@arakoodev/edgechains.js)  [![](https://img.shields.io/npm/v/%40arakoodev%2Fjsonnet?style=flat-square&label=npmjs%3A%20%40arakoodev%2Fjsonnet&link=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2F%40arakoodev%2Fjsonnet)](https://www.npmjs.com/package/@arakoodev/jsonnet)
 
 
 
 <div align="center">
 
-  <img src="https://img.shields.io/github/repo-size/arakoodev/EdgeChains?style=for-the-badge" />
-  <img src="https://img.shields.io/github/issues/arakoodev/EdgeChains?style=for-the-badge" />
-  <img src="https://img.shields.io/github/issues-pr/arakoodev/EdgeChains?style=for-the-badge" />
-  <img src="https://img.shields.io/github/issues-pr-closed-raw/arakoodev/EdgeChains?style=for-the-badge" />
-  <img src="https://img.shields.io/github/license/arakoodev/EdgeChains?style=for-the-badge" />
-  <img src="https://img.shields.io/github/forks/arakoodev/EdgeChains?style=for-the-badge" />
-  <img src="https://img.shields.io/github/stars/arakoodev/EdgeChains?style=for-the-badge" />
-  <img src="https://img.shields.io/github/contributors/arakoodev/EdgeChains?style=for-the-badge" />
-  <img src="https://img.shields.io/github/last-commit/arakoodev/EdgeChains?style=for-the-badge" />
+  <img src="https://img.shields.io/github/repo-size/arakoodev/EdgeChains?style=flat-square" />
+  <img src="https://img.shields.io/github/issues/arakoodev/EdgeChains?style=flat-square" />
+  <img src="https://img.shields.io/github/issues-pr/arakoodev/EdgeChains?style=flat-square" />
+  <img src="https://img.shields.io/github/issues-pr-closed-raw/arakoodev/EdgeChains?style=flat-square" />
+  <img src="https://img.shields.io/github/license/arakoodev/EdgeChains?style=flat-square" />
+  <img src="https://img.shields.io/github/forks/arakoodev/EdgeChains?style=flat-square" />
+  <img src="https://img.shields.io/github/stars/arakoodev/EdgeChains?style=flat-square" />
+  <img src="https://img.shields.io/github/contributors/arakoodev/EdgeChains?style=flat-square" />
+  <img src="https://img.shields.io/github/last-commit/arakoodev/EdgeChains?style=flat-square" />
   </div>
   
 ---
