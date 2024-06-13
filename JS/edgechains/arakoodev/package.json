@@ -12,10 +12,11 @@
         "./splitter": "./dist/splitter/src/index.js",
         "./arakooserver": "./dist/arakooserver/src/index.js",
         "./db": "./dist/db/src/index.js",
-        "./scraper": "./dist/scraper/src/index.js"
+        "./scraper": "./dist/scraper/src/index.js",
+        "./sync-rpc": "./dist/sync-rpc/index.js"
     },
     "scripts": {
-        "build": "rm -rf dist && tsc -b",
+        "build": "rm -rf dist && tsc -b && cp -r src/sync-rpc dist/sync-rpc",
         "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
         "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
         "test": "npx jest"
@@ -32,6 +33,7 @@
         "dts-bundle-generator": "^9.3.1",
         "esbuild": "^0.20.2",
         "eventsource-parser": "^1.1.2",
+        "get-port": "^7.1.0",
         "hono": "3.9",
         "jest-environment-jsdom": "^29.7.0",
         "node-fetch": "^3.3.2",
