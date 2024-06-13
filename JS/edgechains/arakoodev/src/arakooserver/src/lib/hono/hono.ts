@@ -1,5 +1,5 @@
 // src/arakooServer.ts
-import { serve } from "@hono/node-server";
+// import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
@@ -18,17 +18,20 @@ export class ArakooServer {
         return this.app;
     }
 
-    listen(port?: number) {
+    listen(port: number) {
         const portNumber = port || 3000;
-
-        serve(
-            {
-                fetch: this.app.fetch,
-                port: portNumber,
-            },
-            () => {
-                console.log(`Server running on port ${portNumber}`);
-            }
-        );
+        if (process.env.arakoo) {
+            this.app.fire();
+        } else {
+            import("@hono/node-server").then(module => {
+                module.serve({
+                    fetch: this.app.fetch,
+                    port: portNumber,
+                },
+                    () => {
+                        console.log(`Server running on port ${portNumber}`);
+                    })
+            });
+        }
     }
 }
