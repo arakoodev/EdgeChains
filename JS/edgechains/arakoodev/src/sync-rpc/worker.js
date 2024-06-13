@@ -4,7 +4,7 @@ const INIT = 1;
 const CALL = 0;
 const modules = [];
 
-const server = net.createServer({ allowHalfOpen: true }, c => {
+const server = net.createServer({ allowHalfOpen: true }, (c) => {
     let responded = false;
     function respond(data) {
         if (responded) return;
@@ -27,41 +27,44 @@ const server = net.createServer({ allowHalfOpen: true }, c => {
             let result = modules[req.i](req.a);
             // console.log("typeof result ", typeof result)
             // console.log("Resutl constr name",result.constructor)
-            result.then(function (response) {
-                respond({ s: true, v: response });
-            }, function (err) {
-                respond({ s: false, v: { code: err.code, message: err.message } });
-            })
+            result.then(
+                function (response) {
+                    respond({ s: true, v: response });
+                },
+                function (err) {
+                    respond({ s: false, v: { code: err.code, message: err.message } });
+                }
+            );
         }
     }
     c.on("error", function (err) {
         respond({ s: false, v: { code: err.code, message: err.message } });
     });
-    c.on('data', function (data) {
+    c.on("data", function (data) {
         // console.log("Data", data);
-        buffer += data.toString('utf8');
+        buffer += data.toString("utf8");
         // console.log("Buffer", buffer);
         if (/\r\n/.test(buffer)) {
             onMessage(buffer.trim());
         }
-    })
-})
+    });
+});
 
 function init(filename) {
-    let filePath ;
+    let filePath;
     try {
         filePath = fileURLToPath(filename);
     } catch (error) {
-        filePath = filename
+        filePath = filename;
     }
     let module = require(filePath);
     // console.log("typeof module", typeof module);
     // console.log("typeof module.default", typeof module.default);
-    if (module && typeof module === 'object' && typeof module.default === 'function') {
+    if (module && typeof module === "object" && typeof module.default === "function") {
         module = module.default;
     }
-    if (typeof module !== 'function') {
-        throw new Error(filename + ' did not export a function.');
+    if (typeof module !== "function") {
+        throw new Error(filename + " did not export a function.");
     }
     const i = modules.length;
     // console.log("I", i)

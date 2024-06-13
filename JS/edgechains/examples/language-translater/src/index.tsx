@@ -18,14 +18,16 @@ const openAICall = createClient(path.join(__dirname, "../lib/generateResponse.cj
 
 app.get("/", (c: any) => {
     return c.html(<Home />);
-})
+});
 
 app.post("/translate", async (c: any) => {
     const { language, text } = await c.req.parseBody();
     jsonnet.extString("language", language || "");
     jsonnet.extString("text", text || "");
     jsonnet.javascriptCallback("openAICall", openAICall);
-    let response = await JSON.parse(JSON.parse(jsonnet.evaluateFile(path.join(__dirname, "../../jsonnet/main.jsonnet"))));
+    let response = await JSON.parse(
+        JSON.parse(jsonnet.evaluateFile(path.join(__dirname, "../../jsonnet/main.jsonnet")))
+    );
     return c.text("Your text is :  " + response.answer);
 });
 

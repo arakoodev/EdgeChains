@@ -32,4 +32,3 @@ This is a Language Translate app
     ```bash
     localhost:3000
     ```
-
