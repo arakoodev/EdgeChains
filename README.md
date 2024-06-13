@@ -2,6 +2,19 @@
 
 
 
+
+---
+**Join our [Discord](https://discord.gg/aehBPdPqf5) - we are one of the friendliest and nicest dev groups in Generative AI !**
+
+Leveraging the full potential of Large language models (LLMs) often requires integrating them with other sources of computation or knowledge. Edgechains is specifically designed to **orchestrate** such applications.
+
+EdgeChains is an open-source chain-of-thought engineering framework tailored for Large Language Models (LLMs)- like OpenAI GPT, LLama2, Falcon, etc. - With a focus on enterprise-grade deployability and scalability. 
+
+## Is EdgeChains production ready ?
+unlike a lot of frameworks  - we built it on top of honojs and  jsonnet, both of which are built by cloudflare and google respectively.
+so even if u dont trust me...u can trust them ;)
+
+we dont build our own flavor of json or a specific DSL (that is inherently fragile) and give u compilation steps. Our underlying libraries are rock solid and stable.
 <div align="center">
 
   <img src="https://img.shields.io/github/repo-size/arakoodev/EdgeChains?style=flat-square" />
@@ -15,18 +28,6 @@
   <img src="https://img.shields.io/github/last-commit/arakoodev/EdgeChains?style=flat-square" />
   </div>
   
----
-**Join our [Discord](https://discord.gg/aehBPdPqf5) - we are one of the friendliest and nicest dev groups in Generative AI !**
-
-Leveraging the full potential of Large language models (LLMs) often requires integrating them with other sources of computation or knowledge. Edgechains is specifically designed to **orchestrate** such applications.
-
-EdgeChains is an open-source chain-of-thought engineering framework tailored for Large Language Models (LLMs)- like OpenAI GPT, LLama2, Falcon, etc. - With a focus on enterprise-grade deployability and scalability. 
-
-## Is EdgeChains production ready ?
-unlike a lot of frameworks  - we built it on top of honojs and  jsonnet, both of which are built by cloudflare and google respectively.
-so even if u dont trust me...u can trust them ;)
-
-we dont build our own flavor of json or a specific DSL (that is inherently fragile) and give u compilation steps. Our underlying libraries are rock solid and stable.
 
 ## Understanding EdgeChains
 
