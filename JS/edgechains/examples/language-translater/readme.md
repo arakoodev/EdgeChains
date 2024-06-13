@@ -27,25 +27,9 @@ This is a Language Translate app
     npm run start
     ```
 
-### Run With frontend
-
-1. Open the frontend/index.html file with live server
-
-2. Hit the endpoint in your browser if you're running the app from our examples
+2. Hit this following endpoint
 
     ```bash
-    http://localhost:5500/JS/edgechains/examples/language-translater/frontend/
+    localhost:3000
     ```
 
-### Run With endpoint
-
-1. Hit the `POST` endpoint.
-
-```bash
-http://localhost:3000/translate
-
-body={
-    "language":"hindi",
-    "text":"hi, how are you"
-}
-```
