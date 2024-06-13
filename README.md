@@ -1,4 +1,8 @@
-# EdgeChains : LLM chains on-the-edge
+# EdgeChains Packages <img src="https://img.shields.io/npm/v/%40arakoodev%2Fedgechains.js?style=flat-square&label=npmjs%3A%20%40arakoodev%2Fedgechains.js&link=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2F%40arakoodev%2Fedgechains.js" /> <img src="https://img.shields.io/npm/v/%40arakoodev%2Fjsonnet?style=flat-square&label=npmjs%3A%20%40arakoodev%2Fjsonnet&link=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2F%40arakoodev%2Fjsonnet" />
+
+
+
+
 <div align="center">
 
   <img src="https://img.shields.io/github/repo-size/arakoodev/EdgeChains?style=for-the-badge" />
