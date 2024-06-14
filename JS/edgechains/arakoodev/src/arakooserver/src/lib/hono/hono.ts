@@ -23,14 +23,16 @@ export class ArakooServer {
         if (process.env.arakoo) {
             this.app.fire();
         } else {
-            import("@hono/node-server").then(module => {
-                module.serve({
-                    fetch: this.app.fetch,
-                    port: portNumber,
-                },
+            import("@hono/node-server").then((module) => {
+                module.serve(
+                    {
+                        fetch: this.app.fetch,
+                        port: portNumber,
+                    },
                     () => {
                         console.log(`Server running on port ${portNumber}`);
-                    })
+                    }
+                );
             });
         }
     }
