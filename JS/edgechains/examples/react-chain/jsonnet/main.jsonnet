@@ -124,7 +124,8 @@ local updatedPrompt = std.strReplace(promptTemplate,'{}', UserQuestion + "\n");
 
 
 local getOpenAiResponse(prompt) = 
-    local response = arakoo.native("openAICall")(prompt);
+    local key = std.extVar("openai_key");
+    local response = arakoo.native("openAICall")({ prompt: prompt, apiKey: key });
     response;
 
 
@@ -145,7 +146,7 @@ local findMatch(text, searchString) =
 
 local getObservation(searchTitle) = 
         local url = "https://en.wikipedia.org/w/api.php";
-        local apiUrl = url + "?action=query&format=json&list=search&formatversion=2&srsearch=" + searchTitle;
+        local apiUrl = url + "?action=query&format=json&list=search&formatversion=2&srsearch=" + arakoo.urlEncode(searchTitle);
         local wikiConfig = {
             url: apiUrl,
         };
