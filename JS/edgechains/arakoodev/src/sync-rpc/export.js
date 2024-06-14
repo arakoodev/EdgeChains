@@ -1,7 +1,7 @@
-console.log(process.env.arakoo);
 if (process.env.arakoo) {
     module.exports = function (path) {
-        require(path);
+        // should not run 
+        console.debug("This function should not run")
     };
 } else {
     const createClient = require("./index.js");
