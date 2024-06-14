@@ -20,6 +20,12 @@ wasm-bindgen-file-reader = "1"
 regex = "1.10.3"
 js-sys = "0.3.69"
 console_error_panic_hook = "0.1.7"
+urlencoding = "2.1.3"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
+
+[features]
+nodejs = []
+default = ["nodejs"]
+

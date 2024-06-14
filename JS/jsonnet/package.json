@@ -3,12 +3,12 @@
     "version": "0.3.1",
     "exports": {
         "import": {
-            "default": "./src/index.mjs",
-            "types": "./src/index.d.mts"
+            "types": "./src/index.d.mts",
+            "default": "./src/index.mjs"
         },
         "require": {
-            "default": "./src/index.js",
-            "types": "./src/index.d.ts"
+            "types": "./src/index.d.ts",
+            "default": "./src/index.js"
         }
     }
 }

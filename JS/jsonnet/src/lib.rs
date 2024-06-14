@@ -1,5 +1,6 @@
 use std::{cell::RefCell, collections::HashMap, path::Path};
 
+use console_error_panic_hook;
 use jrsonnet_evaluator::{
     apply_tla,
     error::ErrorKind,
@@ -17,7 +18,6 @@ use jrsonnet_gcmodule::Trace;
 use jrsonnet_parser::IStr;
 use std::alloc;
 use wasm_bindgen::prelude::*;
-use console_error_panic_hook;
 
 pub mod context;
 
@@ -60,6 +60,7 @@ pub fn jsonnet_make() -> *mut VM {
         });
     }
     let state = State::default();
+    #[cfg(feature = "nodejs")]
     console_error_panic_hook::set_once();
     state.settings_mut().import_resolver = tb!(FileImportResolver::default());
     state.set_context_initializer(context::ArakooContextInitializer::new(

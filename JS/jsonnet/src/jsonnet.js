@@ -1,8 +1,8 @@
-const isArakoo = process.env.arakoo;
+// const isArakoo = process.env.arakoo;
 
 let Jsonnet;
 
-if (!isArakoo) {
+if (!process.env.arakoo) {
     let module = require("./jsonnet_wasm.js");
     let {
         jsonnet_evaluate_snippet,
