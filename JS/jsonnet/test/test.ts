@@ -22,7 +22,8 @@ describe("Testing evaluateSnippet function of jsonnet library", () => {
             garnish: 'Olive',
             served: 'Straight Up',
           },
-        }`));
+        }`)
+        );
         let expected = {
             Martini: {
                 garnish: "Olive",
@@ -231,5 +232,5 @@ describe("Testing urlencoding function of jsonnet library", () => {
             result: "open%20source%20is%20awesome",
         };
         expect(result).to.eql(expected);
-    })
+    });
 });
