@@ -17,7 +17,9 @@ export const ReactChainRouter = server.createApp();
 ReactChainRouter.get("/", async (c: any) => {
     try {
         const question = c.req.query("question");
-        let key = JSON.parse(jsonnet.evaluateFile(path.join(__dirname, '../../jsonnet/secrets.jsonnet'))).openai_api_key;
+        let key = JSON.parse(
+            jsonnet.evaluateFile(path.join(__dirname, "../../jsonnet/secrets.jsonnet"))
+        ).openai_api_key;
         jsonnet.extString("question", question || "");
         jsonnet.extString("openai_key", key);
         jsonnet.javascriptCallback("openAICall", openAICall);

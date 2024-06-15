@@ -12,6 +12,6 @@ async function openAICall({ prompt, apiKey }: any) {
     } catch (error) {
         return error;
     }
-};
+}
 
 module.exports = openAICall;
