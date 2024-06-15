@@ -1,25 +1,12 @@
-import request from "request";
+import axios from "axios";
 import cheerio from "cheerio";
 
 export class WebScraper {
-    constructor() {}
+    constructor() { }
     async getContent(url: string): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
-            request(url, (error: any, response: any, html: string) => {
-                if (!error && response.statusCode == 200) {
-                    const $ = cheerio.load(html);
-                    const contentArr: string[] = [];
-
-                    $("p").each((index: number, element: any) => {
-                        const paragraphText: string = $(element).text();
-                        contentArr.push(paragraphText);
-                    });
-
-                    resolve(contentArr.join(" ").trim());
-                } else {
-                    reject("Error: " + error);
-                }
-            });
-        });
+        const content = await axios(url);
+        const $ = cheerio.load(content.data);
+        const data = `${$("h1").text()} ${$("p").text()} ${$("h2").text()} ${$("h3").text()} ${$("h4").text()} ${$("h5").text()} ${$("h6").text()}`;
+        return data;
     }
 }
