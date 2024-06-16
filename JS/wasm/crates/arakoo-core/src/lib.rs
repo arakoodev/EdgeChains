@@ -174,29 +174,6 @@ impl wit::inbound_http::Guest for Guest {
         entrypoint
             .call(global, &[request_value])
             .expect("Unable to call handler");
-        // let event_request = event
-        //     .get_property("request")
-        //     .expect("Unable to get request from event");
-        // let promise = handler
-        //     .call(global, &[event_request, event])
-        //     .expect("Unable to call handler");
-
-        // let on_resolve =  ON_RESOLVE.get().unwrap().clone() ;
-        // let on_reject =  ON_REJECT.get().unwrap().clone() ;
-        // let then_func = promise.get_property("then").unwrap();
-        // if then_func.is_function() {
-        //     then_func
-        //         .call(
-        //             &promise,
-        //             &[on_resolve.deref().clone(), on_reject.deref().clone()],
-        //         )
-        //         .unwrap();
-        // } else {
-        //     RESPONSE
-        //         .lock()
-        //         .unwrap()
-        //         .replace(from_qjs_value(promise).unwrap());
-        // }
 
         context
             .execute_pending()
@@ -207,7 +184,9 @@ impl wit::inbound_http::Guest for Guest {
         let response = from_qjs_value(result).unwrap();
         let error = from_qjs_value(error).unwrap();
         debug!("Result : {:?}", response);
-        debug!("Error : {:?}", error);
+        if error.to_string() != "null"{
+            println!("Error : {:?}", error);
+        }
         // let response = to_qjs_value(context, &RESPONSE.lock().unwrap().take().unwrap()).unwrap();
         // let response = RESPONSE.lock().unwrap().take().unwrap();
 

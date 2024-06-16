@@ -1,6 +1,5 @@
-import { Hono } from "hono";
+import { Hono } from "hono"
 import { connect } from "@planetscale/database";
-
 import Jsonnet from "@arakoodev/jsonnet";
 
 let jsonnet = new Jsonnet();
@@ -17,39 +16,14 @@ app.get("/hello", (c) => {
     return c.text("Hello World!");
 });
 
-app.get("/", (c) => {
-    const code = `
-  local username = std.extVar('name');
-  local Person(name='Alice') = {
-    name: name,
-    welcome: 'Hello ' + name + '!',
-  };
-  {
-    person1: Person(username),
-    person2: Person('Bob'),
-  }`;
-    let result = jsonnet.extString("name", "ll").evaluateSnippet(code);
-    return c.json(JSON.parse(result));
-});
-
-app.get("/func", (c) => {
-    const code = `
-  local username = std.extVar('name');
-  local Person(name='Alice') = {
-    name: name,
-    welcome: 'Hello ' + name + '!',
-  };
-  {
-    person1: Person(username),
-    person2: Person('Bob'),
-    result : arakoo.native("greet")()
-  }`;
-    let result = jsonnet
-        .extString("name", "ll")
-        .javascriptCallback("greet", greet)
-        .evaluateSnippet(code);
-    return c.json(JSON.parse(result));
-});
+app.get("/xtz", async (c) => {
+    let result = jsonnet.extString("id", id).javascriptCallback("getAtodo", asyncGetAtodo)
+        .evaluateSnippet(`
+local todo = std.parseJson(arakoo.native("getAtodo")(std.extVar("id")));
+{
+result : todo.title
+}`);
+})
 
 app.get("/async-func/:id", async (c) => {
     let id = c.req.param("id");
@@ -73,6 +47,12 @@ app.get("/async-func/:id", async (c) => {
   }`);
     return c.json(JSON.parse(result));
 });
+
+app.post("/question", async (c)=>{
+    let body = await c.req.json();
+    console.log(body);
+    return c.json(body);
+})
 
 app.get("/add", (c) => {
     function add(arg1, arg2, arg3) {
@@ -146,4 +126,4 @@ app.notFound((c) => {
 });
 
 app.fire();
-// globalThis._export = app;
+// // globalThis._export = app;

@@ -178,8 +178,54 @@ class Request {
         this.geo = input.geo || {};
     }
 
+    defaultEncoding() {
+        return "utf-8";
+    }
+
+    arrayBuffer() {
+        let parsedBody = this.body;
+
+        if (typeof this.body === "string") {
+            try {
+                parsedBody = new TextEncoder().encode(this.body);
+            } catch (e) {
+                return Promise.reject(`err: ${e}`);
+            }
+        }
+
+        return parsedBody;
+    }
+
+    json() {
+        let parsedBody = this.body;
+
+        if (typeof this.body !== "string") {
+            try {
+                parsedBody = new TextDecoder(this.defaultEncoding()).decode(this.body);
+            } catch (e) {
+                return Promise.reject(`err: ${e}`);
+            }
+        }
+
+        try {
+            return Promise.resolve(JSON.parse(parsedBody));
+        } catch (e) {
+            return Promise.reject(`err: ${e}`);
+        }
+    }
+
     text() {
-        return this.body;
+        let parsedBody = this.body;
+
+        if (typeof this.body !== "string") {
+            try {
+                parsedBody = new TextDecoder(this.defaultEncoding()).decode(this.body);
+            } catch (e) {
+                return Promise.reject(`err: ${e}`);
+            }
+        }
+
+        return parsedBody;
     }
 }
 
