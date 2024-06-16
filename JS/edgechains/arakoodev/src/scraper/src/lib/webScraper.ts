@@ -2,7 +2,7 @@ import axios from "axios";
 import cheerio from "cheerio";
 
 export class WebScraper {
-    constructor() { }
+    constructor() {}
     async getContent(url: string): Promise<string> {
         const content = await axios(url);
         const $ = cheerio.load(content.data);
