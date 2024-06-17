@@ -1,4 +1,4 @@
-import { Hono } from "hono"
+import { Hono } from "hono";
 import { connect } from "@planetscale/database";
 import Jsonnet from "@arakoodev/jsonnet";
 
@@ -23,7 +23,7 @@ local todo = std.parseJson(arakoo.native("getAtodo")(std.extVar("id")));
 {
 result : todo.title
 }`);
-})
+});
 
 app.get("/async-func/:id", async (c) => {
     let id = c.req.param("id");
@@ -48,11 +48,11 @@ app.get("/async-func/:id", async (c) => {
     return c.json(JSON.parse(result));
 });
 
-app.post("/question", async (c)=>{
+app.post("/question", async (c) => {
     let body = await c.req.json();
     console.log(body);
     return c.json(body);
-})
+});
 
 app.get("/add", (c) => {
     function add(arg1, arg2, arg3) {
