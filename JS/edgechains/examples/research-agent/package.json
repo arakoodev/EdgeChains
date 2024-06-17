@@ -1,0 +1,26 @@
+{
+    "name": "language-translater",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "type": "module",
+    "keywords": [],
+    "author": "",
+    "scripts": {
+        "dev": "tsc && node --experimental-wasm-modules ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "^0.24.1",
+        "@arakoodev/jsonnet": "^0.24.0",
+        "file-uri-to-path": "^2.0.0",
+        "hono": "^4.4.5",
+        "path": "^0.12.7",
+        "react": "^18.3.1"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.17",
+        "@types/node": "^20.14.2",
+        "@types/react": "^18.3.3"
+    }
+}
