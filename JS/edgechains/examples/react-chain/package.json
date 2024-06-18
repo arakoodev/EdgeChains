@@ -13,17 +13,17 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@arakoodev/edgechains.js": "file:../../arakoodev",
-        "@arakoodev/jsonnet": "file:../../../jsonnet",
+        "@arakoodev/edgechains.js": "^0.24.1",
+        "@arakoodev/jsonnet": "^0.24.0",
         "axios": "^1.7.2",
         "file-uri-to-path": "^2.0.0",
         "path": "^0.12.7",
-        "webpack": "^5.91.0",
-        "webpack-cli": "^5.1.4"
+        "webpack": "5.91"
     },
     "devDependencies": {
         "@types/deasync": "^0.1.5",
         "@types/node": "^20.14.1",
-        "vitest": "^1.5.3"
+        "vitest": "^1.5.3",
+        "webpack-cli": "^5.1.4"
     }
 }
