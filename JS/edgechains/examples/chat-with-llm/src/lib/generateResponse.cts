@@ -4,10 +4,6 @@ import { z } from "zod";
 const Jsonnet = require("@arakoodev/jsonnet");
 const jsonnet = new Jsonnet();
 
-const secretsPath = path.join(__dirname, "../../jsonnet/secrets.jsonnet");
-const openAIApiKey = JSON.parse(jsonnet.evaluateFile(secretsPath)).openai_api_key;
-
-const openai = new OpenAI({ apiKey: openAIApiKey });
 
 const schema = z.object({
     answer: z.string().describe("The answer to the question"),
@@ -36,16 +32,14 @@ const schema = z.object({
 //         .describe('The temperament of the horse, either "alpha" indicating it is top of the herd, or "other".'),
 // });
 
-function openAICall() {
-    return function (prompt: string) {
-        try {
-            return openai.zodSchemaResponse({ prompt, schema: schema }).then((res: any) => {
-                return JSON.stringify(res);
-            });
-        } catch (error) {
-            return error;
-        }
-    };
-}
+async function openAICall({ prompt, openAIApiKey }: any) {
+    try {
+        const openai = new OpenAI({ apiKey: openAIApiKey });
+        let res = await openai.zodSchemaResponse({ prompt, schema: schema })
+        return JSON.stringify(res);
+    } catch (error) {
+        return error;
+    }
+};
 
 module.exports = openAICall;

@@ -37,3 +37,18 @@
         "question":"hi"
     }
     ```
+
+## Compilation to wasm 
+
+> For compilation to wasm you must have arakoo-compiler and arakoo runtime installed (For installation instruction you can refer the [readme](https://github.com/redoC-A2k/EdgeChains#setup-1))
+1. Build the arakoo runtime compatible wasm 
+```bash
+npm run wasm
+```
+
+2. Run the wasm with runtime (index.wasm will be in the directory in which you run npm run wasm)
+```bash
+arakoo index.wasm
+```
+
+Now you are good to go send the request to port 8080
