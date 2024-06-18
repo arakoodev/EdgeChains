@@ -1,4 +1,3 @@
-
 # Project Name
 
 This is Research Agent App
@@ -13,7 +12,6 @@ This is Research Agent App
      local OPENAI_API_KEY = "sk-proj-***";
      local BING_API_KEY = "9be1*****";
     ```
-
 
 ## Installation
 
