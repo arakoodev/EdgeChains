@@ -209,7 +209,7 @@ app.get("/hello", async (c)=>{
 
 app.fire();
 ```
-8.  Now since javy doesn't have capablity to require or imort module . So we will bundle the index.js with esbuild.
+8.  Now since javy doesn't have capability to require or import module . So we will bundle the index.js with esbuild.
 9. To do so , install esbuild as developer dependency 
 ```
 npm install esbuild --save-dev
