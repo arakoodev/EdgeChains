@@ -199,7 +199,7 @@ export class OpenAI {
             .post(
                 openAI_url,
                 {
-                    model: chatOptions.model || "gpt-3.5-turbo",
+                    model: chatOptions.model || "gpt-3.5-turbo-16k",
                     messages: [
                         {
                             role: chatOptions.role || "user",

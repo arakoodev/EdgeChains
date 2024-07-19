@@ -10,9 +10,12 @@ local PromptTemplate = |||
                        |||;
 
 
+local bingKey = std.extVar("BingKey");
+local openAIkey = std.extVar("openAIkey");
+
 local generatePrompt() = 
     local query = std.extVar("query");
-    local getWebSearch = std.parseJson(arakoo.native("bingWebSearch")(query));
+    local getWebSearch = std.parseJson(arakoo.native("bingWebSearch")({ query:query, key:bingKey }));
     local data = "";
     local range = std.range(0, std.length(getWebSearch) - 1);
 
@@ -27,7 +30,7 @@ local generatePrompt() =
 
      local updatedPromptTemplateWithQuery = std.strReplace(PromptTemplate, "{question}", query);
     local updatedPromptTemplateWithSummary = std.strReplace(updatedPromptTemplateWithQuery, "{researchSummary}", finalData);
-    local openAICall = arakoo.native("openAICall")(updatedPromptTemplateWithSummary);
+    local openAICall = arakoo.native("openAICall")({ prompt:updatedPromptTemplateWithSummary, openAIApiKey:openAIkey });
     openAICall;
 
 

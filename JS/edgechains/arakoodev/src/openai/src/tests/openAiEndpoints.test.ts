@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ChatOpenAi } from "../../../../dist/openai/src/lib/endpoints/OpenAiEndpoint.js";
+import { OpenAI } from "../../../../dist/openai/src/lib/endpoints/OpenAiEndpoint.js";
 
 jest.mock("axios");
 
@@ -15,8 +15,8 @@ describe("ChatOpenAi", () => {
             ];
 
             axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new ChatOpenAi({ openAIApiKey: "test_api_key" });
-            const response = await chatOpenAi.generateResponse("test prompt");
+            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
+            const response = await chatOpenAi.chat({prompt:"test prompt"});
             expect(response).toEqual("Test response");
         });
     });
@@ -25,7 +25,7 @@ describe("ChatOpenAi", () => {
         test("should generate embeddings from OpenAI", async () => {
             const mockResponse = { embeddings: "Test embeddings" };
             axios.post = jest.fn().mockResolvedValue({ data: { data: { choices: mockResponse } } });
-            const chatOpenAi = new ChatOpenAi({ openAIApiKey: "test_api_key" });
+            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
             const res = await chatOpenAi.generateEmbeddings("test prompt");
             expect(res.choices.embeddings).toEqual("Test embeddings");
         });
@@ -46,7 +46,7 @@ describe("ChatOpenAi", () => {
                 },
             ];
             axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new ChatOpenAi({ openAIApiKey: "test_api_key" });
+            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
             const chatMessages = [
                 {
                     role: "user",
@@ -57,7 +57,8 @@ describe("ChatOpenAi", () => {
                     content: "message 2",
                 },
             ];
-            const responses = await chatOpenAi.chatWithAI(chatMessages);
+            //@ts-ignore
+            const responses = await chatOpenAi.chat({messages:chatMessages});
             expect(responses).toEqual(mockResponse);
         });
     });
@@ -72,8 +73,8 @@ describe("ChatOpenAi", () => {
                 },
             ];
             axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new ChatOpenAi({ openAIApiKey: "test_api_key" });
-            const response = await chatOpenAi.testResponseGeneration("test prompt");
+            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
+            const response = await chatOpenAi.chat({prompt:"test prompt"});
             expect(response).toEqual("Test response");
         });
     });

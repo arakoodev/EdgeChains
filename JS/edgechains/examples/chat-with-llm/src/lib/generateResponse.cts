@@ -1,8 +1,5 @@
-const path = require("path");
 const { OpenAI } = require("@arakoodev/edgechains.js/openai");
 import { z } from "zod";
-const Jsonnet = require("@arakoodev/jsonnet");
-const jsonnet = new Jsonnet();
 
 const schema = z.object({
     answer: z.string().describe("The answer to the question"),

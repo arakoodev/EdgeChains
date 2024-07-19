@@ -1,18 +1,10 @@
-import { WebScraper } from "@arakoodev/edgechains.js/scraper";
-const scraper = new WebScraper();
+import { AutoPlayWriteWebPageScrapper } from "@arakoodev/edgechains.js/scraper";
 
-function getContent(url: string) {
+const scraper = new AutoPlayWriteWebPageScrapper();
+
+async function getContent(url: string) {
     try {
-        return scraper
-            .getContent(url)
-            .then((res) => {
-                console.log("Scraped Successfully: " + url);
-                return res;
-            })
-            .catch((error) => {
-                console.log("Error Scraping: " + url);
-                return " ";
-            });
+        return await scraper.getContent(url)
     } catch (error) {
         console.log("Error Scraping: " + url);
         return " ";

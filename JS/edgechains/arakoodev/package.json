@@ -13,13 +13,14 @@
         "./arakooserver": "./dist/arakooserver/src/index.js",
         "./db": "./dist/db/src/index.js",
         "./scraper": "./dist/scraper/src/index.js",
-        "./sync-rpc": "./dist/sync-rpc/export.js"
+        "./sync-rpc": "./dist/sync-rpc/export.js",
+        "./playwright": "./dist/playwright/src/index.js"
     },
     "scripts": {
         "build": "rm -rf dist && tsc -b && cp -r src/sync-rpc dist/sync-rpc",
         "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
         "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
-        "test": "npx jest"
+        "test": "vitest"
     },
     "dependencies": {
         "@babel/core": "^7.24.4",
@@ -30,15 +31,19 @@
         "axios-retry": "^4.1.0",
         "cheerio": "^1.0.0-rc.12",
         "cors": "^2.8.5",
+        "document": "^0.4.7",
         "dts-bundle-generator": "^9.3.1",
         "esbuild": "^0.20.2",
         "eventsource-parser": "^1.1.2",
         "get-port": "^7.1.0",
         "hono": "3.9",
         "jest-environment-jsdom": "^29.7.0",
+        "jsdom": "^24.1.0",
         "node-fetch": "^3.3.2",
+        "node-html-parser": "^6.1.13",
         "pdf-parse": "^1.1.1",
         "pg": "^8.11.5",
+        "playwright": "^1.45.1",
         "prettier": "^3.2.5",
         "regenerator-runtime": "^0.14.1",
         "request": "^2.88.2",
@@ -46,6 +51,7 @@
         "text-encoding": "^0.7.0",
         "ts-node": "^10.9.2",
         "typeorm": "^0.3.20",
+        "vitest": "^2.0.3",
         "web-streams-polyfill": "^4.0.0",
         "youtube-transcript": "^1.2.1",
         "zod": "^3.23.8",

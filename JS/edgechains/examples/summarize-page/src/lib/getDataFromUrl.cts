@@ -1,17 +1,13 @@
-const { WebScraper } = require("@arakoodev/edgechains.js/scraper");
+import { Playwright } from "@arakoodev/edgechains.js/scraper"
+const scraper = new Playwright();
 
-const scraper = new WebScraper();
+async function getPageContent({ pageUrl, openai }: { pageUrl: string, openai: string }) {
+    try {
+        return await scraper.call({ chatApi: openai, task: `go to ${pageUrl} and scrap the hole page text`, headless: false })
 
-function getPageContent() {
-    return (url: string) => {
-        try {
-            return scraper.getContent(url).then((res: any) => {
-                return res;
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    };
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 module.exports = getPageContent;
