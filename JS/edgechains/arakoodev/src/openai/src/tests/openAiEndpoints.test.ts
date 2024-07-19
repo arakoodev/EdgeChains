@@ -16,7 +16,7 @@ describe("ChatOpenAi", () => {
 
             axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
             const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const response = await chatOpenAi.chat({prompt:"test prompt"});
+            const response = await chatOpenAi.chat({ prompt: "test prompt" });
             expect(response).toEqual("Test response");
         });
     });
@@ -58,7 +58,7 @@ describe("ChatOpenAi", () => {
                 },
             ];
             //@ts-ignore
-            const responses = await chatOpenAi.chat({messages:chatMessages});
+            const responses = await chatOpenAi.chat({ messages: chatMessages });
             expect(responses).toEqual(mockResponse);
         });
     });
@@ -74,7 +74,7 @@ describe("ChatOpenAi", () => {
             ];
             axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
             const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const response = await chatOpenAi.chat({prompt:"test prompt"});
+            const response = await chatOpenAi.chat({ prompt: "test prompt" });
             expect(response).toEqual("Test response");
         });
     });

@@ -12,7 +12,9 @@ const openAICall = createClient(path.join(__dirname, "./lib/generateResponse.cjs
 const getPageContent = createClient(path.join(__dirname, "./lib/getDataFromUrl.cjs"));
 app.get("/", async (c) => {
     const pageUrl = c.req.query("pageUrl");
-    const key = JSON.parse(jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/secrets.jsonnet"))).openai_api_key;
+    const key = JSON.parse(
+        jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/secrets.jsonnet"))
+    ).openai_api_key;
     jsonnet.extString("pageUrl", pageUrl || "");
     jsonnet.extString("openai_api_key", key);
     jsonnet.javascriptCallback("openAICall", openAICall);

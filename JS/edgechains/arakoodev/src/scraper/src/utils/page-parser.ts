@@ -1,33 +1,33 @@
-import { parse } from 'node-html-parser';
-import { JSDOM } from 'jsdom';
+import { parse } from "node-html-parser";
+import { JSDOM } from "jsdom";
 import fs from "fs";
 const { document } = new JSDOM(`...`).window;
 
 const tagsToLog = [
-    'a',
-    'p',
-    'span',
-    'div',
-    'button',
-    'label',
-    'input',
-    'textarea',
-    'section',
-    'select',
-    'option',
-    'table',
-    'td',
-    'th',
-    'ul',
-    'ol',
-    'li',
-    'h1',
-    'h2',
-    'h3',
-    'h4',
-    'h5',
-    'h6',
-    'iframe',
+    "a",
+    "p",
+    "span",
+    "div",
+    "button",
+    "label",
+    "input",
+    "textarea",
+    "section",
+    "select",
+    "option",
+    "table",
+    "td",
+    "th",
+    "ul",
+    "ol",
+    "li",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "iframe",
 ];
 
 function createElement(node) {
@@ -37,17 +37,17 @@ function createElement(node) {
     const dataAttributes = Object.entries(node.attributes).filter(
         (a) =>
             (tagsToLog.includes(node.tagName) &&
-                (a[0].startsWith('name') ||
-                    a[0].startsWith('value') ||
-                    a[0].startsWith('data-component') ||
-                    a[0].startsWith('data-name') ||
-                    a[0].startsWith('aria-') ||
-                    a[0] === 'class' ||
-                    a[0] === 'type' ||
-                    a[0] === 'role')) ||
+                (a[0].startsWith("name") ||
+                    a[0].startsWith("value") ||
+                    a[0].startsWith("data-component") ||
+                    a[0].startsWith("data-name") ||
+                    a[0].startsWith("aria-") ||
+                    a[0] === "class" ||
+                    a[0] === "type" ||
+                    a[0] === "role")) ||
             // always log these
-            a[0] === 'href' ||
-            a[0] === 'id'
+            a[0] === "href" ||
+            a[0] === "id"
     );
     dataAttributes.forEach(([attr, value]) => {
         elem.setAttribute(attr, value);
@@ -61,19 +61,19 @@ function createTextNode(text) {
 }
 
 function isAdsIframe(node) {
-    const style = node.getAttribute('style') || '';
-    const id = node.getAttribute('id') || '';
+    const style = node.getAttribute("style") || "";
+    const id = node.getAttribute("id") || "";
     return (
-        node.getAttribute('height') === 0 ||
-        style.includes('display: none') ||
-        id.startsWith('google_ads_iframe')
+        node.getAttribute("height") === 0 ||
+        style.includes("display: none") ||
+        id.startsWith("google_ads_iframe")
     );
 }
 
 async function dfs(node, parentElem, childFrames = []) {
     for (const childNode of node.childNodes) {
         if (childNode.nodeType === 1) {
-            if (childNode.tagName === 'IFRAME') {
+            if (childNode.tagName === "IFRAME") {
                 // optimize for performance later
                 for (let { childFrame, attributes } of childFrames) {
                     if (
@@ -90,7 +90,7 @@ async function dfs(node, parentElem, childFrames = []) {
                         parentElem.appendChild(childElem);
                         const newChildFrame = await toChildFramesWithAttributes(childFrame);
                         //@ts-ignore
-                        const bodyNode = await childFrame.locator('body', { timeout: 1000 });
+                        const bodyNode = await childFrame.locator("body", { timeout: 1000 });
                         const bodyHtml = await bodyNode.innerHTML();
                         await dfs(parseFrame(bodyHtml), childElem, newChildFrame);
 
@@ -130,7 +130,7 @@ async function toChildFramesWithAttributes(frame) {
 }
 
 async function getStructure(frame) {
-    const bodyNode = await frame.locator('body', { timeout: 1000 });
+    const bodyNode = await frame.locator("body", { timeout: 1000 });
     const bodyHtml = await bodyNode.innerHTML();
     const node = parseFrame(bodyHtml);
 
@@ -156,14 +156,13 @@ export async function parseSite(page) {
     return structure.innerHTML;
 }
 
-
 export function removeBlankTags(text) {
     const emptyTagRegex = /<(\w+)([^>]*)><\/\1>|<(\w+)([^>]*)>\s*<\/\3>/g;
 
     let newText = text;
 
     while (emptyTagRegex.test(newText)) {
-        newText = newText.replace(emptyTagRegex, '');
+        newText = newText.replace(emptyTagRegex, "");
     }
 
     return newText;

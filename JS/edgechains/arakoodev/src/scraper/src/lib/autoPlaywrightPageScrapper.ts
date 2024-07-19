@@ -1,9 +1,7 @@
-
 import { chromium } from "playwright";
 
 export class AutoPlayWriteWebPageScrapper {
-
-    constructor() { }
+    constructor() {}
 
     async getContent(url: string): Promise<string> {
         const browser = await chromium.launch({
@@ -13,10 +11,9 @@ export class AutoPlayWriteWebPageScrapper {
         await page.goto(url, {
             waitUntil: "domcontentloaded",
         });
-        const textContent = await page.innerText('html');
+        const textContent = await page.innerText("html");
         await browser.close();
         const regex = new RegExp("\n", "g");
-        return textContent.replace(regex, "").replace(/\s{2,}/g, ' ');
+        return textContent.replace(regex, "").replace(/\s{2,}/g, " ");
     }
-
 }

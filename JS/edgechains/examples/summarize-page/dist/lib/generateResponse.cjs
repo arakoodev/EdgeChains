@@ -11,8 +11,7 @@ async function openAICall({ prompt, openAIApiKey }) {
         let res = await openai.zodSchemaResponse({ prompt, schema: schema });
         console.log({ res });
         return JSON.stringify(res);
-    }
-    catch (error) {
+    } catch (error) {
         return error;
     }
 }

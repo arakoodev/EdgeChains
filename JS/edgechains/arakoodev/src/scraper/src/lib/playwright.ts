@@ -1,29 +1,24 @@
-import { chromium } from "playwright"
+import { chromium } from "playwright";
 import axios from "axios";
-import {
-    parseArr,
-    parseSite,
-    preprocessJsonInput,
-} from '../utils/index';
+import { parseArr, parseSite, preprocessJsonInput } from "../utils/index";
 import retry from "retry";
 import { removeBlankTags } from "../utils/page-parser";
 
 export class Playwright {
+    constructor() {}
 
-    constructor() { }
-
-    async #createPrompt({ task, page, }: { task: string, page: any }) {
+    async #createPrompt({ task, page }: { task: string; page: any }) {
         return `
         You are a Senior SDET tasked with writing Playwright code for testing purposes. Your role involves implementing specific task-based code segments within a larger test file, following the instructions provided closely. Assume that common imports like 'test' and 'expect' from '@playwright/test' are already at the top of the file.
 
         Context:
         - Your computer is a Mac. Cmd is the meta key, META.
         - The browser is already open.
-        - Current page URL: ${await page.evaluate('location.href')}.
-        - Current page title: ${await page.evaluate('document.title')}.
+        - Current page URL: ${await page.evaluate("location.href")}.
+        - Current page title: ${await page.evaluate("document.title")}.
         - Overview of the site in HTML format:
         \\\
-        ${removeBlankTags((await parseSite(page))).slice(0, 25000)}
+        ${removeBlankTags(await parseSite(page)).slice(0, 25000)}
         \\\
 
         Key Points:
@@ -75,7 +70,7 @@ export class Playwright {
         - await browser.close();
         // click on the links, example
         - await page.click('a[href="https://blog.sbensu.com/posts/demand-for-visual-programming/"]');
-        `
+        `;
     }
 
     #createPromptForTaskArr(task: string) {
@@ -98,10 +93,10 @@ export class Playwright {
             ]
             Ensure that each action is specific, clear, and comprehensive to facilitate precise implementation.
             \`\`\`
-        `
+        `;
     }
 
-    async #openAIRequest({ chatApi, prompt }: { chatApi: string, prompt: string }) {
+    async #openAIRequest({ chatApi, prompt }: { chatApi: string; prompt: string }) {
         return new Promise((resolve, reject) => {
             const operation = retry.operation({
                 retries: 5,
@@ -133,44 +128,61 @@ export class Playwright {
                     })
                     .catch((error) => {
                         if (error.response) {
-                            console.log("Server responded with status code:", error.response.status);
+                            console.log(
+                                "Server responded with status code:",
+                                error.response.status
+                            );
                             console.log("Response data:", error.response.data);
                         } else if (error.request) {
                             console.log("No response received:", error);
                         } else {
-                            console.log("Error creating request:", error.message, "\n", "Retrying ", currentAttempt);
+                            console.log(
+                                "Error creating request:",
+                                error.message,
+                                "\n",
+                                "Retrying ",
+                                currentAttempt
+                            );
                         }
                         if (operation.retry(error)) {
                             return;
-                        };
+                        }
                         reject(error);
                     });
-            })
-        }
-        )
+            });
+        });
     }
 
-    /** 
-        * Get Playwright code for a specific task
-        * @param chatApi - OpenAI API key
-        * @param task - Task description
-        * @param url - URL to navigate to default is https://www.google.com
-        * @param headless - Run in headless mode default is false
-        * @returns Playwright code example - page.goto('https://www.google.com')
-    **/
-    async call({ chatApi, task, url, headless = true }: { chatApi: string, task: string, url?: string, headless?: boolean }) {
-
-        const AsyncFunction = async function () { }.constructor;
+    /**
+     * Get Playwright code for a specific task
+     * @param chatApi - OpenAI API key
+     * @param task - Task description
+     * @param url - URL to navigate to default is https://www.google.com
+     * @param headless - Run in headless mode default is false
+     * @returns Playwright code example - page.goto('https://www.google.com')
+     **/
+    async call({
+        chatApi,
+        task,
+        url,
+        headless = true,
+    }: {
+        chatApi: string;
+        task: string;
+        url?: string;
+        headless?: boolean;
+    }) {
+        const AsyncFunction = async function () {}.constructor;
 
         const browser = await chromium.launch({
-            headless: headless
+            headless: headless,
         });
 
         const page = await browser.newPage();
         await page.goto(url || "https://www.google.com");
 
         const taskPrompt = this.#createPromptForTaskArr(task);
-        const taskArr: any = parseArr(await this.#openAIRequest({ chatApi, prompt: taskPrompt }))
+        const taskArr: any = parseArr(await this.#openAIRequest({ chatApi, prompt: taskPrompt }));
 
         let response: string = "";
 
@@ -179,9 +191,7 @@ export class Playwright {
                 const element = taskArr[i];
                 const prompt = await this.#createPrompt({ task: element, page });
                 let res: any = preprocessJsonInput(await this.#openAIRequest({ chatApi, prompt }));
-                const dependencies = [
-                    { param: "page", value: page },
-                ];
+                const dependencies = [{ param: "page", value: page }];
 
                 const func = AsyncFunction(...dependencies.map((d) => d.param), res);
                 const args = dependencies.map((d) => d.value);
@@ -191,7 +201,6 @@ export class Playwright {
                     if (res) {
                         response = res;
                     }
-
                 } catch (error: any) {
                     console.log(error);
                 }

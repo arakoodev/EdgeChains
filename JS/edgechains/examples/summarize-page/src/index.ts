@@ -14,7 +14,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const openAICall = createClient(path.join(__dirname, "./lib/generateResponse.cjs"));
 const getPageContent = createClient(path.join(__dirname, "./lib/getDataFromUrl.cjs"));
 
-
 app.get("/", async (c: any) => {
     const pageUrl = c.req.query("pageUrl");
     const key = JSON.parse(
