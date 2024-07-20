@@ -1,6 +1,5 @@
-import { parse } from "node-html-parser";
-import { JSDOM } from "jsdom";
-import fs from "fs";
+import { parse } from 'node-html-parser';
+import { JSDOM } from 'jsdom';
 const { document } = new JSDOM(`...`).window;
 
 const tagsToLog = [
@@ -32,7 +31,6 @@ const tagsToLog = [
 
 function createElement(node) {
     const elem = document.createElement(node.tagName);
-    fs.writeFileSync("node.json", JSON.stringify(node.attributes) + "\n\n\n\n", { flag: "a" });
 
     const dataAttributes = Object.entries(node.attributes).filter(
         (a) =>

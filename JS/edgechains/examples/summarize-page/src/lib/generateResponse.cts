@@ -9,11 +9,11 @@ async function openAICall({ prompt, openAIApiKey }: any) {
     try {
         const openai = new OpenAI({ apiKey: openAIApiKey });
         let res = await openai.zodSchemaResponse({ prompt, schema: schema });
-        console.log({ res });
         return JSON.stringify(res);
     } catch (error) {
         return error;
     }
 }
+
 
 module.exports = openAICall;
