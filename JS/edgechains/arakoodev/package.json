@@ -13,8 +13,7 @@
         "./arakooserver": "./dist/arakooserver/src/index.js",
         "./db": "./dist/db/src/index.js",
         "./scraper": "./dist/scraper/src/index.js",
-        "./sync-rpc": "./dist/sync-rpc/export.js",
-        "./playwright": "./dist/playwright/src/index.js"
+        "./sync-rpc": "./dist/sync-rpc/export.js"
     },
     "scripts": {
         "build": "rm -rf dist && tsc -b && cp -r src/sync-rpc dist/sync-rpc",
@@ -26,6 +25,8 @@
         "@babel/core": "^7.24.4",
         "@babel/preset-env": "^7.24.4",
         "@hono/node-server": "^1.11.0",
+        "@lifeomic/attempt": "^3.1.0",
+        "@playwright/test": "^1.45.3",
         "@supabase/supabase-js": "^2.42.3",
         "axios": "^1.7.2",
         "axios-retry": "^4.1.0",
