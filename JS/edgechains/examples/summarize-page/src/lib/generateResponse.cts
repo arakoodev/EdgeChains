@@ -15,5 +15,4 @@ async function openAICall({ prompt, openAIApiKey }: any) {
     }
 }
 
-
 module.exports = openAICall;

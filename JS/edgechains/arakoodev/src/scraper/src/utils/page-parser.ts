@@ -1,5 +1,5 @@
-import { parse } from 'node-html-parser';
-import { JSDOM } from 'jsdom';
+import { parse } from "node-html-parser";
+import { JSDOM } from "jsdom";
 const { document } = new JSDOM(`...`).window;
 
 const tagsToLog = [

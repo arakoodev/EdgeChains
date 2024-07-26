@@ -5,8 +5,7 @@ const scraper = new scraper_1.Playwright();
 async function getPageContent({ task, openai }) {
     try {
         return await scraper.call({ chatApi: openai, task, headless: false });
-    }
-    catch (error) {
+    } catch (error) {
         console.log(error);
     }
 }
