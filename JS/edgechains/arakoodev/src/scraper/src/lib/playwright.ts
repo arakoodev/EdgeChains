@@ -1,12 +1,11 @@
 import { chromium, Page } from "playwright";
 import { expect } from "@playwright/test";
 import axios from "axios";
-import { parseArr, parseSite, preprocessJsonInput } from '../utils/index';
+import { parseArr, parseSite, preprocessJsonInput } from "../utils/index";
 import { retry } from "@lifeomic/attempt";
 import { removeBlankTags } from "../utils/page-parser";
 
 export class Playwright {
-
     apiKey: string;
 
     constructor({ apiKey }: { apiKey: string }) {
@@ -15,9 +14,9 @@ export class Playwright {
 
     async #createPrompt({ task, page, completedTaskArr }) {
         const [currentPageUrl, currentPageTitle, siteOverview] = await Promise.all([
-            page.evaluate('location.href'),
-            page.evaluate('document.title'),
-            parseSite(page).then(html => removeBlankTags(html).slice(0, 20000))
+            page.evaluate("location.href"),
+            page.evaluate("document.title"),
+            parseSite(page).then((html) => removeBlankTags(html).slice(0, 20000)),
         ]);
 
         const completedActions = completedTaskArr || [];
@@ -155,9 +154,7 @@ export class Playwright {
                 "https://api.openai.com/v1/chat/completions",
                 {
                     model: "gpt-3.5-turbo-16k",
-                    messages: [
-                        { role: "user", content: prompt }
-                    ],
+                    messages: [{ role: "user", content: prompt }],
                     max_tokens: 1000,
                     temperature: 0.7,
                 },
@@ -179,8 +176,8 @@ export class Playwright {
             Context:
             Your computer is a mac. Cmd is the meta key, META.
             The browser is already open. 
-            Current page url is ${await page.evaluate('location.href')}.
-            Current page title is ${await page.evaluate('document.title')}.
+            Current page url is ${await page.evaluate("location.href")}.
+            Current page title is ${await page.evaluate("document.title")}.
             Humman message: ${task}
                         
             Here is the overview of the site. Format is in html:
@@ -192,23 +189,21 @@ export class Playwright {
         return await this.#openAIRequest({ prompt });
     }
 
-    async #execPlayWrightCode({ page, code }: { page: Page, code: string }) {
-        const AsyncFunction = async function () { }.constructor;
-        const dependencies = [
-            { param: 'page', value: page },
-        ];
+    async #execPlayWrightCode({ page, code }: { page: Page; code: string }) {
+        const AsyncFunction = async function () {}.constructor;
+        const dependencies = [{ param: "page", value: page }];
         const func = AsyncFunction(...dependencies.map((d) => d.param), code);
         const args = dependencies.map((d) => d.value);
         return await func(...args);
     }
 
-    /** 
-        * Get Playwright code for a specific task
-        * @param task - Task description
-        * @param url - URL to navigate to default is https://www.google.com
-        * @param headless - Run in headless mode default is false
-    **/
-    async call({ task, url, headless = true }: { task: string, url?: string, headless?: boolean }) {
+    /**
+     * Get Playwright code for a specific task
+     * @param task - Task description
+     * @param url - URL to navigate to default is https://www.google.com
+     * @param headless - Run in headless mode default is false
+     **/
+    async call({ task, url, headless = true }: { task: string; url?: string; headless?: boolean }) {
         const browser = await chromium.launch({ headless });
         const page = await browser.newPage();
         await page.goto(url || "https://www.google.com");
@@ -230,11 +225,17 @@ export class Playwright {
             let errExecIndex = 0;
 
             while (!success) {
-                let res: any = preprocessJsonInput(await this.#openAIRequest({ prompt: prompt + err }));
+                let res: any = preprocessJsonInput(
+                    await this.#openAIRequest({ prompt: prompt + err })
+                );
 
                 if (errExecIndex > 3) {
                     const findInResponse = await this.#findInPage({ page, task });
-                    const retryPrompt = await this.#createPrompt({ task: `We are getting this error three times: ${err}. Try writing Playwright code using this: ${findInResponse}`, page, completedTaskArr });
+                    const retryPrompt = await this.#createPrompt({
+                        task: `We are getting this error three times: ${err}. Try writing Playwright code using this: ${findInResponse}`,
+                        page,
+                        completedTaskArr,
+                    });
                     res = preprocessJsonInput(await this.#openAIRequest({ prompt: retryPrompt }));
                 }
 
