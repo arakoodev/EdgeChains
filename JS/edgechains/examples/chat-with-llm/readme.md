@@ -1,10 +1,9 @@
-## Video
-
-    ```
-    https://youtu.be/fq3BpdduO2g
-    ```
 
 # Chat with LLM Example
+
+## Video
+
+https://youtu.be/fq3BpdduO2g
 
 ## Installation
 

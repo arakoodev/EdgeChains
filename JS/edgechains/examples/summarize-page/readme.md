@@ -1,8 +1,6 @@
-## Video
+## Tutorial Video
 
-    ```
-    https://youtu.be/S289kMubG10
-    ```
+https://youtu.be/S289kMubG10
 
 ## Installation
 

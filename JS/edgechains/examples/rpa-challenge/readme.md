@@ -1,8 +1,6 @@
-## Video
+## Tutorial Video
 
-    ```
-    https://youtu.be/iqph8HA4nas
-    ```
+https://youtu.be/iqph8HA4nas
 
 ## Installation
 

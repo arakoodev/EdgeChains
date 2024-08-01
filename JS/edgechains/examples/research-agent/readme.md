@@ -1,8 +1,12 @@
-# Video Url - https://youtu.be/tM1OcMkqNes
 
 # Project Name
 
 This is Research Agent App
+
+## Tutorial Video
+
+https://youtu.be/tM1OcMkqNes
+
 
 ## Backend
 

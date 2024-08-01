@@ -1,12 +1,13 @@
-## Video
 
-    ```
-    https://youtu.be/RTARGcRW_0I
-    ```
 
 # Project Name
 
 This is a Language Translate app
+
+
+## Tutorial Video
+
+https://youtu.be/RTARGcRW_0I
 
 ## Backend
 

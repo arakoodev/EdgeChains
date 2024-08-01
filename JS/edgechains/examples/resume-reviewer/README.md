@@ -2,11 +2,10 @@
 
 This is an example project that demonstrates the usage of Resume-Reviewer
 
-## Video Link
+## Tutorial Video
 
-```bash
 https://youtu.be/xy3DRI4Y898
-```
+
 
 ## Configuration
 
