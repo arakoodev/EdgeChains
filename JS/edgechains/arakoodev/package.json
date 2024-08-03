@@ -6,7 +6,7 @@
         "dist"
     ],
     "exports": {
-        "./openai": "./dist/openai/src/index.js",
+        "./ai": "./dist/ai/src/index.js",
         "./vector-db": "./dist/vector-db/src/index.js",
         "./document-loader": "./dist/document-loader/src/index.js",
         "./splitter": "./dist/splitter/src/index.js",

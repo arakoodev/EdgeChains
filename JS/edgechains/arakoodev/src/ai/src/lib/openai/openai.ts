@@ -63,7 +63,7 @@ export class OpenAI {
     }
 
     async chat(chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
-        const responce = await axios
+        const response = await axios
             .post(
                 openAI_url,
                 {
@@ -99,13 +99,13 @@ export class OpenAI {
                     console.log("Error creating request:", error.message);
                 }
             });
-        return responce[0].message;
+        return response[0].message;
     }
 
     async chatWithFunction(
         chatOptions: chatWithFunctionOptions
     ): Promise<chatWithFunctionReturnOptions> {
-        const responce = await axios
+        const response = await axios
             .post(
                 openAI_url,
                 {
@@ -143,7 +143,7 @@ export class OpenAI {
                     console.log("Error creating request:", error.message);
                 }
             });
-        return responce[0].message;
+        return response[0].message;
     }
 
     async generateEmbeddings(resp): Promise<any> {
