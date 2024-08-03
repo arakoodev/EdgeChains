@@ -1,9 +1,6 @@
-
-
 # Project Name
 
 This is a Language Translate app
-
 
 ## Tutorial Video
 

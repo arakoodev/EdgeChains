@@ -1,4 +1,3 @@
-
 # Chat with LLM Example
 
 ## Video

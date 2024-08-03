@@ -6,7 +6,6 @@ This is an example project that demonstrates the usage of Resume-Reviewer
 
 https://youtu.be/xy3DRI4Y898
 
-
 ## Configuration
 
 1 Add OpenAiApi key in secrets.jsonnet
