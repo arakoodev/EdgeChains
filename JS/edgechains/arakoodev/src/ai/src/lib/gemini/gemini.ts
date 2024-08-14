@@ -1,5 +1,5 @@
 import axios from "axios";
-import { retry } from "@lifeomic/attempt"
+import { retry } from "@lifeomic/attempt";
 const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
 
 interface GeminiAIConstructionOptions {
@@ -7,7 +7,11 @@ interface GeminiAIConstructionOptions {
 }
 
 type SafetyRating = {
-    category: "HARM_CATEGORY_SEXUALLY_EXPLICIT" | "HARM_CATEGORY_HATE_SPEECH" | "HARM_CATEGORY_HARASSMENT" | "HARM_CATEGORY_DANGEROUS_CONTENT";
+    category:
+        | "HARM_CATEGORY_SEXUALLY_EXPLICIT"
+        | "HARM_CATEGORY_HATE_SPEECH"
+        | "HARM_CATEGORY_HARASSMENT"
+        | "HARM_CATEGORY_DANGEROUS_CONTENT";
     probability: "NEGLIGIBLE" | "LOW" | "MEDIUM" | "HIGH";
 };
 
@@ -38,9 +42,7 @@ type Response = {
     usageMetadata: UsageMetadata;
 };
 
-
-type responseMimeType = "text/plain" | "application/json"
-
+type responseMimeType = "text/plain" | "application/json";
 
 interface GeminiAIChatOptions {
     model?: string;
@@ -49,7 +51,7 @@ interface GeminiAIChatOptions {
     prompt: string;
     max_retry?: number;
     responseType?: responseMimeType;
-    delay?: number
+    delay?: number;
 }
 
 export class GeminiAI {
@@ -60,33 +62,36 @@ export class GeminiAI {
 
     async chat(chatOptions: GeminiAIChatOptions): Promise<Response> {
         let data = JSON.stringify({
-            "contents": [
+            contents: [
                 {
-                    "role": "user",
-                    "parts": [
+                    role: "user",
+                    parts: [
                         {
-                            "text": chatOptions.prompt
-                        }
-                    ]
-                }
-            ]
+                            text: chatOptions.prompt,
+                        },
+                    ],
+                },
+            ],
         });
 
         let config = {
-            method: 'post',
+            method: "post",
             maxBodyLength: Infinity,
             url,
             headers: {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': this.apiKey
+                "Content-Type": "application/json",
+                "x-goog-api-key": this.apiKey,
             },
             temperature: chatOptions.temperature || "0.7",
             responseMimeType: chatOptions.responseType || "text/plain",
-            "max_output_tokens": chatOptions.max_output_tokens || 1024,
-            data: data
+            max_output_tokens: chatOptions.max_output_tokens || 1024,
+            data: data,
         };
-        return await retry(async () => {
-            return (await axios.request(config)).data;
-        }, { maxAttempts: chatOptions.max_retry || 3, delay: chatOptions.delay || 200 });
+        return await retry(
+            async () => {
+                return (await axios.request(config)).data;
+            },
+            { maxAttempts: chatOptions.max_retry || 3, delay: chatOptions.delay || 200 }
+        );
     }
 }

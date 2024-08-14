@@ -1,9 +1,8 @@
-
 import axios from "axios";
 import { role } from "../../types";
 import { retry } from "@lifeomic/attempt";
 
-const url = 'https://api.llama-api.com/chat/completions'
+const url = "https://api.llama-api.com/chat/completions";
 
 interface messageOption {
     role: role;
@@ -18,14 +17,15 @@ interface llamaChatOptions {
     temperature?: number;
     prompt?: string;
     messages?: messageOption[];
-    stream?: boolean
+    stream?: boolean;
     max_retry?: number;
-    delay?: number
-}[]
+    delay?: number;
+}
+[];
 
 export class LlamaAI {
-    apiKey: string
-    queue: string[]
+    apiKey: string;
+    queue: string[];
     constructor({ apiKey }: { apiKey: string }) {
         this.apiKey = apiKey;
         this.queue = [];
@@ -33,20 +33,19 @@ export class LlamaAI {
 
     async makeRequest(chatOptions: llamaChatOptions) {
         try {
-            return await retry(async () => {
-
-                return await axios
-                    .post(
+            return await retry(
+                async () => {
+                    return await axios.post(
                         url,
                         {
                             model: chatOptions.model || "llama-13b-chat",
                             messages: chatOptions.prompt
                                 ? [
-                                    {
-                                        role: chatOptions.role || "user",
-                                        content: chatOptions.prompt,
-                                    },
-                                ]
+                                      {
+                                          role: chatOptions.role || "user",
+                                          content: chatOptions.prompt,
+                                      },
+                                  ]
                                 : chatOptions.messages,
                             max_tokens: chatOptions.max_tokens || 1024,
                             stream: chatOptions.stream || false,
@@ -55,10 +54,12 @@ export class LlamaAI {
                         {
                             headers: { Authorization: "Bearer " + this.apiKey },
                         }
-                    )
-            }, { maxAttempts: chatOptions.max_retry || 3, delay: chatOptions.delay || 200 });
+                    );
+                },
+                { maxAttempts: chatOptions.max_retry || 3, delay: chatOptions.delay || 200 }
+            );
         } catch (error: any) {
-            console.log(error)
+            console.log(error);
             throw new Error(`Error while making request: ${error.message}`);
         }
     }
@@ -74,7 +75,7 @@ export class LlamaAI {
     async *getSequences() {
         while (this.queue.length > 0) {
             yield this.queue.shift();
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
         }
     }
 
