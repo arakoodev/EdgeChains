@@ -118,7 +118,7 @@ export class OpenAI {
                               },
                           ]
                         : chatOptions.messages,
-                    max_tokens: chatOptions.max_tokens || 256,
+                    max_tokens: chatOptions.max_tokens || 1024,
                     temperature: chatOptions.temperature || 0.7,
                     functions: chatOptions.functions,
                     function_call: chatOptions.function_call || "auto",

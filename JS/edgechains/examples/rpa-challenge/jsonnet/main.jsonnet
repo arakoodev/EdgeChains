@@ -1,8 +1,71 @@
 local promptTemplate = |||
-                        go to https://rpachallenge.com/ and click on the start button we have fiels in this pattern First Name  Last Name       Company Name Role in Company Address Email   Phone Number and then fill this fields John     Smith   IT Solutions    Analyst 98 North Road        jsmith@itsolutions.co.uk        40716543298 in the given inputs and click the input with value Submit and then fill this fields Jane Dorsey  MediCare        Medical Engineer        11 Crown Street jdorsey@mc.com  40791345621 in the given inputs and click the input with value Submit and then fill this fields Albert       Kipling Waterfront      Accountant  22 Guild Street  kipling@waterfront.com  40735416854 in the given inputs and click the input with value Submit and then fill this fields Michael      Robertson       MediCare        IT Specialist   17 Farburn Terrace      mrobertson@mc.com       40733652145 in the given inputs and click the input with value Submit and then fill this fields Doug Derrick Timepath Inc.   Analyst      99 Shire Oak Road       dderrick@timepath.co.uk 40799885412 in the given inputs and click the input with value Submit and then fill this fields Jessie       Marlowe Aperture Inc.   Scientist       27 Cheshire Street      jmarlowe@aperture.us40733154268 in the given inputs and click the input with value Submit and then fill this fields Stan     Hamm    Sugarwell   Advisor  10 Dam Road     shamm@sugarwell.org     40712462257 in the given inputs and click the input with value Submit and then fill this fields Michelle     Norton  Aperture Inc.   Scientist       13 White Rabbit Street  mnorton@aperture.us     40731254562 in the given inputs and click the input with value Submit and then fill this fields Stacy        Shelby  TechDev HR Manager   19 Pineapple Boulevard  sshelby@techdev.com     40741785214 in the given inputs and click the input with value Submit and then fill this fields Lara Palmer  Timepath Inc.   Programmer      87 Orange Street        lpalmer@timepath.co.uk  40731653845 in the given inputs and click the input with value Submit
+                        Given the following task description:
+                        {task}
+                        Extract the key actions from this task and return them as an array of strings. Each action should be a separate string in the array. If the task description contains syntax errors or you think a command can be improved for better clarity and effectiveness, please make the necessary corrections and improvements. For example:
+                        Using the following list of objects, generate a series of instructions to fill out a form with the specified data. After each entry, include a command to submit the form. Follow this structure for each object:
+                        Extract the details from each object in the list.
+                        Format the details as follows: "Fill the form fields with the following data: First Name: [First Name], Last Name: [Last Name], Company Name: [Company Name], Role in Company: [Role in Company], Address: [Address], Email: [Email], Phone Number: [Phone Number]".
+                        After each formatted string, append the text: "Identify and click on the input with the value 'Submit'".
+
+                        Examples:
+
+                        Input:
+                        "Go to Hacker News and click on the first link. Then give me all the text of this page."
+                        Response Format:
+                        \`\`\`
+                        {[
+                        "Navigate to the Hacker News website by entering the URL 'https://news.ycombinator.com/' in the browser", 
+                        "Identify and click on the first link displayed on the Hacker News homepage",  
+                        "Extract all the text from the page",
+                        "Return that containt using return statement"
+                         ]}
+                        \`\`\`
+
+                        Input:
+                        "Go to google and search for the term 'automation'. Click on the first link and extract the text from the page."
+
+                        Response Format:
+                        \`\`\`
+                        {[
+                        "Navigate to the random website by entering the URL 'https://google.com' in the browser", 
+                        "Search for the term 'automation' in the search bar and hit Enter key",
+                        "Click on the first link displayed in the search results",
+                        "Extract  all the text from the page",
+                        "Return that containt using return statement"
+                        ]}
+                        \`\`\`
+                        \n
+                        Ensure that each action is specific, clear, and comprehensive to facilitate precise implementation.
                        |||;
 
-local key = std.extVar('openai_api_key');
-local content = arakoo.native("call")({task:promptTemplate, openai:key});
 
-content
+local openAIResponseFormat = [
+    {
+        name: "taskListResponse",
+        description: "Generate a response containing a list of tasks.",
+        parameters: {
+            type: "object",
+            properties: {
+                tasks: {
+                    type: "array",
+                    description: "A list of tasks to be performed, represented as strings.",
+                    items: {
+                        type: "string",
+                        description: "A single task description."
+                    }
+                }
+            },
+            required: ["tasks"]  // Ensure that the 'tasks' array is provided
+        }
+    }
+];
+
+local excelUrl = "https://rpachallenge.com/assets/downloadFiles/challenge.xlsx";
+local key = std.extVar('openai_api_key');
+
+local excelData = arakoo.native('downloadExcelData')({url:excelUrl});
+local taskString = "go to https://rpachallenge.com/ click on the start button" + excelData;
+local updatedPrompt = std.strReplace(promptTemplate, '{task}',taskString  + "\n");
+local mainPrompt = arakoo.native("openAICall")({prompt:updatedPrompt, functions:openAIResponseFormat, openAIKey:key});
+local doMainTasks = arakoo.native("doMainTasks")({task:mainPrompt, openai:key});
+doMainTasks
