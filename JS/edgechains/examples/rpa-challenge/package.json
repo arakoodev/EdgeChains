@@ -11,7 +11,7 @@
     },
     "license": "ISC",
     "dependencies": {
-        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/edgechains.js": "^0.28.0",
         "@arakoodev/jsonnet": "^0.25.0",
         "file-uri-to-path": "^2.0.0",
         "filereader": "^0.10.3",
