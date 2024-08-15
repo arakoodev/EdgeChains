@@ -175,82 +175,6 @@ as $$
   
 ⚠️👉Remember: Comment out the InsertToSupabase function if you are running the code again; otherwise, the PDF data will be pushed again to the Supabase vector data.
 
----
-
-# Compilation to webassembly for edge devices
-## Setup
-
- 1. Select latest successful workflow run from [here](https://github.com/arakoodev/EdgeChains/actions/workflows/release-wasm.yml) .
- 2. Then scroll to bottom and download artifact . A zip will be downloaded to your system 
- 3. Extract the zip . 
- 4. You will have two binaries `arakoo` *(this is runtime)* and `arakoo-compiler` *(this is our extended javy compiler)*
- 5. Copy these two binaries to `~/.local/bin` or `/usr/bin` *(if you want all users to access the binaries )*
- 6. Open terminal and grant executable permission to copied binaries by running `chmod +x "<path of copied arakoo-compiler>"` and `chmod +x "<path of copied arakoo>"`
-
- *You are now good to go ! Have look at below  section which describe how you can create apis in hono and compile them to wasm*
- 
- ## Compiling js to wasm
-1. Open Terminal
-2. Create a new directory `helloworld` by running 
- ```mkdir helloworld && cd helloworld```  
-3. Initialize it 
-```npm init -y```
-4. Add `"type":"module"` in package.json to use es6 syntax.
-5. Install hono `npm install hono@^3.9` (as of now only this hono version is supported)
-6. Create a `index.js` file and open it with your favourite editor.
-7. Paste below code in it
-```js
-import {Hono} from  "hono";
-const  app = new  Hono();
-
-app.get("/hello", async (c)=>{
-	return  c.json({message :  "hello world"})
-})
-
-app.fire();
-```
-8.  Now since javy doesn't have capability to require or import module . So we will bundle the index.js with esbuild.
-9. To do so , install esbuild as developer dependency 
-```
-npm install esbuild --save-dev
-```  
-10. Create a build file `build.js`
-11. Paste below code in it
-```js
-import {build} from  "esbuild";
-
-build({
-	entryPoints: ["index.js"], // specify input file ( in this case this the index.js file we created earlier)
-	bundle:  true, // this allows esbuild to find all dependencies and bundle them together in one file
-	outfile:  "dist.js", // the name of the output bundle file you desire ( in this case we named it dist.js
-	platform:"node",
-}).catch((error)=>{
-	console.log("Error ",error);
-	process.exit(1);
-})
-```
-12. Now compile bundled file with javy 
-```
-arakoo-compiler dist.js 
-```
-13. You should see a new file `index.wasm` in the directory
-
-## Executing wasm
-You can execute the compiled wasm with installed `arakoo` runtime.
-To do so simple run 
-```
-arakoo index.wasm
-``` 
-You should see output as -
-
-![image](https://github.com/redoC-A2k/EdgeChains/assets/60838316/75bab29e-de61-4f1b-87ea-66b921441a66)
-
-Send get request to http://localhost:8080/hello to test the api.
-You should get response as shown below \-
-
-![image](https://github.com/redoC-A2k/EdgeChains/assets/60838316/6796513d-63e3-4ce4-a797-ffd20ac0b7a1)
-
----
 
 ## Contribution guidelines
 
@@ -258,39 +182,10 @@ You should get response as shown below \-
 
 **We use [GitHub issues](https://github.com/arakoodev/edgechains/issues) for tracking requests and bugs.**
 
-<!-- Add when discussions are present
-please see [Automata Discussions](https://github.com/arakoodev/edgechains/discussions) for general questions and discussion, and please direct specific questions. -->
-
-To ensure clean and effective pull request merges, we follow a specific approach known as **squash and merge**. It is crucial to avoid issuing multiple pull requests from the same local branch, as this will result in failed merges.
-
-The solution is straightforward: adhere to the principle of **ONE BRANCH PER PULL REQUEST**. We strictly follow this practice to ensure the smooth integration of contributions. 
-
-If you have inadvertently created a pull request from your master/main branch, you can easily rectify it by following these steps:
-
-> Note: Please ensure that you have committed all your changes before proceeding, as any uncommitted changes will be lost.
-
- if you have created this pull request using your master/main branch, then follow these steps to fix it:
-```
-git branch newbranch      # Create a new branch, saving the desired commits
-git checkout master       # checkout master, this is the place you want to go back
-git reset --hard HEAD~3   # Move master back by required number of commits 
-git checkout newbranch    # Go to the new branch that still has the desired commits. 
-```
-Now, you can create a pull request. 
-
-The Edgechains project strives to abide by generally accepted best practices in open-source software development.
-
-## Future
-
-We are committed to the continuous improvement and expansion of EdgeChains. Here are some of the exciting developments we have planned for the future. Our team is dedicated to pushing the boundaries of what is possible with large language models and ensuring that EdgeChains remains at the forefront of innovation. We are actively exploring and incorporating the latest advancements in large language models, ensuring that EdgeChains stays up to date with cutting-edge technologies and techniques. We also have a strong focus on optimizing the scalability and performance of EdgeChains. Our goal is to improve parallelism, fault tolerance, and resource utilization, allowing applications built with EdgeChains to handle larger workloads and deliver faster responses.
-
-To support our growing user community, we are expanding our documentation and resources. This includes providing comprehensive tutorials, examples, and guides to help developers get started and make the most out of EdgeChains
 
 
 ## 💌 Acknowledgements
 We would like to express our sincere gratitude to the following individuals and projects for their contributions and inspiration:
-
-- First Hat tip to  [Spring](https://github.com/spring-projects/spring-framework).
 - We draw inspiration from the spirit of [Nextjs](https://github.com/vercel/next.js/).
 - We extend our appreciation to all the [contributors](https://github.com/wootzapp/wootz-browser/graphs/contributors) who have supported and enriched this project.
 - Respect to LangChain, Anthropic, Mosaic and the rest of the open-source LLM community. We are deeply grateful for sharing your knowledge and never turning anyone away.
@@ -306,4 +201,4 @@ We would like to express our sincere gratitude to the following individuals and 
 
 ## License
 
-EdgeChains is licensed under the MIT license.
+EdgeChains  is licensed under the GNU Affero General Public License v3.0 and as commercial software. For commercial licensing, please contact us or raise a issue in this github.
