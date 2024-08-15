@@ -1,6 +1,14 @@
 const { OpenAI } = require("@arakoodev/edgechains.js/ai");
 
-function openAICall({ prompt, functions, openAIKey }: { prompt: string, functions: any, openAIKey: string }) {
+function openAICall({
+    prompt,
+    functions,
+    openAIKey,
+}: {
+    prompt: string;
+    functions: any;
+    openAIKey: string;
+}) {
     try {
         const openai = new OpenAI({ apiKey: openAIKey });
         const completion = openai
@@ -20,6 +28,6 @@ function openAICall({ prompt, functions, openAIKey }: { prompt: string, function
     } catch (error) {
         console.error(error);
     }
-};
+}
 
 module.exports = openAICall;

@@ -1,10 +1,8 @@
-import { expect, Page } from '@playwright/test';
-import {
-    parseSite,
-} from "../utils/index.js";
-import { removeBlankTags } from '../utils/page-parser.js';
+import { expect, Page } from "@playwright/test";
+import { parseSite } from "../utils/index.js";
+import { removeBlankTags } from "../utils/page-parser.js";
 
-const AsyncFunction = async function () { }.constructor;
+const AsyncFunction = async function () {}.constructor;
 
 export async function generatePrompt(page: Page, userTask: string) {
     const [currentPageUrl, currentPageTitle, siteOverview] = await Promise.all([
@@ -45,9 +43,7 @@ export async function generatePrompt(page: Page, userTask: string) {
             The objective is to create Playwright code that is efficient, precise, and perfectly aligned with the task's requirements, integrating seamlessly into the larger test file. All actions and comments should be relevant and necessary, catering to a senior-level professional's understanding of the testing scenario.`;
 
     return systemPrompt;
-
 }
-
 
 export function generateTaskArrPrompt(task: string) {
     return `
@@ -99,41 +95,42 @@ export function generateTaskArrPrompt(task: string) {
     `;
 }
 
-
-export function handleHistory(goalsArr: string[]): { role: string, content: string }[] {
-    let goalsStr = ''
+export function handleHistory(goalsArr: string[]): { role: string; content: string }[] {
+    let goalsStr = "";
     for (let index = 0; index < goalsArr.length; index++) {
         const element = goalsArr[index];
-        goalsStr += `${index + 1}. Goal ${index + 1}: ${element}\n`
+        goalsStr += `${index + 1}. Goal ${index + 1}: ${element}\n`;
     }
 
-    return [{
-        role: 'system',
-        content: `You are a Senior SDET tasked with writing Playwright code for testing purposes. Your role         
+    return [
+        {
+            role: "system",
+            content:
+                `You are a Senior SDET tasked with writing Playwright code for testing purposes. Your role         
             involves implementing specific task-based code segments within a larger test file, following the 
             instructions provided closely. Assume that common imports like 'test' and 'expect' from '@playwright/test' are already at the top of the file.\n` +
-            'Your decisions must always be made independently without seeking user assistance. Play to your strengths as an LLM and pursue simple strategies with no legal complications. We have three function to perform tasks "goToLink", "intractWithPage" and "findInPage". If any task have need to go to any url use or need go to a specific url use "goToLink" command. If any task takes more then 3 requests, use the "findInPage" command so we can try searching for the element using a function but do not use "findInPage" command unnecessary it has a cost.Otherwise use intractWithPage most of the times and Ensure that If you have completed all your tasks, make sure to use the "finish" command and args also should blank. do not use this command until each and every command completed successfully\n' +
-            '\n' +
-            'GOALS:\n' +
-            '\n' +
-            goalsStr +
-            '\n' +
-            `Key Points:
+                'Your decisions must always be made independently without seeking user assistance. Play to your strengths as an LLM and pursue simple strategies with no legal complications. We have three function to perform tasks "goToLink", "intractWithPage" and "findInPage". If any task have need to go to any url use or need go to a specific url use "goToLink" command. If any task takes more then 3 requests, use the "findInPage" command so we can try searching for the element using a function but do not use "findInPage" command unnecessary it has a cost.Otherwise use intractWithPage most of the times and Ensure that If you have completed all your tasks, make sure to use the "finish" command and args also should blank. do not use this command until each and every command completed successfully\n' +
+                "\n" +
+                "GOALS:\n" +
+                "\n" +
+                goalsStr +
+                "\n" +
+                `Key Points:
             - Always include the "args" object with the necessary arguments for the command. This field is required and must not be omitted.
             - Start directly with Playwright actions as described in the user task, without adding extraneous steps or assertions.
             - Include assertions like 'expect' statements or wait functions such as 'waitForLoadState' only when they are specifically requested in the user task.
             - Minimal, relevant comments should be used to clarify complex actions or essential aspects of the test's purpose.
             - Apply 'frameLocator' for content in nested iframes, as needed based on the task requirements.\n
             - Don't log the output always return that
-            `+
-            'Constraints:\n' +
-            '1. ~4000 word limit for short term memory. \n' +
-            '2. If you are unsure how you previously did something or want to recall past events, thinking about similar events will help you remember.\n' +
-            '3. No user assistance\n' +
-            '4. Exclusively use the commands listed below e.g. command_name\n' +
-            '\n' +
-            'Commands:\n' +
-            `// for navigating to the page
+            ` +
+                "Constraints:\n" +
+                "1. ~4000 word limit for short term memory. \n" +
+                "2. If you are unsure how you previously did something or want to recall past events, thinking about similar events will help you remember.\n" +
+                "3. No user assistance\n" +
+                "4. Exclusively use the commands listed below e.g. command_name\n" +
+                "\n" +
+                "Commands:\n" +
+                `// for navigating to the page
             - await page.goto('https://github.com/login');
             // for clicking on the button
             - await page.getByRole('button', { name: 'Submit' }).click();
@@ -168,27 +165,27 @@ export function handleHistory(goalsArr: string[]): { role: string, content: stri
             - await page.screenshot({ path: 'O.png' });
             - await browser.close();
             // click on any links
-            - await page.click('a[href="https://blog.sbensu.com/posts/demand-for-visual-programming/"]');\n\n`+
-            '\n' +
-            '\n' +
-            'Resources:\n' +
-            '1. Internet access for searches and information gathering.\n' +
-            '2. Long Term memory management.\n' +
-            '3. GPT-3.5 powered Agents for delegation of simple tasks.\n' +
-            '\n' +
-            'Performance Evaluation:\n' +
-            '1. Continuously review and analyze your actions to ensure you are performing to the best of your abilities.\n' +
-            '2. Constructively self-criticize your big-picture behavior constantly.\n' +
-            '3. Reflect on past decisions and strategies to refine your approach.\n' +
-            '4. Every command has a cost, so be smart and efficient. Aim to complete tasks in the least number of steps.'
-    }];
+            - await page.click('a[href="https://blog.sbensu.com/posts/demand-for-visual-programming/"]');\n\n` +
+                "\n" +
+                "\n" +
+                "Resources:\n" +
+                "1. Internet access for searches and information gathering.\n" +
+                "2. Long Term memory management.\n" +
+                "3. GPT-3.5 powered Agents for delegation of simple tasks.\n" +
+                "\n" +
+                "Performance Evaluation:\n" +
+                "1. Continuously review and analyze your actions to ensure you are performing to the best of your abilities.\n" +
+                "2. Constructively self-criticize your big-picture behavior constantly.\n" +
+                "3. Reflect on past decisions and strategies to refine your approach.\n" +
+                "4. Every command has a cost, so be smart and efficient. Aim to complete tasks in the least number of steps.",
+        },
+    ];
 }
 
 export async function findInPage(page: Page, task: string): Promise<string> {
-
     const [currentPageUrl, currentPageTitle, siteOverview] = await Promise.all([
-        await page.evaluate('location.href'),
-        await page.evaluate('document.title'),
+        await page.evaluate("location.href"),
+        await page.evaluate("document.title"),
         parseSite(page).then((html) => removeBlankTags(html).slice(0, 24000)),
     ]).catch((error: any) => {
         console.log(error.message + " " + error.stack);
@@ -228,26 +225,26 @@ export const mainResponseFormat = [
                     properties: {
                         text: {
                             type: "string",
-                            description: "thought"
+                            description: "thought",
                         },
                         reasoning: {
                             type: "string",
-                            description: "reasoning"
+                            description: "reasoning",
                         },
                         plan: {
                             type: "string",
-                            description: "- short bulleted\n- list that conveys\n- long-term plan"
+                            description: "- short bulleted\n- list that conveys\n- long-term plan",
                         },
                         criticism: {
                             type: "string",
-                            description: "constructive self-criticism"
+                            description: "constructive self-criticism",
                         },
                         speak: {
                             type: "string",
-                            description: "thoughts summary to say to user"
-                        }
+                            description: "thoughts summary to say to user",
+                        },
                     },
-                    required: ["text", "reasoning", "plan", "criticism", "speak"]
+                    required: ["text", "reasoning", "plan", "criticism", "speak"],
                 },
                 command: {
                     type: "object",
@@ -255,20 +252,20 @@ export const mainResponseFormat = [
                     properties: {
                         name: {
                             type: "string",
-                            description: "The name of the command to execute."
+                            description: "The name of the command to execute.",
                         },
                         args: {
                             type: "object",
                             description: "Arguments required for executing the command.",
-                            "additionalProperties": true,
-                        }
+                            additionalProperties: true,
+                        },
                     },
-                    required: ["name", "args"]
-                }
+                    required: ["name", "args"],
+                },
             },
-            required: ["thoughts", "command"]
-        }
-    }
+            required: ["thoughts", "command"],
+        },
+    },
 ];
 
 export const taskArrResponseFormat = [
@@ -283,13 +280,13 @@ export const taskArrResponseFormat = [
                     description: "A list of tasks to be performed, represented as strings.",
                     items: {
                         type: "string",
-                        description: "A single task description."
-                    }
-                }
+                        description: "A single task description.",
+                    },
+                },
             },
-            required: ["tasks"]  // Ensure that the 'tasks' array is provided
-        }
-    }
+            required: ["tasks"], // Ensure that the 'tasks' array is provided
+        },
+    },
 ];
 
 export const playwrightCodeResponseFormat = [
@@ -301,18 +298,18 @@ export const playwrightCodeResponseFormat = [
             properties: {
                 code: {
                     type: "string",
-                    description: "Playwright code for a single task."
-                }
+                    description: "Playwright code for a single task.",
+                },
             },
-            required: ["code"]
-        }
-    }
+            required: ["code"],
+        },
+    },
 ];
 
 export async function execPlayWrightCode(page: Page, code: string): Promise<string> {
     const dependencies = [
-        { param: 'page', value: page },
-        { param: 'expect', value: expect },
+        { param: "page", value: page },
+        { param: "expect", value: expect },
     ];
 
     const func = AsyncFunction(...dependencies.map((d) => d.param), code);
