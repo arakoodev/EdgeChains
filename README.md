@@ -8,9 +8,6 @@
 
 ### ***Jump straight into our [examples](JS/edgechains/examples) WITH VIDEOS!!***
 
-Leveraging the full potential of Large language models (LLMs) often requires integrating them with other sources of computation or knowledge. Edgechains is specifically designed to **orchestrate** such applications.
-
-EdgeChains is an open-source chain-of-thought engineering framework tailored for Large Language Models (LLMs)- like OpenAI GPT, LLama2, Falcon, etc. - With a focus on enterprise-grade deployability and scalability. 
 
 ## Is EdgeChains production ready ?
 unlike a lot of frameworks  - we built it on top of honojs and  jsonnet, both of which are built by cloudflare and google respectively.
@@ -156,7 +153,7 @@ as $$
 ```
 
 - You should see a success message in the Result tab.
-![image](https://github.com/Shyam-Raghuwanshi/EdgeChains/assets/94217498/052d9a15-838f-4e68-9888-072cecb78a13)
+
 
 ## Usage
 
@@ -190,14 +187,6 @@ We would like to express our sincere gratitude to the following individuals and 
 - We extend our appreciation to all the [contributors](https://github.com/wootzapp/wootz-browser/graphs/contributors) who have supported and enriched this project.
 - Respect to LangChain, Anthropic, Mosaic and the rest of the open-source LLM community. We are deeply grateful for sharing your knowledge and never turning anyone away.
 
-
-## ✍️ Authors and Contributors
-
-- Sandeep Srinivasa ([@sandys](https://twitter.com/sandeepssrin))
-- Arth Srivastava [@ArthSrivastava](https://github.com/ArthSrivastava)
-- Harsh Parmar [@Harsh4902](https://github.com/Harsh4902)
-- Rohan Guha ([@pizzaboi21](https://github.com/pizzaboi21))
-- Anuran Roy ([@anuran-roy](https://github.com/anuran-roy))
 
 ## License
 
