@@ -77,7 +77,7 @@ jobs:
           cp target/release/arakoo-compiler bin/
 
       - name: Upload Release Binary
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: arakoo-${{ github.ref_name }}-x86_64
           path: bin
