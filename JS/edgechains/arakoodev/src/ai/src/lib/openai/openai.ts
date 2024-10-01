@@ -67,14 +67,18 @@ export class OpenAI {
 
     private checkKeys(): void {
         if (!this.apiKey) {
-            console.error("API key is missing. Please provide a valid OpenAI API key. You can add it in .env file as OPENAI_API_KEY");
+            console.error(
+                "API key is missing. Please provide a valid OpenAI API key. You can add it in .env file as OPENAI_API_KEY"
+            );
         }
         if (!this.orgId) {
-            console.warn("Organization ID is missing. Please provide a valid OpenAI Organization ID. You can add it in .env file as OPENAI_ORG_ID");
+            console.warn(
+                "Organization ID is missing. Please provide a valid OpenAI Organization ID. You can add it in .env file as OPENAI_ORG_ID"
+            );
         }
     }
 
-    async chat (chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
+    async chat(chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
         const response = await axios
             .post(
                 openAI_url,
@@ -82,11 +86,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                            {
-                                role: chatOptions.role || "user",
-                                content: chatOptions.prompt,
-                            },
-                        ]
+                              {
+                                  role: chatOptions.role || "user",
+                                  content: chatOptions.prompt,
+                              },
+                          ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
@@ -125,11 +129,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                            {
-                                role: chatOptions.role || "user",
-                                content: chatOptions.prompt,
-                            },
-                        ]
+                              {
+                                  role: chatOptions.role || "user",
+                                  content: chatOptions.prompt,
+                              },
+                          ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 1024,
                     temperature: chatOptions.temperature || 0.7,
@@ -160,7 +164,7 @@ export class OpenAI {
         return response[0].message;
     }
 
-    async generateEmbeddings({ input, model }: { input: string[], model: string }): Promise<any> {
+    async generateEmbeddings({ input, model }: { input: string[]; model: string }): Promise<any> {
         const response = await axios
             .post(
                 "https://api.openai.com/v1/embeddings",
