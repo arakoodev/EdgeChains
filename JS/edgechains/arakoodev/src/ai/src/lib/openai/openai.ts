@@ -6,6 +6,7 @@ const openAI_url = "https://api.openai.com/v1/chat/completions";
 
 interface OpenAIConstructionOptions {
     apiKey?: string;
+    orgId?: string;
 }
 
 interface messageOption {
@@ -13,7 +14,6 @@ interface messageOption {
     content: string;
     name?: string;
 }
-[];
 
 interface OpenAIChatOptions {
     model?: ChatModel;
@@ -21,7 +21,7 @@ interface OpenAIChatOptions {
     max_tokens?: number;
     temperature?: number;
     prompt?: string;
-    messages?: messageOption;
+    messages?: messageOption[];
 }
 
 interface chatWithFunctionOptions {
@@ -31,7 +31,7 @@ interface chatWithFunctionOptions {
     temperature?: number;
     prompt?: string;
     functions?: object | Array<object>;
-    messages?: messageOption;
+    messages?: messageOption[];
     function_call?: string;
 }
 
@@ -58,11 +58,23 @@ interface OpenAIChatReturnOptions {
 
 export class OpenAI {
     apiKey: string;
+    orgId: string;
     constructor(options: OpenAIConstructionOptions) {
         this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || "";
+        this.orgId = options.orgId || process.env.OPENAI_ORG_ID || "";
+        this.checkKeys();
     }
 
-    async chat(chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
+    private checkKeys(): void {
+        if (!this.apiKey) {
+            console.error("API key is missing. Please provide a valid OpenAI API key. You can add it in .env file as OPENAI_API_KEY");
+        }
+        if (!this.orgId) {
+            console.warn("Organization ID is missing. Please provide a valid OpenAI Organization ID. You can add it in .env file as OPENAI_ORG_ID");
+        }
+    }
+
+    async chat (chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
         const response = await axios
             .post(
                 openAI_url,
@@ -70,11 +82,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                              {
-                                  role: chatOptions.role || "user",
-                                  content: chatOptions.prompt,
-                              },
-                          ]
+                            {
+                                role: chatOptions.role || "user",
+                                content: chatOptions.prompt,
+                            },
+                        ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
@@ -83,6 +95,7 @@ export class OpenAI {
                     headers: {
                         Authorization: "Bearer " + this.apiKey,
                         "content-type": "application/json",
+                        "OpenAI-Organization": this.orgId,
                     },
                 }
             )
@@ -112,11 +125,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                              {
-                                  role: chatOptions.role || "user",
-                                  content: chatOptions.prompt,
-                              },
-                          ]
+                            {
+                                role: chatOptions.role || "user",
+                                content: chatOptions.prompt,
+                            },
+                        ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 1024,
                     temperature: chatOptions.temperature || 0.7,
@@ -127,6 +140,7 @@ export class OpenAI {
                     headers: {
                         Authorization: "Bearer " + this.apiKey,
                         "content-type": "application/json",
+                        "OpenAI-Organization": this.orgId,
                     },
                 }
             )
@@ -146,18 +160,19 @@ export class OpenAI {
         return response[0].message;
     }
 
-    async generateEmbeddings(resp): Promise<any> {
+    async generateEmbeddings({ input, model }: { input: string[], model: string }): Promise<any> {
         const response = await axios
             .post(
                 "https://api.openai.com/v1/embeddings",
                 {
-                    model: "text-embedding-ada-002",
-                    input: resp,
+                    model: model,
+                    input,
                 },
                 {
                     headers: {
                         Authorization: `Bearer ${this.apiKey}`,
                         "content-type": "application/json",
+                        "OpenAI-Organization": this.orgId,
                     },
                 }
             )
@@ -215,6 +230,7 @@ export class OpenAI {
                     headers: {
                         Authorization: "Bearer " + this.apiKey,
                         "content-type": "application/json",
+                        "OpenAI-Organization": this.orgId,
                     },
                 }
             )
