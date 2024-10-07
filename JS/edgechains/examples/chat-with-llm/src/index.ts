@@ -1,7 +1,7 @@
 import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
 import Jsonnet from "@arakoodev/jsonnet";
-//@ts-ignore
-import createClient from "@arakoodev/edgechains.js/sync-rpc";
+
+import { createSyncRPC } from "@arakoodev/edgechains.js/sync-rpc";
 
 import fileURLToPath from "file-uri-to-path";
 import path from "path";
@@ -12,7 +12,7 @@ const app = server.createApp();
 const jsonnet = new Jsonnet();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const openAICall = createClient(path.join(__dirname, "./lib/generateResponse.cjs"));
+const openAICall = createSyncRPC(path.join(__dirname, "./lib/generateResponse.cjs"));
 
 app.post("/chat", async (c: any) => {
     try {

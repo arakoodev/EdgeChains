@@ -12,7 +12,7 @@
     },
     "license": "ISC",
     "dependencies": {
-        "@arakoodev/edgechains.js": "^0.24.1",
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
         "@arakoodev/jsonnet": "^0.24.0",
         "file-uri-to-path": "^2.0.0",
         "path": "^0.12.7",
@@ -21,7 +21,8 @@
         "zod": "^3.23.8"
     },
     "devDependencies": {
-        "@types/node": "^20.12.12",
+        "@types/node": "^22.7.4",
+        "typescript": "^5.7.0-dev.20241007",
         "webpack-cli": "^5.1.4"
     }
 }

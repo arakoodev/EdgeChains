@@ -13,10 +13,10 @@
         "./arakooserver": "./dist/arakooserver/src/index.js",
         "./db": "./dist/db/src/index.js",
         "./scraper": "./dist/scraper/src/index.js",
-        "./sync-rpc": "./dist/sync-rpc/export.js"
+        "./sync-rpc": "./dist/sync-rpc/index.js"
     },
     "scripts": {
-        "build": "rm -rf dist && tsc -b && cp -r src/sync-rpc dist/sync-rpc",
+        "build": "rm -rf dist && tsc -b",
         "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
         "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
         "test": "vitest"
