@@ -1,8 +1,8 @@
-import { execSync } from 'child_process';
-import path from 'path';
-import fs from 'fs';
-import crypto from 'crypto';
-import os from 'os';
+import { execSync } from "child_process";
+import path from "path";
+import fs from "fs";
+import crypto from "crypto";
+import os from "os";
 
 function createSyncRPC(filename: string) {
     const absolutePath = path.resolve(filename);
@@ -11,8 +11,8 @@ function createSyncRPC(filename: string) {
         throw new Error(`File not found: ${absolutePath}`);
     }
 
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sync-rpc-'));
-    const hash = crypto.createHash('md5').update(absolutePath).digest('hex');
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sync-rpc-"));
+    const hash = crypto.createHash("md5").update(absolutePath).digest("hex");
     const wrapperPath = path.join(tempDir, `wrapper_${hash}.js`);
 
     const wrapperCode = `
@@ -50,8 +50,8 @@ function createSyncRPC(filename: string) {
 
         try {
             const output = execSync(`node ${scriptPath}`, {
-                encoding: 'utf8',
-                stdio: ['pipe', 'pipe', 'inherit']
+                encoding: "utf8",
+                stdio: ["pipe", "pipe", "inherit"],
             });
 
             fs.unlinkSync(scriptPath);
@@ -65,15 +65,17 @@ function createSyncRPC(filename: string) {
                 }
                 return JSON.stringify(result.result);
             } catch (parseError: any) {
-                console.error('Raw output:', trimmedOutput);
-                throw new Error(`Failed to parse output as JSON: ${parseError.message}\nRaw output: ${trimmedOutput}`);
+                console.error("Raw output:", trimmedOutput);
+                throw new Error(
+                    `Failed to parse output as JSON: ${parseError.message}\nRaw output: ${trimmedOutput}`
+                );
             }
         } catch (error: any) {
             fs.unlinkSync(scriptPath);
             if (error) {
-                console.error('Execution error:', error.message);
+                console.error("Execution error:", error.message);
                 if (error.stderr) {
-                    console.error('stderr:', error.stderr);
+                    console.error("stderr:", error.stderr);
                 }
                 throw new Error(`Execution error: ${error.message}`);
             }
