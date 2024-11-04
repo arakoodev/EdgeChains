@@ -1,8 +1,8 @@
-import { execSync } from "child_process";
-import path from "path";
-import fs from "fs";
-import crypto from "crypto";
-import os from "os";
+import { execSync } from 'node:child_process';
+import path from 'node:path';
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import os from 'node:os';
 
 function createSyncRPC(filename: string) {
     const absolutePath = path.resolve(filename);

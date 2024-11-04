@@ -22,6 +22,7 @@ interface OpenAIChatOptions {
     temperature?: number;
     prompt?: string;
     messages?: messageOption[];
+    frequency_penalty?: number
 }
 
 interface chatWithFunctionOptions {
@@ -86,14 +87,15 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                              {
-                                  role: chatOptions.role || "user",
-                                  content: chatOptions.prompt,
-                              },
-                          ]
+                            {
+                                role: chatOptions.role || "user",
+                                content: chatOptions.prompt,
+                            },
+                        ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
+                    frequency_penalty: 1,
                 },
                 {
                     headers: {
@@ -119,6 +121,50 @@ export class OpenAI {
         return response[0].message;
     }
 
+    async streamedChat(chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
+        const response = await axios
+            .post(
+                openAI_url,
+                {
+                    model: chatOptions.model || "gpt-3.5-turbo",
+                    messages: chatOptions.prompt
+                        ? [
+                            {
+                                role: chatOptions.role || "user",
+                                content: chatOptions.prompt,
+                            },
+                        ]
+                        : chatOptions.messages,
+                    max_tokens: chatOptions.max_tokens || 256,
+                    temperature: chatOptions.temperature || 0.7,
+                    frequency_penalty: chatOptions.frequency_penalty || 1,
+                    stream: true
+                },
+                {
+                    headers: {
+                        Authorization: "Bearer " + this.apiKey,
+                        "content-type": "application/json",
+                        "OpenAI-Organization": this.orgId,
+                    },
+                }
+            )
+            .then((response) => {
+                return response.data.choices;
+            })
+            .catch((error) => {
+                if (error.response) {
+                    console.log("Server responded with status code:", error.response.status);
+                    console.log("Response data:", error.response.data);
+                } else if (error.request) {
+                    console.log("No response received:", error);
+                } else {
+                    console.log("Error creating request:", error.message);
+                }
+            });
+        return response[0].message;
+    }
+
+
     async chatWithFunction(
         chatOptions: chatWithFunctionOptions
     ): Promise<chatWithFunctionReturnOptions> {
@@ -129,11 +175,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                              {
-                                  role: chatOptions.role || "user",
-                                  content: chatOptions.prompt,
-                              },
-                          ]
+                            {
+                                role: chatOptions.role || "user",
+                                content: chatOptions.prompt,
+                            },
+                        ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 1024,
                     temperature: chatOptions.temperature || 0.7,
