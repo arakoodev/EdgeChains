@@ -1,7 +1,7 @@
 import { RetellWebClient as RetellClient, StartCallConfig } from "retell-client-js-sdk";
 
 export class RetellWebClient {
-    client: RetellClient
+    client: RetellClient;
     constructor() {
         this.client = new RetellClient();
     }
@@ -18,5 +18,3 @@ export class RetellWebClient {
         return this.client.stopCall();
     }
 }
-
-

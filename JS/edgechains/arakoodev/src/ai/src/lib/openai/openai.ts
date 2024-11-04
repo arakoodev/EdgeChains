@@ -22,7 +22,7 @@ interface OpenAIChatOptions {
     temperature?: number;
     prompt?: string;
     messages?: messageOption[];
-    frequency_penalty?: number
+    frequency_penalty?: number;
 }
 
 interface chatWithFunctionOptions {
@@ -87,11 +87,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                            {
-                                role: chatOptions.role || "user",
-                                content: chatOptions.prompt,
-                            },
-                        ]
+                              {
+                                  role: chatOptions.role || "user",
+                                  content: chatOptions.prompt,
+                              },
+                          ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
@@ -129,16 +129,16 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                            {
-                                role: chatOptions.role || "user",
-                                content: chatOptions.prompt,
-                            },
-                        ]
+                              {
+                                  role: chatOptions.role || "user",
+                                  content: chatOptions.prompt,
+                              },
+                          ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 256,
                     temperature: chatOptions.temperature || 0.7,
                     frequency_penalty: chatOptions.frequency_penalty || 1,
-                    stream: true
+                    stream: true,
                 },
                 {
                     headers: {
@@ -164,7 +164,6 @@ export class OpenAI {
         return response[0].message;
     }
 
-
     async chatWithFunction(
         chatOptions: chatWithFunctionOptions
     ): Promise<chatWithFunctionReturnOptions> {
@@ -175,11 +174,11 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
-                            {
-                                role: chatOptions.role || "user",
-                                content: chatOptions.prompt,
-                            },
-                        ]
+                              {
+                                  role: chatOptions.role || "user",
+                                  content: chatOptions.prompt,
+                              },
+                          ]
                         : chatOptions.messages,
                     max_tokens: chatOptions.max_tokens || 1024,
                     temperature: chatOptions.temperature || 0.7,

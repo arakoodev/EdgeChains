@@ -1,6 +1,6 @@
-import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver"
-import { RetellAI } from "@arakoodev/edgechains.js/ai"
-import { serveStatic } from '@hono/node-server/serve-static';
+import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
+import { RetellAI } from "@arakoodev/edgechains.js/ai";
+import { serveStatic } from "@hono/node-server/serve-static";
 import Jsonnet from "@arakoodev/jsonnet";
 import path from "path";
 import fileURLToPath from "file-uri-to-path";
@@ -19,19 +19,18 @@ const retellai = new RetellAI(jsonnet_secrets_obj.reteall_api_key);
 
 await retellai.createLLM({
     general_prompt: jsonnet_main_obj.general_prompt,
-    begin_message: jsonnet_main_obj.begin_message
-})
+    begin_message: jsonnet_main_obj.begin_message,
+});
 
 const createAgentRes = await retellai.createAgent({});
 
 app.get(
-    '/static/*',
+    "/static/*",
     serveStatic({
-        root: './dist',
-        rewriteRequestPath: (path) =>
-            path.replace(/^\/static/, '/'),
-    }))
-
+        root: "./dist",
+        rewriteRequestPath: (path) => path.replace(/^\/static/, "/"),
+    })
+);
 
 app.get("/", (c) => {
     return c.html(`<html>
@@ -59,12 +58,11 @@ app.get("/", (c) => {
             </div>
         </body>
     </html>`);
-})
-
+});
 
 app.get("/call", async (c) => {
-    const token = await retellai.initiateWebCall(createAgentRes.agent_id)
-    return c.json({ token })
-})
+    const token = await retellai.initiateWebCall(createAgentRes.agent_id);
+    return c.json({ token });
+});
 
-server.listen(3000)
+server.listen(3000);

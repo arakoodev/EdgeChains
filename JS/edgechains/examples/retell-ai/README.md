@@ -28,4 +28,4 @@ npm install
 npm run start
 ```
 
->>>>>>> 100bddc3 (fixing-example)
+> > > > > > > 100bddc3 (fixing-example)
