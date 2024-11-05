@@ -46,7 +46,7 @@
         "regenerator-runtime": "^0.14.1",
         "request": "^2.88.2",
         "retell-client-js-sdk": "^2.0.4",
-        "retell-sdk": "^4.7.0",
+        "retell-sdk": "^4.9.0",
         "retry": "^0.13.1",
         "ts-node": "^10.9.2",
         "typeorm": "^0.3.20",
