@@ -50,10 +50,10 @@ This section provides instructions for developers on how to utilize the chat wit
 
 4. Database Configuration
 
--   Ensure that you have a PostgreSQL Vector database set up at [Supabase](https://supabase.com/vector).
--   Go to the SQL Editor tab in Supabase.
--   Create a new query using the New Query button.
--   Paste the following query into the editor and run it using the Run button in the bottom right corner.
+- Ensure that you have a PostgreSQL Vector database set up at [Supabase](https://supabase.com/vector).
+- Go to the SQL Editor tab in Supabase.
+- Create a new query using the New Query button.
+- Paste the following query into the editor and run it using the Run button in the bottom right corner.
 
 ```
 create table if not exists documents (
@@ -86,8 +86,8 @@ as $$
 
 ```
 
--   You should see a success message in the Result tab.
-    ![image](https://github.com/Shyam-Raghuwanshi/EdgeChains/assets/94217498/052d9a15-838f-4e68-9888-072cecb78a13)
+- You should see a success message in the Result tab.
+  ![image](https://github.com/Shyam-Raghuwanshi/EdgeChains/assets/94217498/052d9a15-838f-4e68-9888-072cecb78a13)
 
 ## Usage
 
@@ -103,7 +103,7 @@ as $$
     http://localhost:3000/chatWithpdf?question=who is nirmala sitaraman
     ```
 
--   Then you can run the ChatWithPdf example using npm run start and continue chatting with the example.pdf.
+- Then you can run the ChatWithPdf example using npm run start and continue chatting with the example.pdf.
 
 ⚠️👉Remember: Comment out the InsertToSupabase function if you are running the code again; otherwise, the PDF data will be pushed again to the Supabase vector data.
 

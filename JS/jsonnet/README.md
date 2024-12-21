@@ -4,10 +4,10 @@ This project aim to running Jsonnet in Wasm. The code is written in Rust and com
 
 ## Available features
 
--   [x] Jsonnet Snippet evaluation
--   [x] External variable support
--   [x] External function support
--   [x] Jsonnet file evaluation
+- [x] Jsonnet Snippet evaluation
+- [x] External variable support
+- [x] External function support
+- [x] Jsonnet file evaluation
 
 ## Usage
 

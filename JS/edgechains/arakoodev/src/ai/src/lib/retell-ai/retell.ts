@@ -11,9 +11,16 @@ export class RetellAI {
         this.llm = null;
     }
 
-    async createAgent(body: AgentCreateParams, options?: Retell.RequestOptions): Promise<AgentResponse> {
+    async createAgent(
+        body: AgentCreateParams,
+        options?: Retell.RequestOptions
+    ): Promise<AgentResponse> {
         //@ts-ignore
-        const defaultParams = { voice_id: "11labs-Adrian", agent_name: "Ryan", llm_websocket_url: this?.llm?.llm_websocket_url }
+        const defaultParams = {
+            voice_id: "11labs-Adrian",
+            agent_name: "Ryan",
+            llm_websocket_url: this?.llm?.llm_websocket_url,
+        };
         const keys = Object.keys(defaultParams);
         for (let i = 0; i < keys.length; i++) {
             if (keys[i] in body) {
