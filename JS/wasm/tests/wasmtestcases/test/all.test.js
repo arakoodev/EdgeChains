@@ -20,7 +20,7 @@ test("should build arakoo-js-engine", async () => {
     try {
         const shimPath = path.resolve(__dirname, "../../../crates/arakoo-core/src/apis/http/shims");
         execSync(`cd ${shimPath} && npm install && npm run build`, { stdio: "inherit" });
-        execSync("cargo build -p arakoo-js-engine --target=wasm32-wasi -r");
+        execSync("cargo build -p arakoo-js-engine --target=wasm32-wasip1 -r");
         const arakooPath = path.join(__dirname, "../../../../../target/release/arakoo-compiler");
         await fs.access(arakooPath);
         expect(true).toBe(true);
