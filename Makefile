@@ -24,7 +24,7 @@ build-cli: build-engine
 
 build-engine: build-shims
 	@echo "Building arakoo engine"
-	@cargo build -p arakoo-js-engine --target=wasm32-wasi -r
+	@cargo build -p arakoo-js-engine --target=wasm32-wasip1 -r
 
 build-shims: shims-install
 	@echo "Building shims"
