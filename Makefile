@@ -3,7 +3,7 @@ all: build-cli
 
 add:
 	@echo "Adding wasm32-wasi target"
-	@rustup target add wasm32-wasi
+	@rustup target add wasm32-wasip1
 
 clean-rm: clean-shims
 	@rm -rf target/
