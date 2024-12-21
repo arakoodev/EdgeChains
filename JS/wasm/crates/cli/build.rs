@@ -56,7 +56,7 @@ fn copy_javy_core() -> Result<()> {
             .unwrap()
             .parent()
             .unwrap()
-            .join("../../target/wasm32-wasi/debug/")
+            .join("../../target/wasm32-wasip1/debug/")
     } else {
         println!("cargo:warning=using release build for arakoo_js_engine...");
         PathBuf::from(&cargo_manifest_dir)
@@ -64,7 +64,7 @@ fn copy_javy_core() -> Result<()> {
             .unwrap()
             .parent()
             .unwrap()
-            .join("../../target/wasm32-wasi/release/")
+            .join("../../target/wasm32-wasip1/release/")
     };
 
     let engine_path = module_path.join("arakoo_js_engine.wasm");
