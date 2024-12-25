@@ -9,7 +9,7 @@ function get_package_json(options: Options) {
                 description: "",
                 main: "dist/index.js",
                 scripts: {
-                    build: "rm -rf dist && node esbuild.build.js",
+                    build: "rm -rf dist && node esbuild.build.cjs",
                     start: "node dist/index.js",
                     lint: "eslint --ignore-path .eslintignore --ext .js,.ts",
                     format: 'prettier --ignore-path .gitignore --write "**/*.+(js|ts|json)"',
