@@ -4,7 +4,7 @@ import { LlmResponse, LlmCreateParams } from "retell-sdk/resources/llm.mjs";
 
 declare module "retell-sdk/resources/llm.mjs" {
     interface LlmResponse {
-        llm_websocket_url:string
+        llm_websocket_url: string;
     }
 }
 
