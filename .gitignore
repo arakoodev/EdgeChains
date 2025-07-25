@@ -44,3 +44,4 @@ yarn.lock
 package-lock.json
 .DS_Store
 pnpm-lock.yaml
+/ec-2/nextjs-chat-template/example.pdf

@@ -1,0 +1,21 @@
+name: EC2 Next.js Tests
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - "ec-2/**"
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - name: Install dependencies
+        run: npm install
+        working-directory: ec-2/nextjs-chat-template
+      - name: Run tests
+        run: npm test -- --run
+        working-directory: ec-2/nextjs-chat-template
