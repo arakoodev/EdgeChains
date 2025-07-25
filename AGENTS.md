@@ -2,6 +2,10 @@
 
 EdgeChains treats Generative AI as a configuration management problem. Libraries are kept minimal and stable.
 
+**Important:** All new Next.js code must be placed inside the top-level `ec-2` directory. Do not add Next.js apps elsewhere in the repository.
+
+> **Strict rule:** Any Next.js project found outside `ec-2` will be rejected.
+
 ## Why Jsonnet
 
 - Prompts and chain logic live in `.jsonnet` files so they are versionable and diffable.
@@ -25,6 +29,7 @@ These decisions are stated in the README:
 - `JS/jsonnet` – legacy Wasm build of Jsonnet. Ignore this directory because `@hanazuki/node-jsonnet` already bundles native functions.
 - `JS/wasm` – early WebAssembly experiments. Also ignore.
 - `JS/edgechains/examples` – starter templates covering many use cases. Each contains conditional Jsonnet that calls JavaScript native functions at runtime.
+- `ec-2` – directory for all new Next.js examples and templates. Place no Next.js code outside of this folder.
 - Rust crates and the `Makefile` build the CLI and WebAssembly runtime.
 
 ## Development Style
@@ -32,9 +37,10 @@ These decisions are stated in the README:
 - Keep examples compact: one TypeScript script and one Jsonnet file.
 - Place prompts in Jsonnet rather than inline strings.
 - Use Next.js with React Server Actions for routing and UI.
-- Every example lives under `JS/edgechains/examples/<name>` with a `jsonnet/` folder containing `main.jsonnet` and `secrets.jsonnet`. The TypeScript script registers any native callbacks.
+- Legacy examples live under `JS/edgechains/examples/<name>`. **All new Next.js examples must reside in the `ec-2/` directory.** Each example contains a `jsonnet/` folder with `main.jsonnet` and `secrets.jsonnet`; the TypeScript script registers native callbacks.
 - Format code with Prettier and keep TypeScript types.
-- Tests (when present) use Vitest.
+- Tests (when present) use Vitest. Next.js templates under `ec-2/` must include
+  a test suite and workflow to run it in GitHub Actions.
 
 ## Migration TODO
 
