@@ -24,3 +24,9 @@ To start a worker process run:
 ```bash
 node --loader ts-node/esm runWorker.ts
 ```
+
+Run the database migrations:
+
+```bash
+npm run migrate
+```
