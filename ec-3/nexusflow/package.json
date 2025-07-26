@@ -1,0 +1,26 @@
+{
+  "name": "nexusflow",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "next": "14.2.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "bullmq": "^5.2.3",
+    "pg": "^8.11.3",
+    "ioredis": "^5.3.2",
+    "reactflow": "^11.8.9"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.14.1",
+    "vitest": "^1.5.3"
+  },
+  "type": "module"
+}
