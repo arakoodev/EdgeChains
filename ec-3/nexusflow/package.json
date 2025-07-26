@@ -16,7 +16,8 @@
     "bullmq": "^5.2.3",
     "pg": "^8.11.3",
     "ioredis": "^5.3.2",
-    "reactflow": "^11.8.9"
+    "reactflow": "^11.8.9",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "typescript": "^5.3.3",

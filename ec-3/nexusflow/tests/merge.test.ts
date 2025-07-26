@@ -4,11 +4,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { vi } from 'vitest';
 import { readFile } from 'fs/promises';
 import Redis from 'ioredis';
+import { runWorkflow } from '../lib/workflow';
 let pool: any;
-vi.mock('../lib/db', () => ({ pool }));
+let flowProducer: any;
+vi.mock('../lib/db', () => ({ get pool() { return pool; } }));
+vi.mock('../lib/queue', () => ({ get flowProducer() { return flowProducer; } }));
 
 describe('merge workflow', () => {
-  let flowProducer: any;
   let queueEvents: any;
   let connection: any;
 
@@ -45,24 +47,20 @@ describe('merge workflow', () => {
   });
 
   it('merges data from two branches', async () => {
-    const runId = uuidv4();
-    const { job } = await flowProducer.add({
-      name: 'merge-root',
-      queueName: 'merge',
-      data: { workflow_run_id: runId },
-      children: [
-        {
-          name: 'users',
-          queueName: 'merge',
-          data: { workflow_run_id: runId, parent_job_id: 'merge-root' }
-        },
-        {
-          name: 'scores',
-          queueName: 'merge',
-          data: { workflow_run_id: runId, parent_job_id: 'merge-root' }
-        }
-      ]
-    });
+    const wfDef = {
+      root: 'merge-root',
+      nodes: {
+        'merge-root': { name: 'merge-root', queue: 'merge', children: ['users', 'scores'] },
+        users: { name: 'users', queue: 'merge', data: { parent_job_id: 'merge-root' } },
+        scores: { name: 'scores', queue: 'merge', data: { parent_job_id: 'merge-root' } }
+      }
+    };
+    const { rows } = await pool.query(
+      'INSERT INTO workflows(name, definition) VALUES($1,$2) RETURNING id',
+      ['merge', wfDef]
+    );
+
+    const { job } = await runWorkflow(rows[0].id);
 
     const result = await new Promise<any>((resolve, reject) => {
       queueEvents.on('completed', async ({ jobId, returnvalue }: any) => {
