@@ -1,0 +1,31 @@
+{
+  "name": "nexusflow",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run",
+    "migrate": "node --loader ts-node/esm migrate.ts"
+  },
+  "dependencies": {
+    "next": "14.2.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "bullmq": "^5.2.3",
+    "pg": "^8.11.3",
+    "ioredis": "^5.3.2",
+    "reactflow": "^11.8.9",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.14.1",
+    "vitest": "^1.5.3",
+    "ts-node": "^10.9.1",
+    "pg-mem": "^2.1.0",
+    "ioredis-mock": "^8.9.0"
+  },
+  "type": "module"
+}
