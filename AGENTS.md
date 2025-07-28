@@ -126,3 +126,7 @@ The `ec-2/nexusflow` example separates workflow logic into two types of nodes:
   inserts a row in `workflow_runs`, and builds a job tree for BullMQ.
 * Integration tests under `ec-2/nexusflow/tests` bring up Redis and a
   `pg-mem` Postgres instance to verify both trigger types and action workers.
+* Node definitions live in PostgreSQL so new workflows can be added without
+  changing the codebase. Triggers read their configuration from the database
+  before enqueuing the first job, while action workers simply execute jobs that
+  reference the stored definition.
