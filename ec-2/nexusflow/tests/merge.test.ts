@@ -11,6 +11,9 @@ vi.mock("../lib/db", () => ({
   get pool() {
     return pool;
   },
+  async withJobClient(_jobId: string, fn: (client: any) => Promise<any>) {
+    return fn(pool);
+  },
 }));
 vi.mock("../lib/queue", () => ({
   get flowProducer() {
@@ -86,9 +89,9 @@ describe("merge workflow", () => {
   });
 
   afterEach(async () => {
-    await pool.query("DELETE FROM workflows");
-    await pool.query("DELETE FROM workflow_runs");
-    await pool.query("DELETE FROM workflow_merge_staging");
+    await pool.query("TRUNCATE workflows RESTART IDENTITY CASCADE");
+    await pool.query("TRUNCATE workflow_runs RESTART IDENTITY CASCADE");
+    await pool.query("TRUNCATE workflow_merge_staging RESTART IDENTITY CASCADE");
     await connection.flushall();
   });
 

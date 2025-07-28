@@ -30,3 +30,14 @@ Run the database migrations:
 ```bash
 npm run migrate
 ```
+
+Row level security is enabled per job using the `edgechains.job_id` session
+variable. Use the `withJobClient` helper to run queries scoped to a job:
+
+```ts
+import { withJobClient } from './lib/db';
+
+await withJobClient(jobId, (client) =>
+  client.query('SELECT * FROM workflow_runs WHERE id=$1', [jobId])
+);
+```

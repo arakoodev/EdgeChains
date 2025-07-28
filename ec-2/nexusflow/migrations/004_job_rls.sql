@@ -1,0 +1,11 @@
+-- Enable row level security policies for per-job access
+
+ALTER TABLE workflow_runs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE workflow_merge_staging ENABLE ROW LEVEL SECURITY;
+
+-- Allow selecting rows only when the session job_id matches
+CREATE POLICY workflow_runs_by_job ON workflow_runs
+  USING (id::text = current_setting('edgechains.job_id', true));
+
+CREATE POLICY merge_staging_by_job ON workflow_merge_staging
+  USING (workflow_run_id::text = current_setting('edgechains.job_id', true));
