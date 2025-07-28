@@ -24,6 +24,15 @@ vi.mock("../lib/queue", () => ({
 
 function startRedis() {
   execSync("redis-server --save '' --appendonly no --daemonize yes");
+  for (let i = 0; i < 50; i++) {
+    try {
+      execSync("redis-cli ping");
+      return;
+    } catch {
+      execSync("sleep 0.1");
+    }
+  }
+  throw new Error("redis failed to start");
 }
 
 function stopRedis() {
@@ -95,9 +104,9 @@ describe("merge workflow", () => {
   });
 
   afterAll(async () => {
-    await queueEvents.close();
-    await flowProducer.close();
-    await connection.quit();
+    if (queueEvents) await queueEvents.close();
+    if (flowProducer) await flowProducer.close();
+    if (connection) await connection.quit();
     stopRedis();
   });
 
