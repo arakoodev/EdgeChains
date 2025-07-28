@@ -1,0 +1,68 @@
+name: NexusFlow Tests
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - "ec-2/nexusflow/**"
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    name: coverage for node@lts, redis@7
+    env:
+      node-version: lts/*
+      redis-version: 7-alpine
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.node-version }}
+      - name: Start Redis
+        uses: supercharge/redis-github-action@1.6.0
+        with:
+          redis-version: ${{ env.redis-version }}
+      - name: Install dependencies
+        run: npm install --ignore-engines
+        working-directory: ec-2/nexusflow
+      - name: Build
+        run: npm run build --if-present
+        working-directory: ec-2/nexusflow
+      - name: Test with coverage
+        run: npm test
+        working-directory: ec-2/nexusflow
+
+  node-redis:
+    runs-on: ubuntu-latest
+    name: testing node@${{ matrix.node-version }}, redis@${{ matrix.redis-version }}
+    strategy:
+      matrix:
+        node-version: [lts/*, lts/-1, lts/-2]
+        redis-version: [7-alpine]
+        include:
+          - node-version: 'lts/*'
+            redis-version: 6-alpine
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Start Redis
+        uses: supercharge/redis-github-action@1.6.0
+        with:
+          redis-version: ${{ matrix.redis-version }}
+      - name: Install dependencies
+        run: npm install --ignore-engines
+        working-directory: ec-2/nexusflow
+      - name: Run ESLint
+        run: npm run lint --if-present
+        working-directory: ec-2/nexusflow
+      - name: Build
+        run: npm run build --if-present
+        working-directory: ec-2/nexusflow
+      - name: Run tests
+        run: npm test -- --run
+        working-directory: ec-2/nexusflow

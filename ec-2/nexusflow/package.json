@@ -25,7 +25,10 @@
     "vitest": "^1.5.3",
     "ts-node": "^10.9.1",
     "pg-mem": "^2.1.0",
-    "ioredis-mock": "^8.9.0"
+    "ioredis-mock": "^8.9.0",
+    "@types/react": "^18.2.60",
+    "@types/pg": "^8.10.1",
+    "@types/uuid": "^9.0.7"
   },
   "type": "module"
 }
