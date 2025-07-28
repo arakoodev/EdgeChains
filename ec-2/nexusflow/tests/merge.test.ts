@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { vi } from "vitest";
 import { readFile } from "fs/promises";
 import Redis from "ioredis";
+import { execSync } from "child_process";
 import { runWorkflow } from "../lib/workflow";
 let pool: any;
 let flowProducer: any;
@@ -21,11 +22,22 @@ vi.mock("../lib/queue", () => ({
   },
 }));
 
+function startRedis() {
+  execSync("redis-server --save '' --appendonly no --daemonize yes");
+}
+
+function stopRedis() {
+  try {
+    execSync("redis-cli shutdown");
+  } catch {}
+}
+
 describe("merge workflow", () => {
   let queueEvents: any;
   let connection: any;
 
   beforeAll(async () => {
+    startRedis();
     const db = newDb();
     db.registerLanguage("plpgsql", () => {});
     db.public.registerFunction({
@@ -86,6 +98,7 @@ describe("merge workflow", () => {
     await queueEvents.close();
     await flowProducer.close();
     await connection.quit();
+    stopRedis();
   });
 
   afterEach(async () => {
