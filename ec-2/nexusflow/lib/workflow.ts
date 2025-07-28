@@ -1,6 +1,6 @@
-import { flowProducer } from './queue';
-import { pool } from './db';
-import { v4 as uuidv4 } from 'uuid';
+import { flowProducer } from "./queue";
+import { pool } from "./db";
+import { v4 as uuidv4 } from "uuid";
 
 interface NodeDef {
   name: string;
@@ -21,16 +21,16 @@ export async function runWorkflow(
   producer = flowProducer,
 ) {
   const { rows } = await dbPool.query(
-    'SELECT definition FROM workflows WHERE id=$1',
+    "SELECT definition FROM workflows WHERE id=$1",
     [workflowId],
   );
-  if (rows.length === 0) throw new Error('workflow not found');
+  if (rows.length === 0) throw new Error("workflow not found");
   const def = rows[0].definition as WorkflowDef;
   const runId = uuidv4();
 
   await dbPool.query(
-    'INSERT INTO workflow_runs(id, workflow_id, status) VALUES ($1,$2,$3)',
-    [runId, workflowId, 'running'],
+    "INSERT INTO workflow_runs(id, workflow_id, status) VALUES ($1,$2,$3)",
+    [runId, workflowId, "running"],
   );
 
   const tree = buildTree(def.root, def.nodes, runId, rootData, def.root);

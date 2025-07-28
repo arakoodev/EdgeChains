@@ -1,9 +1,16 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  afterEach,
+  vi,
+} from "vitest";
 import { newDb } from "pg-mem";
 import { readFile } from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
 import Redis from "ioredis";
-import { execSync } from "child_process";
 
 import { SimpleWebhookTrigger } from "../nodes/triggers/webhook";
 import { CounterPollingTrigger } from "../nodes/triggers/polling";
@@ -30,28 +37,8 @@ let flowProducer: any;
 let queueEvents: any;
 let worker: any;
 
-function startRedis() {
-  execSync("redis-server --save '' --appendonly no --daemonize yes");
-  for (let i = 0; i < 50; i++) {
-    try {
-      execSync("redis-cli ping");
-      return;
-    } catch {
-      execSync("sleep 0.1");
-    }
-  }
-  throw new Error("redis failed to start");
-}
-function stopRedis() {
-  try {
-    execSync("redis-cli shutdown");
-  } catch {}
-}
-
 describe("action and trigger nodes", () => {
   beforeAll(async () => {
-    startRedis();
-
     const db = newDb();
     db.registerLanguage("plpgsql", () => {});
     db.public.registerFunction({
@@ -90,7 +77,6 @@ describe("action and trigger nodes", () => {
     if (queueEvents) await queueEvents.close();
     if (flowProducer) await flowProducer.close();
     if (connection) await connection.quit();
-    stopRedis();
   });
 
   afterEach(async () => {

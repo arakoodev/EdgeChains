@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from "uuid";
 import { vi } from "vitest";
 import { readFile } from "fs/promises";
 import Redis from "ioredis";
-import { execSync } from "child_process";
 import { runWorkflow } from "../lib/workflow";
 let pool: any;
 let flowProducer: any;
@@ -22,31 +21,11 @@ vi.mock("../lib/queue", () => ({
   },
 }));
 
-function startRedis() {
-  execSync("redis-server --save '' --appendonly no --daemonize yes");
-  for (let i = 0; i < 50; i++) {
-    try {
-      execSync("redis-cli ping");
-      return;
-    } catch {
-      execSync("sleep 0.1");
-    }
-  }
-  throw new Error("redis failed to start");
-}
-
-function stopRedis() {
-  try {
-    execSync("redis-cli shutdown");
-  } catch {}
-}
-
 describe("merge workflow", () => {
   let queueEvents: any;
   let connection: any;
 
   beforeAll(async () => {
-    startRedis();
     const db = newDb();
     db.registerLanguage("plpgsql", () => {});
     db.public.registerFunction({
@@ -107,13 +86,14 @@ describe("merge workflow", () => {
     if (queueEvents) await queueEvents.close();
     if (flowProducer) await flowProducer.close();
     if (connection) await connection.quit();
-    stopRedis();
   });
 
   afterEach(async () => {
     await pool.query("TRUNCATE workflows RESTART IDENTITY CASCADE");
     await pool.query("TRUNCATE workflow_runs RESTART IDENTITY CASCADE");
-    await pool.query("TRUNCATE workflow_merge_staging RESTART IDENTITY CASCADE");
+    await pool.query(
+      "TRUNCATE workflow_merge_staging RESTART IDENTITY CASCADE",
+    );
     await connection.flushall();
   });
 

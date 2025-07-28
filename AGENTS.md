@@ -111,22 +111,22 @@ let result = jsonnet.javascriptCallback("addSomeNumber", addSomeNumber)
 
 The `ec-2/nexusflow` example separates workflow logic into two types of nodes:
 
-* **Action nodes** – BullMQ workers that execute tasks. They are stateless and
+- **Action nodes** – BullMQ workers that execute tasks. They are stateless and
   can run on any worker process. An example is `nodes/actions/log.ts`, which
   writes to the `action_logs` table when a job completes.
-* **Trigger nodes** – components that start workflows. They run in the server
+- **Trigger nodes** – components that start workflows. They run in the server
   process and use a `FlowProducer` to enqueue the first job in a workflow run.
   Two variants exist:
-  * **Webhook triggers** handle HTTP requests and immediately launch a workflow
+  - **Webhook triggers** handle HTTP requests and immediately launch a workflow
     (`nodes/triggers/webhook.ts`).
-  * **Polling triggers** run on a schedule, storing progress in the
+  - **Polling triggers** run on a schedule, storing progress in the
     `trigger_state` table so they only process new data
     (`nodes/triggers/polling.ts`).
-* Workflows are defined in PostgreSQL. `lib/workflow.ts` loads a definition,
+- Workflows are defined in PostgreSQL. `lib/workflow.ts` loads a definition,
   inserts a row in `workflow_runs`, and builds a job tree for BullMQ.
-* Integration tests under `ec-2/nexusflow/tests` bring up Redis and a
+- Integration tests under `ec-2/nexusflow/tests` bring up Redis and a
   `pg-mem` Postgres instance to verify both trigger types and action workers.
-* Node definitions live in PostgreSQL so new workflows can be added without
+- Node definitions live in PostgreSQL so new workflows can be added without
   changing the codebase. Triggers read their configuration from the database
   before enqueuing the first job, while action workers simply execute jobs that
   reference the stored definition.
