@@ -106,3 +106,23 @@ let result = jsonnet.javascriptCallback("addSomeNumber", addSomeNumber)
 - Tests mock this helper but still rely on Redis for queue processing; without Redis the suite fails.
 - Run `mise deactivate` to silence warnings before git commands.
 - Future work should improve commit messages and documentation and flesh out the UI and workflow features in more depth.
+
+## NexusFlow Node Architecture
+
+The `ec-2/nexusflow` example separates workflow logic into two types of nodes:
+
+* **Action nodes** – BullMQ workers that execute tasks. They are stateless and
+  can run on any worker process. An example is `nodes/actions/log.ts`, which
+  writes to the `action_logs` table when a job completes.
+* **Trigger nodes** – components that start workflows. They run in the server
+  process and use a `FlowProducer` to enqueue the first job in a workflow run.
+  Two variants exist:
+  * **Webhook triggers** handle HTTP requests and immediately launch a workflow
+    (`nodes/triggers/webhook.ts`).
+  * **Polling triggers** run on a schedule, storing progress in the
+    `trigger_state` table so they only process new data
+    (`nodes/triggers/polling.ts`).
+* Workflows are defined in PostgreSQL. `lib/workflow.ts` loads a definition,
+  inserts a row in `workflow_runs`, and builds a job tree for BullMQ.
+* Integration tests under `ec-2/nexusflow/tests` bring up Redis and a
+  `pg-mem` Postgres instance to verify both trigger types and action workers.
