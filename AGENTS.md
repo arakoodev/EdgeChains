@@ -100,9 +100,9 @@ let result = jsonnet.javascriptCallback("addSomeNumber", addSomeNumber)
 - The new `nexusflow` example lives under `ec-2/nexusflow` because all Next.js
   projects must remain inside the `ec-2` folder. This deviates from the user
   request for an `ec-3` directory but follows the repository rules.
-- GitHub Actions now installs Redis and runs the Vitest suites for both
-  Next.js projects.
-- The merge workflow tests use `pg-mem` for migrations and require a running
-  Redis instance.
-- Future work should improve commit messages and documentation and flesh out the
-  UI and workflow features in more depth.
+- GitHub Actions now installs Redis and runs the Vitest suites for both Next.js projects.
+- The merge workflow tests use `pg-mem` for migrations and require a running Redis instance.
+- Row-level security for workflow tables now uses the `edgechains.job_id` session variable via the `withJobClient` helper.
+- Tests mock this helper but still rely on Redis for queue processing; without Redis the suite fails.
+- Run `mise deactivate` to silence warnings before git commands.
+- Future work should improve commit messages and documentation and flesh out the UI and workflow features in more depth.
