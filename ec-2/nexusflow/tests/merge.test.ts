@@ -83,15 +83,17 @@ describe("merge workflow", () => {
   });
 
   afterAll(async () => {
-    await queueEvents.close();
-    await flowProducer.close();
-    await connection.quit();
+    if (queueEvents) await queueEvents.close();
+    if (flowProducer) await flowProducer.close();
+    if (connection) await connection.quit();
   });
 
   afterEach(async () => {
     await pool.query("TRUNCATE workflows RESTART IDENTITY CASCADE");
     await pool.query("TRUNCATE workflow_runs RESTART IDENTITY CASCADE");
-    await pool.query("TRUNCATE workflow_merge_staging RESTART IDENTITY CASCADE");
+    await pool.query(
+      "TRUNCATE workflow_merge_staging RESTART IDENTITY CASCADE",
+    );
     await connection.flushall();
   });
 
