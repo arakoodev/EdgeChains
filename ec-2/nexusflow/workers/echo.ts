@@ -1,7 +1,5 @@
 import { Worker } from 'bullmq';
-import { Redis } from 'ioredis';
-
-const connection = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379');
+import { redisClient } from './streamBase';
 
 new Worker(
   'echo',
@@ -9,5 +7,5 @@ new Worker(
     console.log('Processing', job.name, job.data);
     return job.data;
   },
-  { connection }
+  { connection: redisClient }
 );

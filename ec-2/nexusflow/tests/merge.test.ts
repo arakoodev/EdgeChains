@@ -33,33 +33,6 @@ describe("merge workflow", () => {
       returns: "text",
       implementation: uuidv4,
     });
-    db.public.registerFunction({
-      name: "are_fuzzy_equal",
-      args: ["text", "text"],
-      returns: "boolean",
-      implementation: (v1: string, v2: string) => {
-        const n1 = Number(v1);
-        const n2 = Number(v2);
-        if (!Number.isNaN(n1) && !Number.isNaN(n2)) return n1 === n2;
-        return v1 === v2;
-      },
-    });
-    db.public.registerFunction({
-      name: "jsonb_deep_merge",
-      args: ["jsonb", "jsonb"],
-      returns: "jsonb",
-      implementation: (a: any, b: any) => {
-        const merge = (x: any, y: any): any => {
-          if (typeof x !== "object" || typeof y !== "object") return y ?? x;
-          const res: any = { ...x };
-          for (const k of Object.keys(y)) {
-            res[k] = k in res ? merge(res[k], y[k]) : y[k];
-          }
-          return res;
-        };
-        return merge(a, b);
-      },
-    });
     const pg = db.adapters.createPg();
     pool = new pg.Pool();
 
@@ -91,9 +64,6 @@ describe("merge workflow", () => {
   afterEach(async () => {
     await pool.query("TRUNCATE workflows RESTART IDENTITY CASCADE");
     await pool.query("TRUNCATE workflow_runs RESTART IDENTITY CASCADE");
-    await pool.query(
-      "TRUNCATE workflow_merge_staging RESTART IDENTITY CASCADE",
-    );
   });
 
   it("merges data from two branches", async () => {

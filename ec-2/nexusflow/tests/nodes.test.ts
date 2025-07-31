@@ -69,7 +69,7 @@ describe("action and trigger nodes", () => {
     queueEvents = new QueueEvents("log", { connection });
     await queueEvents.waitUntilReady();
 
-    worker = startLogWorker(connection);
+    worker = startLogWorker();
   });
 
   afterAll(async () => {

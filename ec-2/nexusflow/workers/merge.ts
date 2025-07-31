@@ -1,203 +1,158 @@
-import { Worker } from "bullmq";
-import { Redis } from "ioredis";
-import { withJobClient } from "../lib/db";
+import { Job } from 'bullmq';
+import { StreamAwareBullMQWorker, redisClient } from './streamBase';
 
-const connection = new Redis(
-  process.env.REDIS_URL ?? "redis://localhost:6379",
-  {
-    maxRetriesPerRequest: null,
-  },
-);
-
-async function stageItems(job: any, items: any[], input: string) {
-  const { workflow_run_id, parent_job_id } = job.data;
-  await withJobClient(workflow_run_id, async (client) => {
-    await client.query("BEGIN");
-    try {
-      for (let i = 0; i < items.length; i++) {
-        await client.query(
-          "INSERT INTO workflow_merge_staging (workflow_run_id, parent_job_id, input_name, item_index, item_data) VALUES ($1,$2,$3,$4,$5)",
-          [workflow_run_id, parent_job_id, input, i, items[i]],
-        );
-      }
-      await client.query("COMMIT");
-    } catch (e) {
-      await client.query("ROLLBACK");
-      throw e;
-    }
-  });
+function inputStreamName(runId: string, parent: string, name: string) {
+  return `wf:${runId}:${parent}:${name}`;
 }
 
-function buildMergeSelect(joinType: string, deepMerge: boolean): string {
-  const mergeExpr = "jsonb_deep_merge(a.item_data, b.item_data)";
-
-  switch (joinType) {
-    case "keepEverything":
-      return `CASE
-        WHEN a.item_data IS NULL THEN b.item_data
-        WHEN b.item_data IS NULL THEN a.item_data
-        ELSE ${mergeExpr}
-      END AS data`;
-    case "enrichInput1":
-      return `CASE
-        WHEN b.item_data IS NULL THEN a.item_data
-        ELSE ${mergeExpr}
-      END AS data`;
-    case "enrichInput2":
-      return `CASE
-        WHEN a.item_data IS NULL THEN b.item_data
-        ELSE ${mergeExpr}
-      END AS data`;
-    default:
-      return `${mergeExpr} AS data`;
+function deepMerge(a: any, b: any): any {
+  if (typeof a !== 'object' || a === null) return b ?? a;
+  if (typeof b !== 'object' || b === null) return b ?? a;
+  const res: any = { ...a };
+  for (const k of Object.keys(b)) {
+    res[k] = k in res ? deepMerge(res[k], b[k]) : b[k];
   }
+  return res;
 }
 
-new Worker(
-  "merge",
-  async (job) => {
-    // generic data loader
+function equal(v1: any, v2: any, fuzzy: boolean): boolean {
+  if (!fuzzy) return v1 === v2;
+  const n1 = Number(v1);
+  const n2 = Number(v2);
+  if (!Number.isNaN(n1) && !Number.isNaN(n2)) return n1 === n2;
+  return String(v1) === String(v2);
+}
+
+async function readStream(stream: string): Promise<any[]> {
+  const entries = await redisClient.xrange(stream, '-', '+');
+  return entries.map(([, fields]) => JSON.parse(fields[1]));
+}
+
+function mergeByPosition(a: any[], b: any[], deep: boolean): any[] {
+  const len = Math.max(a.length, b.length);
+  const out: any[] = [];
+  for (let i = 0; i < len; i++) {
+    const item1 = a[i];
+    const item2 = b[i];
+    if (item1 === undefined) out.push(item2);
+    else if (item2 === undefined) out.push(item1);
+    else out.push(deep ? deepMerge(item1, item2) : { ...item1, ...item2 });
+  }
+  return out;
+}
+
+interface MatchOpts {
+  joinType: string;
+  field1: string;
+  field2: string;
+  fuzzy: boolean;
+  deep: boolean;
+}
+
+function mergeByMatch(a: any[], b: any[], opts: MatchOpts): any[] {
+  const usedB = new Set<number>();
+  const res: any[] = [];
+  for (let i = 0; i < a.length; i++) {
+    const itemA = a[i];
+    let matched = false;
+    for (let j = 0; j < b.length; j++) {
+      if (equal(itemA[opts.field1], b[j][opts.field2], opts.fuzzy)) {
+        matched = true;
+        usedB.add(j);
+        const merged = opts.deep ? deepMerge(itemA, b[j]) : { ...itemA, ...b[j] };
+        res.push(merged);
+      }
+    }
+    if (!matched && (opts.joinType === 'enrichInput1' || opts.joinType === 'keepEverything')) {
+      res.push(itemA);
+    }
+  }
+  if (opts.joinType === 'enrichInput2' || opts.joinType === 'keepEverything') {
+    for (let j = 0; j < b.length; j++) {
+      if (!usedB.has(j)) res.push(b[j]);
+    }
+  }
+  return res;
+}
+
+class MergeWorker extends StreamAwareBullMQWorker {
+  constructor() {
+    super('merge', job => this.processor(job));
+  }
+
+  async processor(job: Job): Promise<any> {
     if (Array.isArray(job.data.items)) {
-      const input = job.data.input_name ?? "input1";
-      await stageItems(job, job.data.items, input);
+      const input = job.data.input_name ?? 'input1';
+      const stream = inputStreamName(job.data.workflow_run_id, job.data.parent_job_id, input);
+      for (const item of job.data.items) {
+        await this.produce(stream, { data: item });
+      }
       return job.data.items;
     }
 
-    // predefined demo data
-    if (job.name === "users") {
+    if (job.name === 'users') {
       const items = [
-        { id: 1, name: "Alice" },
-        { id: 2, name: "Bob" },
+        { id: 1, name: 'Alice' },
+        { id: 2, name: 'Bob' },
       ];
-      await stageItems(job, items, "input1");
+      const stream = inputStreamName(job.data.workflow_run_id, job.data.parent_job_id, 'input1');
+      for (const item of items) {
+        await this.produce(stream, { data: item });
+      }
       return items;
     }
 
-    if (job.name === "scores") {
+    if (job.name === 'scores') {
       const items = [
         { userId: 1, score: 10 },
         { userId: 2, score: 20 },
       ];
-      await stageItems(job, items, "input2");
+      const stream = inputStreamName(job.data.workflow_run_id, job.data.parent_job_id, 'input2');
+      for (const item of items) {
+        await this.produce(stream, { data: item });
+      }
       return items;
     }
 
-    if (job.name === "merge-root") {
+    if (job.name === 'merge-root') {
       const {
         workflow_run_id,
-        input1Name = "input1",
-        input2Name = "input2",
-        mode = "match",
-        joinType = "keepMatches",
-        field1 = "id",
-        field2 = "id",
+        input1Name = 'input1',
+        input2Name = 'input2',
+        mode = 'match',
+        joinType = 'keepMatches',
+        field1 = 'id',
+        field2 = 'id',
         fuzzyCompare = false,
         deepMerge = false,
       } = job.data;
 
-      if (mode === "append") {
-        return withJobClient(workflow_run_id, async (client) => {
-          const { rows } = await client.query(
-            `SELECT item_data FROM workflow_merge_staging
-             WHERE workflow_run_id=$1 AND parent_job_id=$2
-             ORDER BY input_name, item_index`,
-            [workflow_run_id, job.name],
-          );
-          await client.query(
-            "DELETE FROM workflow_merge_staging WHERE workflow_run_id=$1",
-            [workflow_run_id],
-          );
-          return rows.map((r) => r.item_data);
-        });
+      const stream1 = inputStreamName(workflow_run_id, job.name, input1Name);
+      const stream2 = inputStreamName(workflow_run_id, job.name, input2Name);
+      const input1 = await readStream(stream1);
+      const input2 = await readStream(stream2);
+      await redisClient.del(stream1);
+      await redisClient.del(stream2);
+
+      if (mode === 'append') {
+        return input1.concat(input2);
       }
 
-      if (mode === "position") {
-        return withJobClient(workflow_run_id, async (client) => {
-          const { rows } = await client.query(
-            `SELECT ${buildMergeSelect("keepEverything", deepMerge)}, COALESCE(a.item_index, b.item_index) AS idx
-             FROM workflow_merge_staging a
-             LEFT JOIN workflow_merge_staging b
-               ON a.item_index = b.item_index
-              AND a.input_name=$3 AND b.input_name=$4
-            WHERE a.workflow_run_id=$1 AND a.parent_job_id=$2 AND a.input_name=$3
-            UNION ALL
-            SELECT ${buildMergeSelect("keepEverything", deepMerge)}, b.item_index AS idx
-             FROM workflow_merge_staging a
-             RIGHT JOIN workflow_merge_staging b
-               ON a.item_index = b.item_index
-              AND a.input_name=$3 AND b.input_name=$4
-            WHERE b.workflow_run_id=$1 AND b.parent_job_id=$2 AND b.input_name=$4 AND a.item_index IS NULL
-            ORDER BY idx`,
-            [workflow_run_id, job.name, input1Name, input2Name],
-          );
-          await client.query(
-            "DELETE FROM workflow_merge_staging WHERE workflow_run_id=$1",
-            [workflow_run_id],
-          );
-          return rows.map((r) => r.data);
-        });
+      if (mode === 'position') {
+        return mergeByPosition(input1, input2, deepMerge);
       }
 
-      // mode === 'match'
-      const comparator = fuzzyCompare
-        ? `are_fuzzy_equal(a.item_data->>'${field1}', b.item_data->>'${field2}')`
-        : `a.item_data->>'${field1}' = b.item_data->>'${field2}'`;
-
-      const joinKeyword =
-        joinType === "keepEverything"
-          ? "FULL JOIN"
-          : joinType === "enrichInput1"
-            ? "LEFT JOIN"
-            : joinType === "enrichInput2"
-              ? "RIGHT JOIN"
-              : "INNER JOIN";
-
-      const selectExpr = buildMergeSelect(joinType, deepMerge);
-
-      return withJobClient(workflow_run_id, async (client) => {
-        let rows;
-        if (joinType === "keepEverything") {
-          const res = await client.query(
-            `SELECT ${selectExpr}, COALESCE(a.item_index, b.item_index) AS idx
-             FROM workflow_merge_staging a
-             LEFT JOIN workflow_merge_staging b
-               ON ${comparator}
-              AND b.workflow_run_id=$1 AND b.parent_job_id=$2
-              AND a.input_name=$3 AND b.input_name=$4
-             WHERE a.workflow_run_id=$1 AND a.parent_job_id=$2 AND a.input_name=$3
-             UNION ALL
-             SELECT ${selectExpr}, b.item_index AS idx
-             FROM workflow_merge_staging a
-             RIGHT JOIN workflow_merge_staging b
-               ON ${comparator}
-              AND a.workflow_run_id=$1 AND a.parent_job_id=$2
-              AND a.input_name=$3 AND b.input_name=$4
-             WHERE b.workflow_run_id=$1 AND b.parent_job_id=$2 AND b.input_name=$4 AND a.item_index IS NULL
-             ORDER BY idx`,
-            [workflow_run_id, job.name, input1Name, input2Name],
-          );
-          rows = res.rows;
-        } else {
-          const res = await client.query(
-            `SELECT ${selectExpr}
-             FROM workflow_merge_staging a
-             ${joinKeyword} workflow_merge_staging b
-               ON ${comparator}
-              AND a.workflow_run_id=$1 AND b.workflow_run_id=$1
-              AND a.parent_job_id=$2 AND b.parent_job_id=$2
-              AND a.input_name=$3 AND b.input_name=$4
-             ORDER BY COALESCE(a.item_index, b.item_index)`,
-            [workflow_run_id, job.name, input1Name, input2Name],
-          );
-          rows = res.rows;
-        }
-        await client.query(
-          "DELETE FROM workflow_merge_staging WHERE workflow_run_id=$1",
-          [workflow_run_id],
-        );
-        return rows.map((r) => r.data);
+      return mergeByMatch(input1, input2, {
+        joinType,
+        field1,
+        field2,
+        fuzzy: fuzzyCompare,
+        deep: deepMerge,
       });
     }
-  },
-  { connection },
-);
+
+    return null;
+  }
+}
+
+new MergeWorker();
