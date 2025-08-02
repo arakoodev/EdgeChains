@@ -1,13 +1,13 @@
-import { Job } from 'bullmq';
-import { StreamAwareBullMQWorker, redisClient } from './streamBase';
+import { Job } from "bullmq";
+import { StreamAwareBullMQWorker, redisClient } from "./streamBase";
 
 function inputStreamName(runId: string, parent: string, name: string) {
   return `wf:${runId}:${parent}:${name}`;
 }
 
 function deepMerge(a: any, b: any): any {
-  if (typeof a !== 'object' || a === null) return b ?? a;
-  if (typeof b !== 'object' || b === null) return b ?? a;
+  if (typeof a !== "object" || a === null) return b ?? a;
+  if (typeof b !== "object" || b === null) return b ?? a;
   const res: any = { ...a };
   for (const k of Object.keys(b)) {
     res[k] = k in res ? deepMerge(res[k], b[k]) : b[k];
@@ -24,8 +24,14 @@ function equal(v1: any, v2: any, fuzzy: boolean): boolean {
 }
 
 async function readStream(stream: string): Promise<any[]> {
-  const entries = await redisClient.xrange(stream, '-', '+');
-  return entries.map(([, fields]) => JSON.parse(fields[1]));
+  const entries = await redisClient.xrange(stream, "-", "+");
+  return entries.map(([, fields]) => {
+    const item: Record<string, any> = {};
+    for (let i = 0; i < fields.length; i += 2) {
+      item[fields[i]] = JSON.parse(fields[i + 1]);
+    }
+    return item;
+  });
 }
 
 function mergeByPosition(a: any[], b: any[], deep: boolean): any[] {
@@ -59,15 +65,20 @@ function mergeByMatch(a: any[], b: any[], opts: MatchOpts): any[] {
       if (equal(itemA[opts.field1], b[j][opts.field2], opts.fuzzy)) {
         matched = true;
         usedB.add(j);
-        const merged = opts.deep ? deepMerge(itemA, b[j]) : { ...itemA, ...b[j] };
+        const merged = opts.deep
+          ? deepMerge(itemA, b[j])
+          : { ...itemA, ...b[j] };
         res.push(merged);
       }
     }
-    if (!matched && (opts.joinType === 'enrichInput1' || opts.joinType === 'keepEverything')) {
+    if (
+      !matched &&
+      (opts.joinType === "enrichInput1" || opts.joinType === "keepEverything")
+    ) {
       res.push(itemA);
     }
   }
-  if (opts.joinType === 'enrichInput2' || opts.joinType === 'keepEverything') {
+  if (opts.joinType === "enrichInput2" || opts.joinType === "keepEverything") {
     for (let j = 0; j < b.length; j++) {
       if (!usedB.has(j)) res.push(b[j]);
     }
@@ -77,52 +88,64 @@ function mergeByMatch(a: any[], b: any[], opts: MatchOpts): any[] {
 
 class MergeWorker extends StreamAwareBullMQWorker {
   constructor() {
-    super('merge', job => this.processor(job));
+    super("merge", (job) => this.processor(job));
   }
 
   async processor(job: Job): Promise<any> {
     if (Array.isArray(job.data.items)) {
-      const input = job.data.input_name ?? 'input1';
-      const stream = inputStreamName(job.data.workflow_run_id, job.data.parent_job_id, input);
+      const input = job.data.input_name ?? "input1";
+      const stream = inputStreamName(
+        job.data.workflow_run_id,
+        job.data.parent_job_id,
+        input,
+      );
       for (const item of job.data.items) {
-        await this.produce(stream, { data: item });
+        await this.produce(stream, item);
       }
       return job.data.items;
     }
 
-    if (job.name === 'users') {
+    if (job.name === "users") {
       const items = [
-        { id: 1, name: 'Alice' },
-        { id: 2, name: 'Bob' },
+        { id: 1, name: "Alice" },
+        { id: 2, name: "Bob" },
       ];
-      const stream = inputStreamName(job.data.workflow_run_id, job.data.parent_job_id, 'input1');
+      const stream = inputStreamName(
+        job.data.workflow_run_id,
+        job.data.parent_job_id,
+        "input1",
+      );
       for (const item of items) {
-        await this.produce(stream, { data: item });
+        await this.produce(stream, item);
       }
       return items;
     }
 
-    if (job.name === 'scores') {
+    if (job.name === "scores") {
       const items = [
         { userId: 1, score: 10 },
         { userId: 2, score: 20 },
       ];
-      const stream = inputStreamName(job.data.workflow_run_id, job.data.parent_job_id, 'input2');
+      const stream = inputStreamName(
+        job.data.workflow_run_id,
+        job.data.parent_job_id,
+        "input2",
+      );
       for (const item of items) {
-        await this.produce(stream, { data: item });
+        await this.produce(stream, item);
       }
       return items;
     }
 
-    if (job.name === 'merge-root') {
+    if (job.name === "merge-root") {
       const {
         workflow_run_id,
-        input1Name = 'input1',
-        input2Name = 'input2',
-        mode = 'match',
-        joinType = 'keepMatches',
-        field1 = 'id',
-        field2 = 'id',
+        input1Name = "input1",
+        input2Name = "input2",
+        mode = "match",
+        joinType = "keepMatches",
+        field1 = "id",
+        field2 = "id",
         fuzzyCompare = false,
         deepMerge = false,
       } = job.data;
@@ -134,11 +157,11 @@ class MergeWorker extends StreamAwareBullMQWorker {
       await redisClient.del(stream1);
       await redisClient.del(stream2);
 
-      if (mode === 'append') {
+      if (mode === "append") {
         return input1.concat(input2);
       }
 
-      if (mode === 'position') {
+      if (mode === "position") {
         return mergeByPosition(input1, input2, deepMerge);
       }
 
