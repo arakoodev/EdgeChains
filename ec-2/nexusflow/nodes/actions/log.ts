@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq';
-import { redisClient } from '../../workers/streamBase';
+import { redisClient } from '../../workers/streamAwareBullWorker';
 import { withJobClient } from '../../lib/db';
 
 export function startLogWorker(conn = redisClient) {

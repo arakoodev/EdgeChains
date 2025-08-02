@@ -1,5 +1,5 @@
 import { Job } from "bullmq";
-import { StreamAwareBullMQWorker, redisClient } from "./streamBase";
+import { StreamAwareBullMQWorker, redisClient } from "./streamAwareBullWorker";
 
 function inputStreamName(runId: string, parent: string, name: string) {
   return `wf:${runId}:${parent}:${name}`;

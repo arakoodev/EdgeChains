@@ -1,5 +1,5 @@
 import { Job } from "bullmq";
-import { StreamAwareBullMQWorker, redisClient } from "./streamBase";
+import { StreamAwareBullMQWorker, redisClient } from "./streamAwareBullWorker";
 
 class EchoWorker extends StreamAwareBullMQWorker {
   constructor() {

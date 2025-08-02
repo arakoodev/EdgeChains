@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Queue, QueueEvents } from "bullmq";
-import { redisClient } from "../workers/streamBase";
+import { redisClient } from "../workers/streamAwareBullWorker";
 import { startEchoWorker } from "../workers/echo";
 
 let queue: any;
