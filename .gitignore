@@ -42,6 +42,8 @@ index.wit
 Cargo.lock
 yarn.lock
 package-lock.json
+# Allow package-lock.json in ec-2 projects for CI
+!ec-2/**/package-lock.json
 .DS_Store
 pnpm-lock.yaml
 /ec-2/nextjs-chat-template/example.pdf
