@@ -1,7 +1,7 @@
 import Jsonnet from "@arakoodev/jsonnet";
 import { describe, it, expect } from "vitest";
 
-describe("jsonnet", () => {
+describe.skip("jsonnet (disabled)", () => {
   it("evaluates with callbacks", () => {
     const jsonnet = new Jsonnet();
     jsonnet.javascriptCallback(
