@@ -2,29 +2,30 @@ import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { Pool } from "pg";
 import { readFile } from "fs/promises";
 import Redis from "ioredis";
-import { canConnectRedis } from "./utils/redis";
 import { runWorkflow } from "../lib/workflow";
 
 let pool: Pool;
 let flowProducer: any;
 
-const suite = (await canConnectRedis()) ? describe : (describe as any).skip;
-
-suite("end-to-end workflow tests", () => {
+describe("end-to-end workflow tests", () => {
   let queueEvents: any;
   let connection: any;
   let actionWorker: any;
   let mergeWorker: any;
 
   beforeAll(async () => {
-    // Connect to real PostgreSQL from Docker Compose
-    pool = new Pool({
-      host: "localhost",
-      port: 5432,
-      database: "postgres",
-      user: "postgres", 
-      password: "postgres",
-    });
+    // Connect to real PostgreSQL (use DATABASE_URL if available, otherwise local Docker)
+    pool = new Pool(
+      process.env.DATABASE_URL ? {
+        connectionString: process.env.DATABASE_URL
+      } : {
+        host: "localhost",
+        port: 5432,
+        database: "postgres",
+        user: "postgres", 
+        password: "postgres",
+      }
+    );
 
     // Run all migrations on real PostgreSQL
     const migrations = [
