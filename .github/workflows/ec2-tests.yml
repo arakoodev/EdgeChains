@@ -37,8 +37,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
-          # Robust glob for monorepos; avoids unresolved path errors
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: 'ec-2/${{ matrix.project }}/package-lock.json'
       - name: Install dependencies
         run: npm ci
         working-directory: ec-2/${{ matrix.project }}

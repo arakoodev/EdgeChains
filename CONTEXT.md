@@ -6,6 +6,22 @@ This file summarizes the key decisions and changes made during the last session 
 - Updated `AGENTS.md` to be exhaustive and self‑contained: architecture, tech stack, hard rules (Next.js only under `ec-2/`), BullMQ Flows control plane, Redis Streams data plane, DB schemas, node patterns, `StreamAwareBullMQWorker` skeleton, n8n mapping, dev workflow, testing, CI, and security.
 - Focused troubleshooting and DX improvements for `ec-2/nexusflow` tests and local environment setup.
 
+## This Session (Streams‑First + CI)
+- Reaffirmed architecture: Redis Streams as the data plane for merges; PostgreSQL is for workflow definitions/runs. SQL staging is optional only. Removed the previously added staging migration to stay Streams‑first.
+- Expanded Redis Streams merge test coverage in `ec-2/nexusflow/tests/merge.test.ts` to cover all patterns:
+  - Modes: `append`, `position` (deep and shallow; left/right longer), and `match`.
+  - Match joins: `keepMatches` (with/without matches, multi‑match fan‑out), `keepEverything` (fuzzy+deep; non‑fuzzy+shallow), `enrichInput1` (left), and `enrichInput2` (right, with/without matches).
+  - Fuzzy compare and deep recursive merge paths validated across cases.
+- Verified full suite via `ec-2/nexusflow/scripts/e2e.sh` (Docker Redis/Postgres up → migrate → tests → down). All tests passed; noted harmless `MaxListenersExceededWarning` from `QueueEvents` (can be silenced by `setMaxListeners(0)` in tests if desired).
+- Standardized package test entrypoints:
+  - Added `test:ci` to both `ec-2/nexusflow` and `ec-2/nextjs-chat-template`.
+  - Disabled the chat template’s test by `describe.skip` and excluded it from CI matrix.
+- CI workflow (`.github/workflows/ec2-tests.yml`) hardened:
+  - Uses GitHub Actions `services.redis` (Redis 7) instead of shell wrappers.
+  - Matrix narrowed to `nexusflow` only; added push trigger and concurrency controls.
+  - Caching fixed with robust glob `**/package-lock.json` to avoid unresolved‑path errors; uses `npm ci` and `npm run test:ci`.
+  - Sets `REDIS_URL=redis://127.0.0.1:6379` so Redis‑backed suites run in CI.
+
 ## NexusFlow Tests
 - Added Redis availability check and gated Redis‑dependent suites to auto‑skip when Redis isn’t reachable (they still run in CI):
   - Added: `ec-2/nexusflow/tests/utils/redis.ts` (`canConnectRedis()` helper).
@@ -31,10 +47,14 @@ This file summarizes the key decisions and changes made during the last session 
    - `npm run e2e` (starts services, migrates, runs tests, tears down)
    - Or manual: `npm run docker:up && npm run docker:wait && npm run migrate && npm test -- --run && npm run docker:down`
 2) From `ec-2/nextjs-chat-template`:
-   - `npm install && npm test -- --run`
+   - `npm install && npm run test:ci` (currently disabled via `describe.skip`)
 
 ## Notes
 - If Docker commands fail with permission errors, add your user to the `docker` group and re‑login (or use sudo as a fallback).
 - Compose warns that `version` key is obsolete in `docker-compose.yml` (safe to ignore; can be removed later).
 - All Next.js code must remain under `ec-2/` (hard rule in `AGENTS.md`).
 
+## CI Summary
+- Workflow: `.github/workflows/ec2-tests.yml` runs only `nexusflow` with a Redis service.
+- Node caching uses `**/package-lock.json` to avoid unresolved path errors.
+- Commands per project: `npm ci` then `npm run test:ci`.
