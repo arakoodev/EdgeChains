@@ -6,6 +6,9 @@ export const redisClient = new Redis(
   { maxRetriesPerRequest: null },
 );
 
+// Avoid unhandled error event noise when Redis is unavailable in local tests
+redisClient.on('error', () => {});
+
 export abstract class StreamAwareBullMQWorker extends Worker {
   constructor(
     queueName: string,

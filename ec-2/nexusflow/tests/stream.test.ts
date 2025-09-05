@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Queue, QueueEvents } from "bullmq";
 import { redisClient } from "../workers/streamAwareBullWorker";
 import { startEchoWorker } from "../workers/echo";
+import { canConnectRedis } from "./utils/redis";
 
 let queue: any;
 let queueEvents: any;
@@ -10,7 +11,10 @@ let worker: any;
 const inputStream = "stream:test:in";
 const outputStream = "stream:test:out";
 
-describe("stream-based action worker", () => {
+const redisReadyPromise = canConnectRedis();
+const suite = (await redisReadyPromise) ? describe : (describe as any).skip;
+
+suite("stream-based action worker", () => {
   beforeAll(async () => {
     queue = new Queue("echo", { connection: redisClient });
     queueEvents = new QueueEvents("echo", { connection: redisClient });

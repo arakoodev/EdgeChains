@@ -11,6 +11,7 @@ import { newDb } from "pg-mem";
 import { readFile } from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
 import Redis from "ioredis";
+import { canConnectRedis } from "./utils/redis";
 
 import { SimpleWebhookTrigger } from "../nodes/triggers/webhook";
 import { CounterPollingTrigger } from "../nodes/triggers/polling";
@@ -37,7 +38,9 @@ let flowProducer: any;
 let queueEvents: any;
 let worker: any;
 
-describe("action and trigger nodes", () => {
+const suite = (await canConnectRedis()) ? describe : (describe as any).skip;
+
+suite("action and trigger nodes", () => {
   beforeAll(async () => {
     const db = newDb();
     db.registerLanguage("plpgsql", () => {});

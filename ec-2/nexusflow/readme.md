@@ -31,6 +31,39 @@ Run the database migrations:
 npm run migrate
 ```
 
+## Local Dev with Docker
+
+Bring up Redis and Postgres locally:
+
+```bash
+npm run docker:up
+```
+
+Copy env defaults and update if needed:
+
+```bash
+cp .env.local.example .env.local
+```
+
+Run migrations against local Postgres:
+
+```bash
+npm run migrate
+```
+
+Run tests (requires Redis running for stream/merge/node suites):
+
+```bash
+npm test -- --run
+```
+
+Shut down services and view logs:
+
+```bash
+npm run docker:logs   # follow service logs
+npm run docker:down   # stop and remove volumes
+```
+
 Row level security is enabled per job using the `edgechains.job_id` session
 variable. Use the `withJobClient` helper to run queries scoped to a job:
 

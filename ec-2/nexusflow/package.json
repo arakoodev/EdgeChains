@@ -7,7 +7,13 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "migrate": "node --loader ts-node/esm migrate.ts"
+    "test:ci": "vitest run --run",
+    "migrate": "node --loader ts-node/esm migrate.ts",
+    "docker:up": "bash ./scripts/compose.sh up -d",
+    "docker:down": "bash ./scripts/compose.sh down -v",
+    "docker:logs": "bash ./scripts/compose.sh logs -f",
+    "docker:wait": "bash ./scripts/wait-services.sh",
+    "e2e": "bash ./scripts/e2e.sh"
   },
   "dependencies": {
     "next": "14.2.3",
