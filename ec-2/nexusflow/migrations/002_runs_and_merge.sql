@@ -8,15 +8,3 @@ CREATE TABLE IF NOT EXISTS workflow_runs (
   error_details JSONB
 );
 
-CREATE TABLE IF NOT EXISTS workflow_merge_staging (
-  id SERIAL PRIMARY KEY,
-  workflow_run_id UUID NOT NULL,
-  parent_job_id VARCHAR(255) NOT NULL,
-  input_name VARCHAR(50) NOT NULL,
-  item_index INTEGER NOT NULL,
-  item_data JSONB NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_workflow_merge_staging_run_parent
-  ON workflow_merge_staging (workflow_run_id, parent_job_id);

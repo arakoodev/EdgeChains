@@ -1,0 +1,49 @@
+import { Worker, Job } from 'bullmq';
+import Redis from 'ioredis';
+
+export const redisClient = new Redis(
+  process.env.REDIS_URL ?? 'redis://localhost:6379',
+  { maxRetriesPerRequest: null },
+);
+
+export abstract class StreamAwareBullMQWorker extends Worker {
+  constructor(
+    queueName: string,
+    processor: (job: Job) => Promise<any>,
+    opts: Record<string, any> = {},
+  ) {
+    super(queueName, processor, { connection: redisClient, ...opts });
+  }
+
+  protected async produce(
+    streamName: string,
+    data: Record<string, any>,
+  ): Promise<string> {
+    const fields: string[] = [];
+    for (const [k, v] of Object.entries(data)) {
+      fields.push(k, JSON.stringify(v));
+    }
+    return redisClient.xadd(streamName, '*', ...fields);
+  }
+
+  protected async createConsumerGroup(
+    streamName: string,
+    groupName: string,
+  ): Promise<void> {
+    try {
+      await redisClient.xgroup('CREATE', streamName, groupName, '0', 'MKSTREAM');
+    } catch (error: any) {
+      if (!String(error.message).includes('BUSYGROUP')) {
+        throw error;
+      }
+    }
+  }
+
+  protected parseMessage(fields: string[]): Record<string, any> {
+    const data: Record<string, any> = {};
+    for (let i = 0; i < fields.length; i += 2) {
+      data[fields[i]] = JSON.parse(fields[i + 1]);
+    }
+    return data;
+  }
+}
