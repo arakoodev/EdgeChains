@@ -54,7 +54,32 @@ This file summarizes the key decisions and changes made during the last session 
 - Compose warns that `version` key is obsolete in `docker-compose.yml` (safe to ignore; can be removed later).
 - All Next.js code must remain under `ec-2/` (hard rule in `AGENTS.md`).
 
-## CI Summary
-- Workflow: `.github/workflows/ec2-tests.yml` runs only `nexusflow` with a Redis service.
-- Node caching uses `**/package-lock.json` to avoid unresolved path errors.
-- Commands per project: `npm ci` then `npm run test:ci`.
+## Latest Session (E2E Testing + Real Database Integration)
+- **Enhanced Test Coverage**: Added comprehensive end-to-end tests in `ec-2/nexusflow/tests/workflow-e2e.test.ts` covering:
+  - Multi-stage data processing pipelines with Redis Streams and PostgreSQL joins
+  - Concurrent workflow executions to validate system scalability  
+  - Complex branching workflows with fan-out/fan-in patterns
+  - Data integrity validation across Redis Streams and PostgreSQL storage
+- **Real Database Testing**: Replaced `pg-mem` with real PostgreSQL from Docker Compose:
+  - Tests now use actual PostgreSQL connection instead of in-memory simulation
+  - Full migration stack including complex PostgreSQL functions (jsonb_deep_merge, etc.)
+  - Proper database cleanup and state isolation between tests
+- **CI Infrastructure Improvements**:
+  - Updated `.github/workflows/ec2-tests.yml` to include PostgreSQL service (postgres:15-alpine)
+  - Added `DATABASE_URL` environment variable for CI database connections
+  - Fixed npm caching with specific `cache-dependency-path: 'ec-2/${{ matrix.project }}/package-lock.json'`
+  - Added workflow trigger for `.github/workflows/ec2-tests.yml` file changes
+- **Package Management Fixes**: 
+  - Updated root `.gitignore` with `!ec-2/**/package-lock.json` to allow package-lock files for CI
+  - Staged `package-lock.json` files for both nexusflow and nextjs-chat-template projects
+- **Stream Architecture Validation**: New E2E tests validate the complete workflow lifecycle:
+  - BullMQ Flow creation → Redis Streams data exchange → PostgreSQL state tracking
+  - Stream cleanup and resource management verification
+  - Worker coordination and event synchronization testing
+
+## CI Summary  
+- Workflow: `.github/workflows/ec2-tests.yml` runs `nexusflow` with both Redis and PostgreSQL services
+- Services: Redis 7 + PostgreSQL 15 with proper health checks and connection strings
+- Node caching: Uses project-specific `package-lock.json` paths to avoid cache misses
+- Commands per project: `npm ci` then `npm run test:ci`
+- Database: Real PostgreSQL with full schema migrations for production-like testing
