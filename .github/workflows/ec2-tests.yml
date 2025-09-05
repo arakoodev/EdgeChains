@@ -4,10 +4,12 @@ on:
     types: [opened, reopened, synchronize]
     paths:
       - "ec-2/**"
+      - ".github/workflows/ec2-tests.yml"
   push:
     branches: [ rsc ]
     paths:
       - "ec-2/**"
+      - ".github/workflows/ec2-tests.yml"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
