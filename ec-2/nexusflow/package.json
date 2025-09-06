@@ -8,7 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:ci": "vitest run --run",
-    "migrate": "node --loader ts-node/esm migrate.ts",
+    "migrate": "tsx migrate.ts",
     "workers": "tsx start-workers.ts",
     "dev:full": "npm run migrate && concurrently \"npm run workers\" \"npm run dev\"",
     "docker:up": "bash ./scripts/compose.sh up -d",

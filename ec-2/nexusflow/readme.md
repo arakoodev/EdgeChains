@@ -24,7 +24,7 @@ CREATE TABLE workflows (
 To start a worker process run:
 
 ```bash
-node --loader ts-node/esm runWorker.ts
+npm run workers
 ```
 
 Run the database migrations:
