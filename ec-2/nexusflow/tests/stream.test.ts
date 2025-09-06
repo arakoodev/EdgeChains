@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Queue, QueueEvents } from "bullmq";
 import { redisClient } from "../workers/streamAwareBullWorker";
 import { startEchoWorker } from "../workers/echo";
-import { canConnectRedis } from "./utils/redis";
+import { canConnectRedis, waitForRedis } from "./utils/redis";
 
 let queue: any;
 let queueEvents: any;
@@ -11,8 +11,9 @@ let worker: any;
 const inputStream = "stream:test:in";
 const outputStream = "stream:test:out";
 
-// Fail if Redis is not available - no more skipping tests
-const redisAvailable = await canConnectRedis();
+// Wait for Redis to be available - fail if it never becomes available
+console.log("Waiting for Redis to be available...");
+const redisAvailable = await waitForRedis();
 if (!redisAvailable) {
   throw new Error("Redis is required for integration tests. Please ensure Redis is running or use the all-in-one container for testing.");
 }
@@ -26,10 +27,27 @@ describe("stream-based action worker", () => {
   });
 
   afterAll(async () => {
-    if (worker) await worker.close();
-    if (queueEvents) await queueEvents.close();
-    if (queue) await queue.close();
-    await redisClient.del(inputStream, outputStream);
+    // Close resources in reverse order with error handling
+    try {
+      if (worker) await worker.close();
+    } catch (e) {
+      console.warn('Worker close error:', e);
+    }
+    try {
+      if (queueEvents) await queueEvents.close();
+    } catch (e) {
+      console.warn('QueueEvents close error:', e);
+    }
+    try {
+      if (queue) await queue.close();
+    } catch (e) {
+      console.warn('Queue close error:', e);
+    }
+    try {
+      await redisClient.del(inputStream, outputStream);
+    } catch (e) {
+      console.warn('Stream cleanup error:', e);
+    }
   });
 
   it("reads from input stream and writes to output stream", async () => {

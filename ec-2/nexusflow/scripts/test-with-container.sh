@@ -61,11 +61,25 @@ timeout 60 bash -c '
   done
 '
 
-echo "✅ Container is healthy, running tests..."
+echo "✅ Container is healthy, waiting for services to be fully ready..."
 
 # Run tests with container services
 export DATABASE_URL="postgresql://postgres@localhost:5433/nexusflow"
 export REDIS_URL="redis://localhost:6380"
+
+# Wait a bit more for all services to stabilize
+echo "⏳ Giving services extra time to stabilize..."
+sleep 15
+
+# Test Redis connection
+echo "🔴 Testing Redis connection..."
+timeout 30 bash -c 'until echo "PING" | nc -w 1 localhost 6380 | grep -q "PONG\|denied"; do echo "Waiting for Redis..."; sleep 1; done'
+
+# Test PostgreSQL connection  
+echo "📊 Testing PostgreSQL connection..."
+timeout 30 bash -c 'until pg_isready -h localhost -p 5433 -U postgres 2>/dev/null; do echo "Waiting for PostgreSQL..."; sleep 1; done' || echo "Note: pg_isready not available, continuing..."
+
+echo "✅ Services should be ready, running tests..."
 
 # Run the tests
 npm run test:ci

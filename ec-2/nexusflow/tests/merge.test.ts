@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { vi } from "vitest";
 import { readFile } from "fs/promises";
 import Redis from "ioredis";
-import { canConnectRedis } from "./utils/redis";
+import { canConnectRedis, waitForRedis } from "./utils/redis";
 import { runWorkflow } from "../lib/workflow";
 let pool: any;
 let flowProducer: any;
@@ -22,8 +22,9 @@ vi.mock("../lib/queue", () => ({
   },
 }));
 
-// Fail if Redis is not available - no more skipping tests
-const redisAvailable = await canConnectRedis();
+// Wait for Redis to be available - fail if it never becomes available
+console.log("Waiting for Redis to be available...");
+const redisAvailable = await waitForRedis();
 if (!redisAvailable) {
   throw new Error("Redis is required for integration tests. Please ensure Redis is running or use the all-in-one container for testing.");
 }
@@ -54,7 +55,16 @@ describe("merge workflow", () => {
     }
 
     const { FlowProducer, QueueEvents } = await import("bullmq");
-    connection = new Redis({ maxRetriesPerRequest: null });
+    connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', { 
+      maxRetriesPerRequest: null,
+      lazyConnect: true,
+      retryDelayOnFailover: 100
+    });
+    
+    // Ensure Redis connection is established
+    await connection.connect();
+    await connection.ping();
+    
     flowProducer = new FlowProducer({ connection });
     queueEvents = new QueueEvents("merge", { connection });
     await queueEvents.waitUntilReady();
@@ -63,9 +73,26 @@ describe("merge workflow", () => {
   });
 
   afterAll(async () => {
-    if (queueEvents) await queueEvents.close();
-    if (flowProducer) await flowProducer.close();
-    if (connection) await connection.quit();
+    // Close resources in reverse order with error handling
+    try {
+      if (queueEvents) await queueEvents.close();
+    } catch (e) {
+      console.warn('QueueEvents close error:', e);
+    }
+    try {
+      if (flowProducer) await flowProducer.close();
+    } catch (e) {
+      console.warn('FlowProducer close error:', e);
+    }
+    try {
+      if (connection) {
+        // Give some time for pending operations to complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await connection.quit();
+      }
+    } catch (e) {
+      console.warn('Connection close error:', e);
+    }
   });
 
   afterEach(async () => {

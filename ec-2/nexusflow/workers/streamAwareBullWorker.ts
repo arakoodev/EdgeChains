@@ -1,13 +1,32 @@
 import { Worker, Job } from 'bullmq';
 import Redis from 'ioredis';
 
-export const redisClient = new Redis(
-  process.env.REDIS_URL ?? 'redis://localhost:6379',
-  { maxRetriesPerRequest: null },
-);
+let _redisClient: Redis | null = null;
 
-// Avoid unhandled error event noise when Redis is unavailable in local tests
-redisClient.on('error', () => {});
+export function getRedisClient(): Redis {
+  if (!_redisClient) {
+    _redisClient = new Redis(
+      process.env.REDIS_URL ?? 'redis://localhost:6379',
+      { maxRetriesPerRequest: null },
+    );
+    // Avoid unhandled error event noise when Redis is unavailable in local tests
+    _redisClient.on('error', () => {});
+  }
+  return _redisClient;
+}
+
+// Use getter to make it truly lazy
+export const redisClient = new Proxy({} as Redis, {
+  get(target, prop) {
+    const client = getRedisClient();
+    const value = client[prop as keyof Redis];
+    // If it's a function, bind it to the client
+    if (typeof value === 'function') {
+      return value.bind(client);
+    }
+    return value;
+  }
+});
 
 export abstract class StreamAwareBullMQWorker extends Worker {
   constructor(
