@@ -1,0 +1,57 @@
+FROM node:18-alpine
+
+# Install PostgreSQL, Redis, and process management tools
+RUN apk add --no-cache \
+    postgresql \
+    postgresql-contrib \
+    redis \
+    tini \
+    bash \
+    curl
+
+# Create app directory
+WORKDIR /app
+
+# Create directories for data persistence
+RUN mkdir -p /tmp/nexusflow-data/postgres \
+             /tmp/nexusflow-data/redis \
+             /tmp/nexusflow-data/logs
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Create PostgreSQL data directory and initialize
+RUN mkdir -p /tmp/nexusflow-data/postgres && \
+    chown -R postgres:postgres /tmp/nexusflow-data/postgres
+
+# Initialize PostgreSQL as postgres user
+USER postgres
+RUN initdb -D /tmp/nexusflow-data/postgres
+USER root
+
+# Copy and setup startup script
+COPY start-services.sh /app/start-services.sh
+
+RUN chmod +x /app/start-services.sh
+
+# Set environment variables
+ENV NODE_ENV=development
+ENV DATABASE_URL=postgresql://postgres@localhost:5432/nexusflow
+ENV REDIS_URL=redis://localhost:6379
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/api/workflows || exit 1
+
+# Use tini as entrypoint for proper signal handling
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Start all services
+CMD ["/app/start-services.sh"]

@@ -9,13 +9,16 @@
     "test": "vitest run",
     "test:ci": "vitest run --run",
     "migrate": "node --loader ts-node/esm migrate.ts",
-    "workers": "node --loader ts-node/esm start-workers.ts",
+    "workers": "tsx start-workers.ts",
     "dev:full": "npm run migrate && concurrently \"npm run workers\" \"npm run dev\"",
     "docker:up": "bash ./scripts/compose.sh up -d",
     "docker:down": "bash ./scripts/compose.sh down -v",
     "docker:logs": "bash ./scripts/compose.sh logs -f",
     "docker:wait": "bash ./scripts/wait-services.sh",
-    "e2e": "bash ./scripts/e2e.sh"
+    "e2e": "bash ./scripts/e2e.sh",
+    "allinone:build": "bash ./scripts/build-allinone.sh",
+    "allinone:run": "bash ./scripts/run-allinone.sh",
+    "allinone:dev": "bash ./scripts/dev-allinone.sh"
   },
   "dependencies": {
     "next": "14.2.3",
@@ -37,7 +40,8 @@
     "@types/react": "^18.2.60",
     "@types/pg": "^8.10.1",
     "@types/uuid": "^9.0.7",
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.0",
+    "tsx": "^4.7.0"
   },
   "type": "module"
 }
