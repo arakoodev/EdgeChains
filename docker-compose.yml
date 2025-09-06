@@ -28,6 +28,27 @@ services:
       timeout: 3s
       retries: 20
 
+  nexusflow:
+    build:
+      context: ./ec-2/nexusflow
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nexusflow
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./ec-2/nexusflow:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    command: npm run dev
+
 volumes:
   pgdata:
 

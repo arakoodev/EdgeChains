@@ -54,7 +54,29 @@ This file summarizes the key decisions and changes made during the last session 
 - Compose warns that `version` key is obsolete in `docker-compose.yml` (safe to ignore; can be removed later).
 - All Next.js code must remain under `ec-2/` (hard rule in `AGENTS.md`).
 
-## Latest Session (CI Infrastructure + Test Analysis)
+## Latest Session (Full-Stack Workflow Builder Implementation)
+- **Complete Frontend Implementation**: Built drag-and-drop visual workflow builder:
+  - ReactFlow-based canvas with custom node components for each workflow type
+  - Drag-and-drop sidebar with trigger, action, merge, and log nodes
+  - Visual workflow toolbar with save/run functionality and connection counts
+  - Real-time workflow execution with backend integration
+- **Docker Compose Integration**: Added Next.js application as a service:
+  - Unified Docker Compose with PostgreSQL, Redis, and Next.js frontend
+  - Development Dockerfile with hot reload and volume mounting
+  - Automatic migration running and worker process startup
+  - Service health checks and proper dependency ordering
+- **Backend-Frontend Integration**: Connected UI to workflow execution engine:
+  - Server Actions for workflow creation and execution
+  - API routes for workflow management and running
+  - Real-time job orchestration with visual feedback
+  - Worker process management integrated with frontend startup
+- **Production-Ready Architecture**: Full-stack application in single codebase:
+  - React Server Components for optimal performance
+  - Background workers run alongside Next.js development server
+  - Environment-aware database connections (local vs CI)
+  - Comprehensive npm scripts for development workflow
+
+## Previous Session (CI Infrastructure + Test Analysis)
 - **CI Infrastructure Improvements**:
   - Updated `.github/workflows/ec2-tests.yml` to include PostgreSQL service (postgres:15-alpine)
   - Added `DATABASE_URL` environment variable for CI database connections
