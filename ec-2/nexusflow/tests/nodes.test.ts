@@ -38,9 +38,13 @@ let flowProducer: any;
 let queueEvents: any;
 let worker: any;
 
-const suite = (await canConnectRedis()) ? describe : (describe as any).skip;
+// Fail if Redis is not available - no more skipping tests
+const redisAvailable = await canConnectRedis();
+if (!redisAvailable) {
+  throw new Error("Redis is required for integration tests. Please ensure Redis is running or use the all-in-one container for testing.");
+}
 
-suite("action and trigger nodes", () => {
+describe("action and trigger nodes", () => {
   beforeAll(async () => {
     const db = newDb();
     db.registerLanguage("plpgsql", () => {});

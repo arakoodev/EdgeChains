@@ -11,10 +11,13 @@ let worker: any;
 const inputStream = "stream:test:in";
 const outputStream = "stream:test:out";
 
-const redisReadyPromise = canConnectRedis();
-const suite = (await redisReadyPromise) ? describe : (describe as any).skip;
+// Fail if Redis is not available - no more skipping tests
+const redisAvailable = await canConnectRedis();
+if (!redisAvailable) {
+  throw new Error("Redis is required for integration tests. Please ensure Redis is running or use the all-in-one container for testing.");
+}
 
-suite("stream-based action worker", () => {
+describe("stream-based action worker", () => {
   beforeAll(async () => {
     queue = new Queue("echo", { connection: redisClient });
     queueEvents = new QueueEvents("echo", { connection: redisClient });

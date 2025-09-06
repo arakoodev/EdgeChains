@@ -43,8 +43,8 @@ ENV NODE_ENV=development
 ENV DATABASE_URL=postgresql://postgres@localhost:5432/nexusflow
 ENV REDIS_URL=redis://localhost:6379
 
-# Expose port
-EXPOSE 3000
+# Expose ports
+EXPOSE 3000 5432 6379
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

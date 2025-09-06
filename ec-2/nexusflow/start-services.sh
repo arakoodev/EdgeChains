@@ -14,6 +14,11 @@ if [ ! -f "/tmp/nexusflow-data/postgres/PG_VERSION" ]; then
     su postgres -c "initdb -D /tmp/nexusflow-data/postgres"
 fi
 
+# Configure PostgreSQL to accept external connections
+echo "🔧 Configuring PostgreSQL for external connections..."
+echo "listen_addresses = '*'" >> /tmp/nexusflow-data/postgres/postgresql.conf
+echo "host all all 0.0.0.0/0 trust" >> /tmp/nexusflow-data/postgres/pg_hba.conf
+
 # Start PostgreSQL in background
 echo "📊 Starting PostgreSQL..."
 su postgres -c "postgres -D /tmp/nexusflow-data/postgres" &
@@ -31,7 +36,7 @@ su postgres -c "createdb nexusflow" > /dev/null 2>&1 || true
 
 # Start Redis in background (not daemonized since we want to manage it)
 echo "🔴 Starting Redis..."
-redis-server --port 6379 --dir /tmp/nexusflow-data/redis --logfile /tmp/nexusflow-data/logs/redis.log &
+redis-server --port 6379 --bind 0.0.0.0 --protected-mode no --dir /tmp/nexusflow-data/redis --logfile /tmp/nexusflow-data/logs/redis.log &
 REDIS_PID=$!
 
 # Wait for Redis to be ready

@@ -22,9 +22,13 @@ vi.mock("../lib/queue", () => ({
   },
 }));
 
-const suite = (await canConnectRedis()) ? describe : (describe as any).skip;
+// Fail if Redis is not available - no more skipping tests
+const redisAvailable = await canConnectRedis();
+if (!redisAvailable) {
+  throw new Error("Redis is required for integration tests. Please ensure Redis is running or use the all-in-one container for testing.");
+}
 
-suite("merge workflow", () => {
+describe("merge workflow", () => {
   let queueEvents: any;
   let connection: any;
 
