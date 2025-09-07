@@ -15,6 +15,7 @@
     "migrate": "tsx migrate.ts",
     "workers": "tsx start-workers.ts",
     "dev:full": "npm run migrate && concurrently \"npm run workers\" \"npm run dev\"",
+    "start:e2e": "bash ./scripts/start-for-e2e.sh",
     "docker:up": "bash ./scripts/compose.sh up -d",
     "docker:down": "bash ./scripts/compose.sh down -v",
     "docker:logs": "bash ./scripts/compose.sh logs -f",

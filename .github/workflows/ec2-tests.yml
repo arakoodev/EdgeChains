@@ -51,13 +51,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+      - name: Install system dependencies for Cypress
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('ec-2/${{ matrix.project }}/package-lock.json') }}
+          path: |
+            ~/.npm
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-deps-${{ hashFiles('ec-2/${{ matrix.project }}/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-deps-
       - name: Install dependencies
         run: npm ci
         working-directory: ec-2/${{ matrix.project }}
@@ -70,3 +76,16 @@ jobs:
       - name: Run integration tests with GitHub services
         run: npm run test:ci
         working-directory: ec-2/${{ matrix.project }}
+      - name: Run Cypress E2E tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ec-2/${{ matrix.project }}
+          build: npm run migrate
+          start: npm run start:e2e
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120
+          browser: chrome
+          spec: cypress/e2e/merge-node-workflow.cy.js
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nexusflow
+          REDIS_URL: redis://localhost:6379
