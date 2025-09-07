@@ -28,6 +28,7 @@ export default function Sidebar() {
         {nodeTypes.map((node) => (
           <div
             key={node.type}
+            data-cy={`node-${node.type}`}
             draggable
             onDragStart={(event) => onDragStart(event, node.type)}
             style={{
