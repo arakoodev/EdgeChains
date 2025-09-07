@@ -51,19 +51,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: Install system dependencies for Cypress
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
-          path: |
-            ~/.npm
-            ~/.cache/Cypress
-          key: ${{ runner.os }}-deps-${{ hashFiles('ec-2/${{ matrix.project }}/package-lock.json') }}
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('ec-2/${{ matrix.project }}/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-deps-
+            ${{ runner.os }}-node-
       - name: Install dependencies
         run: npm ci
         working-directory: ec-2/${{ matrix.project }}
