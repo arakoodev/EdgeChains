@@ -17,7 +17,7 @@ export class SmartRouter {
                 throw new Error("No endpoints configured in SmartRouter");
         }
 
-      if (options.strategy === "priority" || options.strategy === "failover") {
+      if (options.strategy === "priority" || options.strategy === "failover" || options.strategy === "latency" ){
               for (const endpoint of this.endpoints) {
                         try {
                                     return await this.execute(endpoint, messages);
