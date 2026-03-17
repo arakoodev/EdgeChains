@@ -31,6 +31,9 @@ export type ChatModel =
   | "claude-3-sonnet-20240229"
   | "claude-3-haiku-20240307";
 
+
+export type role = "user" | "assistant" | "system";
+
 export type Provider = "openai" | "google" | "cohere" | "anthropic" | "mistral";
 
 export interface EndpointConfig {
