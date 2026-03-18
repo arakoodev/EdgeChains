@@ -27,7 +27,17 @@ HydeSearchRouter.get("/search", async (c) => {
         arkRequest,
         process.env.OPENAI_API_KEY!,
         process.env.OPENAI_ORG_ID!
-    );
+    ).catch((error: any) => {
+        if (error.code === 'ECONNABORTED' || error.code === 'ECONNRESET') {
+            console.log('Retrying request due to timeout or reset...');
+            return hydeSearchAdaEmbedding(
+                arkRequest,
+                process.env.OPENAI_API_KEY!,
+                process.env.OPENAI_ORG_ID!
+            );
+        }
+        throw error;
+    });
     const final_answer = answer.finalAnswer;
     const responses = answer.wordEmbeddings;
     const data: HydeFragmentData = { responses, final_answer };
