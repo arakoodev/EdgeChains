@@ -3,6 +3,14 @@ import { hydeSearchAdaEmbedding } from "../service/HydeSearchService.js";
 import { HydeFragmentData } from "../types/HydeFragmentData.js";
 const HydeSearchRouter = new Hono();
 
+const escapeHtml = (value: unknown) =>
+    String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
 HydeSearchRouter.get("/search", async (c) => {
     const query = await c.req.query();
     const arkRequest = {
@@ -35,7 +43,7 @@ HydeSearchRouter.get("/search", async (c) => {
     <html lang="en">
     <div>
         <div class="card card-active">
-            <div class="card-body">${data.final_answer}</div>
+            <div class="card-body">${escapeHtml(data.final_answer)}</div>
         </div>
             <ul class="list-unstyled mb-0">
               ${data.responses.map(
@@ -45,22 +53,22 @@ HydeSearchRouter.get("/search", async (c) => {
                       <div class="card-body">
                         ${
                             item.rawText != null
-                                ? `<div class="card card-body">${item.rawText}</div>`
-                                : `<div class="card card-body">${item.metadata}</div>`
+                                ? `<div class="card card-body">${escapeHtml(item.rawText)}</div>`
+                                : `<div class="card card-body">${escapeHtml(item.metadata)}</div>`
                         }
                         ${
                             item.filename != null
-                                ? `<div class="card card-body" style="color: blue;">${item.filename}</div>`
+                                ? `<div class="card card-body" style="color: blue;">${escapeHtml(item.filename)}</div>`
                                 : ""
                         }
                         ${
                             item.titleMetadata != null
-                                ? `<div class="card card-body" style="color: blue;">${item.titleMetadata}</div>`
+                                ? `<div class="card card-body" style="color: blue;">${escapeHtml(item.titleMetadata)}</div>`
                                 : ""
                         }
                         ${
                             item.documentDate != null
-                                ? `<div class="card card-body" style="color: blue;">${item.documentDate}</div>`
+                                ? `<div class="card card-body" style="color: blue;">${escapeHtml(item.documentDate)}</div>`
                                 : ""
                         }
                       </div>
