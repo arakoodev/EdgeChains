@@ -6,29 +6,36 @@ import {
     PiiEntityType,
 } from "@aws-sdk/client-comprehend";
 import { PiiRedactor } from "../lib/aws-comprehend/pii-redactor.js";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Track the mock send function
-const mockSend = jest.fn();
+const mockSend = vi.fn();
 
 // Mock the AWS SDK ComprehendClient constructor
-const originalModule = jest.requireActual("@aws-sdk/client-comprehend");
-
-jest.mock("@aws-sdk/client-comprehend", () => {
+vi.mock("@aws-sdk/client-comprehend", async () => {
+    const actual = await vi.importActual("@aws-sdk/client-comprehend");
     return {
-        ...jest.requireActual("@aws-sdk/client-comprehend"),
-        ComprehendClient: jest.fn().mockImplementation(() => ({
+        ...actual,
+        ComprehendClient: vi.fn().mockImplementation(() => ({
             send: mockSend,
         })),
-        DetectPiiEntitiesCommand: jest.fn((input: any) => input),
-        ContainsPiiEntitiesCommand: jest.fn((input: any) => input),
+        DetectPiiEntitiesCommand: vi.fn((input: any) => input),
+        ContainsPiiEntitiesCommand: vi.fn((input: any) => input),
     };
 });
+
+// Mock axios for OpenAI integration test
+vi.mock("axios", () => ({
+    default: {
+        post: vi.fn(),
+    },
+}));
 
 describe("PiiRedactor", () => {
     let redactor: PiiRedactor;
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         redactor = new PiiRedactor({
             accessKeyId: "test-key",
             secretAccessKey: "test-secret",
@@ -37,7 +44,7 @@ describe("PiiRedactor", () => {
     });
 
     describe("detectPiiEntities", () => {
-        test("should detect PII entities in text", async () => {
+        it("should detect PII entities in text", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     {
@@ -65,7 +72,7 @@ describe("PiiRedactor", () => {
             expect(result.entities[1].Type).toBe("PHONE");
         });
 
-        test("should return empty entities when no PII found", async () => {
+        it("should return empty entities when no PII found", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [],
             });
@@ -78,7 +85,7 @@ describe("PiiRedactor", () => {
             expect(result.hasPii).toBe(false);
         });
 
-        test("should filter entities by type when piiEntityTypes is specified", async () => {
+        it("should filter entities by type when piiEntityTypes is specified", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "NAME" as PiiEntityType, BeginOffset: 0, EndOffset: 5, Score: 0.99 },
@@ -96,7 +103,7 @@ describe("PiiRedactor", () => {
             expect(result.entities.every((e) => e.Type === "NAME" || e.Type === "PHONE")).toBe(true);
         });
 
-        test("should default to English language code", async () => {
+        it("should default to English language code", async () => {
             mockSend.mockResolvedValueOnce({ Entities: [] });
 
             await redactor.detectPiiEntities({ text: "test" });
@@ -106,7 +113,7 @@ describe("PiiRedactor", () => {
             );
         });
 
-        test("should use custom language code when provided", async () => {
+        it("should use custom language code when provided", async () => {
             mockSend.mockResolvedValueOnce({ Entities: [] });
 
             await redactor.detectPiiEntities({ text: "test", languageCode: "es" });
@@ -118,7 +125,7 @@ describe("PiiRedactor", () => {
     });
 
     describe("containsPii", () => {
-        test("should return true when PII is present", async () => {
+        it("should return true when PII is present", async () => {
             mockSend.mockResolvedValueOnce({
                 Labels: [{ Name: "NAME" }],
             });
@@ -128,7 +135,7 @@ describe("PiiRedactor", () => {
             expect(result).toBe(true);
         });
 
-        test("should return false when no PII is present", async () => {
+        it("should return false when no PII is present", async () => {
             mockSend.mockResolvedValueOnce({
                 Labels: [],
             });
@@ -140,7 +147,7 @@ describe("PiiRedactor", () => {
     });
 
     describe("redact", () => {
-        test("should redact PII using fixed mask (default)", async () => {
+        it("should redact PII using fixed mask (default)", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "NAME" as PiiEntityType, BeginOffset: 0, EndOffset: 5, Score: 0.99 },
@@ -157,7 +164,7 @@ describe("PiiRedactor", () => {
             expect(result.entities).toHaveLength(2);
         });
 
-        test("should redact PII using char mask", async () => {
+        it("should redact PII using char mask", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "NAME" as PiiEntityType, BeginOffset: 0, EndOffset: 5, Score: 0.99 },
@@ -174,7 +181,7 @@ describe("PiiRedactor", () => {
             expect(result.redactedText).not.toContain("Alice");
         });
 
-        test("should redact PII using label mask", async () => {
+        it("should redact PII using label mask", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "NAME" as PiiEntityType, BeginOffset: 0, EndOffset: 5, Score: 0.99 },
@@ -191,7 +198,7 @@ describe("PiiRedactor", () => {
             expect(result.redactedText).toContain("[PHONE]");
         });
 
-        test("should use custom fixed mask value", async () => {
+        it("should use custom fixed mask value", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "NAME" as PiiEntityType, BeginOffset: 0, EndOffset: 5, Score: 0.99 },
@@ -207,7 +214,7 @@ describe("PiiRedactor", () => {
             expect(result.redactedText).toContain("***");
         });
 
-        test("should build entity map for replacements", async () => {
+        it("should build entity map for replacements", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "NAME" as PiiEntityType, BeginOffset: 0, EndOffset: 5, Score: 0.99 },
@@ -222,7 +229,7 @@ describe("PiiRedactor", () => {
             expect(result.entityMap["[NAME]"]).toBe("NAME");
         });
 
-        test("should handle entities with undefined offsets gracefully", async () => {
+        it("should handle entities with undefined offsets gracefully", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "NAME" as PiiEntityType, Score: 0.99 },
@@ -238,7 +245,7 @@ describe("PiiRedactor", () => {
     });
 
     describe("redactPrompt", () => {
-        test("should return only the redacted text string", async () => {
+        it("should return only the redacted text string", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "NAME" as PiiEntityType, BeginOffset: 0, EndOffset: 5, Score: 0.99 },
@@ -253,7 +260,7 @@ describe("PiiRedactor", () => {
     });
 
     describe("pipe and chain (observable chaining)", () => {
-        test("should pipe text and await redacted result", async () => {
+        it("should pipe text and await redacted result", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "PHONE" as PiiEntityType, BeginOffset: 15, EndOffset: 27, Score: 0.95 },
@@ -266,7 +273,7 @@ describe("PiiRedactor", () => {
             expect(result.originalText).toBe("My phone is 555-1234");
         });
 
-        test("should chain redaction result into another async function", async () => {
+        it("should chain redaction result into another async function", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "NAME" as PiiEntityType, BeginOffset: 0, EndOffset: 5, Score: 0.99 },
@@ -286,7 +293,7 @@ describe("PiiRedactor", () => {
             expect(finalResult.entitiesFound).toBe(1);
         });
 
-        test("should chain into OpenAI-like endpoint call", async () => {
+        it("should chain into OpenAI-like endpoint call", async () => {
             mockSend.mockResolvedValueOnce({
                 Entities: [
                     { Type: "SSN" as PiiEntityType, BeginOffset: 10, EndOffset: 22, Score: 0.99 },
@@ -300,7 +307,7 @@ describe("PiiRedactor", () => {
                     ],
                 },
             };
-            axios.post = jest.fn().mockResolvedValueOnce(mockOpenAIResponse);
+            vi.mocked(axios.post).mockResolvedValueOnce(mockOpenAIResponse as any);
 
             const finalResponse = await redactor
                 .pipe("My SSN is 123-45-6789, please help")
@@ -316,7 +323,7 @@ describe("PiiRedactor", () => {
                 });
 
             expect(finalResponse).toBe("Processed safely");
-            const axiosCall = (axios.post as jest.Mock).mock.calls[0];
+            const axiosCall = vi.mocked(axios.post).mock.calls[0];
             const sentPrompt = axiosCall[1].messages[0].content;
             expect(sentPrompt).toContain("[REDACTED]");
             expect(sentPrompt).not.toContain("123-45-6789");
@@ -324,12 +331,12 @@ describe("PiiRedactor", () => {
     });
 
     describe("constructor", () => {
-        test("should use provided region", () => {
+        it("should use provided region", () => {
             const r = new PiiRedactor({ region: "eu-west-1", accessKeyId: "k", secretAccessKey: "s" });
             expect(r).toBeDefined();
         });
 
-        test("should default to us-east-1 when no region specified", () => {
+        it("should default to us-east-1 when no region specified", () => {
             const originalRegion = process.env.AWS_REGION;
             const originalDefault = process.env.AWS_DEFAULT_REGION;
             delete process.env.AWS_REGION;
@@ -342,7 +349,7 @@ describe("PiiRedactor", () => {
             process.env.AWS_DEFAULT_REGION = originalDefault;
         });
 
-        test("should use AWS_REGION env var when set", () => {
+        it("should use AWS_REGION env var when set", () => {
             process.env.AWS_REGION = "ap-southeast-1";
             const r = new PiiRedactor({ accessKeyId: "k", secretAccessKey: "s" });
             expect(r).toBeDefined();
