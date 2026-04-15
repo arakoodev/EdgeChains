@@ -13,7 +13,8 @@
         "./arakooserver": "./dist/arakooserver/src/index.js",
         "./db": "./dist/db/src/index.js",
         "./scraper": "./dist/scraper/src/index.js",
-        "./sync-rpc": "./dist/sync-rpc/index.js"
+        "./sync-rpc": "./dist/sync-rpc/index.js",
+        "./pii-redactor": "./dist/pii-redactor/src/index.js"
     },
     "scripts": {
         "build": "rm -rf dist && tsc -b",
@@ -22,8 +23,7 @@
         "test": "vitest"
     },
     "dependencies": {
-        "@babel/core": "^7.24.4",
-        "@babel/preset-env": "^7.24.4",
+        "@aws-sdk/client-comprehend": "^3.700.0",
         "@hono/node-server": "^0.6.0",
         "@lifeomic/attempt": "^3.1.0",
         "@playwright/test": "^1.45.3",
@@ -59,9 +59,11 @@
     "author": "",
     "license": "ISC",
     "devDependencies": {
-        "@babel/preset-typescript": "^7.24.1",
+        "@babel/core": "^7.29.0",
+        "@babel/preset-env": "^7.29.2",
+        "@babel/preset-typescript": "^7.28.5",
         "@types/cors": "^2.8.17",
-        "@types/jest": "^29.5.12",
+        "@types/jest": "^29.5.14",
         "@types/node": "^20.17.2",
         "@types/pdf-parse": "^1.1.4",
         "@types/ws": "^8.5.12",
@@ -71,7 +73,7 @@
         "process": "^0.11.10",
         "stream-browserify": "^3.0.0",
         "stream-http": "^3.2.0",
-        "ts-jest": "^29.1.2",
+        "ts-jest": "^29.4.9",
         "ts-loader": "^9.5.1",
         "typescript": "^5.6.3",
         "util": "^0.12.5"
