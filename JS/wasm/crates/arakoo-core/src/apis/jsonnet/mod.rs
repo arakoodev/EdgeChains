@@ -177,7 +177,7 @@ impl NativeCallbackHandler for NativeJSCallback {
                     ))
                 }
             } else {
-                Ok(Val::Str("Result is an object but returned object does not contain constructor function".into()))
+                Ok(Val::Str("Result is an object but retuned object does not contain constructor function".into()))
             }
         } else if result.is_str() {
             Ok(Val::Str(result.as_str().unwrap().into()))

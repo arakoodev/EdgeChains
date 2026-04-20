@@ -26,7 +26,7 @@ const server = net.createServer({ allowHalfOpen: true }, (c) => {
         } else {
             let result = modules[req.i](req.a);
             // console.log("typeof result ", typeof result)
-            // console.log("Result constr name",result.constructor)
+            // console.log("Resutl constr name",result.constructor)
             result.then(
                 function (response) {
                     respond({ s: true, v: response });
