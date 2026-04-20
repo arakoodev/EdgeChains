@@ -18,11 +18,11 @@ use serde_bytes::ByteBuf;
 
 use crate::apis::types::HttpRequest;
 
-pub mod wit {
+pub mod with {
     use wit_bindgen::generate;
 
     generate!({
-        path:"../../wit",
+        path:"../../with",
         world:"reactor",
     });
 
@@ -127,8 +127,8 @@ pub extern "C" fn init() {
     // ON_REJECT.set(SendWrapper::new(on_reject)).unwrap();
 }
 
-impl wit::inbound_http::Guest for Guest {
-    fn handle_request(req: wit::Request) -> wit::Response {
+impl with::inbound_http::Guest for Guest {
+    fn handle_request(req: with::Request) -> with::Response {
         debug!("{:?}", req);
         let context = **CONTEXT.get().unwrap();
         let mut serializer =
@@ -136,13 +136,13 @@ impl wit::inbound_http::Guest for Guest {
         // let handler = **HANDLER.get().unwrap();
         let request = HttpRequest {
             method: match req.method {
-                wit::Method::Get => "GET".to_string(),
-                wit::Method::Post => "POST".to_string(),
-                wit::Method::Put => "PUT".to_string(),
-                wit::Method::Delete => "DELETE".to_string(),
-                wit::Method::Patch => "PATCH".to_string(),
-                wit::Method::Head => "HEAD".to_string(),
-                wit::Method::Options => "OPTIONS".to_string(),
+                with::Method::Get => "GET".to_string(),
+                with::Method::Post => "POST".to_string(),
+                with::Method::Put => "PUT".to_string(),
+                with::Method::Delete => "DELETE".to_string(),
+                with::Method::Patch => "PATCH".to_string(),
+                with::Method::Head => "HEAD".to_string(),
+                with::Method::Options => "OPTIONS".to_string(),
             },
             uri: req.uri,
             headers: req
@@ -212,7 +212,7 @@ impl wit::inbound_http::Guest for Guest {
                     headers_vec.push((key.to_string(), value.to_string()));
                 }
             }
-            wit::Response {
+            with::Response {
                 status: status_code as u16,
                 headers: Some(headers_vec),
                 body: Some(body_ref.as_str().unwrap().as_bytes().to_vec()),
