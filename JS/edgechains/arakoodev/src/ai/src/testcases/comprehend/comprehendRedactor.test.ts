@@ -84,4 +84,41 @@ describe("ComprehendRedactor", () => {
 
     expect(response).toBe("[NAME] needs help");
   });
+
+  test("exposes observable-style text redaction for chainable flows", async () => {
+    const client = new FakeComprehendClient([
+      { Type: "NAME", BeginOffset: 0, EndOffset: 8, Score: 0.99 },
+    ]);
+    const redactor = new ComprehendRedactor({ client });
+
+    const redactedText = await new Promise<string>((resolve, reject) => {
+      redactor.redactTextObservable("Jane Doe needs help").subscribe({
+        next: resolve,
+        error: reject,
+      });
+    });
+
+    expect(redactedText).toBe("[NAME] needs help");
+  });
+
+  test("supports observable pipe operators", async () => {
+    const client = new FakeComprehendClient([
+      { Type: "NAME", BeginOffset: 0, EndOffset: 8, Score: 0.99 },
+    ]);
+    const redactor = new ComprehendRedactor({ client });
+
+    const redactedText = await redactor
+      .redactObservable("Jane Doe needs help")
+      .pipe(
+        (source) =>
+          new Promise<string>((resolve, reject) => {
+            source.subscribe({
+              next: (result) => resolve(result.redactedText),
+              error: reject,
+            });
+          }),
+      );
+
+    expect(redactedText).toBe("[NAME] needs help");
+  });
 });

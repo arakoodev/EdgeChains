@@ -20,5 +20,8 @@ const response = await safeOpenAI.chat({
 });
 ```
 
+For chainable flows, `redactObservable()` and `redactTextObservable()` expose a
+small Observable-style interface with `subscribe()` and `pipe()`.
+
 Credentials are read from `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, optional
 `AWS_SESSION_TOKEN`, and `AWS_REGION` or `AWS_DEFAULT_REGION`.

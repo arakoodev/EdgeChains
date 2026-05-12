@@ -27,6 +27,25 @@ type RedactionReplacement =
   | string
   | ((entity: PiiEntity, value: string) => string);
 
+type Observer<T> = {
+  next?: (value: T) => void;
+  error?: (error: unknown) => void;
+  complete?: () => void;
+};
+
+type Teardown = {
+  unsubscribe(): void;
+};
+
+export type ComprehendObservable<T> = {
+  subscribe(
+    observerOrNext: Observer<T> | ((value: T) => void),
+    error?: (error: unknown) => void,
+    complete?: () => void,
+  ): Teardown;
+  pipe<TNext>(operator: (source: ComprehendObservable<T>) => TNext): TNext;
+};
+
 export interface ComprehendRedactorOptions {
   region?: string;
   accessKeyId?: string;
@@ -105,6 +124,19 @@ export class ComprehendRedactor {
     return result.redactedText;
   }
 
+  redactObservable(
+    options: string | ComprehendRedactOptions,
+  ): ComprehendObservable<ComprehendRedactionResult> {
+    return this.createObservable(() => this.redact(options));
+  }
+
+  redactTextObservable(
+    text: string,
+    options: Omit<ComprehendRedactOptions, "text"> = {},
+  ): ComprehendObservable<string> {
+    return this.createObservable(() => this.redactText(text, options));
+  }
+
   async redactPromptOptions<T extends PromptLike>(
     chatOptions: T,
     options: Omit<ComprehendRedactOptions, "text"> = {},
@@ -149,6 +181,50 @@ export class ComprehendRedactor {
         return endpoint.chat(redactedOptions);
       },
     };
+  }
+
+  private createObservable<T>(
+    producer: () => Promise<T>,
+  ): ComprehendObservable<T> {
+    const observable: ComprehendObservable<T> = {
+      subscribe: (
+        observerOrNext: Observer<T> | ((value: T) => void),
+        error?: (error: unknown) => void,
+        complete?: () => void,
+      ) => {
+        let isSubscribed = true;
+        const observer =
+          typeof observerOrNext === "function"
+            ? { next: observerOrNext, error, complete }
+            : observerOrNext;
+
+        producer()
+          .then((value) => {
+            if (!isSubscribed) {
+              return;
+            }
+
+            observer.next?.(value);
+            observer.complete?.();
+          })
+          .catch((caughtError) => {
+            if (!isSubscribed) {
+              return;
+            }
+
+            observer.error?.(caughtError);
+          });
+
+        return {
+          unsubscribe: () => {
+            isSubscribed = false;
+          },
+        };
+      },
+      pipe: (operator) => operator(observable),
+    };
+
+    return observable;
   }
 
   private createClient(options: ComprehendRedactorOptions): ComprehendClient {
