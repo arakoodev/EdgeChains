@@ -37,6 +37,21 @@ interface InsertVectorDataArgs {
   [key: string]: any;
 }
 
+interface CreateCollectionArgs {
+  client: QdrantRestClient;
+  collectionName: string;
+  vectorSize?: number;
+  distance?: QdrantDistanceMetric | string;
+  vectors?: Record<string, any>;
+  wait?: boolean;
+  [key: string]: any;
+}
+
+interface CollectionArgs {
+  client: QdrantRestClient;
+  collectionName: string;
+}
+
 interface GetDataFromQueryArgs extends QdrantQueryOptions {
   client: QdrantRestClient;
   collectionName: string;
@@ -80,10 +95,10 @@ interface QdrantVectorClientArgs {
 }
 
 export enum QdrantDistanceMetric {
-  COSINE = "COSINE",
-  DOT = "DOT",
-  EUCLID = "EUCLID",
-  MANHATTAN = "MANHATTAN",
+  COSINE = "Cosine",
+  DOT = "Dot",
+  EUCLID = "Euclid",
+  MANHATTAN = "Manhattan",
 }
 
 export class QdrantRestClient {
@@ -141,6 +156,31 @@ export class QdrantRestClient {
         method: "PUT",
         body: JSON.stringify({ points }),
       },
+    );
+  }
+
+  async createCollection(
+    collectionName: string,
+    body: Record<string, any>,
+    wait = true,
+  ): Promise<any> {
+    return this.request(
+      `/collections/${encodeURIComponent(collectionName)}?wait=${wait}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(body),
+      },
+    );
+  }
+
+  async getCollection(collectionName: string): Promise<any> {
+    return this.request(`/collections/${encodeURIComponent(collectionName)}`);
+  }
+
+  async deleteCollection(collectionName: string, wait = true): Promise<any> {
+    return this.request(
+      `/collections/${encodeURIComponent(collectionName)}?wait=${wait}`,
+      { method: "DELETE" },
     );
   }
 
@@ -237,6 +277,46 @@ export class Qdrant {
 
   createClient() {
     return new QdrantRestClient(this.QDRANT_URL, this.QDRANT_API_KEY);
+  }
+
+  async createCollection({
+    client,
+    collectionName,
+    vectorSize,
+    distance = QdrantDistanceMetric.COSINE,
+    vectors,
+    wait = true,
+    ...config
+  }: CreateCollectionArgs): Promise<any> {
+    if (!vectors && !vectorSize) {
+      throw new Error("Qdrant vectorSize or vectors config is required");
+    }
+
+    const body = {
+      ...config,
+      vectors: vectors || {
+        size: vectorSize,
+        distance,
+      },
+    };
+
+    return client.createCollection(collectionName, body, wait);
+  }
+
+  async getCollection({
+    client,
+    collectionName,
+  }: CollectionArgs): Promise<any> {
+    const response = await client.getCollection(collectionName);
+    return response?.result || response;
+  }
+
+  async deleteCollection({
+    client,
+    collectionName,
+    wait = true,
+  }: CollectionArgs & { wait?: boolean }): Promise<any> {
+    return client.deleteCollection(collectionName, wait);
   }
 
   async insertVectorData({

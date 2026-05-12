@@ -21,6 +21,40 @@ describe("Qdrant", () => {
     global.fetch = vi.fn();
   });
 
+  it("creates a Qdrant collection with vector configuration", async () => {
+    (global.fetch as any).mockImplementation(() =>
+      mockFetchResponse({
+        result: { operation_id: 1, status: "acknowledged" },
+      }),
+    );
+
+    const qdrant = new Qdrant(MOCK_QDRANT_URL, MOCK_QDRANT_API_KEY);
+    const client = qdrant.createClient();
+
+    await qdrant.createCollection({
+      client,
+      collectionName: "documents",
+      vectorSize: 1536,
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://mock-qdrant.local/collections/documents?wait=true",
+      expect.objectContaining({
+        method: "PUT",
+        headers: expect.objectContaining({
+          "api-key": MOCK_QDRANT_API_KEY,
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          vectors: {
+            size: 1536,
+            distance: "Cosine",
+          },
+        }),
+      }),
+    );
+  });
+
   it("upserts embedding data into a Qdrant collection", async () => {
     (global.fetch as any).mockImplementation(() =>
       mockFetchResponse({
@@ -117,6 +151,27 @@ describe("Qdrant", () => {
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ points: ["doc-1"] }),
+      }),
+    );
+  });
+
+  it("deletes a collection by name", async () => {
+    (global.fetch as any).mockImplementation(() =>
+      mockFetchResponse({ result: true }),
+    );
+
+    const qdrant = new Qdrant(MOCK_QDRANT_URL, MOCK_QDRANT_API_KEY);
+    const client = qdrant.createClient();
+
+    await qdrant.deleteCollection({
+      client,
+      collectionName: "documents",
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://mock-qdrant.local/collections/documents?wait=true",
+      expect.objectContaining({
+        method: "DELETE",
       }),
     );
   });
