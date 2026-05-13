@@ -24,6 +24,26 @@ describe("AwsComprehendRedactor", () => {
         expect(result.redactedText).toBe("Contact me at ****************");
     });
 
+    test("redacts entity spans after astral Unicode characters", async () => {
+        const client = {
+            send: vi.fn().mockResolvedValue({
+                Entities: [
+                    {
+                        Type: "EMAIL",
+                        Score: 0.99,
+                        BeginOffset: 16,
+                        EndOffset: 32,
+                    },
+                ],
+            }),
+        };
+        const redactor = new AwsComprehendRedactor({ client });
+
+        const result = await redactor.redact("🙂 Contact me at jane@example.com");
+
+        expect(result.redactedText).toBe("🙂 Contact me at ****************");
+    });
+
     test("redacts prompt and messages before calling a chat endpoint", async () => {
         const client = {
             send: vi.fn().mockResolvedValue({

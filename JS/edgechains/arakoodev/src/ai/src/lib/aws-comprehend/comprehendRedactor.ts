@@ -28,6 +28,22 @@ type RedactionClient = {
     send(command: DetectPiiEntitiesCommand): Promise<DetectPiiEntitiesCommandOutput>;
 };
 
+const getStringIndexFromComprehendOffset = (text: string, offset = 0): number => {
+    let codePointOffset = 0;
+
+    for (let stringIndex = 0; stringIndex < text.length; ) {
+        if (codePointOffset >= offset) return stringIndex;
+
+        const codePoint = text.codePointAt(stringIndex);
+        stringIndex += codePoint && codePoint > 0xffff ? 2 : 1;
+        codePointOffset += 1;
+    }
+
+    return text.length;
+};
+
+const getCodePointLength = (text: string): number => Array.from(text).length;
+
 export type AwsComprehendRedactionResult = {
     originalText: string;
     redactedText: string;
@@ -120,10 +136,14 @@ export class AwsComprehendRedactor {
 
     private replaceEntities(text: string, entities: PiiEntity[]): string {
         return entities.reduce((redacted, entity) => {
-            const begin = entity.BeginOffset ?? 0;
-            const end = entity.EndOffset ?? begin;
+            const begin = getStringIndexFromComprehendOffset(text, entity.BeginOffset ?? 0);
+            const end = getStringIndexFromComprehendOffset(
+                text,
+                entity.EndOffset ?? entity.BeginOffset ?? 0
+            );
             const replacement =
-                this.replacementText || this.maskCharacter.repeat(Math.max(end - begin, 0));
+                this.replacementText ||
+                this.maskCharacter.repeat(getCodePointLength(text.slice(begin, end)));
             return redacted.slice(0, begin) + replacement + redacted.slice(end);
         }, text);
     }

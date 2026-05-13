@@ -1,10 +1,16 @@
 import Jsonnet from "@arakoodev/jsonnet";
 import { AwsComprehendRedactor } from "@arakoodev/edgechains.js/ai";
+import { existsSync } from "node:fs";
 import path from "node:path";
 
 const jsonnet = new Jsonnet();
+const configPath =
+    [
+        path.join(__dirname, "../jsonnet/main.jsonnet"),
+        path.join(__dirname, "../../jsonnet/main.jsonnet"),
+    ].find(existsSync) || path.join(__dirname, "../jsonnet/main.jsonnet");
 const config = JSON.parse(
-    jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/main.jsonnet"))
+    jsonnet.evaluateFile(configPath)
 ) as {
     languageCode: "en";
     prompt: string;
