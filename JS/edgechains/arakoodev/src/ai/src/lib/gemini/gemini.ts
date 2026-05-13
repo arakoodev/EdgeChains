@@ -1,6 +1,5 @@
 import axios from "axios";
 import { retry } from "@lifeomic/attempt";
-const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
 
 interface GeminiAIConstructionOptions {
     apiKey?: string;
@@ -56,12 +55,16 @@ interface GeminiAIChatOptions {
 
 export class GeminiAI {
     apiKey: string;
+
     constructor(options: GeminiAIConstructionOptions) {
         this.apiKey = options.apiKey || process.env.GEMINI_API_KEY || "";
     }
 
     async chat(chatOptions: GeminiAIChatOptions): Promise<Response> {
-        let data = JSON.stringify({
+        const model = chatOptions.model || "gemini-1.5-pro";
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+        const requestBody = {
             contents: [
                 {
                     role: "user",
@@ -72,26 +75,32 @@ export class GeminiAI {
                     ],
                 },
             ],
-        });
+            generationConfig: {
+                temperature: chatOptions.temperature ?? 0.7,
+                maxOutputTokens: chatOptions.max_output_tokens ?? 1024,
+                responseMimeType: chatOptions.responseType || "text/plain",
+            },
+        };
 
-        let config = {
+        const config = {
             method: "post",
-            maxBodyLength: Infinity,
             url,
             headers: {
                 "Content-Type": "application/json",
                 "x-goog-api-key": this.apiKey,
             },
-            temperature: chatOptions.temperature || "0.7",
-            responseMimeType: chatOptions.responseType || "text/plain",
-            max_output_tokens: chatOptions.max_output_tokens || 1024,
-            data: data,
+            data: requestBody,
         };
+
         return await retry(
             async () => {
-                return (await axios.request(config)).data;
+                const response = await axios.request(config);
+                return response.data;
             },
-            { maxAttempts: chatOptions.max_retry || 3, delay: chatOptions.delay || 200 }
+            { 
+                maxAttempts: chatOptions.max_retry || 3, 
+                delay: chatOptions.delay || 200 
+            }
         );
     }
 }
