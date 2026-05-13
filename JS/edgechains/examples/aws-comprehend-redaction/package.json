@@ -1,0 +1,15 @@
+{
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "^0.1.23",
+        "@arakoodev/jsonnet": "^0.25.0",
+        "@aws-sdk/client-comprehend": "^3.808.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.17.2",
+        "typescript": "^5.6.3"
+    }
+}
