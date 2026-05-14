@@ -4,3 +4,4 @@ export { LlamaAI } from "./lib/llama/llama.js";
 export { RetellAI } from "./lib/retell-ai/retell.js";
 export { RetellWebClient } from "./lib/retell-ai/retellWebClient.js";
 export { AWSComprehend } from "./lib/comprehend/comprehend.js";
+export { SmartRouter } from "./lib/router/router.js";
