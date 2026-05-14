@@ -58,6 +58,32 @@ export class SmartRouter {
     );
   }
 
+  /**
+   * Streamed version of the unified chat.
+   * Note: Some providers might not support streaming via unified method yet.
+   */
+  async *streamedChat(options: UnifiedChatOptions): AsyncGenerator<string> {
+    let lastError: Error | null = null;
+
+    for (const providerConfig of this.providers) {
+      try {
+        const stream = this.callProviderStream(providerConfig, options);
+        for await (const chunk of stream) {
+          yield chunk;
+        }
+        return; // Success
+      } catch (error: any) {
+        console.warn(`Stream provider ${providerConfig.label} failed: ${error.message}`);
+        lastError = error;
+        continue;
+      }
+    }
+
+    throw new Error(
+      `All stream providers failed. Last error: ${lastError ? lastError.message : "Unknown"}`
+    );
+  }
+
   private async callProvider(
     config: RouterConfig,
     options: UnifiedChatOptions
@@ -144,5 +170,23 @@ export class SmartRouter {
     }
 
     throw new Error("Unsupported provider instance");
+  }
+
+  private async *callProviderStream(
+    config: RouterConfig,
+    options: UnifiedChatOptions
+  ): AsyncGenerator<string> {
+    const { instance, model: defaultModel } = config;
+    const model = options.model || defaultModel;
+
+    if (instance instanceof DeepSeekAI || instance instanceof OpenAI) {
+      // Note: EdgeChains OpenAI class doesn't return an AsyncGenerator for streamedChat yet.
+      // It returns a promise. This is a limitation of the current SDK structure.
+      // We would need to refactor OpenAI.ts further to support true streaming generators.
+      // For now, we'll throw an error or implement a shim.
+      throw new Error(`Streaming not fully implemented in SDK for ${config.label}`);
+    }
+
+    throw new Error(`Streaming not supported for ${config.label}`);
   }
 }
