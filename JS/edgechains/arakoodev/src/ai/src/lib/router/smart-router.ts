@@ -1,7 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { retry } from "@lifeomic/attempt";
 import { role } from "../../types/index";
-import { Readable } from "stream";
 
 export interface DeploymentConfig {
     id: string;
@@ -90,7 +89,6 @@ export class SmartRouter {
                     const deploymentId = error.config?.headers?.["X-Deployment-Id"];
                     if (deploymentId) {
                         this.cooldowns.set(deploymentId, Date.now() + this.cooldownPeriod);
-                        console.warn(`[SmartRouter] Deployment ${deploymentId} rate limited. Cooling down for ${this.cooldownPeriod}ms.`);
                     }
                 }
                 return Promise.reject(error);
@@ -110,8 +108,6 @@ export class SmartRouter {
 
     private selectDeployment(): DeploymentConfig {
         const now = Date.now();
-        
-        // Filter out deployments in cooldown or over RPM/TPM limits
         const available = this.deployments.filter(d => {
             const cooldownUntil = this.cooldowns.get(d.id) || 0;
             if (now < cooldownUntil) return false;
@@ -133,7 +129,17 @@ export class SmartRouter {
             return true;
         });
 
-        const targets = available.length > 0 ? available : this.deployments; // Fallback to all if all are limited
+        let targets = available;
+        if (targets.length === 0) {
+            // No deployments are "available" (either in cooldown or over RPM/TPM limits).
+            // We'll pick the one with the earliest cooldown reset.
+            const deploymentsByCooldown = [...this.deployments].sort((a, b) => {
+                const aCool = this.cooldowns.get(a.id) || 0;
+                const bCool = this.cooldowns.get(b.id) || 0;
+                return aCool - bCool;
+            });
+            targets = [deploymentsByCooldown[0]];
+        }
 
         if (this.strategy === "least-tokens") {
             return targets.reduce((prev, curr) => {
@@ -165,10 +171,26 @@ export class SmartRouter {
         return targets[0];
     }
 
-    async chat(options: ChatOptions): Promise<SmartRouterResponse | Readable> {
+    async chat(options: ChatOptions): Promise<SmartRouterResponse | AsyncIterable<string>> {
         if (options.stream) {
-            const deployment = this.selectDeployment();
-            return this.callProviderStream(deployment, options);
+            return await retry(
+                async () => {
+                    const deployment = this.selectDeployment();
+                    try {
+                        // Return the async iterable directly
+                        return this.callProviderStream(deployment, options);
+                    } catch (error) {
+                        this.adapters.forEach(a => a.onFailure(deployment, options, error));
+                        throw error;
+                    }
+                },
+                {
+                    maxAttempts: this.retries,
+                    handleError: (error, context) => {
+                        console.error(`[SmartRouter] Stream attempt ${context.attemptNum} failed: ${error.message}`);
+                    }
+                }
+            );
         }
 
         const startTime = Date.now();
@@ -180,7 +202,6 @@ export class SmartRouter {
                     const usage = this.normalizeUsage(deployment, response.data);
                     const latency = Date.now() - startTime;
 
-                    // Update metrics
                     this.tokenUsageMap.set(deployment.id, (this.tokenUsageMap.get(deployment.id) || 0) + usage.total_tokens);
                     this.rpmCounter.get(deployment.id)!.count++;
                     this.tpmCounter.get(deployment.id)!.count += usage.total_tokens;
@@ -215,13 +236,83 @@ export class SmartRouter {
         });
     }
 
-    private async callProviderStream(deployment: DeploymentConfig, options: ChatOptions): Promise<Readable> {
+    private async *callProviderStream(deployment: DeploymentConfig, options: ChatOptions): AsyncIterable<string> {
         const { url, body, headers } = this.prepareRequest(deployment, options);
         const response = await this.axiosInstance.post(url, body, { 
             headers: { ...headers, "X-Deployment-Id": deployment.id }, 
             responseType: "stream" 
         });
-        return response.data;
+
+        const stream = response.data;
+        let buffer = "";
+
+        for await (const chunk of stream) {
+            buffer += chunk.toString();
+            
+            if (deployment.provider === "openai" || deployment.provider === "openrouter") {
+                let newlineIndex;
+                while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+                    const line = buffer.slice(0, newlineIndex).trim();
+                    buffer = buffer.slice(newlineIndex + 1);
+                    
+                    if (line.startsWith("data: ")) {
+                        const message = line.slice(6);
+                        if (message === "[DONE]") return;
+                        try {
+                            const parsed = JSON.parse(message);
+                            const content = this.extractStreamContent(deployment, parsed);
+                            if (content) yield content;
+                        } catch (e) {
+                            // If invalid JSON, ignore and continue
+                        }
+                    }
+                }
+            } else if (deployment.provider === "google") {
+                // Gemini returns JSON fragments, sometimes wrapped in an array [ ... ]
+                // We use a robust brace-counting approach with a buffer.
+                buffer = buffer.trimStart();
+                if (buffer.startsWith("[")) {
+                    buffer = buffer.slice(1).trimStart();
+                }
+
+                let braceCount = 0;
+                let startPos = -1;
+                let i = 0;
+                while (i < buffer.length) {
+                    if (buffer[i] === "{") {
+                        if (braceCount === 0) startPos = i;
+                        braceCount++;
+                    } else if (buffer[i] === "}") {
+                        braceCount--;
+                        if (braceCount === 0 && startPos !== -1) {
+                            const jsonStr = buffer.slice(startPos, i + 1);
+                            try {
+                                const parsed = JSON.parse(jsonStr);
+                                const content = this.extractStreamContent(deployment, parsed);
+                                if (content) yield content;
+                                
+                                // Successfully processed an object, consume it from buffer
+                                buffer = buffer.slice(i + 1).trimStart();
+                                // Skip delimiters
+                                if (buffer.startsWith(",")) {
+                                    buffer = buffer.slice(1).trimStart();
+                                } else if (buffer.startsWith("]")) {
+                                    buffer = buffer.slice(1).trimStart();
+                                }
+                                i = -1; // Reset to start of updated buffer
+                                startPos = -1;
+                            } catch (e) {
+                                // Likely incomplete JSON, keep in buffer
+                            }
+                        }
+                    }
+                    i++;
+                }
+            } else {
+                yield buffer;
+                buffer = "";
+            }
+        }
     }
 
     private prepareRequest(deployment: DeploymentConfig, options: ChatOptions) {
@@ -237,15 +328,15 @@ export class SmartRouter {
         if (deployment.provider === "openai" || deployment.provider === "openrouter") {
             url = url || (deployment.provider === "openai" ? "https://api.openai.com/v1/chat/completions" : "https://openrouter.ai/api/v1/chat/completions");
             headers["Authorization"] = `Bearer ${deployment.apiKey}`;
-            if (deployment.provider === "openrouter") {
-                headers["HTTP-Referer"] = "https://github.com/arakoodev/EdgeChains";
-                headers["X-Title"] = "EdgeChains Smart Router";
-            }
             body.messages = options.messages;
         } else if (deployment.provider === "google") {
-            url = url || `https://generativelanguage.googleapis.com/v1/models/${deployment.model}:generateContent?key=${deployment.apiKey}`;
+            const method = options.stream ? "streamGenerateContent" : "generateContent";
+            url = url || `https://generativelanguage.googleapis.com/v1/models/${deployment.model}:${method}?key=${deployment.apiKey}`;
+            const systemMessage = options.messages.find(m => m.role === "system");
+            const otherMessages = options.messages.filter(m => m.role !== "system");
+            
             body = {
-                contents: options.messages.map(m => ({
+                contents: otherMessages.map(m => ({
                     role: m.role === "assistant" ? "model" : "user",
                     parts: [{ text: m.content }]
                 })),
@@ -254,6 +345,12 @@ export class SmartRouter {
                     maxOutputTokens: options.max_tokens || 512,
                 }
             };
+
+            if (systemMessage) {
+                (body as any).systemInstruction = {
+                    parts: [{ text: systemMessage.content }]
+                };
+            }
         } else if (deployment.provider === "cohere") {
             url = url || "https://api.cohere.ai/v1/chat";
             headers["Authorization"] = `Bearer ${deployment.apiKey}`;
@@ -271,9 +368,16 @@ export class SmartRouter {
     }
 
     private extractContent(deployment: DeploymentConfig, response: AxiosResponse): string {
-        if (deployment.provider === "openai" || deployment.provider === "openrouter") return response.data.choices[0].message.content;
-        if (deployment.provider === "google") return response.data.candidates[0].content.parts[0].text;
-        if (deployment.provider === "cohere") return response.data.text;
+        if (deployment.provider === "openai" || deployment.provider === "openrouter") return response.data.choices?.[0]?.message?.content || "";
+        if (deployment.provider === "google") return response.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        if (deployment.provider === "cohere") return response.data.text || "";
+        return "";
+    }
+
+    private extractStreamContent(deployment: DeploymentConfig, parsed: any): string {
+        if (deployment.provider === "openai" || deployment.provider === "openrouter") return parsed.choices[0]?.delta?.content || "";
+        if (deployment.provider === "google") return parsed.candidates[0]?.content?.parts[0]?.text || "";
+        if (deployment.provider === "cohere") return parsed.text || "";
         return "";
     }
 
@@ -290,8 +394,6 @@ export class SmartRouter {
         return { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
     }
 }
-
-// --- Adapters ---
 
 export const createSentryAdapter = (Sentry: any): ObservabilityAdapter => ({
     onSuccess: (deployment, options, usage, latency) => {
