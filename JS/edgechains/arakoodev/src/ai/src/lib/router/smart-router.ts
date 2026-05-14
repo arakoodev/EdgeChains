@@ -11,6 +11,8 @@ export interface DeploymentConfig {
     url?: string;
     weight?: number;
     priority?: number;
+    rpm?: number;
+    tpm?: number;
 }
 
 export interface RouterOptions {
@@ -21,6 +23,7 @@ export interface RouterOptions {
     sentryDsn?: string;
     posthogKey?: string;
     posthogHost?: string;
+    cooldownPeriod?: number; // ms
 }
 
 export interface ChatMessage {
@@ -46,6 +49,12 @@ export interface SmartRouterResponse {
     usage: Usage;
     model: string;
     provider: string;
+    deploymentId: string;
+}
+
+export interface ObservabilityAdapter {
+    onSuccess: (deployment: DeploymentConfig, options: ChatOptions, usage: Usage, latency: number) => void;
+    onFailure: (deployment: DeploymentConfig, options: ChatOptions, error: any) => void;
 }
 
 export class SmartRouter {
@@ -53,18 +62,22 @@ export class SmartRouter {
     private strategy: string;
     private timeout: number;
     private retries: number;
+    private cooldownPeriod: number;
     private axiosInstance: AxiosInstance;
+    
     private tokenUsageMap: Map<string, number> = new Map();
-    private sentryDsn?: string;
-    private posthogKey?: string;
+    private rpmCounter: Map<string, { count: number, resetAt: number }> = new Map();
+    private tpmCounter: Map<string, { count: number, resetAt: number }> = new Map();
+    private cooldowns: Map<string, number> = new Map();
+    
+    private adapters: ObservabilityAdapter[] = [];
 
     constructor(options: RouterOptions) {
         this.deployments = options.deployments;
         this.strategy = options.strategy || "least-tokens";
         this.timeout = options.timeout || 30000;
         this.retries = options.retries || 3;
-        this.sentryDsn = options.sentryDsn;
-        this.posthogKey = options.posthogKey;
+        this.cooldownPeriod = options.cooldownPeriod || 60000;
 
         this.axiosInstance = axios.create({
             timeout: this.timeout,
@@ -74,25 +87,64 @@ export class SmartRouter {
             (response) => response,
             (error) => {
                 if (error.response?.status === 429) {
-                    console.warn("Rate limit hit, triggering retry/failover...");
+                    const deploymentId = error.config?.headers?.["X-Deployment-Id"];
+                    if (deploymentId) {
+                        this.cooldowns.set(deploymentId, Date.now() + this.cooldownPeriod);
+                        console.warn(`[SmartRouter] Deployment ${deploymentId} rate limited. Cooling down for ${this.cooldownPeriod}ms.`);
+                    }
                 }
                 return Promise.reject(error);
             }
         );
 
-        this.deployments.forEach(d => this.tokenUsageMap.set(d.id, 0));
+        this.deployments.forEach(d => {
+            this.tokenUsageMap.set(d.id, 0);
+            this.rpmCounter.set(d.id, { count: 0, resetAt: Date.now() + 60000 });
+            this.tpmCounter.set(d.id, { count: 0, resetAt: Date.now() + 60000 });
+        });
+    }
+
+    public addAdapter(adapter: ObservabilityAdapter) {
+        this.adapters.push(adapter);
     }
 
     private selectDeployment(): DeploymentConfig {
+        const now = Date.now();
+        
+        // Filter out deployments in cooldown or over RPM/TPM limits
+        const available = this.deployments.filter(d => {
+            const cooldownUntil = this.cooldowns.get(d.id) || 0;
+            if (now < cooldownUntil) return false;
+
+            const rpm = this.rpmCounter.get(d.id)!;
+            if (now > rpm.resetAt) {
+                rpm.count = 0;
+                rpm.resetAt = now + 60000;
+            }
+            if (d.rpm && rpm.count >= d.rpm) return false;
+
+            const tpm = this.tpmCounter.get(d.id)!;
+            if (now > tpm.resetAt) {
+                tpm.count = 0;
+                tpm.resetAt = now + 60000;
+            }
+            if (d.tpm && tpm.count >= d.tpm) return false;
+
+            return true;
+        });
+
+        const targets = available.length > 0 ? available : this.deployments; // Fallback to all if all are limited
+
         if (this.strategy === "least-tokens") {
-            return this.deployments.reduce((prev, curr) => {
+            return targets.reduce((prev, curr) => {
                 const prevUsage = this.tokenUsageMap.get(prev.id) || 0;
                 const currUsage = this.tokenUsageMap.get(curr.id) || 0;
                 return prevUsage <= currUsage ? prev : curr;
             });
         }
+        
         if (this.strategy === "round-robin") {
-            const deploymentsByUsage = [...this.deployments].sort((a, b) => {
+            const deploymentsByUsage = [...targets].sort((a, b) => {
                 const usageA = this.tokenUsageMap.get(a.id) || 0;
                 const usageB = this.tokenUsageMap.get(b.id) || 0;
                 return usageA - usageB;
@@ -101,45 +153,56 @@ export class SmartRouter {
             const candidates = deploymentsByUsage.filter(d => (this.tokenUsageMap.get(d.id) || 0) === lowestUsage);
             return candidates[Math.floor(Math.random() * candidates.length)];
         }
+
         if (this.strategy === "priority") {
-            return this.deployments.reduce((prev, curr) => {
+            return targets.reduce((prev, curr) => {
                 const prevPriority = prev.priority ?? 999;
                 const currPriority = curr.priority ?? 999;
                 return prevPriority <= currPriority ? prev : curr;
             });
         }
-        return this.deployments[0];
+
+        return targets[0];
     }
 
     async chat(options: ChatOptions): Promise<SmartRouterResponse | Readable> {
         if (options.stream) {
             const deployment = this.selectDeployment();
-            this.logToObservability(deployment, options, "stream_started");
             return this.callProviderStream(deployment, options);
         }
 
+        const startTime = Date.now();
         return await retry(
             async () => {
                 const deployment = this.selectDeployment();
-                const response = await this.callProvider(deployment, options);
-                
-                const usage = this.normalizeUsage(deployment, response.data);
-                const currentTotal = this.tokenUsageMap.get(deployment.id) || 0;
-                this.tokenUsageMap.set(deployment.id, currentTotal + usage.total_tokens);
+                try {
+                    const response = await this.callProvider(deployment, options);
+                    const usage = this.normalizeUsage(deployment, response.data);
+                    const latency = Date.now() - startTime;
 
-                this.logToObservability(deployment, options, "success", usage);
+                    // Update metrics
+                    this.tokenUsageMap.set(deployment.id, (this.tokenUsageMap.get(deployment.id) || 0) + usage.total_tokens);
+                    this.rpmCounter.get(deployment.id)!.count++;
+                    this.tpmCounter.get(deployment.id)!.count += usage.total_tokens;
 
-                return {
-                    content: this.extractContent(deployment, response),
-                    usage: usage,
-                    model: deployment.model,
-                    provider: deployment.provider,
-                };
+                    this.adapters.forEach(a => a.onSuccess(deployment, options, usage, latency));
+
+                    return {
+                        content: this.extractContent(deployment, response),
+                        usage: usage,
+                        model: deployment.model,
+                        provider: deployment.provider,
+                        deploymentId: deployment.id,
+                    };
+                } catch (error) {
+                    this.adapters.forEach(a => a.onFailure(deployment, options, error));
+                    throw error;
+                }
             },
             {
                 maxAttempts: this.retries,
                 handleError: (error, context) => {
-                    console.error(`Retry attempt ${context.attemptNum} failed: ${error.response?.data?.error?.message || error.message}`);
+                    console.error(`[SmartRouter] Attempt ${context.attemptNum} failed: ${error.message}`);
                 }
             }
         );
@@ -147,13 +210,15 @@ export class SmartRouter {
 
     private async callProvider(deployment: DeploymentConfig, options: ChatOptions): Promise<AxiosResponse> {
         const { url, body, headers } = this.prepareRequest(deployment, options);
-        return await this.axiosInstance.post(url, body, { headers });
+        return await this.axiosInstance.post(url, body, { 
+            headers: { ...headers, "X-Deployment-Id": deployment.id } 
+        });
     }
 
     private async callProviderStream(deployment: DeploymentConfig, options: ChatOptions): Promise<Readable> {
         const { url, body, headers } = this.prepareRequest(deployment, options);
         const response = await this.axiosInstance.post(url, body, { 
-            headers, 
+            headers: { ...headers, "X-Deployment-Id": deployment.id }, 
             responseType: "stream" 
         });
         return response.data;
@@ -224,9 +289,45 @@ export class SmartRouter {
         }
         return { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
     }
-
-    private logToObservability(deployment: DeploymentConfig, options: ChatOptions, status: string, usage?: Usage) {
-        if (this.sentryDsn) { /* ... */ }
-        if (this.posthogKey) { /* ... */ }
-    }
 }
+
+// --- Adapters ---
+
+export const createSentryAdapter = (Sentry: any): ObservabilityAdapter => ({
+    onSuccess: (deployment, options, usage, latency) => {
+        Sentry.captureMessage(`[SmartRouter] Success: ${deployment.id}`, {
+            level: "info",
+            extra: { deployment, usage, latency }
+        });
+    },
+    onFailure: (deployment, options, error) => {
+        Sentry.captureException(error, {
+            extra: { deployment, options }
+        });
+    }
+});
+
+export const createPostHogAdapter = (posthog: any): ObservabilityAdapter => ({
+    onSuccess: (deployment, options, usage, latency) => {
+        posthog.capture({
+            event: "smart_router_request_success",
+            properties: {
+                deployment_id: deployment.id,
+                provider: deployment.provider,
+                model: deployment.model,
+                usage,
+                latency_ms: latency
+            }
+        });
+    },
+    onFailure: (deployment, options, error) => {
+        posthog.capture({
+            event: "smart_router_request_failure",
+            properties: {
+                deployment_id: deployment.id,
+                error: error.message,
+                status: error.response?.status
+            }
+        });
+    }
+});
