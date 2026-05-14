@@ -6,8 +6,9 @@ import { OpenAI } from "../openai/openai.js";
 import { GeminiAI } from "../gemini/gemini.js";
 import { LlamaAI } from "../llama/llama.js";
 import { AnthropicAI } from "../anthropic/anthropic.js";
+import { DeepSeekAI } from "../deepseek/deepseek.js";
 
-export type AIProviderInstance = OpenAI | GeminiAI | LlamaAI | AnthropicAI;
+export type AIProviderInstance = OpenAI | GeminiAI | LlamaAI | AnthropicAI | DeepSeekAI;
 
 export interface RouterConfig {
   instance: AIProviderInstance;
@@ -57,7 +58,7 @@ export class SmartRouter {
     const { instance, model: defaultModel } = config;
     const model = options.model || defaultModel;
 
-    if (instance instanceof OpenAI) {
+    if (instance instanceof DeepSeekAI || instance instanceof OpenAI) {
       const res = await instance.chat({
         model: model as any,
         prompt: options.prompt,
@@ -65,7 +66,11 @@ export class SmartRouter {
         temperature: options.temperature,
         max_tokens: options.maxTokens,
       });
-      return { content: res.content, model: model || "gpt-3.5-turbo", raw: res };
+      return {
+        content: res.content,
+        model: model || (instance instanceof DeepSeekAI ? "deepseek-chat" : "gpt-3.5-turbo"),
+        raw: res,
+      };
     } 
     
     if (instance instanceof GeminiAI) {

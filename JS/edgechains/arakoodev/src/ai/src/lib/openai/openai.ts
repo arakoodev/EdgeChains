@@ -2,11 +2,11 @@ import axios from "axios";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { z } from "zod";
 import { ChatModel, role } from "../../types/index";
-const openAI_url = "https://api.openai.com/v1/chat/completions";
 
 interface OpenAIConstructionOptions {
   apiKey?: string;
   orgId?: string;
+  baseUrl?: string;
 }
 
 interface messageOption {
@@ -16,7 +16,7 @@ interface messageOption {
 }
 
 interface OpenAIChatOptions {
-  model?: ChatModel;
+  model?: ChatModel | string;
   role?: role;
   max_tokens?: number;
   temperature?: number;
@@ -26,7 +26,7 @@ interface OpenAIChatOptions {
 }
 
 interface chatWithFunctionOptions {
-  model?: ChatModel;
+  model?: ChatModel | string;
   role?: role;
   max_tokens?: number;
   temperature?: number;
@@ -37,7 +37,7 @@ interface chatWithFunctionOptions {
 }
 
 interface ZodSchemaResponseOptions<S extends z.ZodTypeAny> {
-  model?: ChatModel;
+  model?: ChatModel | string;
   role?: role;
   max_tokens?: number;
   temperature?: number;
@@ -60,21 +60,19 @@ interface OpenAIChatReturnOptions {
 export class OpenAI {
   apiKey: string;
   orgId: string;
-  constructor(options: OpenAIConstructionOptions) {
+  baseUrl: string;
+
+  constructor(options: OpenAIConstructionOptions = {}) {
     this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || "";
     this.orgId = options.orgId || process.env.OPENAI_ORG_ID || "";
+    this.baseUrl = options.baseUrl || "https://api.openai.com/v1";
     this.checkKeys();
   }
 
   private checkKeys(): void {
     if (!this.apiKey) {
       console.error(
-        "API key is missing. Please provide a valid OpenAI API key. You can add it in .env file as OPENAI_API_KEY",
-      );
-    }
-    if (!this.orgId) {
-      console.warn(
-        "Organization ID is missing. Please provide a valid OpenAI Organization ID. You can add it in .env file as OPENAI_ORG_ID",
+        "API key is missing. Please provide a valid API key.",
       );
     }
   }
@@ -82,7 +80,7 @@ export class OpenAI {
   async chat(chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
     const response = await axios
       .post(
-        openAI_url,
+        `${this.baseUrl}/chat/completions`,
         {
           model: chatOptions.model || "gpt-3.5-turbo",
           messages: chatOptions.prompt
@@ -129,7 +127,7 @@ export class OpenAI {
   ): Promise<OpenAIChatReturnOptions> {
     const response = await axios
       .post(
-        openAI_url,
+        `${this.baseUrl}/chat/completions`,
         {
           model: chatOptions.model || "gpt-3.5-turbo",
           messages: chatOptions.prompt
@@ -177,7 +175,7 @@ export class OpenAI {
   ): Promise<chatWithFunctionReturnOptions> {
     const response = await axios
       .post(
-        openAI_url,
+        `${this.baseUrl}/chat/completions`,
         {
           model: chatOptions.model || "gpt-3.5-turbo",
           messages: chatOptions.prompt
@@ -229,7 +227,7 @@ export class OpenAI {
   }): Promise<any> {
     const response = await axios
       .post(
-        "https://api.openai.com/v1/embeddings",
+        `${this.baseUrl}/embeddings`,
         {
           model: model,
           input,
@@ -283,7 +281,7 @@ export class OpenAI {
 
     const response = await axios
       .post(
-        openAI_url,
+        `${this.baseUrl}/chat/completions`,
         {
           model: chatOptions.model || "gpt-3.5-turbo-16k",
           messages: [
