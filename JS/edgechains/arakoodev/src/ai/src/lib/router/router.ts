@@ -5,8 +5,9 @@ import {
 import { OpenAI } from "../openai/openai.js";
 import { GeminiAI } from "../gemini/gemini.js";
 import { LlamaAI } from "../llama/llama.js";
+import { AnthropicAI } from "../anthropic/anthropic.js";
 
-export type AIProviderInstance = OpenAI | GeminiAI | LlamaAI;
+export type AIProviderInstance = OpenAI | GeminiAI | LlamaAI | AnthropicAI;
 
 export interface RouterConfig {
   instance: AIProviderInstance;
@@ -92,6 +93,21 @@ export class SmartRouter {
       // LlamaAI.chat returns response.data directly in runSync
       const content = res.choices?.[0]?.message?.content || "";
       return { content, model: model || "llama-13b-chat", raw: res };
+    }
+
+    if (instance instanceof AnthropicAI) {
+      const res = await instance.chat({
+        model: model,
+        prompt: options.prompt,
+        messages: options.messages as any,
+        temperature: options.temperature,
+        max_tokens: options.maxTokens,
+      });
+      return {
+        content: res.content[0].text,
+        model: model || "claude-3-5-sonnet-20240620",
+        raw: res,
+      };
     }
 
     throw new Error("Unsupported provider instance");
