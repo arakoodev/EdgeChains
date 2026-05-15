@@ -31,6 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
-**/out/
-.DS_Store
 
+### Node Modules ###
+node_modules
+
+### rust ###
+/target/
+index.wasm
+index.wit
+Cargo.lock
+yarn.lock
+package-lock.json
+.DS_Store
+pnpm-lock.yaml
