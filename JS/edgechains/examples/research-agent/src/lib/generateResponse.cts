@@ -1,9 +1,16 @@
-import { OpenAI } from "@arakoodev/edgechains.js/openai";
+const { SmartRouter } = require("@arakoodev/edgechains.js/ai");
 
 async function openAICall({ prompt, openAIApiKey }: { prompt: string; openAIApiKey: string }) {
     try {
-        const openai = new OpenAI({ apiKey: openAIApiKey });
-        const response = await openai.chat({ prompt, max_tokens: 2000 });
+        const router = new SmartRouter({
+            deployments: [{
+                id: "openai-default",
+                provider: "openai",
+                model: "gpt-3.5-turbo",
+                apiKey: openAIApiKey
+            }]
+        });
+        const response = await router.chat({ prompt, maxTokens: 2000 });
         return JSON.stringify(response.content);
     } catch (error) {
         return error;
