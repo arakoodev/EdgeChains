@@ -1,0 +1,102 @@
+name: Release Wasm
+
+on: workflow_dispatch
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            wasm:
+              - 'JS/wasm/**'
+    # start of the build job
+      - name: Build Engine
+        working-directory: .
+        run: |
+          make add all
+      - name: Build CLI
+        working-directory: .
+        run: |
+          make build-arakoo
+      - name: Build Jsonnet
+        working-directory: .
+        run: |
+          make build-jsonnet TAG=${{ github.ref_name }}
+      - name: Build Edgechains
+        working-directory: .
+        run: |
+          make build-edgechains TAG=${{ github.ref_name }}
+
+    # start of the release job
+      - name: Create out directory
+        working-directory: .
+        run: |
+          mkdir bin/
+    
+      - name: Copy arakoo bin
+        working-directory: .
+        run: |
+          cp target/release/arakoo bin/
+      - name: Zip Jsonnet
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'zip'
+          filename: 'jsonnet.zip'
+          exclusions: '*.git* /*node_modules/* .editorconfig'
+          path: 'JS/jsonnet'
+      
+      - name: Copy Jsonnet
+        working-directory: .
+        run: |
+          cp jsonnet.zip bin/
+      
+      - name: Zip edgechains
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'zip'
+          filename: 'edgechains.zip'
+          exclusions: '*.git* /*node_modules/* .editorconfig'
+          path: 'JS/edgechains/arakoodev'
+        
+      - name: copy edgechains
+        working-directory: .
+        run: |
+          cp edgechains.zip bin/
+
+      - name: Copy Javy bin
+        working-directory: .
+        run: |
+          cp target/release/arakoo-compiler bin/
+
+      - name: Upload Release Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: arakoo-${{ github.ref_name }}-x86_64
+          path: bin
+
+  release:
+    name: release-wasm
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: arakoo-${{ github.ref_name }}-x86_64
+          path: Output
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./Output/*
