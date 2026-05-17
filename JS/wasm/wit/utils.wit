@@ -1,0 +1,3 @@
+interface utils {
+    read-file: func(path: string) -> string; 
+}
