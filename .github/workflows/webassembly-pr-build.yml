@@ -1,0 +1,78 @@
+name: Webassembly PR Build
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - 'JS/wasm/**'
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      wasm: ${{ steps.filter.outputs.wasm }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            wasm:
+              - 'JS/**'
+
+  wasm:
+    needs: changes
+    if: ${{ needs.changes.outputs.wasm == 'true' }}
+    permissions:
+      contents: write
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Cache Javy Core
+        uses: actions/cache@v2
+        with:
+          path: ./target
+          key: javy-core
+          restore-keys: |
+            javy-core
+
+      - name: Check if Javy Core is cached
+        id: cache-hit
+        run: |
+          # echo "cache-hit=$(test -d ./target && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "cache-hit=$(test -d ./target && echo true || echo false)" >> $GITHUB_OUTPUT
+
+      - name: Build Javy Core
+        working-directory: .
+        run: |
+          make add all
+      - name: Build CLI
+        working-directory: .
+        run: |
+          make build-arakoo
+      - name: Build Jsonnet
+        working-directory: .
+        run: |
+          make build-jsonnet
