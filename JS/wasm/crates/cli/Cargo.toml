@@ -1,0 +1,22 @@
+[package]
+name = "cli"
+edition.workspace = true
+version.workspace = true
+build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "arakoo-compiler"
+path = "src/main.rs"
+
+[dependencies]
+wizer = { workspace = true }
+anyhow = { workspace = true }
+clap = { version = "4.1.4", features = ["derive"] }
+binaryen = { git = "https://github.com/pepyakin/binaryen-rs" }
+wit-component = { version = "0.208.1" }
+
+[build-dependencies]
+anyhow = "1.0.79"
+wizer = { workspace = true }
