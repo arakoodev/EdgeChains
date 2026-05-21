@@ -16,24 +16,24 @@ const qdrant = new Qdrant(process.env.QDRANT_URL, process.env.QDRANT_API_KEY);
 const client = qdrant.createClient();
 
 await qdrant.createCollection({
-  client,
-  collectionName: "documents",
-  vectorSize: 1536,
-  distance: "Cosine",
+    client,
+    collectionName: "documents",
+    vectorSize: 1536,
+    distance: "Cosine",
 });
 
 await qdrant.insertVectorData({
-  client,
-  collectionName: "documents",
-  id: "doc-1",
-  embedding: [0.1, 0.2, 0.3],
-  content: "stored as point payload",
+    client,
+    collectionName: "documents",
+    id: "doc-1",
+    embedding: [0.1, 0.2, 0.3],
+    content: "stored as point payload",
 });
 
 const matches = await qdrant.getDataFromQuery({
-  client,
-  collectionName: "documents",
-  vector: [0.1, 0.2, 0.3],
-  limit: 5,
+    client,
+    collectionName: "documents",
+    vector: [0.1, 0.2, 0.3],
+    limit: 5,
 });
 ```
