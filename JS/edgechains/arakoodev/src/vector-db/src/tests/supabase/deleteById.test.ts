@@ -1,18 +1,19 @@
 import { Supabase } from "../../../../../dist/vector-db/src/lib/supabase/supabase.js";
+import { describe, expect, it, vi } from "vitest";
 
 const MOCK_SUPABASE_API_KEY = "mock-api-key";
 const MOCK_SUPABASE_URL = "https://mock-supabase.co";
 
 // Mock the deleteById method of the Supabase class
-jest.mock("../../../../../dist/vector-db/src/lib/supabase/supabase.js", () => {
+vi.mock("../../../../../dist/vector-db/src/lib/supabase/supabase.js", () => {
     return {
-        Supabase: jest.fn().mockImplementation(() => ({
-            createClient: jest.fn(() => ({
+        Supabase: vi.fn().mockImplementation(() => ({
+            createClient: vi.fn(() => ({
                 // Mock client methods
-                from: jest.fn().mockReturnThis(),
+                from: vi.fn().mockReturnThis(),
             })),
 
-            deleteById: jest.fn().mockImplementation(async ({ client, tableName, id }) => {
+            deleteById: vi.fn().mockImplementation(async ({ client, tableName, id }) => {
                 // Mock response for a successful deletion
                 const mockResponse = {
                     status: 200,
