@@ -1,0 +1,38 @@
+{
+  "servers": [
+    {
+      "name": "filesystem",
+      "command": "mcp-server-filesystem",
+      "args": [
+        "."
+      ],
+      "env": {},
+      "enabled": false
+    },
+    {
+      "name": "github",
+      "command": "mcp-server-github",
+      "args": [],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "enabled": false
+    },
+    {
+      "name": "web-search",
+      "command": "mcp-server-search",
+      "args": [],
+      "env": {},
+      "enabled": false
+    },
+    {
+      "name": "postgres",
+      "command": "mcp-server-postgres",
+      "args": [
+        "${DATABASE_URL}"
+      ],
+      "env": {},
+      "enabled": false
+    }
+  ]
+}
