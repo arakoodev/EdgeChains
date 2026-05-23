@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
+        "prestart": "node ./scripts/build-local-sdk.mjs",
         "start": "tsc && node dist/index.js"
     },
     "dependencies": {

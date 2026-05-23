@@ -8,7 +8,7 @@ This example shows how to redact PII from prompts before passing them to an Edge
 2. Run `npm start`.
 3. To call real AWS Comprehend, set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally `AWS_REGION`; otherwise the example uses an offline mock client.
 
-The example demonstrates direct prompt redaction and `chainEndpoint()` wrapping.
+The example demonstrates direct prompt redaction and `chainEndpoint()` wrapping. In a local repository checkout, `npm start` also builds the local AWS Comprehend redactor export used by this example.
 
 ## Expected Output
 

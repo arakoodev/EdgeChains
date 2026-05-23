@@ -2,7 +2,7 @@ import {
     AWSComprehendRedactor,
     type ComprehendPiiClient,
     type PromptChatOptions,
-} from "@arakoodev/edgechains.js/ai";
+} from "@arakoodev/edgechains.js/ai/aws-comprehend";
 
 const samplePrompt =
     "Please summarize this support ticket from Jane Doe. Email: jane@example.com. Phone: 555-1212.";
