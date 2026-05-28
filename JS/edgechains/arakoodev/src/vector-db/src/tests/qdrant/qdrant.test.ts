@@ -38,71 +38,61 @@ describe("Qdrant", () => {
         expect(result).toEqual({ result: true });
     });
 
-    test("insertVectorData should upsert Qdrant points", async () => {
-        mockHttp.put.mockResolvedValueOnce({ data: { status: "acknowledged" } });
+    test("insertVectorData should upsert points", async () => {
+        mockHttp.put.mockResolvedValueOnce({ data: { result: { operation_id: 1 } } });
         const qdrant = new Qdrant("https://example-qdrant.com", "test-api-key");
         const client = { http: mockHttp as unknown as ReturnType<typeof axios.create> };
+        const points = [{ id: 1, vector: [0.1, 0.2, 0.3], payload: { content: "test" } }];
 
         const result = await qdrant.insertVectorData({
             client,
             collectionName: "documents",
-            points: [
-                {
-                    id: "doc-1",
-                    vector: [0.1, 0.2, 0.3],
-                    payload: { text: "hello" },
-                },
-            ],
+            points,
         });
 
         expect(mockHttp.put).toHaveBeenCalledWith("/collections/documents/points", {
-            points: [
-                {
-                    id: "doc-1",
-                    vector: [0.1, 0.2, 0.3],
-                    payload: { text: "hello" },
-                },
-            ],
+            points,
+            wait: true,
         });
-        expect(result).toEqual({ status: "acknowledged" });
+        expect(result).toEqual({ result: { operation_id: 1 } });
     });
 
-    test("getDataFromQuery should search the collection", async () => {
-        mockHttp.post.mockResolvedValueOnce({ data: { result: [{ id: "doc-1" }] } });
+    test("getDataFromQuery should query nearest points", async () => {
+        const points = [{ id: 1, score: 0.99, payload: { content: "test" } }];
+        mockHttp.post.mockResolvedValueOnce({ data: { result: { points } } });
         const qdrant = new Qdrant("https://example-qdrant.com", "test-api-key");
         const client = { http: mockHttp as unknown as ReturnType<typeof axios.create> };
 
         const result = await qdrant.getDataFromQuery({
             client,
             collectionName: "documents",
-            vector: [0.1, 0.2, 0.3],
-            limit: 2,
-            withPayload: true,
+            query: [0.1, 0.2, 0.3],
+            limit: 1,
         });
 
-        expect(mockHttp.post).toHaveBeenCalledWith("/collections/documents/points/search", {
-            vector: [0.1, 0.2, 0.3],
-            limit: 2,
+        expect(mockHttp.post).toHaveBeenCalledWith("/collections/documents/points/query", {
+            query: [0.1, 0.2, 0.3],
+            limit: 1,
             with_payload: true,
             with_vector: false,
         });
-        expect(result).toEqual({ result: [{ id: "doc-1" }] });
+        expect(result).toEqual({ points });
     });
 
     test("deleteById should delete a point by id", async () => {
-        mockHttp.post.mockResolvedValueOnce({ data: { result: true } });
+        mockHttp.post.mockResolvedValueOnce({ data: { result: { operation_id: 2 } } });
         const qdrant = new Qdrant("https://example-qdrant.com", "test-api-key");
         const client = { http: mockHttp as unknown as ReturnType<typeof axios.create> };
 
         const result = await qdrant.deleteById({
             client,
             collectionName: "documents",
-            id: "doc-1",
+            id: 1,
         });
 
         expect(mockHttp.post).toHaveBeenCalledWith("/collections/documents/points/delete", {
-            points: ["doc-1"],
+            points: [1],
         });
-        expect(result).toEqual({ result: true });
+        expect(result).toEqual({ result: { operation_id: 2 } });
     });
 });
