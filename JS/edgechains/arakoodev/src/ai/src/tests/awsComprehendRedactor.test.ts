@@ -93,6 +93,22 @@ describe("redactByOffsets", () => {
         expect(result).toBe("[REDACTED:EMAIL] and [REDACTED:NAME]");
     });
 
+    test("converts Comprehend code point offsets before slicing JavaScript strings", () => {
+        const text = "Lead 😀 contact jane@example.com today";
+        const prefix = "Lead 😀 contact ";
+        const email = "jane@example.com";
+
+        const result = redactByOffsets(text, [
+            {
+                Type: "EMAIL",
+                BeginOffset: Array.from(prefix).length,
+                EndOffset: Array.from(prefix + email).length,
+            },
+        ]);
+
+        expect(result).toBe("Lead 😀 contact [REDACTED:EMAIL] today");
+    });
+
     test("ignores invalid offsets", () => {
         const result = redactByOffsets("safe text", [
             { Type: "EMAIL", BeginOffset: -1, EndOffset: 99 },

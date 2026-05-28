@@ -190,21 +190,55 @@ export function redactByOffsets(
     mask = "[REDACTED:{type}]"
 ): string {
     return entities
-        .filter(
-            (entity) =>
-                Number.isInteger(entity.BeginOffset) &&
-                Number.isInteger(entity.EndOffset) &&
-                entity.BeginOffset! >= 0 &&
-                entity.EndOffset! > entity.BeginOffset! &&
-                entity.EndOffset! <= text.length
-        )
-        .sort((a, b) => b.BeginOffset! - a.BeginOffset!)
-        .reduce((redactedText, entity) => {
-            const replacement = mask.replace("{type}", entity.Type || "PII");
+        .map((entity) => {
+            if (!Number.isInteger(entity.BeginOffset) || !Number.isInteger(entity.EndOffset)) {
+                return undefined;
+            }
+
+            const begin = codePointOffsetToCodeUnitIndex(text, entity.BeginOffset!);
+            const end = codePointOffsetToCodeUnitIndex(text, entity.EndOffset!);
+
+            if (begin < 0 || end <= begin) {
+                return undefined;
+            }
+
+            return {
+                begin,
+                end,
+                type: entity.Type || "PII",
+            };
+        })
+        .filter((range): range is { begin: number; end: number; type: string } => Boolean(range))
+        .sort((a, b) => b.begin - a.begin)
+        .reduce((redactedText, range) => {
+            const replacement = mask.replace("{type}", range.type);
             return (
-                redactedText.slice(0, entity.BeginOffset) +
-                replacement +
-                redactedText.slice(entity.EndOffset)
+                redactedText.slice(0, range.begin) + replacement + redactedText.slice(range.end)
             );
         }, text);
+}
+
+function codePointOffsetToCodeUnitIndex(text: string, offset: number): number {
+    if (offset < 0) {
+        return -1;
+    }
+    if (offset === 0) {
+        return 0;
+    }
+
+    let codePointIndex = 0;
+    for (let codeUnitIndex = 0; codeUnitIndex < text.length; codePointIndex += 1) {
+        if (codePointIndex === offset) {
+            return codeUnitIndex;
+        }
+
+        const codePoint = text.codePointAt(codeUnitIndex);
+        codeUnitIndex += codePoint && codePoint > 0xffff ? 2 : 1;
+
+        if (codePointIndex + 1 === offset) {
+            return codeUnitIndex;
+        }
+    }
+
+    return codePointIndex === offset ? text.length : -1;
 }
