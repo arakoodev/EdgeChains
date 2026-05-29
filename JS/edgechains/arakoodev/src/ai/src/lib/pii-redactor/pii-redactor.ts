@@ -287,3 +287,5 @@ export class PIIRedactor {
         return Array.from(types);
     }
 }
+
+// CLA: I have read the Arakoo CLA Document and I hereby sign the CLA
