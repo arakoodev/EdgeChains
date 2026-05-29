@@ -1,0 +1,21 @@
+﻿{
+    "name": "aws-comprehend-pii-redaction-example",
+    "version": "1.0.0",
+    "description": "Example: Redact PII data using AWS Comprehend via EdgeChains",
+    "main": "src/index.ts",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "ts-node src/index.ts"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@aws-sdk/client-comprehend": "^3.600.0",
+        "@aws-sdk/credential-providers": "^3.600.0",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.6.3"
+    },
+    "devDependencies": {
+        "@types/node": "^20.17.2"
+    }
+}
