@@ -17,6 +17,7 @@ Platform Support:
 Memory Management:
     The router automatically manages memory allocated by the native Rust kernel.
     No manual cleanup is required.
+
 """
 
 import ctypes

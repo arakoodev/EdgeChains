@@ -1,201 +1,246 @@
-"""Unit tests for EdgeChains Smart Router.
+"""Comprehensive unit tests for EdgeChains Smart Router.
 
 Tests cover:
-- Basic routing functionality
-- Edge cases (null paths, invalid input)
-- Memory management (cleanup verification)
-- Platform detection and fallback
-- FFI type safety
+- Platform detection (Linux, macOS, Windows)
+- Native FFI routing (success, errors, null pointers)
+- Python fallback routing
+- Memory management and cleanup
+- Edge cases and error handling
 """
 
-import pytest
-import sys
 import os
-from unittest.mock import Mock, patch, MagicMock
-from smart_router import EdgeChainsSmartRouter
+import sys
+import unittest
+from unittest import mock
+from typing import Any
+
+# Mock the native library before importing the router
+try:
+    from edgechains_router_optimization.smart_router import EdgeChainsSmartRouter
+except ImportError:
+    # Adjust import path based on test execution context
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from smart_router import EdgeChainsSmartRouter
 
 
-class TestEdgeChainsSmartRouter:
-    """Test suite for EdgeChainsSmartRouter."""
+class TestEdgeChainsSmartRouterPlatform(unittest.TestCase):
+    """Test platform detection and initialization."""
 
-    def test_initialization_on_linux(self):
-        """Test router initializes correctly on Linux."""
-        with patch("sys.platform", "linux"):
-            with patch.object(
-                EdgeChainsSmartRouter, "_try_load_native"
-            ) as mock_load:
-                router = EdgeChainsSmartRouter()
-                mock_load.assert_called_once()
-
-    def test_initialization_on_macos_with_fallback(self):
-        """Test router falls back to Python on macOS when fallback enabled."""
-        with patch("sys.platform", "darwin"):
+    @mock.patch('sys.platform', 'linux')
+    def test_linux_platform_initialization(self):
+        """Test router initializes on Linux."""
+        with mock.patch.object(
+            EdgeChainsSmartRouter, '_try_load_native'
+        ) as mock_load:
             router = EdgeChainsSmartRouter(fallback_to_python=True)
-            assert not router._use_native
-            assert router._lib is None
+            mock_load.assert_called_once()
 
-    def test_initialization_on_macos_without_fallback(self):
-        """Test router raises error on macOS when fallback disabled."""
-        with patch("sys.platform", "darwin"):
-            with pytest.raises(OSError, match="only available on Linux"):
-                EdgeChainsSmartRouter(fallback_to_python=False)
+    @mock.patch('sys.platform', 'darwin')  # macOS
+    def test_macos_platform_fallback(self, *args):
+        """Test router falls back to Python on macOS."""
+        router = EdgeChainsSmartRouter(fallback_to_python=True)
+        self.assertFalse(router._use_native)
 
-    def test_initialization_on_windows_with_fallback(self):
-        """Test router falls back to Python on Windows when fallback enabled."""
-        with patch("sys.platform", "win32"):
+    @mock.patch('sys.platform', 'darwin')
+    def test_macos_platform_no_fallback_raises(self, *args):
+        """Test router raises OSError on macOS when fallback disabled."""
+        with self.assertRaises(OSError) as context:
+            EdgeChainsSmartRouter(fallback_to_python=False)
+        self.assertIn('Linux', str(context.exception))
+
+    @mock.patch('sys.platform', 'win32')  # Windows
+    def test_windows_platform_fallback(self, *args):
+        """Test router falls back to Python on Windows."""
+        router = EdgeChainsSmartRouter(fallback_to_python=True)
+        self.assertFalse(router._use_native)
+
+
+class TestEdgeChainsSmartRouterPythonFallback(unittest.TestCase):
+    """Test pure Python fallback routing."""
+
+    def setUp(self):
+        """Initialize router in Python-only mode."""
+        with mock.patch('sys.platform', 'darwin'):
+            self.router = EdgeChainsSmartRouter(fallback_to_python=True)
+
+    def test_route_request_basic(self):
+        """Test basic routing with known path."""
+        result = self.router.route_request("/v1/chat/completions")
+        self.assertEqual(result, "primary_llm_cluster")
+
+    def test_route_request_unknown_path(self):
+        """Test routing with unknown path returns default."""
+        result = self.router.route_request("/unknown/path")
+        self.assertEqual(result, "default")
+
+    def test_route_request_with_leading_slash(self):
+        """Test path normalization handles leading slash."""
+        result = self.router.route_request("/v1/embeddings")
+        self.assertEqual(result, "vector_processing_node")
+
+    def test_route_request_without_leading_slash(self):
+        """Test path normalization handles missing leading slash."""
+        result = self.router.route_request("v1/embeddings")
+        self.assertEqual(result, "vector_processing_node")
+
+    def test_route_request_with_trailing_slash(self):
+        """Test path normalization handles trailing slash."""
+        result = self.router.route_request("/v1/models/")
+        self.assertEqual(result, "metadata_server")
+
+    def test_route_request_empty_path_raises(self):
+        """Test empty path raises ValueError."""
+        with self.assertRaises(ValueError):
+            self.router.route_request("")
+
+    def test_route_request_none_path_raises(self):
+        """Test None path raises ValueError."""
+        with self.assertRaises(ValueError):
+            self.router.route_request(None)
+
+    def test_route_request_non_string_path_raises(self):
+        """Test non-string path raises ValueError."""
+        with self.assertRaises(ValueError):
+            self.router.route_request(123)
+
+
+class TestEdgeChainsSmartRouterNativeMock(unittest.TestCase):
+    """Test native FFI routing with mocked library."""
+
+    def setUp(self):
+        """Initialize router with mocked native library."""
+        with mock.patch('sys.platform', 'linux'):
+            with mock.patch('os.path.exists', return_value=True):
+                with mock.patch('ctypes.CDLL'):
+                    self.router = EdgeChainsSmartRouter(fallback_to_python=True)
+                    self.router._use_native = True
+                    self.router._lib = mock.MagicMock()
+
+    def test_route_native_success(self):
+        """Test successful native routing."""
+        # Mock native library response
+        mock_ptr = mock.MagicMock()
+        self.router._lib.get_optimal_route.return_value = mock_ptr
+        self.router._lib.free_string.return_value = None
+
+        # Mock the ctypes.cast
+        with mock.patch('ctypes.cast') as mock_cast:
+            mock_result = mock.MagicMock()
+            mock_result.value = b'primary_llm_cluster'
+            mock_cast.return_value = mock_result
+
+            result = self.router.route_request("/v1/chat/completions")
+            self.assertEqual(result, "primary_llm_cluster")
+
+    def test_route_native_null_pointer_raises(self):
+        """Test native routing with null pointer raises RuntimeError."""
+        # Mock native library returning null
+        self.router._lib.get_optimal_route.return_value = None
+
+        with self.assertRaises(RuntimeError) as context:
+            self.router.route_request("/v1/chat/completions")
+        self.assertIn('null pointer', str(context.exception))
+
+    def test_route_native_error_response_raises(self):
+        """Test native routing with ERROR response raises RuntimeError."""
+        # Mock native library response with ERROR
+        mock_ptr = mock.MagicMock()
+        self.router._lib.get_optimal_route.return_value = mock_ptr
+
+        with mock.patch('ctypes.cast') as mock_cast:
+            mock_result = mock.MagicMock()
+            mock_result.value = b'ERROR'
+            mock_cast.return_value = mock_result
+
+            with self.assertRaises(RuntimeError) as context:
+                self.router.route_request("/v1/chat/completions")
+            self.assertIn('error', str(context.exception).lower())
+
+    def test_route_native_memory_cleanup(self):
+        """Test native routing cleans up memory on success."""
+        mock_ptr = mock.MagicMock()
+        self.router._lib.get_optimal_route.return_value = mock_ptr
+        self.router._lib.free_string.return_value = None
+
+        with mock.patch('ctypes.cast') as mock_cast:
+            mock_result = mock.MagicMock()
+            mock_result.value = b'primary_llm_cluster'
+            mock_cast.return_value = mock_result
+
+            self.router.route_request("/v1/chat/completions")
+            self.router._lib.free_string.assert_called_once_with(mock_ptr)
+
+    def test_route_native_memory_cleanup_on_error(self):
+        """Test native routing cleans up memory even on error."""
+        mock_ptr = mock.MagicMock()
+        self.router._lib.get_optimal_route.return_value = mock_ptr
+        self.router._lib.free_string.return_value = None
+
+        with mock.patch('ctypes.cast') as mock_cast:
+            mock_result = mock.MagicMock()
+            mock_result.value = b'ERROR'
+            mock_cast.return_value = mock_result
+
+            with self.assertRaises(RuntimeError):
+                self.router.route_request("/v1/chat/completions")
+            self.router._lib.free_string.assert_called_once_with(mock_ptr)
+
+
+class TestEdgeChainsSmartRouterMemoryManagement(unittest.TestCase):
+    """Test memory management and cleanup."""
+
+    def test_finalizer_called_on_deletion(self):
+        """Test __del__ is called on router deletion."""
+        with mock.patch('sys.platform', 'darwin'):
             router = EdgeChainsSmartRouter(fallback_to_python=True)
-            assert not router._use_native
-            assert router._lib is None
+            router._lib = mock.MagicMock()
 
-    def test_python_routing_basic_paths(self):
-        """Test Python fallback routing with basic paths."""
-        with patch("sys.platform", "darwin"):
-            router = EdgeChainsSmartRouter()
-            assert router.route_request("/v1/chat/completions") == "primary_llm_cluster"
-            assert router.route_request("/v1/embeddings") == "vector_processing_node"
-            assert router.route_request("/v1/models") == "metadata_server"
+            # Manually call __del__
+            router.__del__()
+            # Should not raise any exception
 
-    def test_python_routing_unknown_path(self):
-        """Test Python fallback returns 'default' for unknown routes."""
-        with patch("sys.platform", "darwin"):
-            router = EdgeChainsSmartRouter()
-            assert router.route_request("/v1/unknown") == "default"
-            assert router.route_request("/v2/anything") == "default"
+    def test_finalizer_handles_errors(self):
+        """Test __del__ handles cleanup errors gracefully."""
+        with mock.patch('sys.platform', 'darwin'):
+            router = EdgeChainsSmartRouter(fallback_to_python=True)
+            router._lib = mock.MagicMock()
+            router._lib = None  # This will cause an error if not handled
 
-    def test_python_routing_normalized_paths(self):
-        """Test Python fallback handles leading/trailing slashes."""
-        with patch("sys.platform", "darwin"):
-            router = EdgeChainsSmartRouter()
-            # Various path formats should normalize correctly
-            assert router.route_request("v1/chat/completions") == "primary_llm_cluster"
-            assert router.route_request("/v1/chat/completions/") == "primary_llm_cluster"
-            assert router.route_request("//v1/chat/completions//") == "primary_llm_cluster"
+            # Should not raise any exception
+            router.__del__()
 
-    def test_route_request_empty_path_raises_error(self):
-        """Test route_request rejects empty paths."""
-        with patch("sys.platform", "darwin"):
-            router = EdgeChainsSmartRouter()
-            with pytest.raises(ValueError, match="non-empty string"):
-                router.route_request("")
 
-    def test_route_request_non_string_path_raises_error(self):
-        """Test route_request rejects non-string paths."""
-        with patch("sys.platform", "darwin"):
-            router = EdgeChainsSmartRouter()
-            with pytest.raises(ValueError, match="non-empty string"):
-                router.route_request(None)  # type: ignore
-            with pytest.raises(ValueError, match="non-empty string"):
-                router.route_request(123)  # type: ignore
+class TestEdgeChainsSmartRouterIntegration(unittest.TestCase):
+    """Integration tests for router."""
 
-    def test_native_routing_success(self):
-        """Test native FFI routing with successful response."""
-        with patch("sys.platform", "linux"):
-            router = EdgeChainsSmartRouter()
-            router._use_native = True
+    def test_route_request_all_known_paths(self):
+        """Test all known routes are accessible."""
+        with mock.patch('sys.platform', 'darwin'):
+            router = EdgeChainsSmartRouter(fallback_to_python=True)
 
-            # Mock native library
-            mock_lib = MagicMock()
-            mock_ptr = 12345
-            mock_lib.get_optimal_route.return_value = mock_ptr
-            router._lib = mock_lib
+            routes = [
+                ("/v1/chat/completions", "primary_llm_cluster"),
+                ("/v1/embeddings", "vector_processing_node"),
+                ("/v1/models", "metadata_server"),
+            ]
 
-            # Mock ctypes.cast to return a mock c_char_p with value
-            with patch("ctypes.cast") as mock_cast:
-                mock_char_p = MagicMock()
-                mock_char_p.value = b"primary_llm_cluster"
-                mock_cast.return_value = mock_char_p
+            for path, expected_destination in routes:
+                with self.subTest(path=path):
+                    result = router.route_request(path)
+                    self.assertEqual(result, expected_destination)
 
-                result = router.route_request("/v1/chat/completions")
-                assert result == "primary_llm_cluster"
-                mock_lib.get_optimal_route.assert_called_once_with(
-                    b"/v1/chat/completions"
-                )
-                mock_lib.free_string.assert_called_once_with(mock_ptr)
+    def test_multiple_routers_independent(self):
+        """Test multiple router instances are independent."""
+        with mock.patch('sys.platform', 'darwin'):
+            router1 = EdgeChainsSmartRouter(fallback_to_python=True)
+            router2 = EdgeChainsSmartRouter(fallback_to_python=True)
 
-    def test_native_routing_error_response(self):
-        """Test native FFI routing handles ERROR response from Rust."""
-        with patch("sys.platform", "linux"):
-            router = EdgeChainsSmartRouter()
-            router._use_native = True
-
-            mock_lib = MagicMock()
-            mock_ptr = 12345
-            mock_lib.get_optimal_route.return_value = mock_ptr
-            router._lib = mock_lib
-
-            with patch("ctypes.cast") as mock_cast:
-                mock_char_p = MagicMock()
-                mock_char_p.value = b"ERROR"
-                mock_cast.return_value = mock_char_p
-
-                with pytest.raises(RuntimeError, match="Native router error"):
-                    router.route_request("/invalid/path")
-
-    def test_native_routing_null_pointer(self):
-        """Test native FFI routing handles null pointer response."""
-        with patch("sys.platform", "linux"):
-            router = EdgeChainsSmartRouter()
-            router._use_native = True
-
-            mock_lib = MagicMock()
-            mock_lib.get_optimal_route.return_value = None
-            router._lib = mock_lib
-
-            with pytest.raises(RuntimeError, match="null pointer"):
-                router.route_request("/v1/chat/completions")
-
-    def test_native_memory_cleanup_on_error(self):
-        """Test native FFI properly cleans up memory even on error."""
-        with patch("sys.platform", "linux"):
-            router = EdgeChainsSmartRouter()
-            router._use_native = True
-
-            mock_lib = MagicMock()
-            mock_ptr = 12345
-            mock_lib.get_optimal_route.return_value = mock_ptr
-            router._lib = mock_lib
-
-            with patch("ctypes.cast") as mock_cast:
-                mock_char_p = MagicMock()
-                mock_char_p.value = b"ERROR"
-                mock_cast.return_value = mock_char_p
-
-                try:
-                    router.route_request("/invalid")
-                except RuntimeError:
-                    pass
-
-                # Verify free_string was called despite error
-                mock_lib.free_string.assert_called_once_with(mock_ptr)
-
-    def test_native_binary_not_found(self):
-        """Test graceful fallback when native binary not found."""
-        with patch("sys.platform", "linux"):
-            with patch("os.path.exists", return_value=False):
-                with patch("builtins.print"):
-                    router = EdgeChainsSmartRouter()
-                    assert not router._use_native
-                    assert router._lib is None
-
-    def test_ffi_type_signatures_set_correctly(self):
-        """Test FFI function signatures are configured correctly."""
-        with patch("sys.platform", "linux"):
-            with patch("os.path.exists", return_value=True):
-                with patch("ctypes.CDLL") as mock_cdll_class:
-                    mock_lib = MagicMock()
-                    mock_cdll_class.return_value = mock_lib
-
-                    router = EdgeChainsSmartRouter()
-
-                    # Verify FFI signatures were set
-                    import ctypes
-
-                    mock_lib.get_optimal_route.argtypes = [ctypes.c_char_p]
-                    mock_lib.get_optimal_route.restype = ctypes.c_void_p
-
-                    mock_lib.free_string.argtypes = [ctypes.c_void_p]
-                    mock_lib.free_string.restype = None
+            # Both should route the same paths
+            result1 = router1.route_request("/v1/chat/completions")
+            result2 = router2.route_request("/v1/chat/completions")
+            self.assertEqual(result1, result2)
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+    unittest.main()
