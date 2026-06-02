@@ -204,3 +204,5 @@ class EdgeChainsSmartRouter:
                     self._lib = None
             except Exception as e:
                 print(f"[EdgeChains] Warning: Native library cleanup failed: {e}")
+
+# CI Trigger: Tue Jun  2 01:31:03 2026 - Verifying build state.
