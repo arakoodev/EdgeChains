@@ -1,4 +1,4 @@
-import { ComprehendPIIRedactor } from "@arakoodev/edgechains.js/ai";
+import { AWSComprehend } from "@arakoodev/edgechains.js/ai";
 import Jsonnet from "@arakoodev/jsonnet";
 import fileURLToPath from "file-uri-to-path";
 import path from "path";
@@ -45,7 +45,7 @@ async function main() {
     const secrets = readJsonnet<Secrets>(path.join(__dirname, "../jsonnet/secrets.jsonnet"));
     const credentials = buildCredentials(secrets);
 
-    const redactor = new ComprehendPIIRedactor({
+    const redactor = new AWSComprehend({
         accessKeyId: credentials?.accessKeyId,
         languageCode: promptConfig.language_code || "en",
         region: secrets.aws_region,
@@ -53,7 +53,9 @@ async function main() {
         sessionToken: credentials?.sessionToken,
     });
 
-    const result = await redactor.redact(promptConfig.prompt);
+    const result = await redactor.redactPromptOptions({
+        prompt: promptConfig.prompt,
+    });
 
     console.log(JSON.stringify(result, null, 2));
 }

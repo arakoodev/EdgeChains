@@ -1,6 +1,6 @@
 # AWS Comprehend Redaction Example
 
-This example reads a prompt from Jsonnet, detects PII with AWS Comprehend, and prints the redacted prompt.
+This example reads a prompt from Jsonnet, detects PII with AWS Comprehend, and prints prompt options that can be passed to an LLM endpoint after redaction.
 
 ## Installation
 
@@ -28,3 +28,14 @@ npm run start
 ```
 
 The prompt lives in `jsonnet/main.jsonnet` so the example does not hardcode prompt text in TypeScript.
+
+The `AWSComprehend` class can also be chained before existing endpoint calls:
+
+```ts
+const safeChatOptions = await comprehend.redactPromptOptions({
+    prompt: rawPrompt,
+    temperature: 0.2,
+});
+
+await openai.chat(safeChatOptions);
+```

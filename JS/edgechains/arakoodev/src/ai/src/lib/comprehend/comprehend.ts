@@ -8,7 +8,7 @@ import {
 type ComprehendClientLike = Pick<ComprehendClient, "send">;
 type RedactionReplacement = string | ((entity: PiiEntity) => string);
 
-interface ComprehendPIIRedactorOptions {
+interface AWSComprehendOptions {
     accessKeyId?: string;
     client?: ComprehendClientLike;
     entityTypes?: string[];
@@ -28,20 +28,31 @@ interface RedactPIIOptions {
     text: string;
 }
 
+interface RedactableMessage {
+    content?: string;
+    [key: string]: any;
+}
+
+interface RedactablePromptOptions {
+    messages?: RedactableMessage[];
+    prompt?: string;
+    [key: string]: any;
+}
+
 interface RedactPIIResponse {
     entities: PiiEntity[];
     redactedText: string;
     text: string;
 }
 
-export class ComprehendPIIRedactor {
+export class AWSComprehend {
     private client: ComprehendClientLike;
     private entityTypes?: string[];
     private languageCode: LanguageCode;
     private minScore: number;
     private replacement?: RedactionReplacement;
 
-    constructor(options: ComprehendPIIRedactorOptions = {}) {
+    constructor(options: AWSComprehendOptions = {}) {
         this.client =
             options.client ||
             new ComprehendClient({
@@ -61,16 +72,12 @@ export class ComprehendPIIRedactor {
         this.replacement = options.replacement;
     }
 
-    async detectPiiEntities({
-        entityTypes,
-        languageCode,
-        minScore,
-        text,
-    }: RedactPIIOptions): Promise<PiiEntity[]> {
+    async detectPiiEntities(options: RedactPIIOptions | string): Promise<PiiEntity[]> {
+        const redactOptions = this.normalizeOptions(options);
         const response = await this.client.send(
             new DetectPiiEntitiesCommand({
-                LanguageCode: languageCode || this.languageCode,
-                Text: text,
+                LanguageCode: redactOptions.languageCode || this.languageCode,
+                Text: redactOptions.text,
             })
         );
 
@@ -78,16 +85,16 @@ export class ComprehendPIIRedactor {
             if (entity.BeginOffset === undefined || entity.EndOffset === undefined) {
                 return false;
             }
-            if ((entity.Score || 0) < (minScore ?? this.minScore)) {
+            if ((entity.Score || 0) < (redactOptions.minScore ?? this.minScore)) {
                 return false;
             }
-            const allowedTypes = entityTypes || this.entityTypes;
+            const allowedTypes = redactOptions.entityTypes || this.entityTypes;
             return !allowedTypes || allowedTypes.includes(entity.Type || "");
         });
     }
 
     async redact(options: RedactPIIOptions | string): Promise<RedactPIIResponse> {
-        const redactOptions = typeof options === "string" ? { text: options } : options;
+        const redactOptions = this.normalizeOptions(options);
         const entities = await this.detectPiiEntities(redactOptions);
 
         return {
@@ -99,6 +106,51 @@ export class ComprehendPIIRedactor {
             ),
             text: redactOptions.text,
         };
+    }
+
+    async redactPrompt(options: RedactPIIOptions | string): Promise<string> {
+        const result = await this.redact(options);
+
+        return result.redactedText;
+    }
+
+    async containsPii(options: RedactPIIOptions | string): Promise<boolean> {
+        const entities = await this.detectPiiEntities(options);
+
+        return entities.length > 0;
+    }
+
+    async redactPromptOptions<T extends RedactablePromptOptions>(options: T): Promise<T> {
+        const redactedOptions = { ...options };
+
+        if (typeof options.prompt === "string") {
+            redactedOptions.prompt = await this.redactPrompt(options.prompt);
+        }
+
+        if (Array.isArray(options.messages)) {
+            redactedOptions.messages = await Promise.all(
+                options.messages.map(async (message) => {
+                    if (typeof message.content !== "string") {
+                        return { ...message };
+                    }
+
+                    return {
+                        ...message,
+                        content: await this.redactPrompt(message.content),
+                    };
+                })
+            );
+        }
+
+        return redactedOptions;
+    }
+
+    asPromptMiddleware() {
+        return <T extends RedactablePromptOptions>(options: T) => this.redactPromptOptions(options);
+    }
+
+    private normalizeOptions(options: RedactPIIOptions | string): RedactPIIOptions {
+        return typeof options === "string" ? { text: options } : options;
     }
 
     private redactText(
@@ -125,8 +177,15 @@ export class ComprehendPIIRedactor {
     }
 }
 
+export class ComprehendPIIRedactor extends AWSComprehend {}
+
+type ComprehendPIIRedactorOptions = AWSComprehendOptions;
+
 export type {
+    AWSComprehendOptions,
     ComprehendPIIRedactorOptions,
+    RedactableMessage,
+    RedactablePromptOptions,
     RedactPIIOptions,
     RedactPIIResponse,
     RedactionReplacement,
