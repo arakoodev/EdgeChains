@@ -5,6 +5,10 @@ config();
 
 type QdrantDistance = "Cosine" | "Dot" | "Euclid" | "Manhattan";
 type QdrantPointId = string | number;
+type QdrantSearchVector =
+  | number[]
+  | { name: string; vector: number[] }
+  | Record<string, number[]>;
 
 interface QdrantConstructorOptions {
   url?: string;
@@ -36,7 +40,7 @@ interface QdrantUpsertPointsArgs {
 
 interface QdrantSearchArgs {
   collectionName: string;
-  vector: number[] | Record<string, number[]>;
+  vector: QdrantSearchVector;
   limit?: number;
   filter?: Record<string, any>;
   withPayload?: boolean | string[];
@@ -122,13 +126,12 @@ export class Qdrant {
     using,
   }: QdrantSearchArgs): Promise<any> {
     const data: Record<string, any> = {
-      vector,
+      vector: this.formatSearchVector(vector, using),
       limit,
       filter,
       with_payload: withPayload,
       with_vector: withVector,
       score_threshold: scoreThreshold,
-      using,
     };
 
     return this.request({
@@ -144,14 +147,24 @@ export class Qdrant {
     withPayload = true,
     withVector = false,
   }: QdrantGetPointArgs): Promise<any> {
-    return this.request({
-      method: "get",
-      url: `/collections/${collectionName}/points/${id}`,
-      params: {
+    const response = await this.request({
+      method: "post",
+      url: `/collections/${collectionName}/points`,
+      data: {
+        ids: [id],
         with_payload: withPayload,
         with_vector: withVector,
       },
     });
+
+    if (Array.isArray(response?.result)) {
+      return {
+        ...response,
+        result: response.result[0] || null,
+      };
+    }
+
+    return response;
   }
 
   async updatePayload({
@@ -232,6 +245,47 @@ export class Qdrant {
       Object.entries(data).filter(([, value]) => value !== undefined),
     );
   }
+
+  private formatSearchVector(
+    vector: QdrantSearchVector,
+    using?: string,
+  ): number[] | { name: string; vector: number[] } {
+    if (Array.isArray(vector)) {
+      return using ? { name: using, vector } : vector;
+    }
+
+    if (this.isNamedSearchVector(vector)) {
+      return vector;
+    }
+
+    const vectorMap = vector as Record<string, number[]>;
+    if (using) {
+      const namedVector = vectorMap[using];
+      if (Array.isArray(namedVector)) {
+        return { name: using, vector: namedVector };
+      }
+
+      throw new Error(`Search vector map does not include "${using}"`);
+    }
+
+    const entries = Object.entries(vectorMap).filter(([, value]) =>
+      Array.isArray(value),
+    ) as [string, number[]][];
+    if (entries.length === 1) {
+      const [name, namedVector] = entries[0];
+      return { name, vector: namedVector };
+    }
+
+    throw new Error(
+      "Named-vector search requires a single vector name or a using value",
+    );
+  }
+
+  private isNamedSearchVector(
+    vector: Exclude<QdrantSearchVector, number[]>,
+  ): vector is { name: string; vector: number[] } {
+    return typeof vector.name === "string" && Array.isArray(vector.vector);
+  }
 }
 
 export type {
@@ -242,6 +296,7 @@ export type {
   QdrantGetPointArgs,
   QdrantPoint,
   QdrantSearchArgs,
+  QdrantSearchVector,
   QdrantUpdatePayloadArgs,
   QdrantUpsertPointsArgs,
   QdrantVectorConfig,
