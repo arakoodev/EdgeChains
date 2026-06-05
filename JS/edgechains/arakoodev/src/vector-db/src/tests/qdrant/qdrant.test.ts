@@ -107,10 +107,56 @@ describe("Qdrant", () => {
     });
   });
 
+  it("formats named vector searches with a using value", async () => {
+    const qdrant = new Qdrant({ url: "https://qdrant.example.com" });
+
+    await qdrant.search({
+      collectionName: "documents",
+      vector: [0.1, 0.2, 0.3],
+      using: "image-embeddings",
+    });
+
+    expect(requestMock).toHaveBeenCalledWith({
+      method: "post",
+      url: "/collections/documents/points/search",
+      data: {
+        vector: { name: "image-embeddings", vector: [0.1, 0.2, 0.3] },
+        limit: 10,
+        with_payload: true,
+        with_vector: false,
+      },
+    });
+  });
+
+  it("formats single-entry vector maps as named vector searches", async () => {
+    const qdrant = new Qdrant({ url: "https://qdrant.example.com" });
+
+    await qdrant.search({
+      collectionName: "documents",
+      vector: { "text-embeddings": [0.1, 0.2, 0.3] },
+    });
+
+    expect(requestMock).toHaveBeenCalledWith({
+      method: "post",
+      url: "/collections/documents/points/search",
+      data: {
+        vector: { name: "text-embeddings", vector: [0.1, 0.2, 0.3] },
+        limit: 10,
+        with_payload: true,
+        with_vector: false,
+      },
+    });
+  });
+
   it("gets, updates, and deletes points", async () => {
     const qdrant = new Qdrant({ url: "https://qdrant.example.com" });
 
-    await qdrant.getPoint({ collectionName: "documents", id: 1 });
+    await qdrant.getPoint({
+      collectionName: "documents",
+      id: 1,
+      withPayload: false,
+      withVector: true,
+    });
     await qdrant.updatePayload({
       collectionName: "documents",
       ids: [1],
@@ -119,11 +165,12 @@ describe("Qdrant", () => {
     await qdrant.deletePoints({ collectionName: "documents", ids: [1] });
 
     expect(requestMock).toHaveBeenNthCalledWith(1, {
-      method: "get",
-      url: "/collections/documents/points/1",
-      params: {
-        with_payload: true,
-        with_vector: false,
+      method: "post",
+      url: "/collections/documents/points",
+      data: {
+        ids: [1],
+        with_payload: false,
+        with_vector: true,
       },
     });
     expect(requestMock).toHaveBeenNthCalledWith(2, {
