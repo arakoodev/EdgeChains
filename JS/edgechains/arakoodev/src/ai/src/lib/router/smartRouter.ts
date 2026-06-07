@@ -63,6 +63,19 @@ export interface SmartRouterOptions {
   };
 }
 
+export interface SmartRouterConfig {
+  deployments: SmartRouterDeployment[];
+  retries?: number;
+  timeoutMs?: number;
+  callbacks?: SmartRouterOptions["callbacks"];
+}
+
+export function createSmartRouterFromConfig(
+  config: SmartRouterConfig,
+): SmartRouter {
+  return new SmartRouter(config);
+}
+
 const DEFAULT_TIMEOUT_MS = 30000;
 
 export class SmartRouter {

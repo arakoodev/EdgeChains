@@ -1,79 +1,102 @@
-import { Stream } from "../../../../dist/openai/src/lib/streaming/OpenAiStreaming.js";
-import { TextEncoder, TextDecoder } from "text-decoding";
-jest.mock("../lib/streaming/OpenAiStreaming.ts", () => {
-    return {
-        Stream: jest.fn().mockImplementation(() => ({
-            OpenAIStream: jest.fn().mockImplementation((prompt) => {
-                return new ReadableStream({
-                    start(controller) {
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"Hi! "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"How "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"can "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"I "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode(
-                                '[{"choices":[{"delta":{"content":"help "}}]}]'
-                            )
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode(
-                                '[{"choices":[{"delta":{"content":"you?."}}]}]'
-                            )
-                        );
-                        controller.enqueue(new TextEncoder().encode("[DONE]"));
-                        controller.close();
-                    },
-                });
-            }),
-        })),
-    };
-});
+import { SmartRouter } from "../lib/router/smartRouter";
 
-describe("Streaming", () => {
-    afterEach(() => {
-        jest.clearAllMocks(); // Clear mock function calls after each test
-    });
+describe("SmartRouter streaming compatibility", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-    test("OpenAIStream should return expected text", async () => {
-        const options = {
-            model: "test_model",
-            OpenApiKey: "test_api_key",
-            temperature: 0.7,
-            top_p: 1,
-            frequency_penalty: 0,
-            presence_penalty: 0,
-            max_tokens: 500,
-            stream: true,
-            n: 1,
-        };
-
-        const stream = new Stream(options);
-
-        //@ts-ignore
-        const streamReader = await stream.OpenAIStream("hi").getReader();
-        const text = await readStreamToString(streamReader);
-
-        expect(text).toBe("Hi! How can I help you?.");
-    });
-});
-
-async function readStreamToString(reader) {
-    const decoder = new TextDecoder();
-    let text = "";
-    while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const decodedValue = decoder.decode(value);
-        if (decodedValue.includes("DONE")) break;
-        text += JSON.parse(decodedValue)[0]["choices"][0]["delta"]["content"];
+  test("streams OpenAI-style SSE chunks through SmartRouter", async () => {
+    async function* openAIChunks() {
+      yield { choices: [{ delta: { content: "Hi! " } }] };
+      yield { choices: [{ delta: { content: "How " } }] };
+      yield { choices: [{ delta: { content: "can " } }] };
+      yield { choices: [{ delta: { content: "I " } }] };
+      yield { choices: [{ delta: { content: "help " } }] };
+      yield { choices: [{ delta: { content: "you?" } }] };
     }
-    return text;
-}
+
+    const router = new SmartRouter({
+      deployments: [
+        {
+          id: "openai-stream",
+          provider: "openai",
+          apiKey: "test-key",
+          tokenLimit: 100,
+          tokenUsage: 0,
+          handler: jest.fn().mockResolvedValue(openAIChunks()),
+        },
+      ],
+    });
+
+    const stream = await router.stream({ prompt: "hi" });
+    const received: string[] = [];
+
+    for await (const chunk of stream) {
+      const c = chunk as any;
+      received.push(c.choices?.[0]?.delta?.content ?? "");
+    }
+
+    expect(received.join("")).toBe("Hi! How can I help you?");
+  });
+
+  test("streams Google-style chunks through SmartRouter", async () => {
+    async function* googleChunks() {
+      yield { candidates: [{ content: { parts: [{ text: "Hello " }] } }] };
+      yield { candidates: [{ content: { parts: [{ text: "from " }] } }] };
+      yield { candidates: [{ content: { parts: [{ text: "Google." }] } }] };
+    }
+
+    const router = new SmartRouter({
+      deployments: [
+        {
+          id: "google-stream",
+          provider: "google",
+          apiKey: "test-key",
+          tokenLimit: 100,
+          tokenUsage: 0,
+          handler: jest.fn().mockResolvedValue(googleChunks()),
+        },
+      ],
+    });
+
+    const stream = await router.stream({ prompt: "hi" });
+    const received: string[] = [];
+
+    for await (const chunk of stream) {
+      const c = chunk as any;
+      received.push(c.candidates?.[0]?.content?.parts?.[0]?.text ?? "");
+    }
+
+    expect(received.join("")).toBe("Hello from Google.");
+  });
+
+  test("streams Cohere-style chunks through SmartRouter", async () => {
+    async function* cohereChunks() {
+      yield { text: "Cohere " };
+      yield { text: "response." };
+    }
+
+    const router = new SmartRouter({
+      deployments: [
+        {
+          id: "cohere-stream",
+          provider: "cohere",
+          apiKey: "test-key",
+          tokenLimit: 100,
+          tokenUsage: 0,
+          handler: jest.fn().mockResolvedValue(cohereChunks()),
+        },
+      ],
+    });
+
+    const stream = await router.stream({ prompt: "hi" });
+    const received: string[] = [];
+
+    for await (const chunk of stream) {
+      const c = chunk as any;
+      received.push(c.text ?? "");
+    }
+
+    expect(received.join("")).toBe("Cohere response.");
+  });
+});
