@@ -1,6 +1,16 @@
 {
     "name": "@arakoodev/jsonnet",
     "version": "0.3.1",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/arakoodev/EdgeChains.git",
+        "directory": "JS/jsonnet"
+    },
+    "homepage": "https://github.com/arakoodev/EdgeChains/tree/ts/JS/jsonnet#readme",
+    "bugs": {
+        "url": "https://github.com/arakoodev/EdgeChains/issues"
+    },
+    "license": "AGPL-3.0-only",
     "exports": {
         "import": {
             "types": "./src/index.d.mts",
