@@ -58,6 +58,15 @@
     "keywords": [],
     "author": "",
     "license": "ISC",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/arakoodev/EdgeChains.git",
+        "directory": "JS/edgechains/arakoodev"
+    },
+    "homepage": "https://github.com/arakoodev/EdgeChains/tree/ts/JS/edgechains/arakoodev#readme",
+    "bugs": {
+        "url": "https://github.com/arakoodev/EdgeChains/issues"
+    },
     "devDependencies": {
         "@babel/preset-typescript": "^7.24.1",
         "@types/cors": "^2.8.17",
