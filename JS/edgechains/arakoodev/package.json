@@ -7,6 +7,7 @@
     ],
     "exports": {
         "./ai": "./dist/ai/src/index.js",
+        "./comprehend": "./dist/comprehend/src/index.js",
         "./vector-db": "./dist/vector-db/src/index.js",
         "./document-loader": "./dist/document-loader/src/index.js",
         "./splitter": "./dist/splitter/src/index.js",
@@ -22,6 +23,7 @@
         "test": "vitest"
     },
     "dependencies": {
+        "@aws-sdk/client-comprehend": "^3.700.0",
         "@babel/core": "^7.24.4",
         "@babel/preset-env": "^7.24.4",
         "@hono/node-server": "^0.6.0",
