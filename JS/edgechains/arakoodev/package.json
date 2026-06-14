@@ -30,6 +30,7 @@
         "@supabase/supabase-js": "^2.42.3",
         "axios": "^1.7.4",
         "axios-retry": "^4.1.0",
+        "@aws-sdk/client-comprehend": "^3.600.0",
         "cheerio": "^1.0.0-rc.12",
         "cors": "^2.8.5",
         "document": "^0.4.7",
