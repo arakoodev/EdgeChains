@@ -11,8 +11,8 @@
         "test": "vitest"
     },
     "dependencies": {
-        "@arakoodev/edgechains.js": "^0.1.23",
-        "@arakoodev/jsonnet": "^0.1.4",
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.25.0",
         "express": "^4.18.2",
         "dotenv": "^16.3.1"
     },

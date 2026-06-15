@@ -135,19 +135,16 @@ export class LLMRouter {
         }
 
         // Try all primary deployments first
-        const primaryError = await this.tryModelDeployments(this.primaryDeploymentIds, options, false);
-        if (!primaryError) {
-            // Success was returned from inside tryModelDeployments
-            // This line should never be reached because tryModelDeployments
-            // either returns a response or throws
-            return primaryError as unknown as RouterChatResponse;
-        }
-
-        // All primaries failed — try fallbacks
-        if (this.fallbackDeploymentIds.length > 0) {
-            const fallbackError = await this.tryModelDeployments(this.fallbackDeploymentIds, options, true);
-            if (!fallbackError) {
-                return fallbackError as unknown as RouterChatResponse;
+        try {
+            return await this.tryModelDeployments(this.primaryDeploymentIds, options, false);
+        } catch (primaryError) {
+            // All primaries failed — try fallbacks
+            if (this.fallbackDeploymentIds.length > 0) {
+                try {
+                    return await this.tryModelDeployments(this.fallbackDeploymentIds, options, true);
+                } catch (fallbackError) {
+                    // Ignored, we'll throw below
+                }
             }
         }
 

@@ -6,7 +6,7 @@
  * unhealthy deployment exclusion, and error handling.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 import {
     LLMRouter,
     OpenAIProvider,
@@ -31,6 +31,7 @@ class MockProvider implements ILLMProvider {
     private shouldStreamFail: boolean;
     private responseContent: string;
     private responseUsage: TokenUsage;
+    private apiKey: string;
 
     constructor(
         providerType: LLMProvider = "openai",
@@ -38,6 +39,7 @@ class MockProvider implements ILLMProvider {
             shouldFail?: boolean;
             shouldStreamFail?: boolean;
             responseContent?: string;
+            apiKey?: string;
         } = {}
     ) {
         this.providerType = providerType;
@@ -45,10 +47,11 @@ class MockProvider implements ILLMProvider {
         this.shouldStreamFail = options.shouldStreamFail ?? false;
         this.responseContent = options.responseContent ?? "Hello from mock!";
         this.responseUsage = { promptTokens: 10, completionTokens: 5, totalTokens: 15 };
+        this.apiKey = options.apiKey ?? "test-key";
     }
 
     isAvailable(): boolean {
-        return true;
+        return this.apiKey !== "";
     }
 
     async chat(options: ProviderChatRequest): Promise<ProviderChatResponse> {
@@ -136,6 +139,17 @@ function createTestConfig(overrides?: Partial<DeploymentConfig>[]): DeploymentCo
 
 describe("LLMRouter", () => {
     let router: LLMRouter;
+
+    beforeAll(() => {
+        vi.spyOn(LLMRouter.prototype as any, "createProvider").mockImplementation((config: any) => {
+            const shouldFail = config.apiKey === "test-key-fail";
+            return new MockProvider(config.provider, {
+                shouldFail,
+                responseContent: config.id === "openai-primary" ? "Hello from OpenAI!" : "Hello from Gemini!",
+                apiKey: config.apiKey,
+            });
+        });
+    });
 
     beforeEach(() => {
         router = new LLMRouter({
