@@ -73,7 +73,7 @@
         "stream-http": "^3.2.0",
         "ts-jest": "^29.1.2",
         "ts-loader": "^9.5.1",
-        "typescript": "^5.6.3",
+        "typescript": "^5.9.3",
         "util": "^0.12.5"
     }
 }

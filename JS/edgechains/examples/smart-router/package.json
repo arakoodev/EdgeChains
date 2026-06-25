@@ -1,0 +1,24 @@
+{
+    "name": "@arakoodev/smart-router-example",
+    "version": "0.1.0",
+    "description": "Example demonstrating the EdgeChains Smart Router",
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "tsx src/index.ts",
+        "mock-server": "tsx src/mock-server.ts",
+        "test": "vitest"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.25.0",
+        "express": "^4.18.2",
+        "dotenv": "^16.3.1"
+    },
+    "devDependencies": {
+        "tsx": "^4.7.0",
+        "typescript": "^5.6.3",
+        "vitest": "^2.0.3"
+    }
+}
