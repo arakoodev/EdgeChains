@@ -1,0 +1,20 @@
+{
+    "name": "qdrant-example",
+    "version": "1.0.0",
+    "description": "Example demonstrating Qdrant support in edgechains.js",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "tsc && node --experimental-wasm-modules ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "file-uri-to-path": "^2.0.0",
+        "path": "^0.12.7"
+    },
+    "devDependencies": {
+        "@types/node": "^22.7.4",
+        "typescript": "^5.7.0-dev.20241007"
+    }
+}
