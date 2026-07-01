@@ -1,0 +1,22 @@
+{
+  "name": "qdrant-vector-db",
+  "version": "1.0.0",
+  "description": "Qdrant vector database example for EdgeChains",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "tsc && node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@arakoodev/edgechains.js": "^0.25.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.1",
+    "typescript": "^5.6.3"
+  }
+}
