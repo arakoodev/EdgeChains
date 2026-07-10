@@ -83,6 +83,9 @@ export function createSmartRouterFromConfig(
 const DEFAULT_TIMEOUT_MS = 30000;
 const DEFAULT_RATE_LIMIT_COOLDOWN_MS = 60000;
 
+const isFiniteNonNegativeNumber = (value: number): boolean =>
+  Number.isFinite(value) && value >= 0;
+
 export class SmartRouter {
   private deployments: SmartRouterDeployment[];
   private retries: number;
@@ -134,16 +137,23 @@ export class SmartRouter {
   }
 
   private validateOptions(options: SmartRouterOptions): void {
-    if (!options.deployments.length) {
+    if (!options || !Array.isArray(options.deployments) || !options.deployments.length) {
       throw new Error("SmartRouter requires at least one deployment");
     }
-    if ((options.retries ?? 0) < 0) {
-      throw new Error("SmartRouter retries must be non-negative");
+
+    const retries = options.retries ?? 0;
+    if (!Number.isInteger(retries) || retries < 0) {
+      throw new Error("SmartRouter retries must be a non-negative integer");
     }
-    if ((options.timeoutMs ?? DEFAULT_TIMEOUT_MS) <= 0) {
+
+    const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
       throw new Error("SmartRouter timeoutMs must be greater than zero");
     }
-    if ((options.rateLimitCooldownMs ?? DEFAULT_RATE_LIMIT_COOLDOWN_MS) < 0) {
+
+    const rateLimitCooldownMs =
+      options.rateLimitCooldownMs ?? DEFAULT_RATE_LIMIT_COOLDOWN_MS;
+    if (!isFiniteNonNegativeNumber(rateLimitCooldownMs)) {
       throw new Error("SmartRouter rateLimitCooldownMs must be non-negative");
     }
 
@@ -160,14 +170,17 @@ export class SmartRouter {
       deploymentIds.add(deployment.id);
 
       if (
-        (deployment.tokenLimit ?? 0) < 0 ||
-        (deployment.tokenUsage ?? 0) < 0
+        !isFiniteNonNegativeNumber(deployment.tokenLimit ?? 0) ||
+        !isFiniteNonNegativeNumber(deployment.tokenUsage ?? 0)
       ) {
         throw new Error(
-          "SmartRouter token limits and usage must be non-negative",
+          "SmartRouter token limits and usage must be finite and non-negative",
         );
       }
-      if (deployment.timeoutMs !== undefined && deployment.timeoutMs <= 0) {
+      if (
+        deployment.timeoutMs !== undefined &&
+        (!Number.isFinite(deployment.timeoutMs) || deployment.timeoutMs <= 0)
+      ) {
         throw new Error("Deployment timeoutMs must be greater than zero");
       }
     }
@@ -384,15 +397,39 @@ export class SmartRouter {
       };
     }
 
+    const { prompt, messages, model, ...requestOptions } = request;
     return {
-      ...request,
-      model: request.model ?? deployment.model ?? "gpt-3.5-turbo",
+      ...requestOptions,
+      model: model ?? deployment.model ?? "gpt-3.5-turbo",
       messages:
-        request.messages ??
-        (request.prompt
-          ? [{ role: "user", content: request.prompt }]
-          : undefined),
+        messages ??
+        (prompt ? [{ role: "user", content: prompt }] : undefined),
     };
+  }
+
+  private normalizeUsage(response: any): SmartRouterUsage | undefined {
+    if (response?.usage) return response.usage;
+
+    if (response?.usageMetadata) {
+      return {
+        prompt_tokens: response.usageMetadata.promptTokenCount,
+        completion_tokens: response.usageMetadata.candidatesTokenCount,
+        total_tokens: response.usageMetadata.totalTokenCount,
+      };
+    }
+
+    const billedUnits = response?.meta?.billed_units;
+    if (billedUnits) {
+      const inputTokens = billedUnits.input_tokens ?? 0;
+      const outputTokens = billedUnits.output_tokens ?? 0;
+      return {
+        prompt_tokens: inputTokens,
+        completion_tokens: outputTokens,
+        total_tokens: inputTokens + outputTokens,
+      };
+    }
+
+    return undefined;
   }
 
   private normalizeResponse(raw: unknown): {
@@ -400,7 +437,7 @@ export class SmartRouter {
     usage?: SmartRouterUsage;
   } {
     const response = raw as any;
-    const usage = response?.usage ?? response?.usageMetadata;
+    const usage = this.normalizeUsage(response);
 
     if (response?.content !== undefined) {
       return { content: response.content, usage };
@@ -413,32 +450,12 @@ export class SmartRouter {
 
     const googleMessage = response?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (googleMessage !== undefined) {
-      return {
-        content: googleMessage,
-        usage: usage
-          ? {
-              prompt_tokens: usage.promptTokenCount,
-              completion_tokens: usage.candidatesTokenCount,
-              total_tokens: usage.totalTokenCount,
-            }
-          : undefined,
-      };
+      return { content: googleMessage, usage };
     }
 
     const cohereMessage = response?.text;
     if (cohereMessage !== undefined) {
-      const inputTokens = response?.meta?.billed_units?.input_tokens ?? 0;
-      const outputTokens = response?.meta?.billed_units?.output_tokens ?? 0;
-      return {
-        content: cohereMessage,
-        usage: response?.meta?.billed_units
-          ? {
-              prompt_tokens: inputTokens,
-              completion_tokens: outputTokens,
-              total_tokens: inputTokens,
-            }
-          : undefined,
-      };
+      return { content: cohereMessage, usage };
     }
 
     return { content: raw, usage };
@@ -446,7 +463,7 @@ export class SmartRouter {
 
   private addUsage(deploymentId: string, usage?: SmartRouterUsage): void {
     const totalTokens = usage?.total_tokens;
-    if (!totalTokens) return;
+    if (totalTokens === undefined) return;
 
     this.usageByDeployment.set(
       deploymentId,
@@ -467,8 +484,14 @@ export class SmartRouter {
   }
 
   private getRetryAfterMs(error: unknown): number {
-    const retryAfter = (error as any)?.response?.headers?.["retry-after"];
-    if (retryAfter === undefined) return this.rateLimitCooldownMs;
+    const headers = (error as any)?.response?.headers;
+    const retryAfter =
+      typeof headers?.get === "function"
+        ? headers.get("retry-after")
+        : headers?.["retry-after"] ?? headers?.["Retry-After"];
+    if (retryAfter === undefined || retryAfter === null) {
+      return this.rateLimitCooldownMs;
+    }
 
     const seconds = Number(retryAfter);
     if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
@@ -481,8 +504,8 @@ export class SmartRouter {
   private isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
     return Boolean(
       value &&
-      typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] ===
-        "function",
+        typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] ===
+          "function",
     );
   }
 
