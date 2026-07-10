@@ -1,5 +1,5 @@
 status=1
-head=931d6bd0df8880f90cbc6f52f295476cf50769f1
+head=d248bfb358d0e0d75c562e4d7f61f402a4712ccc
 --- validation tail ---
 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
@@ -17,19 +17,19 @@ npm warn deprecated glob@3.2.11: Old versions of glob are not supported, and con
 npm warn deprecated express@3.4.8: No longer maintained. Please upgrade to a stable version.
 npm warn deprecated ejs@0.8.8: Critical security bugs fixed in 2.5.5
 npm warn deprecated highlight.js@7.3.0: Version no longer supported. Upgrade to @latest
+npm warn deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 npm warn deprecated graceful-fs@1.2.3: please upgrade to graceful-fs 4 for compatibility with current and future versions of Node.js
-npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
-npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
-npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 npm warn deprecated minimatch@1.0.0: Please update to minimatch 3.0.2 or higher to avoid a RegExp DoS issue
 npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
-npm warn deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142
 npm warn deprecated connect@2.12.0: connect 2.x series is deprecated
 npm warn deprecated glob@4.0.6: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
-added 872 packages, and audited 873 packages in 28s
+added 872 packages, and audited 873 packages in 34s
 
 126 packages are looking for funding
   run `npm fund` for details
@@ -138,7 +138,7 @@ PASS src/ai/src/tests/streaming.test.ts
 Test Suites: 4 passed, 4 total
 Tests:       28 passed, 28 total
 Snapshots:   0 total
-Time:        4.559 s
+Time:        4.639 s
 Ran all test suites matching /src\/ai\/src\/tests\/smartRouter.test.ts|src\/ai\/src\/tests\/smartRouterReliability.test.ts|src\/ai\/src\/tests\/openAiEndpoints.test.ts|src\/ai\/src\/tests\/streaming.test.ts/i.
 Checking formatting...
 [[33mwarn[39m] src/ai/src/lib/router/smartRouter.ts
