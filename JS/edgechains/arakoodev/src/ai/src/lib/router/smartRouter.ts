@@ -137,7 +137,11 @@ export class SmartRouter {
   }
 
   private validateOptions(options: SmartRouterOptions): void {
-    if (!options || !Array.isArray(options.deployments) || !options.deployments.length) {
+    if (
+      !options ||
+      !Array.isArray(options.deployments) ||
+      !options.deployments.length
+    ) {
       throw new Error("SmartRouter requires at least one deployment");
     }
 
