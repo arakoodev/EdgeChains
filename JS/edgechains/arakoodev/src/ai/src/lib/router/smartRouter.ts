@@ -143,9 +143,7 @@ export class SmartRouter {
     if ((options.timeoutMs ?? DEFAULT_TIMEOUT_MS) <= 0) {
       throw new Error("SmartRouter timeoutMs must be greater than zero");
     }
-    if (
-      (options.rateLimitCooldownMs ?? DEFAULT_RATE_LIMIT_COOLDOWN_MS) < 0
-    ) {
+    if ((options.rateLimitCooldownMs ?? DEFAULT_RATE_LIMIT_COOLDOWN_MS) < 0) {
       throw new Error("SmartRouter rateLimitCooldownMs must be non-negative");
     }
 
@@ -155,12 +153,19 @@ export class SmartRouter {
         throw new Error("SmartRouter deployment id is required");
       }
       if (deploymentIds.has(deployment.id)) {
-        throw new Error(`Duplicate SmartRouter deployment id: ${deployment.id}`);
+        throw new Error(
+          `Duplicate SmartRouter deployment id: ${deployment.id}`,
+        );
       }
       deploymentIds.add(deployment.id);
 
-      if ((deployment.tokenLimit ?? 0) < 0 || (deployment.tokenUsage ?? 0) < 0) {
-        throw new Error("SmartRouter token limits and usage must be non-negative");
+      if (
+        (deployment.tokenLimit ?? 0) < 0 ||
+        (deployment.tokenUsage ?? 0) < 0
+      ) {
+        throw new Error(
+          "SmartRouter token limits and usage must be non-negative",
+        );
       }
       if (deployment.timeoutMs !== undefined && deployment.timeoutMs <= 0) {
         throw new Error("Deployment timeoutMs must be greater than zero");
@@ -373,7 +378,8 @@ export class SmartRouter {
       return {
         model: request.model ?? deployment.model,
         message:
-          request.prompt ?? request.messages?.map((item) => item.content).join("\n"),
+          request.prompt ??
+          request.messages?.map((item) => item.content).join("\n"),
         stream: request.stream ?? false,
       };
     }
@@ -475,16 +481,13 @@ export class SmartRouter {
   private isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
     return Boolean(
       value &&
-        typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] ===
-          "function",
+      typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] ===
+        "function",
     );
   }
 
   private emit(event: SmartRouterLogEvent): void {
-    for (const callback of [
-      this.callbacks?.sentry,
-      this.callbacks?.posthog,
-    ]) {
+    for (const callback of [this.callbacks?.sentry, this.callbacks?.posthog]) {
       try {
         callback?.(event);
       } catch {

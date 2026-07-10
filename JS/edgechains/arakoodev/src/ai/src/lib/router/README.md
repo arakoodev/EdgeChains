@@ -104,11 +104,11 @@ const router = createSmartRouterFromConfig(config);
 
 ## Provider defaults
 
-| Provider | Default endpoint | Auth header | Payload shape |
-| --- | --- | --- | --- |
-| OpenAI | `https://api.openai.com/v1/chat/completions` | `Authorization: Bearer <apiKey>` | `{ model, messages, stream }` |
-| Google | `https://generativelanguage.googleapis.com/v1/models/<model>:generateContent` | `x-goog-api-key: <apiKey>` | `{ contents: [{ role, parts: [{ text }] }] }` |
-| Cohere | `https://api.cohere.ai/v1/chat` | `Authorization: Bearer <apiKey>` | `{ model, message, stream }` |
+| Provider | Default endpoint                                                              | Auth header                      | Payload shape                                 |
+| -------- | ----------------------------------------------------------------------------- | -------------------------------- | --------------------------------------------- |
+| OpenAI   | `https://api.openai.com/v1/chat/completions`                                  | `Authorization: Bearer <apiKey>` | `{ model, messages, stream }`                 |
+| Google   | `https://generativelanguage.googleapis.com/v1/models/<model>:generateContent` | `x-goog-api-key: <apiKey>`       | `{ contents: [{ role, parts: [{ text }] }] }` |
+| Cohere   | `https://api.cohere.ai/v1/chat`                                               | `Authorization: Bearer <apiKey>` | `{ model, message, stream }`                  |
 
 Override any endpoint via `baseUrl` on a deployment.
 
