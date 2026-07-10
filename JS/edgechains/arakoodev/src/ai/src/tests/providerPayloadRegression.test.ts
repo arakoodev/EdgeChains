@@ -100,7 +100,10 @@ describe("SmartRouter provider regressions", () => {
     const rateLimited = jest.fn().mockRejectedValue({
       response: {
         status: 429,
-        headers: { get: (name: string) => (name === "retry-after" ? "2" : null) },
+        headers: {
+          get: (name: string) =>
+            name === "retry-after" ? "2" : null,
+        },
       },
     });
     const fallback = jest.fn().mockResolvedValue({
