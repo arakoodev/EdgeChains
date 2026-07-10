@@ -1,6 +1,6 @@
 import axios from "axios";
 
-type Provider = "openai" | "google" | "cohere";
+export type Provider = "openai" | "google" | "cohere";
 
 export interface SmartRouterUsage {
   prompt_tokens?: number;
@@ -51,22 +51,26 @@ export interface SmartRouterLogEvent {
   provider: Provider;
   error?: unknown;
   usage?: SmartRouterUsage;
+  retryAt?: number;
 }
 
 export interface SmartRouterOptions {
   deployments: SmartRouterDeployment[];
   retries?: number;
   timeoutMs?: number;
+  rateLimitCooldownMs?: number;
   callbacks?: {
     sentry?: (event: SmartRouterLogEvent) => void;
     posthog?: (event: SmartRouterLogEvent) => void;
   };
+  now?: () => number;
 }
 
 export interface SmartRouterConfig {
   deployments: SmartRouterDeployment[];
   retries?: number;
   timeoutMs?: number;
+  rateLimitCooldownMs?: number;
   callbacks?: SmartRouterOptions["callbacks"];
 }
 
@@ -77,18 +81,20 @@ export function createSmartRouterFromConfig(
 }
 
 const DEFAULT_TIMEOUT_MS = 30000;
+const DEFAULT_RATE_LIMIT_COOLDOWN_MS = 60000;
 
 export class SmartRouter {
   private deployments: SmartRouterDeployment[];
   private retries: number;
   private timeoutMs: number;
+  private rateLimitCooldownMs: number;
   private callbacks: SmartRouterOptions["callbacks"];
   private usageByDeployment = new Map<string, number>();
+  private rateLimitedUntilByDeployment = new Map<string, number>();
+  private now: () => number;
 
   constructor(options: SmartRouterOptions) {
-    if (!options.deployments.length) {
-      throw new Error("SmartRouter requires at least one deployment");
-    }
+    this.validateOptions(options);
 
     this.deployments = options.deployments.map((deployment) => ({
       ...deployment,
@@ -96,7 +102,10 @@ export class SmartRouter {
     }));
     this.retries = options.retries ?? 2;
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    this.rateLimitCooldownMs =
+      options.rateLimitCooldownMs ?? DEFAULT_RATE_LIMIT_COOLDOWN_MS;
     this.callbacks = options.callbacks;
+    this.now = options.now ?? Date.now;
 
     for (const deployment of this.deployments) {
       this.usageByDeployment.set(deployment.id, deployment.tokenUsage ?? 0);
@@ -107,6 +116,10 @@ export class SmartRouter {
     return this.usageByDeployment.get(deploymentId) ?? 0;
   }
 
+  getRateLimitedUntil(deploymentId: string): number {
+    return this.rateLimitedUntilByDeployment.get(deploymentId) ?? 0;
+  }
+
   async chat(request: SmartRouterRequest): Promise<SmartRouterResponse> {
     const response = await this.run(request, false);
     return response as SmartRouterResponse;
@@ -114,7 +127,45 @@ export class SmartRouter {
 
   async stream(request: SmartRouterRequest): Promise<AsyncIterable<unknown>> {
     const response = await this.run({ ...request, stream: true }, true);
-    return response as AsyncIterable<unknown>;
+    if (!this.isAsyncIterable(response)) {
+      throw new Error("Selected deployment did not return an async iterable");
+    }
+    return response;
+  }
+
+  private validateOptions(options: SmartRouterOptions): void {
+    if (!options.deployments.length) {
+      throw new Error("SmartRouter requires at least one deployment");
+    }
+    if ((options.retries ?? 0) < 0) {
+      throw new Error("SmartRouter retries must be non-negative");
+    }
+    if ((options.timeoutMs ?? DEFAULT_TIMEOUT_MS) <= 0) {
+      throw new Error("SmartRouter timeoutMs must be greater than zero");
+    }
+    if (
+      (options.rateLimitCooldownMs ?? DEFAULT_RATE_LIMIT_COOLDOWN_MS) < 0
+    ) {
+      throw new Error("SmartRouter rateLimitCooldownMs must be non-negative");
+    }
+
+    const deploymentIds = new Set<string>();
+    for (const deployment of options.deployments) {
+      if (!deployment.id) {
+        throw new Error("SmartRouter deployment id is required");
+      }
+      if (deploymentIds.has(deployment.id)) {
+        throw new Error(`Duplicate SmartRouter deployment id: ${deployment.id}`);
+      }
+      deploymentIds.add(deployment.id);
+
+      if ((deployment.tokenLimit ?? 0) < 0 || (deployment.tokenUsage ?? 0) < 0) {
+        throw new Error("SmartRouter token limits and usage must be non-negative");
+      }
+      if (deployment.timeoutMs !== undefined && deployment.timeoutMs <= 0) {
+        throw new Error("Deployment timeoutMs must be greater than zero");
+      }
+    }
   }
 
   private async run(
@@ -138,6 +189,20 @@ export class SmartRouter {
       for (let attempt = 0; attempt <= this.retries; attempt++) {
         try {
           const raw = await this.invokeDeployment(deployment, request);
+          if (streaming) {
+            if (!this.isAsyncIterable(raw)) {
+              throw new Error(
+                `Deployment ${deployment.id} did not return an async iterable`,
+              );
+            }
+            this.emit({
+              event: "deployment_success",
+              deploymentId: deployment.id,
+              provider: deployment.provider,
+            });
+            return raw;
+          }
+
           const normalized = this.normalizeResponse(raw);
           this.addUsage(deployment.id, normalized.usage);
           this.emit({
@@ -146,8 +211,6 @@ export class SmartRouter {
             provider: deployment.provider,
             usage: normalized.usage,
           });
-
-          if (streaming) return raw as AsyncIterable<unknown>;
 
           return {
             ...normalized,
@@ -158,11 +221,13 @@ export class SmartRouter {
         } catch (error) {
           lastError = error;
           if (this.isRateLimit(error)) {
+            const retryAt = this.markRateLimited(deployment.id, error);
             this.emit({
               event: "deployment_rate_limited",
               deploymentId: deployment.id,
               provider: deployment.provider,
               error,
+              retryAt,
             });
             break;
           }
@@ -188,9 +253,11 @@ export class SmartRouter {
   private pickDeployment(
     attempted: Set<string>,
   ): SmartRouterDeployment | undefined {
+    const now = this.now();
     return this.deployments
       .filter((deployment) => {
         if (attempted.has(deployment.id)) return false;
+        if (this.getRateLimitedUntil(deployment.id) > now) return false;
         const usage = this.getUsage(deployment.id);
         return (
           deployment.tokenLimit === undefined || usage < deployment.tokenLimit
@@ -203,21 +270,27 @@ export class SmartRouter {
     deployment: SmartRouterDeployment,
     request: SmartRouterRequest,
   ): Promise<unknown> {
-    if (deployment.handler) return deployment.handler(request, deployment);
+    const timeoutMs = deployment.timeoutMs ?? this.timeoutMs;
+
+    if (deployment.handler) {
+      return this.withTimeout(
+        deployment.handler(request, deployment),
+        timeoutMs,
+        deployment.id,
+      );
+    }
 
     const controller = new AbortController();
-    const timeout = setTimeout(
-      () => controller.abort(),
-      deployment.timeoutMs ?? this.timeoutMs,
-    );
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       const response = await axios.post(
-        this.endpointFor(deployment),
+        this.endpointFor(deployment, request),
         this.payloadFor(deployment, request),
         {
           headers: this.headersFor(deployment),
           signal: controller.signal,
+          responseType: request.stream ? "stream" : "json",
         },
       );
       return response.data;
@@ -226,10 +299,37 @@ export class SmartRouter {
     }
   }
 
-  private endpointFor(deployment: SmartRouterDeployment): string {
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    deploymentId: string,
+  ): Promise<T> {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeout = setTimeout(
+        () => reject(new Error(`Deployment ${deploymentId} timed out`)),
+        timeoutMs,
+      );
+    });
+
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  private endpointFor(
+    deployment: SmartRouterDeployment,
+    request: SmartRouterRequest = {},
+  ): string {
     if (deployment.baseUrl) return deployment.baseUrl;
     if (deployment.provider === "google") {
-      return "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
+      const model = request.model ?? deployment.model ?? "gemini-pro";
+      const method = request.stream
+        ? "streamGenerateContent?alt=sse"
+        : "generateContent";
+      return `https://generativelanguage.googleapis.com/v1/models/${model}:${method}`;
     }
     if (deployment.provider === "cohere") {
       return "https://api.cohere.ai/v1/chat";
@@ -258,20 +358,22 @@ export class SmartRouter {
     request: SmartRouterRequest,
   ): Record<string, unknown> {
     if (deployment.provider === "google") {
+      const messages =
+        request.messages ??
+        (request.prompt ? [{ role: "user", content: request.prompt }] : []);
       return {
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: request.prompt ?? "" }],
-          },
-        ],
+        contents: messages.map((message) => ({
+          role: message.role === "assistant" ? "model" : "user",
+          parts: [{ text: message.content }],
+        })),
       };
     }
 
     if (deployment.provider === "cohere") {
       return {
         model: request.model ?? deployment.model,
-        message: request.prompt,
+        message:
+          request.prompt ?? request.messages?.map((item) => item.content).join("\n"),
         stream: request.stream ?? false,
       };
     }
@@ -319,10 +421,16 @@ export class SmartRouter {
 
     const cohereMessage = response?.text;
     if (cohereMessage !== undefined) {
+      const inputTokens = response?.meta?.billed_units?.input_tokens ?? 0;
+      const outputTokens = response?.meta?.billed_units?.output_tokens ?? 0;
       return {
         content: cohereMessage,
         usage: response?.meta?.billed_units
-          ? { total_tokens: response.meta.billed_units.input_tokens ?? 0 }
+          ? {
+              prompt_tokens: inputTokens,
+              completion_tokens: outputTokens,
+              total_tokens: inputTokens,
+            }
           : undefined,
       };
     }
@@ -345,8 +453,43 @@ export class SmartRouter {
     return err?.response?.status === 429 || err?.status === 429;
   }
 
+  private markRateLimited(deploymentId: string, error: unknown): number {
+    const retryAfterMs = this.getRetryAfterMs(error);
+    const retryAt = this.now() + retryAfterMs;
+    this.rateLimitedUntilByDeployment.set(deploymentId, retryAt);
+    return retryAt;
+  }
+
+  private getRetryAfterMs(error: unknown): number {
+    const retryAfter = (error as any)?.response?.headers?.["retry-after"];
+    if (retryAfter === undefined) return this.rateLimitCooldownMs;
+
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+
+    const retryDate = Date.parse(String(retryAfter));
+    if (Number.isNaN(retryDate)) return this.rateLimitCooldownMs;
+    return Math.max(0, retryDate - this.now());
+  }
+
+  private isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
+    return Boolean(
+      value &&
+        typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] ===
+          "function",
+    );
+  }
+
   private emit(event: SmartRouterLogEvent): void {
-    this.callbacks?.sentry?.(event);
-    this.callbacks?.posthog?.(event);
+    for (const callback of [
+      this.callbacks?.sentry,
+      this.callbacks?.posthog,
+    ]) {
+      try {
+        callback?.(event);
+      } catch {
+        // Observability hooks must never break routing or failover.
+      }
+    }
   }
 }
