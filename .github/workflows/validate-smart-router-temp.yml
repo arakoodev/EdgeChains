@@ -1,0 +1,62 @@
+name: Validate SmartRouter branch
+
+on:
+  push:
+    branches:
+      - codex/edgechains-smart-router-286
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/edgechains-smart-router-286
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run validation and record result
+        shell: bash
+        run: |
+          set +e
+          cd JS/edgechains/arakoodev
+          npm install > /tmp/smart-router-validation.log 2>&1
+          status=$?
+          if [ "$status" -eq 0 ]; then
+            node node_modules/jest/bin/jest.js \
+              src/ai/src/tests/smartRouter.test.ts \
+              src/ai/src/tests/smartRouterReliability.test.ts \
+              src/ai/src/tests/openAiEndpoints.test.ts \
+              src/ai/src/tests/streaming.test.ts \
+              --runInBand >> /tmp/smart-router-validation.log 2>&1
+            status=$?
+          fi
+          if [ "$status" -eq 0 ]; then
+            node node_modules/typescript/bin/tsc -b >> /tmp/smart-router-validation.log 2>&1
+            status=$?
+          fi
+          if [ "$status" -eq 0 ]; then
+            node node_modules/prettier/bin/prettier.cjs --check \
+              src/ai/src/lib/router/smartRouter.ts \
+              src/ai/src/lib/router/README.md \
+              src/ai/src/tests/smartRouterReliability.test.ts \
+              >> /tmp/smart-router-validation.log 2>&1
+            status=$?
+          fi
+          cd ../../..
+          {
+            echo "status=$status"
+            echo "head=${GITHUB_SHA}"
+            echo "--- validation tail ---"
+            tail -n 160 /tmp/smart-router-validation.log
+          } > .github/smart-router-validation-result.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/smart-router-validation-result.txt
+          git commit -m "ci: record SmartRouter validation result"
+          git push origin HEAD:codex/edgechains-smart-router-286
+          exit "$status"
