@@ -77,16 +77,15 @@ export class OpenAI {
       apiKey: this.apiKey,
       model: "gpt-3.5-turbo",
       handler: async (request) => {
+        const { prompt, messages, model, ...requestOptions } = request;
         const response = await axios.post(
           openAI_url,
           {
-            model: request.model ?? "gpt-3.5-turbo",
+            ...requestOptions,
+            model: model ?? "gpt-3.5-turbo",
             messages:
-              request.messages ??
-              (request.prompt
-                ? [{ role: "user", content: request.prompt }]
-                : undefined),
-            ...request,
+              messages ??
+              (prompt ? [{ role: "user", content: prompt }] : undefined),
           },
           {
             headers: {
@@ -124,9 +123,9 @@ export class OpenAI {
           content: m.content,
         })),
         model: chatOptions.model,
-        max_tokens: chatOptions.max_tokens || 256,
-        temperature: chatOptions.temperature || 0.7,
-        frequency_penalty: 1,
+        max_tokens: chatOptions.max_tokens ?? 256,
+        temperature: chatOptions.temperature ?? 0.7,
+        frequency_penalty: chatOptions.frequency_penalty ?? 1,
       });
       return { content: String(response.content) };
     } catch (error: any) {
@@ -156,9 +155,9 @@ export class OpenAI {
           content: m.content,
         })),
         model: chatOptions.model,
-        max_tokens: chatOptions.max_tokens || 256,
-        temperature: chatOptions.temperature || 0.7,
-        frequency_penalty: chatOptions.frequency_penalty || 1,
+        max_tokens: chatOptions.max_tokens ?? 256,
+        temperature: chatOptions.temperature ?? 0.7,
+        frequency_penalty: chatOptions.frequency_penalty ?? 1,
         stream: true,
       });
       return { content: String(response.content) };
