@@ -1,0 +1,44 @@
+name: Format SmartRouter branch
+
+on:
+  push:
+    branches:
+      - codex/edgechains-smart-router-286
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/edgechains-smart-router-286
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        working-directory: JS/edgechains/arakoodev
+        run: npm install
+      - name: Format SmartRouter files
+        working-directory: JS/edgechains/arakoodev
+        run: |
+          node node_modules/prettier/bin/prettier.cjs --write \
+            src/ai/src/lib/router/smartRouter.ts \
+            src/ai/src/lib/router/README.md \
+            src/ai/src/tests/smartRouterReliability.test.ts
+      - name: Commit formatted files
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            JS/edgechains/arakoodev/src/ai/src/lib/router/smartRouter.ts \
+            JS/edgechains/arakoodev/src/ai/src/lib/router/README.md \
+            JS/edgechains/arakoodev/src/ai/src/tests/smartRouterReliability.test.ts
+          git commit -m "style: format SmartRouter changes"
+          git push origin HEAD:codex/edgechains-smart-router-286
