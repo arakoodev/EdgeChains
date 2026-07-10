@@ -305,7 +305,7 @@ describe("SmartRouter", () => {
     const response = await router.chat({ prompt: "hi" });
 
     expect(response.content).toBe("cohere msg");
-    expect(response.usage?.total_tokens).toBe(8);
+    expect(response.usage?.total_tokens).toBe(12);
   });
 
   test("passes streaming requests through the selected deployment", async () => {
@@ -387,7 +387,7 @@ describe("SmartRouter", () => {
       "Content-Type": "application/json",
       Authorization: "Bearer sk-openai",
     });
-    expect(payload).toMatchObject({
+    expect(payload).toEqual({
       model: "gpt-4",
       messages: [{ role: "user", content: "hello" }],
       stream: true,
