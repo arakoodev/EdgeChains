@@ -1,0 +1,20 @@
+{
+    "name": "aws-comprehend-redaction-example",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "demo": "npm run build && npm start"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@aws-sdk/client-comprehend": "^3.1076.0",
+        "rxjs": "^7.8.2"
+    },
+    "devDependencies": {
+        "@types/node": "^20.17.2",
+        "typescript": "^5.6.3"
+    }
+}
