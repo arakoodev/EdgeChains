@@ -9,6 +9,7 @@ export interface Palm2AIConstructionOptions {
     apiKey?: string;
     model?: string;
     apiVersion?: string;
+    baseUrl?: string;
 }
 
 export interface Palm2AIChatOptions {
@@ -45,11 +46,13 @@ export class Palm2AI {
     apiKey: string;
     model: string;
     apiVersion: string;
+    baseUrl: string;
 
     constructor(options: Palm2AIConstructionOptions = {}) {
         this.apiKey = options.apiKey || process.env.PALM2_API_KEY || process.env.GOOGLE_API_KEY || "";
         this.model = options.model || DEFAULT_MODEL;
         this.apiVersion = options.apiVersion || DEFAULT_API_VERSION;
+        this.baseUrl = (options.baseUrl || GOOGLE_GENERATIVE_LANGUAGE_BASE_URL).replace(/\/$/, "");
         this.checkKeys();
     }
 
@@ -63,7 +66,9 @@ export class Palm2AI {
 
     async chat(chatOptions: Palm2AIChatOptions): Promise<Palm2Response> {
         const model = chatOptions.model || this.model;
-        const url = `${GOOGLE_GENERATIVE_LANGUAGE_BASE_URL}/${this.apiVersion}/models/${model}:generateText?key=${this.apiKey}`;
+        const url = `${this.baseUrl}/${this.apiVersion}/models/${model}:generateText?key=${encodeURIComponent(
+            this.apiKey
+        )}`;
         const data = {
             prompt: {
                 text: chatOptions.prompt,
