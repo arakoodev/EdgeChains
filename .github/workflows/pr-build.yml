@@ -7,8 +7,8 @@ on:
       - reopened
       - synchronize
     paths:
-      - 'Java/**'
       - 'JS/**'
+      - 'JS/wasm/**'
 
 jobs:
   changes:
@@ -16,64 +16,19 @@ jobs:
     permissions:
       pull-requests: read
     outputs:
-      java: ${{ steps.filter.outputs.java }}
       js: ${{ steps.filter.outputs.js }}
+      wasm: ${{ steps.filter.outputs.wasm }}
     steps:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
           filters: |
-            java:
-              - 'Java/**'
             js:
               - 'JS/**'
+            wasm:
+              - 'JS/**'
   
-  java:
-    needs: changes
-    if: ${{ needs.changes.outputs.java == 'true' }}
-    runs-on: ubuntu-latest
-    outputs:
-      VALUE: ${{ steps.set_short_hash.outputs.VALUE }}    
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set SHORT_HASH
-        id: set_short_hash
-        run: |
-          echo "::set-output name=VALUE::${{ github.sha }}"
-          echo "RELEASE_TAG=${{ github.sha }}-$(TZ=UTC-8 date +"%Y.%m.%d")" >> $GITHUB_ENV
-
-      - name: Goto Java folder
-        run: cd Java
-
-      - name: Set up JDK
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'adopt'
-          java-version: '17'
-
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@v4.5
-        with:
-          maven-version: 3.9.3
-
-      - name: Create output folder
-        run: mkdir -p Java/FlySpring/edgechain-app/BuildOutput
-
-      - name: Build edgechain-app project
-        working-directory: Java/FlySpring/edgechain-app
-        run: mvn clean package -DskipTests
-
-      - name: Run edgechain testcases
-        working-directory: Java/FlySpring/edgechain-app
-        run: mvn test
-
-      - name: Copy edgechain-app JAR to BuildOutput
-        run: cp Java/FlySpring/edgechain-app/target/edgechain.jar Java/FlySpring/edgechain-app/BuildOutput
-
-
+  
   js:
     needs: changes
     if: ${{ needs.changes.outputs.js == 'true' }}
@@ -147,3 +102,55 @@ jobs:
       - name: Package edgechain-app project
         run: npm pack
         working-directory: JS/edgechains/lib
+
+
+  wasm:
+          needs: changes
+          if: ${{ needs.changes.outputs.wasm == 'true' }}
+          permissions:
+            contents: write
+            pull-requests: write
+      
+          runs-on: ubuntu-latest
+      
+          steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+      
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                node-version: '18'
+      
+            - name: Setup Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                toolchain: stable
+                override: true
+      
+            - name: Cache Javy Core
+              uses: actions/cache@v2
+              with:
+                path: ./target
+                key: javy-core
+                restore-keys: |
+                  javy-core
+      
+            - name: Check if Javy Core is cached
+              id: cache-hit
+              run: |
+                # echo "cache-hit=$(test -d ./target && echo true || echo false)" >> $GITHUB_OUTPUT
+                echo "cache-hit=$(test -d ./target && echo true || echo false)" >> $GITHUB_OUTPUT
+      
+            - name: Build Javy Core
+              working-directory: .
+              run: |
+                make add all
+            - name: Build CLI
+              working-directory: .
+              run: |
+                make build-arakoo
+            - name: Build Jsonnet
+              working-directory: .
+              run: |
+                make build-jsonnet
