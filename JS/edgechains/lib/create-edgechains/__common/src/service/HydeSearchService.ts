@@ -1,5 +1,5 @@
 import Jsonnet from "@arakoodev/jsonnet";
-import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
+import { OpenAiEndpoint } from "@arakoodev/edgechains.js/ai";
 import { PostgresClient } from "@arakoodev/edgechains.js";
 import type { ArkRequest } from "@arakoodev/edgechains.js";
 import * as path from "path";
