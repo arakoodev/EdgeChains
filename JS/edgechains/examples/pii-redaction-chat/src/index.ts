@@ -1,4 +1,8 @@
-import { ComprehendRedactor, OpenAI, withPIIRedaction } from "@arakoodev/edgechains.js/ai";
+import {
+  ComprehendRedactor,
+  OpenAI,
+  withPIIRedaction,
+} from "@arakoodev/edgechains.js/ai";
 
 /**
  * Example: PII-redacted LLM chat.
@@ -12,44 +16,44 @@ import { ComprehendRedactor, OpenAI, withPIIRedaction } from "@arakoodev/edgecha
  *   OPENAI_API_KEY                                        (LLM)
  */
 async function main() {
-    const redactor = new ComprehendRedactor({
-        region: process.env.AWS_REGION || "us-east-1",
-        languageCode: "en",
-        // switch to "asterisk" to keep the original text length instead of [TYPE] tags
-        maskStyle: "placeholder",
-    });
+  const redactor = new ComprehendRedactor({
+    region: process.env.AWS_REGION || "us-east-1",
+    languageCode: "en",
+    // switch to "asterisk" to keep the original text length instead of [TYPE] tags
+    maskStyle: "placeholder",
+  });
 
-    const rawPrompt =
-        "Hi, my name is Jane Doe, email jane.doe@corp.org. Summarize our refund policy in one sentence.";
+  const rawPrompt =
+    "Hi, my name is Jane Doe, email jane.doe@corp.org. Summarize our refund policy in one sentence.";
 
-    console.log("Original prompt:\n", rawPrompt);
+  console.log("Original prompt:\n", rawPrompt);
 
-    const { redactedText, entities } = await redactor.redact(rawPrompt);
-    console.log("\nDetected entities:", entities);
-    console.log("Prompt sent to the model:\n", redactedText);
+  const { redactedText, entities } = await redactor.redact(rawPrompt);
+  console.log("\nDetected entities:", entities);
+  console.log("Prompt sent to the model:\n", redactedText);
 
-    // Redact-only demo: set DEMO_MODE=redact-only to skip the LLM call.
-    if (process.env.DEMO_MODE === "redact-only") {
-        console.log("\n(redact-only mode: skipping LLM call)");
-        return;
-    }
+  // Redact-only demo: set DEMO_MODE=redact-only to skip the LLM call.
+  if (process.env.DEMO_MODE === "redact-only") {
+    console.log("\n(redact-only mode: skipping LLM call)");
+    return;
+  }
 
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    // Chain the redactor in front of the endpoint class.
-    // From here on, every chat() prompt is automatically redacted.
-    const safeOpenAI = withPIIRedaction(openai, redactor);
+  // Chain the redactor in front of the endpoint class.
+  // From here on, every chat() prompt is automatically redacted.
+  const safeOpenAI = withPIIRedaction(openai, redactor);
 
-    const response = await safeOpenAI.chat({
-        prompt: rawPrompt,
-        model: "gpt-3.5-turbo",
-        max_tokens: 128,
-    });
+  const response = await safeOpenAI.chat({
+    prompt: rawPrompt,
+    model: "gpt-3.5-turbo",
+    max_tokens: 128,
+  });
 
-    console.log("\nModel reply:\n", response.content);
+  console.log("\nModel reply:\n", response.content);
 }
 
 main().catch((error) => {
-    console.error(error);
-    process.exit(1);
+  console.error(error);
+  process.exit(1);
 });
