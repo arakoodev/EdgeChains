@@ -7,7 +7,10 @@ export {
     AWSComprehend,
     ComprehendPIIRedactor,
     ComprehendRedactionEndpoint,
+    DETECT_PII_ENTITIES_MAX_UTF8_BYTES,
+    codePointOffsetToUtf16Index,
     pipe,
+    splitTextByUtf8ByteLimit,
 } from "./lib/aws-comprehend/aws-comprehend.js";
 export type {
     AWSComprehendOptions,
@@ -18,4 +21,5 @@ export type {
     RedactPiiOptions,
     RedactPiiResult,
     RedactionReplacement,
+    Utf8TextChunk,
 } from "./lib/aws-comprehend/aws-comprehend.js";

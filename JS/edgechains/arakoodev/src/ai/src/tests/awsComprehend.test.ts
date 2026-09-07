@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import {
     AWSComprehend,
     ComprehendPIIRedactor,
+    codePointOffsetToUtf16Index,
     pipe,
+    splitTextByUtf8ByteLimit,
 } from "../lib/aws-comprehend/aws-comprehend.js";
 
 const SAMPLE = "My name is John Smith, SSN 123-45-6789";
@@ -232,5 +234,126 @@ describe("AWSComprehend", () => {
         expect(new ComprehendPIIRedactor({ client: { send: vi.fn() } })).toBeInstanceOf(
             AWSComprehend
         );
+    });
+
+    it("redacts gptFnChat-style message arrays passed as the first argument", async () => {
+        const { redactor } = createRedactor();
+        const gptFnChat = vi.fn().mockResolvedValue("answer");
+        const chained = redactor.chain({ gptFnChat });
+
+        await chained.gptFnChat([
+            { role: "system", content: "You are helpful" },
+            { role: "user", content: SAMPLE },
+        ]);
+
+        expect(gptFnChat).toHaveBeenCalledWith([
+            { role: "system", content: "You are helpful" },
+            { role: "user", content: "My name is [NAME], SSN [SSN]" },
+        ]);
+    });
+
+    it("redacts string arrays passed as the first chain argument", async () => {
+        const { redactor } = createRedactor();
+        const embeddings = vi.fn().mockResolvedValue([]);
+        const chained = redactor.chain({ embeddings });
+
+        await chained.embeddings([SAMPLE, "no pii here"]);
+
+        expect(embeddings).toHaveBeenCalledWith(["My name is [NAME], SSN [SSN]", "no pii here"]);
+    });
+
+    it("maps Comprehend code-point offsets past emoji onto UTF-16 slice indices", async () => {
+        const text = "😀 SSN 123-45-6789";
+        const send = vi.fn().mockResolvedValue({
+            Entities: [{ Score: 0.99, Type: "SSN", BeginOffset: 6, EndOffset: 17 }],
+        });
+        const redactor = new AWSComprehend({ client: { send } });
+        const redacted = await redactor.redactPrompt(text);
+
+        expect(redacted).toBe("😀 SSN [SSN]");
+        expect(redacted).not.toContain("123-45-6789");
+        expect(redacted.startsWith("😀")).toBe(true);
+    });
+
+    it("keeps PII intact when several astral characters precede the entity", async () => {
+        const text = "👨‍👩‍👧‍👦 contact Jane at 555-0100";
+        const janeCodePointOffset = [...text].indexOf("J");
+        const jane = "Jane";
+        const send = vi.fn().mockResolvedValue({
+            Entities: [
+                {
+                    Score: 0.99,
+                    Type: "NAME",
+                    BeginOffset: janeCodePointOffset,
+                    EndOffset: janeCodePointOffset + [...jane].length,
+                },
+            ],
+        });
+        const redactor = new AWSComprehend({ client: { send } });
+        const redacted = await redactor.redactPrompt(text);
+
+        expect(redacted).toContain("[NAME]");
+        expect(redacted).not.toContain("Jane");
+        expect(redacted.startsWith("👨‍👩‍👧‍👦")).toBe(true);
+    });
+
+    it("splits prompts over the DetectPiiEntities UTF-8 limit and rebases offsets", async () => {
+        const prefix = "aaaaaaaaaa";
+        const ssn = "123-45-6789";
+        const text = `${prefix} ${ssn}`;
+        const send = vi
+            .fn()
+            .mockImplementation(async (command: { input?: { Text?: string } }) => {
+                const chunk = command.input?.Text || "";
+                if (chunk.includes(ssn)) {
+                    const begin = chunk.indexOf(ssn);
+                    return {
+                        Entities: [
+                            {
+                                Score: 0.99,
+                                Type: "SSN",
+                                BeginOffset: begin,
+                                EndOffset: begin + ssn.length,
+                            },
+                        ],
+                    };
+                }
+                return { Entities: [] };
+            });
+        const redactor = new AWSComprehend({ client: { send }, maxUtf8Bytes: 12 });
+        const result = await redactor.redact(text);
+
+        expect(send.mock.calls.length).toBeGreaterThan(1);
+        expect(
+            send.mock.calls.every(
+                (call) =>
+                    new TextEncoder().encode(call[0].input.Text).byteLength <= 12 ||
+                    [...(call[0].input.Text as string)].length === 1
+            )
+        ).toBe(true);
+        expect(result.redactedText).toBe(`${prefix} [SSN]`);
+        expect(result.entities[0].BeginOffset).toBe(prefix.length + 1);
+        expect(result.entities[0].EndOffset).toBe(prefix.length + 1 + ssn.length);
+    });
+});
+
+describe("codePointOffsetToUtf16Index", () => {
+    it("counts an emoji as one code point and two UTF-16 units", () => {
+        const text = "😀 SSN 123-45-6789";
+        expect(codePointOffsetToUtf16Index(text, 0)).toBe(0);
+        expect(codePointOffsetToUtf16Index(text, 1)).toBe(2);
+        expect(codePointOffsetToUtf16Index(text, 6)).toBe(7);
+        expect(codePointOffsetToUtf16Index(text, 17)).toBe(18);
+        expect(text.slice(7, 18)).toBe("123-45-6789");
+        expect(codePointOffsetToUtf16Index(text, 100)).toBe(-1);
+    });
+});
+
+describe("splitTextByUtf8ByteLimit", () => {
+    it("does not split surrogate pairs and prefers whitespace", () => {
+        const chunks = splitTextByUtf8ByteLimit("😀😀 hello", 9);
+        expect(chunks.map((chunk) => chunk.text)).toEqual(["😀😀 ", "hello"]);
+        expect(chunks[0].text).not.toMatch(/[\uD800-\uDBFF]$/);
+        expect(chunks[1].codePointOffset).toBe(3);
     });
 });
