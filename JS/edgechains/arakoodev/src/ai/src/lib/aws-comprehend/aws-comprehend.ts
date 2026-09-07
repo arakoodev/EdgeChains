@@ -222,7 +222,10 @@ export class AWSComprehend {
             return [await this.redactPrompt(first), ...args.slice(1)];
         }
         if (isRecord(first)) {
-            return [await this.redactPromptOptions(first as RedactablePromptOptions), ...args.slice(1)];
+            return [
+                await this.redactPromptOptions(first as RedactablePromptOptions),
+                ...args.slice(1),
+            ];
         }
         return args;
     }

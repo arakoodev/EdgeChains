@@ -1,10 +1,5 @@
-import { createRequire } from "node:module";
 import { AWSComprehend, pipe } from "@arakoodev/edgechains.js/ai";
-
-const require = createRequire(import.meta.url);
-const { createDemoComprehendClient } = require("./lib/demoComprehendClient.cjs") as {
-    createDemoComprehendClient: () => { send: (command: { input?: { Text?: string } }) => Promise<unknown> };
-};
+import { createDemoComprehendClient } from "./lib/demoComprehendClient.js";
 
 class FakeOpenAI {
     async chat(options: { prompt?: string }) {

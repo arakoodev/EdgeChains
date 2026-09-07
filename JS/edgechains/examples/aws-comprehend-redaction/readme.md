@@ -2,7 +2,7 @@
 
 Redact personally identifiable information from prompts with Amazon Comprehend, then chain the sanitized prompt into an existing EdgeChains LLM endpoint.
 
-This example follows the same Jsonnet + native-callback chain used by `chat-with-llm`. In TypeScript, `AWSComprehend.chain(openai)` wraps `OpenAI.chat()` so PII is removed before the model call. The JS SDK is Promise-based (not RxJS); `pipe()` composes those async steps.
+This example keeps prompts in Jsonnet (same as `chat-with-llm`) and chains redaction in TypeScript: `AWSComprehend.chain(openai)` wraps `OpenAI.chat()` so PII is removed before the model call. The JS SDK is Promise-based (not RxJS); `pipe()` composes those async steps.
 
 Redaction modes match the [Amazon Comprehend PII redaction](https://aws.amazon.com/blogs/machine-learning/detecting-and-redacting-pii-using-amazon-comprehend/) patterns:
 
@@ -43,7 +43,7 @@ Credential-free demo of detection, redaction, `chain()`, and `pipe()`:
 npm run demo
 ```
 
-HTTP server (Jsonnet chain: `redactPii` → `openAICall`):
+HTTP server (Jsonnet prompt + TypeScript `AWSComprehend.chain(openai)`):
 
 ```bash
 COMPREHEND_DEMO=1 npm start

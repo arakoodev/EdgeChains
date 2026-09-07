@@ -1,3 +1,5 @@
+import type { ComprehendClientLike } from "@arakoodev/edgechains.js/ai";
+
 type DemoEntity = {
     Score: number;
     Type: string;
@@ -12,7 +14,7 @@ const DEMO_PATTERNS: Array<{ type: string; regex: RegExp }> = [
     { type: "NAME", regex: /\b(?:Alice|Bob|John|Jane|Johnson|Smith)\b/g },
 ];
 
-function detectDemoPii(text: string): DemoEntity[] {
+export function detectDemoPii(text: string): DemoEntity[] {
     const entities: DemoEntity[] = [];
     for (const pattern of DEMO_PATTERNS) {
         const regex = new RegExp(pattern.regex.source, pattern.regex.flags);
@@ -29,13 +31,19 @@ function detectDemoPii(text: string): DemoEntity[] {
     return entities.sort((a, b) => a.BeginOffset - b.BeginOffset);
 }
 
-function createDemoComprehendClient() {
+export function createDemoComprehendClient(): ComprehendClientLike {
     return {
-        send: async (command: { input?: { Text?: string } }) => {
-            const text = command.input?.Text || "";
+        send: async (command: unknown) => {
+            const text =
+                command &&
+                typeof command === "object" &&
+                "input" in command &&
+                command.input &&
+                typeof command.input === "object" &&
+                "Text" in command.input
+                    ? String((command.input as { Text?: string }).Text || "")
+                    : "";
             return { Entities: detectDemoPii(text) };
         },
     };
 }
-
-module.exports = { createDemoComprehendClient, detectDemoPii };
