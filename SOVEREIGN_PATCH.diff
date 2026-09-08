@@ -1,0 +1,1 @@
+Prompt: [Voice AI / VAD] Load silero_vad.onnx via ONNX Runtime to perform sub-5ms voice activity filtering
