@@ -1,0 +1,19 @@
+{
+  "name": "pii-redaction-example",
+  "version": "1.0.0",
+  "description": "Demonstrates chaining AWSComprehendPIIRedactor with OpenAI — user PII is scrubbed before it reaches the LLM.",
+  "type": "module",
+  "scripts": {
+    "start": "node --loader ts-node/esm src/index.ts",
+    "dev": "nodemon --exec 'node --loader ts-node/esm src/index.ts'"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "*",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "ts-node": "^10.9.2",
+    "nodemon": "^3.1.0"
+  }
+}
