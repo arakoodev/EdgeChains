@@ -1,0 +1,17 @@
+{
+  "name": "comprehend-pii-redaction",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "file:../../arakoodev",
+    "@arakoodev/jsonnet": "^0.1.0",
+    "@aws-sdk/client-comprehend": "^3.1076.0",
+    "@types/node": "^20.17.2",
+    "typescript": "^5.6.3"
+  },
+  "devDependencies": {}
+}
