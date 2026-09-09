@@ -17,7 +17,7 @@ local promptTemplate = |||
                         "Navigate to the Hacker News website by entering the URL 'https://news.ycombinator.com/' in the browser", 
                         "Identify and click on the first link displayed on the Hacker News homepage",  
                         "Extract all the text from the page",
-                        "Return that containt using return statement"
+                        "Return that content using return statement"
                          ]}
                         \`\`\`
 
@@ -31,7 +31,7 @@ local promptTemplate = |||
                         "Search for the term 'automation' in the search bar and hit Enter key",
                         "Click on the first link displayed in the search results",
                         "Extract  all the text from the page",
-                        "Return that containt using return statement"
+                        "Return that content using return statement"
                         ]}
                         \`\`\`
                         \n

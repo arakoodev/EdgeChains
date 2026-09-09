@@ -79,14 +79,14 @@ async function hydeSearchAdaEmbedding(arkRequest, apiKey, orgId) {
         hydeLoader = await jsonnet
             .extString(promptTemplate, ansPromptSystem)
             .extString("time", formattedTime)
-            .extString("qeury", retrievedDocs.join(""))
+            .extString("query", retrievedDocs.join(""))
             .evaluateFile(hydePath);
         const finalPromptSystem = JSON.parse(hydeLoader).prompt;
         // User prompt
         const ansPromptUser = JSON.parse(promptLoader).ans_prompt_user;
         hydeLoader = await jsonnet
             .extString(promptTemplate, ansPromptUser)
-            .extString("qeury", query)
+            .extString("query", query)
             .evaluateFile(hydePath);
         const finalPromptUser = JSON.parse(hydeLoader).prompt;
         const chatMessages = [
