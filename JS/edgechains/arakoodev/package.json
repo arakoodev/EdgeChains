@@ -22,6 +22,7 @@
         "test": "vitest"
     },
     "dependencies": {
+        "@aws-sdk/client-comprehend": "^3.1083.0",
         "@babel/core": "^7.24.4",
         "@babel/preset-env": "^7.24.4",
         "@hono/node-server": "^0.6.0",
@@ -65,6 +66,7 @@
         "@types/node": "^20.17.2",
         "@types/pdf-parse": "^1.1.4",
         "@types/ws": "^8.5.12",
+        "aws-sdk-client-mock": "^4.1.0",
         "buffer": "^6.0.3",
         "crypto-browserify": "^3.12.1",
         "jest": "^29.7.0",
