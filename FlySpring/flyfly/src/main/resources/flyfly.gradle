@@ -1,0 +1,6 @@
+allprojects {
+    apply plugin: 'java'
+    dependencies {
+        implementation files('.flyfly/autoroute.jar')
+    }
+}
