@@ -1,5 +1,10 @@
 export { OpenAI } from "./lib/openai/openai.js";
 export { GeminiAI } from "./lib/gemini/gemini.js";
 export { LlamaAI } from "./lib/llama/llama.js";
+export { AnthropicAI } from "./lib/anthropic/anthropic.js";
+export { DeepSeekAI } from "./lib/deepseek/deepseek.js";
+export { Palm2AI } from "./lib/palm2/palm2.js";
 export { RetellAI } from "./lib/retell-ai/retell.js";
 export { RetellWebClient } from "./lib/retell-ai/retellWebClient.js";
+export { AWSComprehend } from "./lib/comprehend/comprehend.js";
+export { SmartRouter } from "./lib/router/router.js";
