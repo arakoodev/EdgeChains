@@ -1,0 +1,20 @@
+{
+    "name": "redact-pii",
+    "version": "1.0.0",
+    "description": "Redact PII from prompts with AWS Comprehend before sending them to an LLM endpoint.",
+    "main": "index.js",
+    "type": "module",
+    "keywords": [],
+    "author": "",
+    "scripts": {
+        "start": "tsc && node ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev"
+    },
+    "devDependencies": {
+        "@types/node": "^22.7.4",
+        "typescript": "^5.6.3"
+    }
+}
