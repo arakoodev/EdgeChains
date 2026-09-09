@@ -1,0 +1,16 @@
+{
+  "name": "aws-comprehend-redaction",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "file:../../arakoodev"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
