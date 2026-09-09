@@ -1,0 +1,17 @@
+{
+    "name": "aws-comprehend-redaction-example",
+    "version": "0.0.1",
+    "type": "module",
+    "scripts": {
+        "start": "ts-node src/index.ts"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "latest",
+        "@aws-sdk/client-comprehend": "^3.699.0",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.6.3"
+    },
+    "devDependencies": {
+        "@types/node": "^20.17.2"
+    }
+}
