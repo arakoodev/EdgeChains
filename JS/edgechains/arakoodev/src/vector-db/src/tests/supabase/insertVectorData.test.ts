@@ -1,17 +1,18 @@
 import { Supabase } from "../../../../../dist/vector-db/src/lib/supabase/supabase.js";
+import { describe, expect, it, vi } from "vitest";
 
 const MOCK_SUPABASE_API_KEY = "mock-api-key";
 const MOCK_SUPABASE_URL = "https://mock-supabase.co";
 
 // Mock the Supabase class to return a mock client
-jest.mock("../../../../../dist/vector-db/src/lib/supabase/supabase.js", () => {
+vi.mock("../../../../../dist/vector-db/src/lib/supabase/supabase.js", () => {
     return {
-        Supabase: jest.fn().mockImplementation(() => ({
-            createClient: jest.fn(() => ({
+        Supabase: vi.fn().mockImplementation(() => ({
+            createClient: vi.fn(() => ({
                 // Mock client methods
-                from: jest.fn().mockReturnThis(),
+                from: vi.fn().mockReturnThis(),
             })),
-            insertVectorData: jest
+            insertVectorData: vi
                 .fn()
                 .mockImplementation(async ({ tableName, content, embedding }) => {
                     // Assuming content is a string and embedding is an array of length 1536
