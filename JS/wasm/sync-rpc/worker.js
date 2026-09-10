@@ -3,6 +3,8 @@ const { fileURLToPath } = require("url");
 const INIT = 1;
 const CALL = 0;
 const modules = [];
+const allowedModules = JSON.parse(process.env.SYNC_RPC_ALLOWED_MODULES || "{}");
+const authToken = process.env.SYNC_RPC_TOKEN || "";
 
 const server = net.createServer({ allowHalfOpen: true }, (c) => {
     let responded = false;
@@ -18,6 +20,10 @@ const server = net.createServer({ allowHalfOpen: true }, (c) => {
             return;
         }
         const req = JSON.parse(str);
+        if (authToken && req.k !== authToken) {
+            respond({ s: false, v: { code: "EAUTH", message: "Unauthorized" } });
+            return;
+        }
         if (req.t === INIT) {
             // console.log("Init", req.f)
             let id = init(req.f);
@@ -51,11 +57,15 @@ const server = net.createServer({ allowHalfOpen: true }, (c) => {
 });
 
 function init(filename) {
+    const allowedFilename = allowedModules[filename];
+    if (!allowedFilename) {
+        throw new Error("Module is not allowed.");
+    }
     let filePath;
     try {
-        filePath = fileURLToPath(filename);
+        filePath = fileURLToPath(allowedFilename);
     } catch (error) {
-        filePath = filename;
+        filePath = allowedFilename;
     }
     let module = require(filePath);
     // console.log("typeof module", typeof module);
@@ -73,4 +83,4 @@ function init(filename) {
 }
 
 // server.listen(6553);
-server.listen(process.argv[2]);
+server.listen(process.argv[2], "127.0.0.1");
