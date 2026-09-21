@@ -1,21 +1,19 @@
-export { GeminiAI } from "./lib/gemini/gemini.js";
-export { LlamaAI } from "./lib/llama/llama.js";
-export { RetellAI } from "./lib/retell-ai/retell.js";
-export { RetellWebClient } from "./lib/retell-ai/retellWebClient.js";
 export {
     Router,
     NoMatchingDeploymentError,
     NoDeploymentsAvailableError,
-    AxiosHttpClient,
-    HttpError,
-    sentryCallback,
-    posthogCallback,
+} from "./router.js";
+export { AxiosHttpClient, HttpError } from "./httpClient.js";
+export { sentryCallback, posthogCallback } from "./callbacks.js";
+export type { SentryLike, PostHogLike } from "./callbacks.js";
+export {
     openAIAdapter,
     palmAdapter,
     cohereAdapter,
     getAdapter,
     estimateTokens,
-} from "./lib/router/index.js";
+} from "./providers.js";
+export type { ProviderAdapter, NormalizedResponse, NormalizedEmbedding } from "./providers.js";
 export type {
     Deployment,
     RouterProvider,
@@ -35,9 +33,4 @@ export type {
     HttpClient,
     HttpRequestConfig,
     HttpResponse,
-    ProviderAdapter,
-    NormalizedResponse,
-    NormalizedEmbedding,
-    SentryLike,
-    PostHogLike,
-} from "./lib/router/index.js";
+} from "./types.js";

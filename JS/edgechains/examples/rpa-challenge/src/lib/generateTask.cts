@@ -1,4 +1,6 @@
-const { OpenAI } = require("@arakoodev/edgechains.js/ai");
+const { Router } = require("@arakoodev/edgechains.js/ai");
+const path = require("path");
+const Jsonnet = require("@arakoodev/jsonnet");
 
 function openAICall({
     prompt,
@@ -10,16 +12,21 @@ function openAICall({
     openAIKey: string;
 }) {
     try {
-        const openai = new OpenAI({ apiKey: openAIKey });
-        const completion = openai
-            .chatWithFunction({
-                model: "gpt-3.5-turbo-0613",
+        const jsonnet = new Jsonnet();
+        jsonnet.extString("openai_api_key", openAIKey || "");
+        const config = JSON.parse(
+            jsonnet.evaluateFile(path.join(__dirname, "../../jsonnet/router.jsonnet"))
+        );
+        const router = new Router(config);
+        const completion = router
+            .completion({
                 messages: [{ role: "user", content: prompt }],
+                max_tokens: 1024,
                 functions,
                 function_call: { name: functions[0].name },
             })
-            .then((completion: any) => {
-                return JSON.stringify(JSON.parse(completion.function_call.arguments).tasks);
+            .then((res: any) => {
+                return JSON.stringify(JSON.parse(res.functionCall.arguments).tasks);
             })
             .catch((error: any) => {
                 console.error(error);
