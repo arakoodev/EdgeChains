@@ -2,11 +2,13 @@ import axios from "axios";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { z } from "zod";
 import { ChatModel, role } from "../../types/index";
+import { PIIRedactor } from "../pii-redactor/piiRedactor.js";
 const openAI_url = "https://api.openai.com/v1/chat/completions";
 
 interface OpenAIConstructionOptions {
     apiKey?: string;
     orgId?: string;
+    piiRedactor?: PIIRedactor;
 }
 
 interface messageOption {
@@ -60,9 +62,11 @@ interface OpenAIChatReturnOptions {
 export class OpenAI {
     apiKey: string;
     orgId: string;
+    piiRedactor?: PIIRedactor;
     constructor(options: OpenAIConstructionOptions) {
         this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || "";
         this.orgId = options.orgId || process.env.OPENAI_ORG_ID || "";
+        this.piiRedactor = options.piiRedactor;
         this.checkKeys();
     }
 
@@ -80,6 +84,7 @@ export class OpenAI {
     }
 
     async chat(chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
+        chatOptions = await this.redactChatOptions(chatOptions);
         const response = await axios
             .post(
                 openAI_url,
@@ -122,6 +127,7 @@ export class OpenAI {
     }
 
     async streamedChat(chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
+        chatOptions = await this.redactChatOptions(chatOptions);
         const response = await axios
             .post(
                 openAI_url,
@@ -167,6 +173,7 @@ export class OpenAI {
     async chatWithFunction(
         chatOptions: chatWithFunctionOptions
     ): Promise<chatWithFunctionReturnOptions> {
+        chatOptions = await this.redactChatOptions(chatOptions);
         const response = await axios
             .post(
                 openAI_url,
@@ -244,6 +251,7 @@ export class OpenAI {
     async zodSchemaResponse<S extends z.ZodTypeAny>(
         chatOptions: ZodSchemaResponseOptions<S>
     ): Promise<S> {
+        const prompt = await this.redactPrompt(chatOptions.prompt);
         const jsonSchema = zodToJsonSchema(chatOptions.schema, { $refStrategy: "none" });
         const openAIFunctionCallDefinition = {
             name: "generateSchema",
@@ -256,7 +264,7 @@ export class OpenAI {
                         Remembrer if any field like url or link is not available please create a dummy link based on the following prompt
                         
                         prompt:
-                        ${chatOptions.prompt || ""}
+                        ${prompt || ""}
                         `;
 
         const response = await axios
@@ -302,5 +310,15 @@ export class OpenAI {
         } else {
             throw new Error("Response did not contain valid JSON.");
         }
+    }
+
+    private async redactPrompt(prompt: string): Promise<string> {
+        return this.piiRedactor ? this.piiRedactor.redactPrompt(prompt) : prompt;
+    }
+
+    private async redactChatOptions<T extends { prompt?: string; messages?: messageOption[] }>(
+        chatOptions: T
+    ): Promise<T> {
+        return this.piiRedactor ? this.piiRedactor.redactChatOptions(chatOptions) : chatOptions;
     }
 }
