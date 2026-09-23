@@ -91,7 +91,7 @@ if (!process.env.arakoo) {
                 console.debug("In if part");
                 if (numOfArgs > 0) {
                     this.#setFunc(name, async (args) => {
-                        console.debug("Args recieved in async function: ", args);
+                        console.debug("Args received in async function: ", args);
                         let result = await eval(func)(...JSON.parse(args));
                         return result.toString();
                     });
@@ -105,7 +105,7 @@ if (!process.env.arakoo) {
                 console.debug("In else part");
                 if (numOfArgs > 0) {
                     this.#setFunc(name, (args) => {
-                        console.debug("Args recieved: ", args);
+                        console.debug("Args received: ", args);
                         let result = eval(func)(...JSON.parse(args));
                         return result.toString();
                     });
