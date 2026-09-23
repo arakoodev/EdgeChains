@@ -111,6 +111,43 @@ describe("ComprehendPiiRedactor", () => {
 
             expect(result.redactedText).toBe("My name is [NAME] and my email is jane@example.com");
         });
+
+        it("should filter an excluded outer entity before normalizing an allowed nested entity", async () => {
+            const nested = [
+                { Score: 0.99, Type: "ADDRESS", BeginOffset: 11, EndOffset: 19 },
+                { Score: 0.99, Type: "NAME", BeginOffset: 13, EndOffset: 17 },
+            ];
+            const { redactor } = makeRedactor(nested, { entityTypes: ["NAME"] });
+
+            const result = await redactor.redact(SAMPLE_TEXT);
+
+            expect(result.entities.map((entity: PiiEntity) => entity.Type)).toEqual(["NAME"]);
+            expect(result.redactedText).toContain("[NAME]");
+            expect(result.redactedText).not.toContain("[ADDRESS]");
+        });
+
+        it("should keep an allowed outer entity when a nested entity is excluded", async () => {
+            const nested = [
+                { Score: 0.99, Type: "NAME", BeginOffset: 13, EndOffset: 17 },
+                { Score: 0.99, Type: "ADDRESS", BeginOffset: 11, EndOffset: 19 },
+            ];
+            const { redactor } = makeRedactor(nested, { entityTypes: ["ADDRESS"] });
+
+            const result = await redactor.redact(SAMPLE_TEXT);
+
+            expect(result.entities.map((entity: PiiEntity) => entity.Type)).toEqual(["ADDRESS"]);
+            expect(result.redactedText).toContain("[ADDRESS]");
+            expect(result.redactedText).not.toContain("[NAME]");
+        });
+
+        it("should apply per-call entity filters before overlap normalization", async () => {
+            const { redactor } = makeRedactor(undefined, { entityTypes: ["NAME"] });
+
+            const result = await redactor.redact(SAMPLE_TEXT, { entityTypes: ["EMAIL"] });
+
+            expect(result.entities.map((entity: PiiEntity) => entity.Type)).toEqual(["EMAIL"]);
+            expect(result.redactedText).toBe("My name is John Doe and my email is [EMAIL]");
+        });
     });
 
     describe("normalizeEntities", () => {

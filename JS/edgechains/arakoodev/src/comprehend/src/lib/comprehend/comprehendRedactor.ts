@@ -168,7 +168,11 @@ export class ComprehendPiiRedactor {
      * Entities are sorted by position and overlapping detections are collapsed
      * (Comprehend may return overlapping spans) so redaction is idempotent.
      */
-    async detectPiiEntities(text: string, languageCode?: LanguageCode | string): Promise<PiiEntity[]> {
+    async detectPiiEntities(
+        text: string,
+        languageCode?: LanguageCode | string,
+        entityTypes: string[] | undefined = this.entityTypes
+    ): Promise<PiiEntity[]> {
         if (!text) {
             return [];
         }
@@ -177,12 +181,15 @@ export class ComprehendPiiRedactor {
             LanguageCode: (languageCode || this.languageCode) as LanguageCode,
         });
         const response = await this.comprehend.send(command);
-        return ComprehendPiiRedactor.normalizeEntities(response.Entities ?? []);
+        return ComprehendPiiRedactor.normalizeEntities(response.Entities ?? [], entityTypes);
     }
 
     /** Sort by position and drop overlapping spans, keeping the longer (then higher-scored) one. */
-    static normalizeEntities(entities: PiiEntity[]): PiiEntity[] {
-        const sorted = [...entities].sort((a, b) => {
+    static normalizeEntities(entities: PiiEntity[], entityTypes?: string[]): PiiEntity[] {
+        const filtered = entityTypes
+            ? entities.filter((entity) => entityTypes.includes(entity.Type ?? ""))
+            : entities;
+        const sorted = [...filtered].sort((a, b) => {
             const start = (a.BeginOffset ?? 0) - (b.BeginOffset ?? 0);
             if (start !== 0) {
                 return start;
@@ -209,7 +216,6 @@ export class ComprehendPiiRedactor {
      * Per-call `overrides` take precedence over the constructor config.
      */
     async redact(text: string, overrides?: RedactionConfig): Promise<RedactionResult> {
-        const entities = await this.detectPiiEntities(text, overrides?.languageCode);
         const config: RedactionConfig = {
             languageCode: this.languageCode,
             entityTypes: this.entityTypes,
@@ -219,6 +225,7 @@ export class ComprehendPiiRedactor {
             keepOriginal: this.keepOriginal,
             ...overrides,
         };
+        const entities = await this.detectPiiEntities(text, config.languageCode, config.entityTypes);
         const result = ComprehendPiiRedactor.redactWithEntities(text, entities, config);
         this.notify(result);
         return result;
@@ -240,9 +247,7 @@ export class ComprehendPiiRedactor {
         const maskCharacter = config.maskCharacter || DEFAULT_MASK_CHARACTER;
         const replacementToken = config.replacementToken || DEFAULT_REPLACEMENT_TOKEN;
 
-        const selected = ComprehendPiiRedactor.normalizeEntities(entities).filter(
-            (entity) => !entityTypes || entityTypes.includes(entity.Type ?? "")
-        );
+        const selected = ComprehendPiiRedactor.normalizeEntities(entities, entityTypes);
 
         // Apply replacements from the end of the string so earlier offsets stay valid.
         let redactedText = text;
