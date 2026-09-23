@@ -1,0 +1,20 @@
+{
+  "name": "@arakoodev/edgechains.js/pii-redactor",
+  "version": "0.1.0",
+  "description": "AWS Comprehend PII redactor for EdgeChains — chain with any LLM endpoint to sanitize user input before sending to AI",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@aws-sdk/client-comprehend": "^3.600.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.3"
+  }
+}
