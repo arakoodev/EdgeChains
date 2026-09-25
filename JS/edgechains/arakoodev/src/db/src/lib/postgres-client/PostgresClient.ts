@@ -86,12 +86,14 @@ export class PostgresClient {
                 }
             }
 
+            let queryParams: any[] = [];
             if (this.wordEmbeddings.length > 1) {
-                query = `SELECT * FROM (SELECT DISTINCT ON (result.id) * FROM ( ${query} ) result) subquery ORDER BY rrf_score DESC LIMIT ${this.upperLimit};`;
+                query = "SELECT * FROM (SELECT DISTINCT ON (result.id) * FROM ( " + query + " ) result) subquery ORDER BY rrf_score DESC LIMIT $1;";
+                queryParams = [this.upperLimit];
             } else {
                 query += ` ORDER BY rrf_score DESC LIMIT ${this.topK};`;
             }
-            const results = await entityManager.query(query);
+            const results = await entityManager.query(query, queryParams);
             return results;
         } finally {
             await connection.close();
