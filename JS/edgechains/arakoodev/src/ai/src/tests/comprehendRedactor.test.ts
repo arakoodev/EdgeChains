@@ -1,8 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import axios from "axios";
+import { OpenAI } from "../lib/openai/openai.js";
 import { firstValueFrom } from "rxjs";
 import type {
-  DetectPiiEntitiesCommandOutput,
-  Entity,
+  PiiEntity,
 } from "@aws-sdk/client-comprehend";
 import {
   AwsComprehendRedactor,
@@ -126,5 +127,44 @@ describe("AwsComprehendRedactor", () => {
         failClosed: false,
       }).redact("secret"),
     ).resolves.toBe("secret");
+  });
+});
+
+describe("AwsComprehendRedactor with the existing OpenAI endpoint", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("sends only redacted messages through OpenAI.chat after observable redaction", async () => {
+    const post = vi.spyOn(axios, "post").mockResolvedValue({
+      data: { choices: [{ message: { content: "offline transport response" } }] },
+    });
+    const options = { messages: [{ role: "user", content: "John secret" }] };
+    const redactor = new AwsComprehendRedactor({
+      client: fakeClient([{ BeginOffset: 0, EndOffset: 4, Score: 1, Type: "NAME" }]),
+    });
+    const endpoint = new OpenAI({ apiKey: "offline-test", orgId: "offline-test" });
+
+    await expect(firstValueFrom(redactor.chat$(endpoint, options))).resolves.toEqual({
+      content: "offline transport response",
+    });
+    expect(post).toHaveBeenCalledTimes(1);
+    const [url, body] = post.mock.calls[0];
+    expect(url).toBe("https://api.openai.com/v1/chat/completions");
+    expect(body.messages).toEqual([{ role: "user", content: "[NAME] secret" }]);
+    expect(JSON.stringify(body)).not.toContain("John");
+    expect(options.messages[0].content).toBe("John secret");
+  });
+
+  it("never invokes OpenAI transport when Comprehend fails closed", async () => {
+    const post = vi.spyOn(axios, "post").mockRejectedValue(new Error("unexpected transport"));
+    const client: ComprehendClientLike = {
+      send: vi.fn(async () => { throw new Error("Comprehend unavailable"); }) as ComprehendClientLike["send"],
+    };
+    const endpoint = new OpenAI({ apiKey: "offline-test", orgId: "offline-test" });
+    const options = { prompt: "John secret" };
+
+    await expect(firstValueFrom(new AwsComprehendRedactor({ client }).chat$(endpoint, options)))
+      .rejects.toThrow("Comprehend unavailable");
+    expect(post).not.toHaveBeenCalled();
+    expect(options.prompt).toBe("John secret");
   });
 });

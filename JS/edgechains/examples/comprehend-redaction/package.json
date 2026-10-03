@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx src/index.ts"
+    "start": "tsx src/index.ts",
+    "demo:offline": "tsx src/offline-demo.ts"
   },
   "dependencies": {
     "@arakoodev/edgechains.js": "file:../../arakoodev",
