@@ -3,3 +3,10 @@ export { GeminiAI } from "./lib/gemini/gemini.js";
 export { LlamaAI } from "./lib/llama/llama.js";
 export { RetellAI } from "./lib/retell-ai/retell.js";
 export { RetellWebClient } from "./lib/retell-ai/retellWebClient.js";
+export { AwsComprehendRedactor } from "./lib/comprehend/comprehendRedactor.js";
+export {
+    AwsComprehendRedactionChain,
+    redactPiiOperator,
+    redactChatOptionsOperator,
+} from "./lib/comprehend/comprehendChain.js";
+export * from "./lib/comprehend/types.js";
