@@ -1,0 +1,14 @@
+{
+    "name": "qdrant-vector-db",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "dev": "npm run build && node dist/index.js"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "typescript": "^5.6.3"
+    }
+}
