@@ -1,5 +1,4 @@
 module.exports = {
-    presets: [["@babel/preset-env", { targets: { node: "current" } }], "@babel/preset-typescript"],
     testEnvironment: "jest-environment-jsdom",
     // resolve node export conditions so packages like the AWS SDK ship their CJS/Node builds
     testEnvironmentOptions: {
