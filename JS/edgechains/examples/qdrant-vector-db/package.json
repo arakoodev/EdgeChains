@@ -1,0 +1,14 @@
+{
+    "name": "qdrant-vector-db-example",
+    "type": "module",
+    "scripts": {
+        "start": "tsx src/index.ts"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "tsx": "^4.19.2"
+    },
+    "devDependencies": {
+        "typescript": "^5.6.3"
+    }
+}
