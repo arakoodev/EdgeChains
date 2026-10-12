@@ -1,0 +1,16 @@
+{
+  "name": "edgechains-palm2-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsc && node dist/index.js"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "file:../../arakoodev",
+    "@arakoodev/jsonnet": "^0.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "typescript": "^5.6.3"
+  }
+}
