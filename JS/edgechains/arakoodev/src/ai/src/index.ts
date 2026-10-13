@@ -1,5 +1,6 @@
-export { OpenAI } from "./lib/openai/openai.js";
-export { GeminiAI } from "./lib/gemini/gemini.js";
-export { LlamaAI } from "./lib/llama/llama.js";
-export { RetellAI } from "./lib/retell-ai/retell.js";
-export { RetellWebClient } from "./lib/retell-ai/retellWebClient.js";
+export { OpenAI } from "./lib/openai/openai";
+export { GeminiAI } from "./lib/gemini/gemini";
+export { LlamaAI } from "./lib/llama/llama";
+export { RetellAI } from "./lib/retell-ai/retell";
+export { RetellWebClient } from "./lib/retell-ai/retellWebClient";
+export { Comprehend } from "./lib/aws/comprehend";
