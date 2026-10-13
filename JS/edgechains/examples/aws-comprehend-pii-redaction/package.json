@@ -1,0 +1,21 @@
+{
+    "name": "aws-comprehend-pii-redaction-example",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "Example: redact PII with AWS Comprehend before calling an LLM endpoint",
+    "scripts": {
+        "start": "tsx src/index.ts",
+        "start:mock": "DEMO_MODE=mock tsx src/index.ts",
+        "start:live": "DEMO_MODE=live tsx src/index.ts"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@aws-sdk/client-comprehend": "^3.679.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.17.2",
+        "tsx": "^4.19.1",
+        "typescript": "^5.6.3"
+    }
+}
