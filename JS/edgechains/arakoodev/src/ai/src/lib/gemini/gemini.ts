@@ -1,9 +1,11 @@
 import axios from "axios";
 import { retry } from "@lifeomic/attempt";
-const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
+const defaultBaseURL = "https://generativelanguage.googleapis.com/v1beta";
 
-interface GeminiAIConstructionOptions {
+export interface GeminiAIConstructionOptions {
     apiKey?: string;
+    /** Generative Language API root, including the API version. */
+    baseURL?: string;
 }
 
 type SafetyRating = {
@@ -37,14 +39,15 @@ type UsageMetadata = {
     totalTokenCount: number;
 };
 
-type Response = {
-    candidates: Candidate[];
-    usageMetadata: UsageMetadata;
+export type GeminiAIResponse = {
+    candidates?: Candidate[];
+    usageMetadata?: UsageMetadata;
+    promptFeedback?: { blockReason?: string; safetyRatings?: SafetyRating[] };
 };
 
 type responseMimeType = "text/plain" | "application/json";
 
-interface GeminiAIChatOptions {
+export interface GeminiAIChatOptions {
     model?: string;
     max_output_tokens?: number;
     temperature?: number;
@@ -54,14 +57,29 @@ interface GeminiAIChatOptions {
     delay?: number;
 }
 
+export interface GeminiAIRequest {
+    contents: Content[];
+    generationConfig: {
+        temperature: number;
+        maxOutputTokens: number;
+        responseMimeType: responseMimeType;
+    };
+}
+
 export class GeminiAI {
     apiKey: string;
-    constructor(options: GeminiAIConstructionOptions) {
+    private readonly baseURL: string;
+    constructor(options: GeminiAIConstructionOptions = {}) {
         this.apiKey = options.apiKey || process.env.GEMINI_API_KEY || "";
+        this.baseURL = (options.baseURL || defaultBaseURL).replace(/\/$/, "");
     }
 
-    async chat(chatOptions: GeminiAIChatOptions): Promise<Response> {
-        let data = JSON.stringify({
+    async chat(chatOptions: GeminiAIChatOptions): Promise<GeminiAIResponse> {
+        const model = (chatOptions.model ?? "gemini-3.5-flash-lite").replace(
+            /^models\//,
+            "",
+        );
+        const data: GeminiAIRequest = {
             contents: [
                 {
                     role: "user",
@@ -72,26 +90,31 @@ export class GeminiAI {
                     ],
                 },
             ],
-        });
+            generationConfig: {
+                temperature: chatOptions.temperature ?? 0.7,
+                responseMimeType: chatOptions.responseType ?? "text/plain",
+                maxOutputTokens: chatOptions.max_output_tokens ?? 1024,
+            },
+        };
 
-        let config = {
+        const config = {
             method: "post",
             maxBodyLength: Infinity,
-            url,
+            url: `${this.baseURL}/models/${encodeURIComponent(model)}:generateContent`,
             headers: {
                 "Content-Type": "application/json",
                 "x-goog-api-key": this.apiKey,
             },
-            temperature: chatOptions.temperature || "0.7",
-            responseMimeType: chatOptions.responseType || "text/plain",
-            max_output_tokens: chatOptions.max_output_tokens || 1024,
-            data: data,
+            data,
         };
         return await retry(
             async () => {
-                return (await axios.request(config)).data;
+                return (await axios.request<GeminiAIResponse>(config)).data;
             },
-            { maxAttempts: chatOptions.max_retry || 3, delay: chatOptions.delay || 200 }
+            {
+                maxAttempts: chatOptions.max_retry ?? 3,
+                delay: chatOptions.delay ?? 200,
+            },
         );
     }
 }
