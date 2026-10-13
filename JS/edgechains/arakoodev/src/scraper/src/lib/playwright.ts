@@ -103,7 +103,7 @@ export class Playwright {
                 });
                 this.#setHistory({
                     role: "system",
-                    content: `I need to insure that all the commmands is finished or Not?`,
+                    content: `I need to insure that all the commands is finished or Not?`,
                 });
                 continue;
             }

@@ -96,7 +96,7 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
         hydeLoader = await jsonnet
             .extString(promptTemplate, ansPromptSystem)
             .extString("time", formattedTime)
-            .extString("qeury", retrievedDocs.join(""))
+            .extString("query", retrievedDocs.join(""))
             .evaluateFile(hydePath);
 
         const finalPromptSystem = JSON.parse(hydeLoader).prompt;
@@ -106,7 +106,7 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
 
         hydeLoader = await jsonnet
             .extString(promptTemplate, ansPromptUser)
-            .extString("qeury", query)
+            .extString("query", query)
             .evaluateFile(hydePath);
         const finalPromptUser = JSON.parse(hydeLoader).prompt;
 
