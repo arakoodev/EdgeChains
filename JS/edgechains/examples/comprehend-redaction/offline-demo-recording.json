@@ -1,0 +1,74 @@
+{
+  "checked_at_utc": "2026-10-03T15:56:07.908716+00:00",
+  "command": [
+    "npm",
+    "run",
+    "demo:offline"
+  ],
+  "exit_code": 0,
+  "demo_source_sha256": "b131f5ebed7dd4f2b860e8971fdea877d904f7a9ac86fea2d031eafa5272c3a6",
+  "live_provider_calls": false,
+  "description": "Replay source is actual stdout from an executed command; injected Comprehend and locally intercepted Axios transport. This is not a Loom publishing receipt.",
+  "events": [
+    [
+      0,
+      "$ npm run demo:offline\n"
+    ],
+    [
+      0.15,
+      "\n"
+    ],
+    [
+      0.15,
+      "> demo:offline\n"
+    ],
+    [
+      0.15,
+      "> tsx src/offline-demo.ts\n"
+    ],
+    [
+      0.15,
+      "\n"
+    ],
+    [
+      0.658,
+      "OFFLINE DEMO: injected Comprehend results and Axios transport.\n"
+    ],
+    [
+      0.658,
+      "No live AWS/OpenAI request, provider response or billing is claimed.\n"
+    ],
+    [
+      0.659,
+      "Synthetic input: Email Ada at ada@example.com about account 123-45-6789.\n"
+    ],
+    [
+      0.659,
+      "Redacted: Email [NAME] at [EMAIL] about account [SSN].\n"
+    ],
+    [
+      0.661,
+      "Existing OpenAI.chat outbound messages: [{\"role\":\"user\",\"content\":\"Email [NAME] at [EMAIL] about account [SSN].\"}]\n"
+    ],
+    [
+      0.661,
+      "Transport intercepted locally; external requests: 0.\n"
+    ],
+    [
+      0.661,
+      "Observable chain: AwsComprehendRedactor.chat$ -> existing OpenAI.chat -> offline adapter.\n"
+    ],
+    [
+      0.661,
+      "PASS: outbound PII removed, original input unchanged, exactly one intercepted call.\n"
+    ],
+    [
+      0.661,
+      "PASS: fail-closed Comprehend error prevents OpenAI transport invocation.\n"
+    ],
+    [
+      0.679,
+      "Exit code: 0\n"
+    ]
+  ]
+}
