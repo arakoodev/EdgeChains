@@ -59,6 +59,7 @@
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "@arakoodev/jsonnet": "^0.24.0",
         "@babel/preset-typescript": "^7.24.1",
         "@types/cors": "^2.8.17",
         "@types/jest": "^29.5.12",
