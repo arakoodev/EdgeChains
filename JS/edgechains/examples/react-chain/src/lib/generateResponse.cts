@@ -1,14 +1,26 @@
-const { OpenAI } = require("@arakoodev/edgechains.js/openai");
+const { SmartRouter } = require("@arakoodev/edgechains.js/ai");
 
 async function openAICall({ prompt, apiKey }: any) {
     try {
-        const openai = new OpenAI({
-            apiKey: apiKey,
-            temperature: 0,
+        // Example: route across multiple deployments with token-aware load balancing.
+        // In production, api keys and models would come from environment variables
+        // or a jsonnet-rendered routing config passed to createSmartRouterFromConfig.
+        const router = new SmartRouter({
+            deployments: [
+                {
+                    id: "openai-primary",
+                    provider: "openai",
+                    apiKey: apiKey,
+                    model: "gpt-3.5-turbo",
+                    tokenLimit: 100000,
+                    tokenUsage: 0,
+                },
+            ],
+            retries: 2,
+            timeoutMs: 30000,
         });
-        return openai.chat({ prompt }).then((res: any) => {
-            return res.content;
-        });
+        const response = await router.chat({ prompt });
+        return response.content;
     } catch (error) {
         return error;
     }

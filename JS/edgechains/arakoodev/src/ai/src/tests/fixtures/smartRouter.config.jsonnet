@@ -1,0 +1,32 @@
+// Example jsonnet template for SmartRouter config.
+// Render this to JSON at build time and pass the result into createSmartRouterFromConfig.
+{
+  deployments: [
+    {
+      id: "openai-primary",
+      provider: "openai",
+      apiKey: "sk-openai-test",
+      model: "gpt-3.5-turbo",
+      tokenLimit: 100000,
+      tokenUsage: 0,
+    },
+    {
+      id: "google-primary",
+      provider: "google",
+      apiKey: "sk-google-test",
+      model: "gemini-pro",
+      tokenLimit: 100000,
+      tokenUsage: 0,
+    },
+    {
+      id: "cohere-primary",
+      provider: "cohere",
+      apiKey: "sk-cohere-test",
+      model: "command-r",
+      tokenLimit: 100000,
+      tokenUsage: 0,
+    },
+  ],
+  retries: 2,
+  timeoutMs: 30000,
+}
