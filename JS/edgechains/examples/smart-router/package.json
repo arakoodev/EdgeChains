@@ -1,0 +1,19 @@
+{
+    "name": "smart-router-example",
+    "version": "1.0.0",
+    "description": "Example: LiteLLM-style smart routing across OpenAI, Gemini, and Cohere",
+    "main": "dist/index.js",
+    "type": "module",
+    "scripts": {
+        "start": "tsc && node ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.24.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.17.2",
+        "typescript": "^5.6.3"
+    }
+}
