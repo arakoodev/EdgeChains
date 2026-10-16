@@ -1,14 +1,17 @@
-const { OpenAI } = require("@arakoodev/edgechains.js/openai");
+const { Router } = require("@arakoodev/edgechains.js/ai");
+const path = require("path");
+const Jsonnet = require("@arakoodev/jsonnet");
 
 async function openAICall({ prompt, apiKey }: any) {
     try {
-        const openai = new OpenAI({
-            apiKey: apiKey,
-            temperature: 0,
-        });
-        return openai.chat({ prompt }).then((res: any) => {
-            return res.content;
-        });
+        const jsonnet = new Jsonnet();
+        jsonnet.extString("openai_api_key", apiKey || "");
+        const config = JSON.parse(
+            jsonnet.evaluateFile(path.join(__dirname, "../../jsonnet/router.jsonnet"))
+        );
+        const router = new Router(config);
+        const res = await router.completion({ prompt });
+        return res.content;
     } catch (error) {
         return error;
     }

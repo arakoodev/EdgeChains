@@ -1,4 +1,6 @@
-const { OpenAI } = require("@arakoodev/edgechains.js/openai");
+const { Router } = require("@arakoodev/edgechains.js/ai");
+const path = require("path");
+const Jsonnet = require("@arakoodev/jsonnet");
 import { z } from "zod";
 
 const schema = z.object({
@@ -7,8 +9,13 @@ const schema = z.object({
 
 async function openAICall({ prompt, openAIApiKey }: any) {
     try {
-        const openai = new OpenAI({ apiKey: openAIApiKey });
-        let res = await openai.zodSchemaResponse({ prompt, schema: schema });
+        const jsonnet = new Jsonnet();
+        jsonnet.extString("openai_api_key", openAIApiKey || "");
+        const config = JSON.parse(
+            jsonnet.evaluateFile(path.join(__dirname, "../../jsonnet/router.jsonnet"))
+        );
+        const router = new Router(config);
+        let res = await router.zodSchemaResponse({ prompt, schema: schema });
         return JSON.stringify(res);
     } catch (error) {
         return error;
