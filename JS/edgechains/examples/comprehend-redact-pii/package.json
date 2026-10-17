@@ -1,0 +1,15 @@
+{
+    "name": "comprehend-redact-pii",
+    "version": "1.0.0",
+    "description": "Redact PII from prompts with Amazon Comprehend before sending them to an LLM endpoint (EdgeChains redact module example)",
+    "type": "module",
+    "scripts": {
+        "start": "tsx src/index.ts"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "../../arakoodev",
+        "@aws-sdk/client-comprehend": "^3.1152.0",
+        "dotenv": "^16.4.5",
+        "tsx": "^4.19.0"
+    }
+}
