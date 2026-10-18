@@ -1,10 +1,11 @@
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { ComprehendRedactor, RedactionMode } from "../../lib/comprehend-redactor/ComprehendRedactor";
 
-const sendMock = jest.fn();
+const sendMock = vi.fn();
 
-jest.mock("@aws-sdk/client-comprehend", () => ({
-    ComprehendClient: jest.fn().mockImplementation(() => ({ send: sendMock })),
-    DetectPiiEntitiesCommand: jest.fn().mockImplementation((input) => ({ input })),
+vi.mock("@aws-sdk/client-comprehend", () => ({
+    ComprehendClient: vi.fn().mockImplementation(() => ({ send: sendMock })),
+    DetectPiiEntitiesCommand: vi.fn().mockImplementation((input) => ({ input })),
 }));
 
 const TEXT = "Hi, I'm Aarav Sharma. Email me at aarav@example.com or call 98765-43210.";
@@ -71,7 +72,7 @@ describe("ComprehendRedactor", () => {
 
     test("chain redacts prompts before delegating to the endpoint", async () => {
         const endpoint = {
-            chat: jest.fn().mockResolvedValue({ content: "ok" }),
+            chat: vi.fn().mockResolvedValue({ content: "ok" }),
         };
         const redactor = new ComprehendRedactor({});
         const chained = redactor.chain(endpoint as any);
@@ -88,7 +89,7 @@ describe("ComprehendRedactor", () => {
 
     test("chain redacts chat messages", async () => {
         const endpoint = {
-            chat: jest.fn().mockResolvedValue({ content: "ok" }),
+            chat: vi.fn().mockResolvedValue({ content: "ok" }),
         };
         const redactor = new ComprehendRedactor({});
         const chained = redactor.chain(endpoint as any);
