@@ -1,0 +1,17 @@
+{
+    "name": "pii-redaction-chat",
+    "version": "1.0.0",
+    "description": "Chains AWS Comprehend PII redaction in front of an LLM chat call with @arakoodev/edgechains.js",
+    "main": "dist/index.js",
+    "type": "module",
+    "scripts": {
+        "start": "tsc && node ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "^0.23.6",
+        "@types/node": "^20.14.2",
+        "dotenv": "^16.4.5",
+        "openai": "^4.0.0"
+    }
+}
