@@ -1,0 +1,29 @@
+(typename $arakoo_status
+    (enum (@witx tag u32)
+        $ok
+        $error
+        $inval
+        $badf
+        $buflen
+        $unsupported
+        $badalign
+        $httpinvalid
+        $httpuser
+        $httpincomplete
+        $none
+        $httpheadtoolarge
+        $httpinvalidstatus
+        $limitexceeded
+        $again
+    ))
+
+(module $arakoo_geo
+    (@interface func (export "lookup")
+        (param $addr_octets (@witx const_pointer (@witx char8)))
+        (param $addr_len (@witx usize))
+        (param $buf (@witx pointer (@witx char8)))
+        (param $buf_len (@witx usize))
+        (param $nwritten_out (@witx pointer (@witx usize)))
+        (result $err (expected (error $arakoo_status)))
+    )
+)

@@ -1,0 +1,24 @@
+{
+    "name": "pdfparse",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "test": "vitest"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@hono/node-server": "^1.12.0",
+        "axios": "^1.7.2",
+        "child_process": "^1.0.2",
+        "esbuild": "^0.23.0",
+        "hono": "^3.9",
+        "nohup": "^0.1.0"
+    },
+    "devDependencies": {
+        "vitest": "^2.0.1"
+    }
+}

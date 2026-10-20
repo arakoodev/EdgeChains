@@ -1,0 +1,33 @@
+nohup: failed to run command '/home/shyam/pr/EdgeChains/target/release/arakoo': No such file or directory
+nohup: failed to run command '/home/shyam/pr/EdgeChains/target/release/arakoo': No such file or directory
+nohup: failed to run command '/home/shyam/pr/EdgeChains/target/release/arakoo': No such file or directory
+nohup: failed to run command '/home/shyam/pr/EdgeChains/target/release/arakoo': No such file or directory
+nohup: failed to run command '/home/shyam/pr/EdgeChains/target/release/arakoo': No such file or directory
+nohup: failed to run command '/home/shyam/pr/EdgeChains/target/release/arakoo': No such file or directory
+nohup: failed to run command '/home/shyam/pr/EdgeChains/target/release/arakoo': No such file or directory
+2024-07-09T17:54:34.325248Z  INFO Loading Component from "/home/shyam/pr/EdgeChains/JS/wasm/test/wasmtestcases/index.wasm"
+2024-07-09T17:54:35.429767Z  INFO Starting server ...
+2024-07-09T17:54:35.429968Z  INFO Listening on http://127.0.0.1:8080
+2024-07-09T17:54:38.377628Z  INFO Handling request: GET /hello
+Successfully responded to request
+2024-07-09T17:55:41.371997Z  INFO Loading Component from "/home/shyam/pr/EdgeChains/JS/wasm/test/wasmtestcases/index.wasm"
+2024-07-09T17:55:42.905582Z  INFO Starting server ...
+thread 'main' panicked at /home/shyam/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-0.14.29/src/server/server.rs:81:13:
+error binding to 127.0.0.1:8080: error creating server listener: Address already in use (os error 98)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2024-07-09T17:55:45.386989Z  INFO Handling request: GET /hello
+Successfully responded to request
+2024-07-09T17:56:40.841915Z  INFO Loading Component from "/home/shyam/pr/EdgeChains/JS/wasm/test/wasmtestcases/index.wasm"
+2024-07-09T17:56:42.408213Z  INFO Starting server ...
+thread 'main' panicked at /home/shyam/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-0.14.29/src/server/server.rs:81:13:
+error binding to 127.0.0.1:8080: error creating server listener: Address already in use (os error 98)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2024-07-09T17:56:44.861415Z  INFO Handling request: GET /hello
+Successfully responded to request
+2024-07-09T18:04:21.691950Z  INFO Loading Component from "/home/shyam/pr/EdgeChains/JS/wasm/test/wasmtestcases/index.wasm"
+2024-07-09T18:04:23.663535Z  INFO Starting server ...
+thread 'main' panicked at /home/shyam/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-0.14.29/src/server/server.rs:81:13:
+error binding to 127.0.0.1:8080: error creating server listener: Address already in use (os error 98)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2024-07-09T18:04:25.709603Z  INFO Handling request: GET /hello
+Successfully responded to request

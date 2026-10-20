@@ -1,0 +1,5 @@
+interface inbound-http {
+    use http-types.{request, response, method};
+
+    handle-request: func(req: request) -> response;
+}
