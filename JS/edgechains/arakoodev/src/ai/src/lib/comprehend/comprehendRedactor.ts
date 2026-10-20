@@ -59,7 +59,14 @@ export class ComprehendRedactor {
             `x-amz-date:${amzDate}\n` +
             `x-amz-target:${amzTarget}\n`;
         const signedHeaders = "content-type;host;x-amz-date;x-amz-target";
-        const canonicalRequest = ["POST", "/", "", canonicalHeaders, signedHeaders, payloadHash].join("\n");
+        const canonicalRequest = [
+            "POST",
+            "/",
+            "",
+            canonicalHeaders,
+            signedHeaders,
+            payloadHash,
+        ].join("\n");
 
         const algorithm = "AWS4-HMAC-SHA256";
         const credentialScope = `${dateStamp}/${this.region}/${service}/aws4_request`;
@@ -76,7 +83,10 @@ export class ComprehendRedactor {
         const kRegion = hmac(kDate, this.region);
         const kService = hmac(kRegion, service);
         const kSigning = hmac(kService, "aws4_request");
-        const signature = crypto.createHmac("sha256", kSigning).update(stringToSign, "utf8").digest("hex");
+        const signature = crypto
+            .createHmac("sha256", kSigning)
+            .update(stringToSign, "utf8")
+            .digest("hex");
 
         const headers: Record<string, string> = {
             "Content-Type": contentType,
@@ -102,7 +112,9 @@ export class ComprehendRedactor {
         const response = await fetch(url, { method: "POST", headers, body });
         if (!response.ok) {
             const errText = await response.text();
-            throw new Error(`AWS Comprehend DetectPiiEntities failed (${response.status}): ${errText}`);
+            throw new Error(
+                `AWS Comprehend DetectPiiEntities failed (${response.status}): ${errText}`
+            );
         }
         const data = (await response.json()) as { Entities?: PiiEntitySpan[] };
         return data.Entities || [];
@@ -129,7 +141,10 @@ export class ComprehendRedactor {
         return redacted;
     }
 
-    async redactText(text: string, languageCode?: string): Promise<{ redactedText: string; entities: PiiEntitySpan[] }> {
+    async redactText(
+        text: string,
+        languageCode?: string
+    ): Promise<{ redactedText: string; entities: PiiEntitySpan[] }> {
         const entities = await this.detectPiiEntities(text, languageCode);
         const redactedText = this.applyRedactionSpans(text, entities);
         return { redactedText, entities };
