@@ -1,0 +1,11 @@
+{
+  "name": "edgechains-qdrant-search-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "file:../../arakoodev"
+  }
+}
