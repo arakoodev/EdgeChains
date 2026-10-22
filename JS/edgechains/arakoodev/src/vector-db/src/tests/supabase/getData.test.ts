@@ -1,16 +1,17 @@
+import { describe, it, expect, vi } from "vitest";
 import { Supabase } from "../../../../../dist/vector-db/src/lib/supabase/supabase.js";
 const MOCK_SUPABASE_API_KEY = "mock-api-key";
 const MOCK_SUPABASE_URL = "https://mock-supabase.co";
 
 // Mock the getDataFromQuery method of the Supabase class
-jest.mock("../../../../../dist/vector-db/src/lib/supabase/supabase.js", () => {
+vi.mock("../../../../../dist/vector-db/src/lib/supabase/supabase.js", () => {
     return {
-        Supabase: jest.fn().mockImplementation(() => ({
-            createClient: jest.fn(() => ({
+        Supabase: vi.fn().mockImplementation(() => ({
+            createClient: vi.fn(() => ({
                 // Mock client methods
-                from: jest.fn().mockReturnThis(),
+                from: vi.fn().mockReturnThis(),
             })),
-            getData: jest.fn().mockImplementation(async ({ client, tableName, columns }) => {
+            getData: vi.fn().mockImplementation(async ({ client, tableName, columns }) => {
                 // Mock response data
                 const responseData = [{ id: 1, content: "Sample content" }];
 
