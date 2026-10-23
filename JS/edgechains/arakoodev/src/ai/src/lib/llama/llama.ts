@@ -1,3 +1,4 @@
+import { AwsComprehendRedactor, RedactedEndpointChain } from "../comprehend/comprehend.js";
 import axios from "axios";
 import { role } from "../../types";
 import { retry } from "@lifeomic/attempt";
@@ -29,6 +30,10 @@ export class LlamaAI {
     constructor({ apiKey }: { apiKey: string }) {
         this.apiKey = apiKey;
         this.queue = [];
+    }
+
+    chainRedactor(redactor: AwsComprehendRedactor): RedactedEndpointChain<LlamaAI> {
+        return redactor.chain(this);
     }
 
     async makeRequest(chatOptions: llamaChatOptions) {
