@@ -1,0 +1,11 @@
+{
+  "name": "aws-comprehend-pii-redaction-example",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "file:../../arakoodev"
+  }
+}
