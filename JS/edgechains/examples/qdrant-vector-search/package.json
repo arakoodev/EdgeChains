@@ -1,0 +1,27 @@
+{
+    "name": "qdrant-vector-search",
+    "version": "1.0.0",
+    "description": "Vector similarity search and document indexing using Qdrant REST API in EdgeChains",
+    "main": "dist/index.js",
+    "type": "module",
+    "keywords": [
+        "edgechains",
+        "qdrant",
+        "vector-db",
+        "embeddings"
+    ],
+    "author": "DACHDigitalwerk",
+    "license": "Apache-2.0",
+    "scripts": {
+        "build": "tsc",
+        "start": "tsc && node ./dist/index.js"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "^0.1.23",
+        "@arakoodev/jsonnet": "^0.1.2"
+    },
+    "devDependencies": {
+        "@types/node": "^20.17.2",
+        "typescript": "^5.6.3"
+    }
+}
