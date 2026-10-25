@@ -204,6 +204,7 @@ export class QdrantClient {
     } = {},
     options: QdrantRequestOptions = {},
   ) {
+    if (query.offset !== undefined) this.pointId(query.offset)
     return this.request<{
       points: QdrantRecord[]
       next_page_offset: QdrantPointId | null
@@ -216,6 +217,9 @@ export class QdrantClient {
     query: QdrantQuery,
     options: QdrantRequestOptions = {},
   ) {
+    if (typeof query.query === 'number' || typeof query.query === 'string') {
+      this.pointId(query.query)
+    }
     return this.request<{ points: QdrantScoredPoint[] }>(
       'POST',
       this.path(collection, '/points/query'),

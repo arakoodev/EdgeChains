@@ -75,6 +75,29 @@ describe
       expect(points[0].score).toBeGreaterThan(points[1].score)
       expect(points[0].payload?.content).toBe('nearest document')
     })
+    it('forwards zero and UUID query IDs consistently with the direct API', async () => {
+      for (const id of [0, uuid]) {
+        const request = { query: id, limit: 2 }
+        const response = await fetch(
+          `${url}/collections/${collection}/points/query`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(apiKey ? { 'api-key': apiKey } : {}),
+            },
+            body: JSON.stringify(request),
+          },
+        )
+        expect(response.ok).toBe(true)
+        const direct = await response.json()
+        expect((await client.query(collection, request)).points).toEqual(
+          direct.result.points,
+        )
+        const page = await client.scroll(collection, { offset: id, limit: 1 })
+        expect(page.points[0].id).toBe(id)
+      }
+    })
     it('applies tenant filters and score thresholds on the server', async () => {
       const { points } = await client.query(collection, {
         query: [0, 1, 0],

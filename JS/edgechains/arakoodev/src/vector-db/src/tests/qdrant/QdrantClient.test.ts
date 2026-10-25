@@ -219,6 +219,29 @@ describe.sequential('Qdrant REST contract', () => {
     await client.retrieve('docs', [id, 0])
     expect(captured.body).toEqual({ ids: [id, 0] })
   })
+  it.each([0, 'ae50cb58-1553-42a2-9944-8f4cabf1229b'])(
+    'preserves a valid query ID and scroll offset %j',
+    async id => {
+      await client.query('docs', { query: id })
+      expect(captured.body).toEqual({ query: id })
+      await client.scroll('docs', { offset: id })
+      expect(captured.body).toEqual({ offset: id })
+    },
+  )
+  it.each([
+    -1,
+    NaN,
+    Infinity,
+    1.5,
+    Number.MAX_SAFE_INTEGER + 1,
+    '123',
+    'bad-id',
+  ])('rejects invalid query IDs and scroll offsets before sending %j', id => {
+    const previous = requests
+    expect(() => client.query('docs', { query: id })).toThrow(TypeError)
+    expect(() => client.scroll('docs', { offset: id })).toThrow(TypeError)
+    expect(requests).toBe(previous)
+  })
   it.each(['', '.', '..'])(
     'rejects unsafe or absent collection name %j before a request',
     name => {
