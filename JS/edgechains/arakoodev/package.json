@@ -24,6 +24,7 @@
     "dependencies": {
         "@babel/core": "^7.24.4",
         "@babel/preset-env": "^7.24.4",
+        "@aws-sdk/client-comprehend": "^3.700.0",
         "@hono/node-server": "^0.6.0",
         "@lifeomic/attempt": "^3.1.0",
         "@playwright/test": "^1.45.3",
