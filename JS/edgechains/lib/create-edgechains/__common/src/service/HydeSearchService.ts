@@ -1,6 +1,6 @@
 import Jsonnet from "@arakoodev/jsonnet";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
-import { PostgresClient } from "@arakoodev/edgechains.js";
+import { PostgresClient, QdrantClient } from "@arakoodev/edgechains.js";
 import type { ArkRequest } from "@arakoodev/edgechains.js";
 import * as path from "path";
 
@@ -8,6 +8,12 @@ enum PostgresDistanceMetric {
     COSINE = "COSINE",
     IP = "IP",
     L2 = "L2",
+}
+
+enum QdrantDistanceMetric {
+    COSINE = "Cosine",
+    EUCLID = "Euclid",
+    DOT = "Dot",
 }
 
 async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, orgId: string) {
@@ -60,17 +66,31 @@ async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, or
             })
         );
 
-        // Chain 5 ==> Query via EmbeddingChain
-        const dbClient = new PostgresClient(
-            await embeddingsListChain,
-            PostgresDistanceMetric.IP,
-            topK,
-            20,
-            table,
-            namespace,
-            arkRequest,
-            15
-        );
+        // Chain 5 ==> Query via EmbeddingChain (supports Qdrant or Postgres)
+        const useQdrant = Boolean(process.env.QDRANT_URL || (arkRequest as any)?.vectorDb === "qdrant");
+        const resolvedEmbeddings = await embeddingsListChain;
+        const dbClient = useQdrant
+            ? new QdrantClient(
+                  resolvedEmbeddings,
+                  QdrantDistanceMetric.COSINE as any,
+                  topK,
+                  table,
+                  namespace,
+                  arkRequest,
+                  15,
+                  process.env.QDRANT_URL,
+                  process.env.QDRANT_API_KEY
+              )
+            : new PostgresClient(
+                  resolvedEmbeddings,
+                  PostgresDistanceMetric.IP,
+                  topK,
+                  20,
+                  table,
+                  namespace,
+                  arkRequest,
+                  15
+              );
 
         const queryResult = await dbClient.dbQuery();
 
