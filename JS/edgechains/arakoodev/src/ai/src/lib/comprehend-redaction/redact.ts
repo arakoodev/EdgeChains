@@ -65,7 +65,9 @@ function buildSigV4Headers(opts: {
     ].join("\n");
     const service = "comprehend";
     const scope = `${dateStamp}/${opts.region}/${service}/aws4_request`;
-    const stringToSign = ["AWS4-HMAC-SHA256", amzDate, scope, sha256Hex(canonicalRequest)].join("\n");
+    const stringToSign = ["AWS4-HMAC-SHA256", amzDate, scope, sha256Hex(canonicalRequest)].join(
+        "\n"
+    );
     let key = hmac(`AWS4${opts.secretAccessKey}`, dateStamp);
     key = hmac(key, opts.region);
     key = hmac(key, service);
@@ -85,7 +87,7 @@ export class RedactObservable {
 
     then<T = string, E = unknown>(
         onfulfilled?: (value: string) => T | PromiseLike<T>,
-        onrejected?: (reason: E) => unknown,
+        onrejected?: (reason: E) => unknown
     ): Promise<T | unknown> {
         return this.promise.then(onfulfilled, onrejected);
     }
@@ -133,7 +135,7 @@ export class ComprehendRedact {
     async detectPii(text: string): Promise<PiiEntity[]> {
         if (!this.accessKeyId || !this.secretAccessKey) {
             throw new Error(
-                "AWS credentials are required (accessKeyId/secretAccessKey or AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY env vars).",
+                "AWS credentials are required (accessKeyId/secretAccessKey or AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY env vars)."
             );
         }
         const payload = JSON.stringify({ Text: text, LanguageCode: this.languageCode });
@@ -151,7 +153,17 @@ export class ComprehendRedact {
         const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
         // Real AWS DetectPiiEntities returns the entity list under `Entities`
         // (AWS API Reference); `Result` is kept as a fallback for local mocks.
-        return (data?.Entities ?? data?.Result ?? []) as PiiEntity[];
+        const entities = data?.Entities ?? data?.Result;
+        // Fail closed: if the response carries no entity list we cannot confirm
+        // the text was redacted, so throw instead of silently passing the
+        // original (un-redacted) text downstream.
+        if (!Array.isArray(entities)) {
+            throw new Error(
+                "Unexpected DetectPiiEntities response (no `Entities`/`Result` array): " +
+                    JSON.stringify(data)
+            );
+        }
+        return entities as PiiEntity[];
     }
 
     /** Redacts PII: TAG replaces with [TYPE], MASK replaces with *****. */
@@ -174,12 +186,17 @@ export class ComprehendRedact {
 
     /**
      * Chain redaction with an existing Endpoint class (e.g. OpenAI):
-     * the prompt is redacted first, then forwarded to endpoint.chat().
+     * the prompt (content) is redacted first, then forwarded to
+     * endpoint.chat(). Only `prompt` is treated as PII-bearing content and
+     * redacted; the remaining opts (model, temperature, ...) are parameters
+     * and are passed through untouched. Keep PII-bearing content in `prompt`.
      */
     async chainWithEndpoint(
-        endpoint: { chat: (opts: { prompt: string } & Record<string, unknown>) => Promise<unknown> },
+        endpoint: {
+            chat: (opts: { prompt: string } & Record<string, unknown>) => Promise<unknown>;
+        },
         prompt: string,
-        opts: { mode?: PiiRedactionMode } & Record<string, unknown> = {},
+        opts: { mode?: PiiRedactionMode } & Record<string, unknown> = {}
     ): Promise<unknown> {
         const { mode = "TAG", ...rest } = opts;
         const redacted = await this.redactText(prompt, mode);

@@ -1,9 +1,5 @@
 import axios from "axios";
-import {
-    ComprehendRedact,
-    PiiEntity,
-    RedactObservable,
-} from "../lib/comprehend-redaction/redact";
+import { ComprehendRedact, PiiEntity, RedactObservable } from "../lib/comprehend-redaction/redact";
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -23,7 +19,12 @@ beforeEach(() => {
     mockedAxios.create = jest.fn(() => ({ post: mockPost })) as unknown as jest.Mock;
 });
 
-const creds = { accessKeyId: "AKIATEST", secretAccessKey: "SECRETTEST", region: "us-east-1", endpoint: "http://127.0.0.1:9/comprehend/" };
+const creds = {
+    accessKeyId: "AKIATEST",
+    secretAccessKey: "SECRETTEST",
+    region: "us-east-1",
+    endpoint: "http://127.0.0.1:9/comprehend/",
+};
 
 describe("ComprehendRedact PII redaction & observable chaining (#290)", () => {
     test("detectPii returns entities and signs with SigV4", async () => {
@@ -36,7 +37,9 @@ describe("ComprehendRedact PII redaction & observable chaining (#290)", () => {
         expect(JSON.parse(payload)).toEqual({ Text: TEXT, LanguageCode: "en" });
         expect(cfg.headers["x-amz-target"]).toBe("AmazonComprehend.DetectPiiEntities");
         expect(cfg.headers["x-amz-date"]).toMatch(/^\d{8}T\d{6}Z$/);
-        expect(cfg.headers.authorization).toMatch(/^AWS4-HMAC-SHA256 Credential=AKIATEST\/\d{8}\/us-east-1\/comprehend\/aws4_request, SignedHeaders=.* Signature=[a-f0-9]{64}$/);
+        expect(cfg.headers.authorization).toMatch(
+            /^AWS4-HMAC-SHA256 Credential=AKIATEST\/\d{8}\/us-east-1\/comprehend\/aws4_request, SignedHeaders=.* Signature=[a-f0-9]{64}$/
+        );
     });
 
     test("redactText TAG mode replaces PII with [TYPE] tokens", async () => {
@@ -52,7 +55,9 @@ describe("ComprehendRedact PII redaction & observable chaining (#290)", () => {
     });
 
     test("redactText returns input unchanged when no PII found", async () => {
-        mockedAxios.create = jest.fn(() => ({ post: jest.fn().mockResolvedValue({ data: JSON.stringify({ Entities: [] }) }) })) as unknown as jest.Mock;
+        mockedAxios.create = jest.fn(() => ({
+            post: jest.fn().mockResolvedValue({ data: JSON.stringify({ Entities: [] }) }),
+        })) as unknown as jest.Mock;
         const r = new ComprehendRedact(creds);
         expect(await r.redactText("no pii here")).toBe("no pii here");
     });
@@ -100,5 +105,23 @@ describe("ComprehendRedact PII redaction & observable chaining (#290)", () => {
         })) as unknown as jest.Mock;
         const r = new ComprehendRedact(creds);
         expect(await r.detectPii(TEXT)).toEqual(sample);
+    });
+
+    test("detectPii fails closed on an unexpected response shape (no silent passthrough)", async () => {
+        // A 200 whose body has no Entities/Result array must throw, not return
+        // [] and let the original (un-redacted) text through.
+        mockedAxios.create = jest.fn(() => ({
+            post: jest.fn().mockResolvedValue({ data: JSON.stringify({ Message: "throttled" }) }),
+        })) as unknown as jest.Mock;
+        const r = new ComprehendRedact(creds);
+        await expect(r.detectPii(TEXT)).rejects.toThrow(/no `Entities`\/`Result` array/);
+    });
+
+    test("redactText propagates the fail-closed error instead of returning raw text", async () => {
+        mockedAxios.create = jest.fn(() => ({
+            post: jest.fn().mockResolvedValue({ data: JSON.stringify(null) }),
+        })) as unknown as jest.Mock;
+        const r = new ComprehendRedact(creds);
+        await expect(r.redactText(TEXT)).rejects.toThrow(/no `Entities`\/`Result` array/);
     });
 });
