@@ -1,4 +1,4 @@
-import { OpenAI } from "@arakoodev/edgechains.js/openai";
+import { OpenAI } from "@arakoodev/edgechains.js/ai";
 
 async function openAICall({ prompt, openAIApiKey }: { prompt: string; openAIApiKey: string }) {
     try {

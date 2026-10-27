@@ -1,4 +1,4 @@
-const { OpenAI } = require("@arakoodev/edgechains.js/openai");
+const { OpenAI } = require("@arakoodev/edgechains.js/ai");
 import { z } from "zod";
 
 const schema = z.object({

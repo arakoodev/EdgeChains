@@ -1,9 +1,10 @@
 import axios from "axios";
-import { OpenAI } from "../../../../dist/openai/src/lib/endpoints/OpenAiEndpoint.js";
+import { describe, expect, test, vi } from "vitest";
+import { OpenAI } from "../lib/openai/openai.js";
 
-jest.mock("axios");
+vi.mock("axios");
 
-describe("ChatOpenAi", () => {
+describe("ChatOpenAi (SmartRouter-backed OpenAI Endpoint)", () => {
     describe("generateResponse", () => {
         test("should generate response from OpenAI", async () => {
             const mockResponse = [
@@ -14,17 +15,22 @@ describe("ChatOpenAi", () => {
                 },
             ];
 
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
+            (axios.post as any) = vi.fn().mockResolvedValueOnce({
+                data: { choices: mockResponse },
+            });
             const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
             const response = await chatOpenAi.chat({ prompt: "test prompt" });
-            expect(response).toEqual("Test response");
+            expect(response.content).toEqual("Test response");
+            expect(response.usage?.total_tokens).toBeGreaterThan(0);
         });
     });
 
     describe("generateEmbeddings", () => {
         test("should generate embeddings from OpenAI", async () => {
             const mockResponse = { embeddings: "Test embeddings" };
-            axios.post = jest.fn().mockResolvedValue({ data: { data: { choices: mockResponse } } });
+            (axios.post as any) = vi.fn().mockResolvedValue({
+                data: { data: { choices: mockResponse } },
+            });
             const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
             const res = await chatOpenAi.generateEmbeddings("test prompt");
             expect(res.choices.embeddings).toEqual("Test embeddings");
@@ -45,21 +51,22 @@ describe("ChatOpenAi", () => {
                     },
                 },
             ];
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
+            (axios.post as any) = vi.fn().mockResolvedValueOnce({
+                data: { choices: mockResponse },
+            });
             const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
             const chatMessages = [
                 {
-                    role: "user",
+                    role: "user" as const,
                     content: "message 1",
                 },
                 {
-                    role: "agent",
+                    role: "agent" as const,
                     content: "message 2",
                 },
             ];
-            //@ts-ignore
-            const responses = await chatOpenAi.chat({ messages: chatMessages });
-            expect(responses).toEqual(mockResponse);
+            const response = await chatOpenAi.chat({ messages: chatMessages });
+            expect(response.content).toEqual("Test response 1");
         });
     });
 
@@ -72,10 +79,12 @@ describe("ChatOpenAi", () => {
                     },
                 },
             ];
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
+            (axios.post as any) = vi.fn().mockResolvedValueOnce({
+                data: { choices: mockResponse },
+            });
             const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
             const response = await chatOpenAi.chat({ prompt: "test prompt" });
-            expect(response).toEqual("Test response");
+            expect(response.content).toEqual("Test response");
         });
     });
 });
