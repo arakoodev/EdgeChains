@@ -1,0 +1,18 @@
+{
+  "id" : "chatcmpl-7cCBttNGLwPkAMswN8074tMYdd3Zm",
+  "object" : "chat.completion",
+  "created" : 1689337681,
+  "model" : "gpt-3.5-turbo-0613",
+  "choices" : [ {
+    "index" : 0,
+    "message" : {
+      "role" : "assistant",
+      "content" : "1. Java language is a versatile, object-oriented programming language used for developing various applications such as mobile applications, desktop applications, and web services.\n2. Known for its write once, run anywhere feature, Java offers robust security and cross-platform compatibility making it a popular choice among developers."
+    },
+    "finish_reason" : "stop"
+  } ],
+  "usage" : {
+    "prompt_tokens" : 880,
+    "total_tokens" : 1396
+  }
+}

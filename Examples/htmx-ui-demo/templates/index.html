@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+
+    <title>chat app - Arakoo</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler-flags.min.css"
+          rel="stylesheet"
+    />
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler-payments.min.css"
+          rel="stylesheet"
+    />
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler-vendors.min.css"
+          rel="stylesheet"
+    />
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css"
+          rel="stylesheet"
+    />
+    <script src="https://unpkg.com/htmx.org@1.9.2" integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+  </head>
+  <body>
+    <div class="page">
+      <aside class="navbar navbar-vertical navbar-expand-sm navbar-dark">
+        <div class="container-fluid">
+          <button class="navbar-toggler" type="button">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <h1 class="navbar-brand navbar-brand-autodark">
+            <a href="#">
+              <img alt="Arakoo"
+                   class="navbar-brand-image"
+                   height="32"
+                   src="#"
+                   width="110"/>
+            </a>
+          </h1>
+          <div class="collapse navbar-collapse" id="sidebar-menu">
+            <ul class="navbar-nav pt-lg-3">
+              <li class="nav-item">
+                <a class="nav-link" href="">
+                  <span class="nav-link-title"> Home </span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+      <div class="page-wrapper">
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="row row-deck row-cards">
+              <div class="col-lg-3">
+                <div class="card">
+                  <div class="card-body border"
+                       style="height: 38rem; padding: 0">
+                    <div class="card-header">
+                      <div class="row g-2">
+                        <div class="col">
+                          <input class="form-control"
+                                 placeholder="Search for…"
+                                 type="text"
+                          />
+                        </div>
+                        <div class="col-auto">
+                          <a aria-label="Button" class="btn btn-icon" href="#">
+                            <svg class="icon"
+                                 fill="none"
+                                 height="24"
+                                 stroke="currentColor"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 stroke-width="2"
+                                 viewBox="0 0 24 24"
+                                 width="24"
+                                 xmlns="http://www.w3.org/2000/svg">
+                              <path d="M0 0h24v24H0z"
+                                    fill="none"
+                                    stroke="none"/>
+                              <circle cx="10" cy="10" r="7"/>
+                              <line x1="21" x2="15" y1="21" y2="15"/>
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="list-group list-group-flush">
+                      <a th:each="chat : ${chats}" th:insert="~{fragments :: chatItem(${chat})}"></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-9">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">Chat</h3>
+                  </div>
+                  <div class="card-body border overflow-auto"
+                       style="height: 37rem; padding: 0">
+                    <div>
+                      <ul class="list-unstyled mb-0" id="chats">
+                        <li th:each="item : ${messages}"
+                            th:insert="~{fragments :: meassageItem(${item})}">
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="col-lg-10" style="margin: auto">
+                    <div class="input-icon" id="message-form" th:object="${item}">
+                      <input
+                              class="form-control form-control-rounded"
+                              placeholder="Search…"
+                              type="text"
+                              name="message"
+                              th:field="*{message}"
+                              hx-swap="beforeend"
+                              hx-target="#chats"
+                              hx-post="/"
+                              hx-trigger="keyup[key=='Enter']"/>
+                      <span id="message-from-ai"
+                            hx-target="#chats"
+                            hx-swap="beforeend"
+                            hx-get="/responce"
+                            hx-trigger="itemAdded from:body">
+                      </span>
+                      <span class="input-icon-addon">
+                        <svg class="icon icon-tabler icon-tabler-send"
+                             fill="none"
+                             height="24"
+                             stroke="currentColor"
+                             stroke-linecap="round"
+                             stroke-linejoin="round"
+                             stroke-width="2"
+                             viewBox="0 0 24 24"
+                             width="24"
+                             xmlns="http://www.w3.org/2000/svg">
+                              <path d="M0 0h24v24H0z"
+                                    fill="none"
+                                    stroke="none"></path>
+                              <path d="M10 14l11 -11"></path>
+                              <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"></path>
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      htmx.on('#new-message', 'htmx:afterRequest', function (evt) {
+        evt.detail.elt.value = '';
+        sseSource.close();
+      });
+
+      document.getElementById('message-form').addEventListener('', function (evt) {
+        evt.preventDefault();
+      })
+
+      const sseSource = new EventSource("/sse");
+    </script>
+  </body>
+</html>
