@@ -1,71 +1,49 @@
-import { Stream } from "../../../../dist/openai/src/lib/streaming/OpenAiStreaming.js";
-import { TextEncoder, TextDecoder } from "text-decoding";
-jest.mock("../lib/streaming/OpenAiStreaming.ts", () => {
-    return {
-        Stream: jest.fn().mockImplementation(() => ({
-            OpenAIStream: jest.fn().mockImplementation((prompt) => {
-                return new ReadableStream({
-                    start(controller) {
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"Hi! "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"How "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"can "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"I "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode(
-                                '[{"choices":[{"delta":{"content":"help "}}]}]'
-                            )
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode(
-                                '[{"choices":[{"delta":{"content":"you?."}}]}]'
-                            )
-                        );
-                        controller.enqueue(new TextEncoder().encode("[DONE]"));
-                        controller.close();
-                    },
-                });
-            }),
-        })),
-    };
-});
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { Stream } from "../lib/openai/openai.js";
+import { MockAI, SmartRouter } from "../lib/router/index.js";
 
-describe("Streaming", () => {
+describe("Streaming (SmartRouter-backed Stream)", () => {
     afterEach(() => {
-        jest.clearAllMocks(); // Clear mock function calls after each test
+        vi.clearAllMocks();
     });
 
-    test("OpenAIStream should return expected text", async () => {
-        const options = {
+    test("OpenAIStream should return expected text via SmartRouter", async () => {
+        const mockAI = new MockAI();
+        mockAI.setBehavior("stream-default", {
+            streamChunks: ["Hi! ", "How ", "can ", "I ", "help ", "you?."],
+        });
+
+        const router = new SmartRouter({
+            deployments: [
+                {
+                    id: "stream-default",
+                    modelName: "test_model",
+                    provider: "openai",
+                    model: "test_model",
+                    apiKey: "test_api_key",
+                },
+            ],
+            axiosInstance: mockAI.createAxiosInstance(),
+        });
+
+        const stream = new Stream({
             model: "test_model",
             OpenApiKey: "test_api_key",
             temperature: 0.7,
-            top_p: 1,
-            frequency_penalty: 0,
-            presence_penalty: 0,
             max_tokens: 500,
             stream: true,
-            n: 1,
-        };
+            router,
+        });
 
-        const stream = new Stream(options);
-
-        //@ts-ignore
-        const streamReader = await stream.OpenAIStream("hi").getReader();
+        const streamReader = stream.OpenAIStream("hi").getReader();
         const text = await readStreamToString(streamReader);
 
         expect(text).toBe("Hi! How can I help you?.");
+        expect(router.getTotalTokenUsage().total_tokens).toBeGreaterThan(0);
     });
 });
 
-async function readStreamToString(reader) {
+async function readStreamToString(reader: ReadableStreamDefaultReader<Uint8Array>): Promise<string> {
     const decoder = new TextDecoder();
     let text = "";
     while (true) {
