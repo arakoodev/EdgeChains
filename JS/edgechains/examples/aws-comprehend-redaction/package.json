@@ -1,0 +1,16 @@
+{
+    "name": "aws-comprehend-redaction-example",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "start": "ts-node src/index.ts"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.1.7",
+        "ts-node": "^10.9.2"
+    },
+    "devDependencies": {
+        "typescript": "^5.6.3"
+    }
+}
