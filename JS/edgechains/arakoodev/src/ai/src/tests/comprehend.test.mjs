@@ -1,4 +1,5 @@
-import test from 'node:test';
+import test, { mock } from 'node:test';
+import { ComprehendClient, DetectPiiEntitiesCommand } from '@aws-sdk/client-comprehend';
 import assert from 'node:assert/strict';
 import { firstValueFrom, from, toArray } from 'rxjs';
 import { ComprehendPiiRedactor, redactSpans } from '../lib/comprehend/comprehend.ts';
@@ -64,4 +65,33 @@ test('service failure prevents all downstream chat calls', async () => {
     const r=new ComprehendPiiRedactor({detector:{detect:async()=>{throw Error('unavailable');}}});
     const chain=r.next({chat:async()=>{calls++;}});
     await assert.rejects(chain.chat({prompt:'private'}),/unavailable/);assert.equal(calls,0);
+});
+
+test('default AWS adapter sends DetectPiiEntities with Spanish input', async () => {
+    const send = mock.method(ComprehendClient.prototype, 'send', async function(command) {
+        assert.ok(command instanceof DetectPiiEntitiesCommand);
+        assert.deepEqual(command.input, {Text:'Ana', LanguageCode:'es'});
+        return {Entities:[span(0,3)]};
+    });
+    try {
+        const r=new ComprehendPiiRedactor({region:'us-east-1',language:'es'});
+        assert.equal(await r.redact('Ana'),'[REDACTED]');
+        assert.equal(send.mock.callCount(),1);
+    } finally { send.mock.restore(); }
+});
+
+test('AWS response without Entities fails closed', async () => {
+    const send = mock.method(ComprehendClient.prototype,'send',async()=>({}));
+    try {
+        const r=new ComprehendPiiRedactor({region:'us-east-1'});
+        await assert.rejects(r.redact('private'), /omitted PII detections/);
+    } finally { send.mock.restore(); }
+});
+
+test('empty AWS entity list preserves a prompt', async () => {
+    const send = mock.method(ComprehendClient.prototype,'send',async()=>({Entities:[]}));
+    try {
+        const r=new ComprehendPiiRedactor({region:'us-east-1'});
+        assert.equal(await r.redact('A plain sentence.'),'A plain sentence.');
+    } finally { send.mock.restore(); }
 });

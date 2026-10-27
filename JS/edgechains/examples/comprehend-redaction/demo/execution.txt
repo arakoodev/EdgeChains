@@ -1,0 +1,26 @@
+Demo uses synthetic data and a fixture detector.
+Text received by downstream endpoint: Mi correo es [REDACTED].
+
+✔ redacts multiple unsorted entities without changing offsets (1.025774ms)
+✔ Unicode astral characters before a detection preserve offsets (0.124297ms)
+✔ overlapping detections are fully covered (0.10635ms)
+✔ adjacent entities are independently replaced (0.353121ms)
+✔ invalid or incomplete offsets fail closed (0.414434ms)
+✔ empty input skips service calls (0.30595ms)
+✔ UTF-8 byte limit checked before API call (0.322536ms)
+✔ Spanish and configurable replacement reach the detector (0.341034ms)
+✔ observable does not send text before subscription (0.880867ms)
+✔ operator preserves every input and order (1.509563ms)
+✔ chat wrapper redacts both input forms and preserves options and source objects (0.820105ms)
+✔ service failure prevents all downstream chat calls (0.184468ms)
+✔ default AWS adapter sends DetectPiiEntities with Spanish input (4.970713ms)
+✔ AWS response without Entities fails closed (0.684731ms)
+✔ empty AWS entity list preserves a prompt (0.659643ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 240.296972
