@@ -26,7 +26,7 @@ async function main(): Promise<void> {
             const phone = /\b\d{3}-\d{3}-\d{4}\b/.exec(text);
             if (phone) result.push({ BeginOffset: phone.index, EndOffset: phone.index + phone[0].length, Score: 0.98, Type: "PHONE" });
             res.setHeader("content-type", "application/json");
-            res.end(JSON.stringify({ Result: result }));
+            res.end(JSON.stringify({ Entities: result }));
         });
     });
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));

@@ -149,7 +149,9 @@ export class ComprehendRedact {
         });
         const res = await this.http.post(this.endpointUrl.href, payload, { headers });
         const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
-        return (data?.Result ?? []) as PiiEntity[];
+        // Real AWS DetectPiiEntities returns the entity list under `Entities`
+        // (AWS API Reference); `Result` is kept as a fallback for local mocks.
+        return (data?.Entities ?? data?.Result ?? []) as PiiEntity[];
     }
 
     /** Redacts PII: TAG replaces with [TYPE], MASK replaces with *****. */

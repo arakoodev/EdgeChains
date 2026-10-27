@@ -17,7 +17,9 @@ const TEXT = "Contact jane.doe@example.com, call 415-555-0132.";
 
 beforeEach(() => {
     jest.clearAllMocks();
-    const mockPost = jest.fn().mockResolvedValue({ data: JSON.stringify({ Result: sample }) });
+    // Mirror the real AWS DetectPiiEntities response shape: the entity list
+    // is returned under `Entities` (see AWS API Reference), not `Result`.
+    const mockPost = jest.fn().mockResolvedValue({ data: JSON.stringify({ Entities: sample }) });
     mockedAxios.create = jest.fn(() => ({ post: mockPost })) as unknown as jest.Mock;
 });
 
@@ -50,7 +52,7 @@ describe("ComprehendRedact PII redaction & observable chaining (#290)", () => {
     });
 
     test("redactText returns input unchanged when no PII found", async () => {
-        mockedAxios.create = jest.fn(() => ({ post: jest.fn().mockResolvedValue({ data: JSON.stringify({ Result: [] }) }) })) as unknown as jest.Mock;
+        mockedAxios.create = jest.fn(() => ({ post: jest.fn().mockResolvedValue({ data: JSON.stringify({ Entities: [] }) }) })) as unknown as jest.Mock;
         const r = new ComprehendRedact(creds);
         expect(await r.redactText("no pii here")).toBe("no pii here");
     });
@@ -81,5 +83,22 @@ describe("ComprehendRedact PII redaction & observable chaining (#290)", () => {
         const out = await r.chainWithEndpoint(fakeEndpoint, TEXT, { mode: "MASK", model: "gpt-4" });
         expect(out).toEqual({ content: "ok" });
         expect(chat).toHaveBeenCalledWith({ prompt: "Contact *****, call *****.", model: "gpt-4" });
+    });
+
+    test("detectPii parses the real AWS Entities response (regression for the Result/Entities bug)", async () => {
+        // Real Amazon Comprehend DetectPiiEntities returns the list under `Entities`.
+        mockedAxios.create = jest.fn(() => ({
+            post: jest.fn().mockResolvedValue({ data: JSON.stringify({ Entities: sample }) }),
+        })) as unknown as jest.Mock;
+        const r = new ComprehendRedact(creds);
+        expect(await r.detectPii(TEXT)).toEqual(sample);
+    });
+
+    test("detectPii still accepts a legacy Result-shaped local mock", async () => {
+        mockedAxios.create = jest.fn(() => ({
+            post: jest.fn().mockResolvedValue({ data: JSON.stringify({ Result: sample }) }),
+        })) as unknown as jest.Mock;
+        const r = new ComprehendRedact(creds);
+        expect(await r.detectPii(TEXT)).toEqual(sample);
     });
 });
