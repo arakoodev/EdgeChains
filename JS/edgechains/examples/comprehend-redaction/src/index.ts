@@ -17,14 +17,30 @@ async function main(): Promise<void> {
         req.on("end", () => {
             const parsed = JSON.parse(body || "{}");
             const text: string = parsed.Text ?? "";
-            const result: Array<{ BeginOffset: number; EndOffset: number; Score: number; Type: string }> = [];
+            const result: Array<{
+                BeginOffset: number;
+                EndOffset: number;
+                Score: number;
+                Type: string;
+            }> = [];
             const email = /([\w.+-]+@\w[-\w.]*[a-z]{2,})/gi;
             let m: RegExpExecArray | null;
             while ((m = email.exec(text))) {
-                result.push({ BeginOffset: m.index, EndOffset: m.index + m[0].length, Score: 0.99, Type: "EMAIL" });
+                result.push({
+                    BeginOffset: m.index,
+                    EndOffset: m.index + m[0].length,
+                    Score: 0.99,
+                    Type: "EMAIL",
+                });
             }
             const phone = /\b\d{3}-\d{3}-\d{4}\b/.exec(text);
-            if (phone) result.push({ BeginOffset: phone.index, EndOffset: phone.index + phone[0].length, Score: 0.98, Type: "PHONE" });
+            if (phone)
+                result.push({
+                    BeginOffset: phone.index,
+                    EndOffset: phone.index + phone[0].length,
+                    Score: 0.98,
+                    Type: "PHONE",
+                });
             res.setHeader("content-type", "application/json");
             res.end(JSON.stringify({ Entities: result }));
         });
@@ -39,7 +55,8 @@ async function main(): Promise<void> {
         endpoint: `http://127.0.0.1:${port}/`,
     });
 
-    const prompt = "Please summarize this note from jane.doe@example.com, her cell is 415-555-0132.";
+    const prompt =
+        "Please summarize this note from jane.doe@example.com, her cell is 415-555-0132.";
     console.log("[1] Prompt original:  ", prompt);
 
     const tagged = await redact.redactText(prompt, "TAG");
@@ -49,7 +66,9 @@ async function main(): Promise<void> {
     console.log("[3] Redacted (MASK):  ", masked);
 
     // Observable chaining (thenable + subscribe + async iterator)
-    await redact.redactObservable(prompt).subscribe((v) => console.log("[4] Observable:       ", v));
+    await redact
+        .redactObservable(prompt)
+        .subscribe((v) => console.log("[4] Observable:       ", v));
 
     // Chain with an existing Endpoint class (e.g. OpenAI) before it sees the prompt
     const fakeOpenAI = {
