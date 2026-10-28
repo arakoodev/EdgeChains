@@ -12,28 +12,28 @@ required. Use Node.js 18 or later with global `fetch`. The universal
 dense-vector search endpoint.
 
 ```ts
-import { QdrantClient } from '@arakoodev/edgechains.js/vector-db'
+import { QdrantClient } from "@arakoodev/edgechains.js/vector-db";
 
-const vectors = new QdrantClient('http://localhost:6333', {
-  apiKey: process.env.QDRANT_API_KEY, // omit for a local server without authentication
-})
-await vectors.createCollection('documents', {
-  vectors: { size: 3, distance: 'Cosine' },
-})
-await vectors.upsert('documents', [
-  {
-    id: 1,
-    vector: [1, 0, 0],
-    payload: { content: 'A document', namespace: 'docs' },
-  },
-])
-const { points } = await vectors.query('documents', {
-  query: [1, 0, 0],
-  limit: 5,
-  with_payload: true,
-  filter: { must: [{ key: 'namespace', match: { value: 'docs' } }] },
-})
-console.log(points)
+const vectors = new QdrantClient("http://localhost:6333", {
+    apiKey: process.env.QDRANT_API_KEY, // omit for a local server without authentication
+});
+await vectors.createCollection("documents", {
+    vectors: { size: 3, distance: "Cosine" },
+});
+await vectors.upsert("documents", [
+    {
+        id: 1,
+        vector: [1, 0, 0],
+        payload: { content: "A document", namespace: "docs" },
+    },
+]);
+const { points } = await vectors.query("documents", {
+    query: [1, 0, 0],
+    limit: 5,
+    with_payload: true,
+    filter: { must: [{ key: "namespace", match: { value: "docs" } }] },
+});
+console.log(points);
 ```
 
 Use your existing embedding provider to produce vectors of the collection's
@@ -83,7 +83,7 @@ running the same Node command. On Windows, build with
 ```sh
 # Actual HTTP request/error tests; no Qdrant service required:
 npm test -- --run src/vector-db/src/tests/qdrant/QdrantClient.test.ts
-# Actual service tests through the built package export:
+# Actual service tests:
 QDRANT_URL=http://127.0.0.1:6333 npm test -- --run src/vector-db/src/tests/qdrant/QdrantClient.integration.test.ts
 ```
 
