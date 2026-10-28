@@ -272,4 +272,37 @@ describe("ComprehendRedact PII redaction & observable chaining (#290)", () => {
             jest.useRealTimers();
         }
     });
+
+    test("SigV4 preserves a literal '+' in the query (signed value matches the sent value)", async () => {
+        const authHeaderFor = async (search: string): Promise<string> => {
+            const mockPost = jest.fn().mockResolvedValue({
+                data: JSON.stringify({ Entities: [] }),
+            });
+            mockedAxios.create = jest.fn(() => ({ post: mockPost })) as unknown as jest.Mock;
+            const r = new ComprehendRedact({
+                accessKeyId: "AKIATEST",
+                secretAccessKey: "SECRETTEST",
+                region: "us-east-1",
+                endpoint: `http://127.0.0.1:9/comprehend/${search}`,
+            });
+            await r.detectPii(TEXT);
+            const cfg = mockPost.mock.calls[0][2];
+            return cfg.headers.authorization as string;
+        };
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date("2026-01-02T03:04:05.678Z"));
+        try {
+            // A literal '+' on the wire is a literal '+' under AWS/Smithy query
+            // semantics, so it must be signed exactly like its escaped form, and
+            // unlike a space (which a naive URLSearchParams parse would conflate).
+            const plus = await authHeaderFor("?q=a+b");
+            const escapedPlus = await authHeaderFor("?q=a%2Bb");
+            const space = await authHeaderFor("?q=a%20b");
+            expect(plus).toMatch(/^AWS4-HMAC-SHA256 .*Signature=[a-f0-9]{64}$/);
+            expect(plus).toBe(escapedPlus);
+            expect(plus).not.toBe(space);
+        } finally {
+            jest.useRealTimers();
+        }
+    });
 });

@@ -115,8 +115,11 @@ function buildSigV4Headers(opts: {
     // SigV4 canonical form: query parameters percent-encoded per RFC 3986 and
     // sorted by name, then value. The raw search string is only valid when it
     // is already in that form, which an arbitrary endpoint URL is not
-    // guaranteed to be.
-    const canonicalQuery = [...opts.url.searchParams.entries()]
+    // guaranteed to be. Literal '+' characters are protected as %2B before
+    // parsing: URLSearchParams would otherwise decode them to spaces (form
+    // encoding), but AWS/Smithy query semantics treat a wire '+' as a literal
+    // '+'. Protecting first keeps the signed value equal to the sent value.
+    const canonicalQuery = [...new URLSearchParams(opts.url.search.replace(/\+/g, "%2B")).entries()]
         .map(([k, v]) => [encodeRfc3986(k), encodeRfc3986(v)] as const)
         .sort((a, b) =>
             a[0] === b[0] ? (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0) : a[0] < b[0] ? -1 : 1
