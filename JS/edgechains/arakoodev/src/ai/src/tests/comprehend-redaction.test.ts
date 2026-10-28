@@ -16,7 +16,9 @@ beforeEach(() => {
     // Mirror the real AWS DetectPiiEntities response shape: the entity list
     // is returned under `Entities` (see AWS API Reference), not `Result`.
     const mockPost = jest.fn().mockResolvedValue({ data: JSON.stringify({ Entities: sample }) });
-    mockedAxios.create = jest.fn(() => ({ post: mockPost })) as unknown as jest.Mock;
+    mockedAxios.create = jest.fn(() => ({
+        post: mockPost,
+    })) as unknown as jest.Mock;
 });
 
 const creds = {
@@ -85,9 +87,15 @@ describe("ComprehendRedact PII redaction & observable chaining (#290)", () => {
         const r = new ComprehendRedact(creds);
         const chat = jest.fn().mockResolvedValue({ content: "ok" });
         const fakeEndpoint = { chat };
-        const out = await r.chainWithEndpoint(fakeEndpoint, TEXT, { mode: "MASK", model: "gpt-4" });
+        const out = await r.chainWithEndpoint(fakeEndpoint, TEXT, {
+            mode: "MASK",
+            model: "gpt-4",
+        });
         expect(out).toEqual({ content: "ok" });
-        expect(chat).toHaveBeenCalledWith({ prompt: "Contact *****, call *****.", model: "gpt-4" });
+        expect(chat).toHaveBeenCalledWith({
+            prompt: "Contact *****, call *****.",
+            model: "gpt-4",
+        });
     });
 
     test("detectPii parses the real AWS Entities response (regression for the Result/Entities bug)", async () => {
@@ -123,5 +131,145 @@ describe("ComprehendRedact PII redaction & observable chaining (#290)", () => {
         })) as unknown as jest.Mock;
         const r = new ComprehendRedact(creds);
         await expect(r.redactText(TEXT)).rejects.toThrow(/no `Entities`\/`Result` array/);
+    });
+
+    test("redactText cuts on code points, so an emoji before the entity does not leak PII", async () => {
+        // AWS reports offsets in UTF-8 code points; JS slice() uses UTF-16 units.
+        // In "Hola 😀 a@b.cl." the emoji is one code point (index 5) but two
+        // UTF-16 units, so "a@b.cl" sits at code points 7..13 but UTF-16 8..14.
+        // Slicing at the raw code point offsets would yield "Hola 😀[EMAIL]l."
+        // (the final "l" leaks) instead of a clean redaction.
+        const uniText = "Hola 😀 a@b.cl.";
+        mockedAxios.create = jest.fn(() => ({
+            post: jest.fn().mockResolvedValue({
+                data: JSON.stringify({
+                    Entities: [{ BeginOffset: 7, EndOffset: 13, Score: 0.99, Type: "EMAIL" }],
+                }),
+            }),
+        })) as unknown as jest.Mock;
+        const r = new ComprehendRedact(creds);
+        expect(await r.redactText(uniText, "TAG")).toBe("Hola 😀 [EMAIL].");
+    });
+
+    test("chainWithEndpoint: a prompt key inside opts cannot override the redacted prompt", async () => {
+        // If the caller also passes `prompt` inside opts it used to be spread
+        // after the redacted prompt and win, sending the un-redacted PII to the
+        // endpoint. The redacted prompt must take precedence.
+        const nameText = "Ana";
+        mockedAxios.create = jest.fn(() => ({
+            post: jest.fn().mockResolvedValue({
+                data: JSON.stringify({
+                    Entities: [{ BeginOffset: 0, EndOffset: 3, Score: 0.99, Type: "NAME" }],
+                }),
+            }),
+        })) as unknown as jest.Mock;
+        const r = new ComprehendRedact(creds);
+        const chat = jest.fn().mockResolvedValue({ content: "ok" });
+        await r.chainWithEndpoint({ chat }, nameText, {
+            prompt: nameText,
+            model: "gpt-4",
+        });
+        expect(chat).toHaveBeenCalledWith({ prompt: "[NAME]", model: "gpt-4" });
+    });
+
+    test("redactText rejects malformed entity spans instead of leaking raw text (fail closed)", async () => {
+        const bad: PiiEntity[] = [
+            { BeginOffset: 100, EndOffset: 116, Score: 0.99, Type: "EMAIL" }, // beyond the text
+            { BeginOffset: 5, EndOffset: 2, Score: 0.99, Type: "EMAIL" }, // inverted
+            { BeginOffset: -1, EndOffset: 5, Score: 0.99, Type: "EMAIL" }, // negative begin
+            { BeginOffset: 1.5, EndOffset: 5, Score: 0.99, Type: "EMAIL" }, // fractional
+            { BeginOffset: 0, EndOffset: 3, Score: 0.99, Type: "" }, // empty Type
+        ];
+        for (const e of bad) {
+            mockedAxios.create = jest.fn(() => ({
+                post: jest.fn().mockResolvedValue({ data: JSON.stringify({ Entities: [e] }) }),
+            })) as unknown as jest.Mock;
+            const r = new ComprehendRedact(creds);
+            await expect(r.redactText("jane@example.com")).rejects.toThrow(/PII entity/);
+        }
+    });
+
+    test("redactText merges overlapping spans (outer + inner) so no PII leaks", async () => {
+        // Reviewer case: ALL [0,10) covering EMAIL [5,6). Applied naively
+        // (outer first, on the already-modified string) this yields
+        // "[ALL]m"; merged, the whole span is replaced once.
+        mockedAxios.create = jest.fn(() => ({
+            post: jest.fn().mockResolvedValue({
+                data: JSON.stringify({
+                    Entities: [
+                        { BeginOffset: 0, EndOffset: 10, Score: 0.99, Type: "ALL" },
+                        { BeginOffset: 5, EndOffset: 6, Score: 0.9, Type: "EMAIL" },
+                    ],
+                }),
+            }),
+        })) as unknown as jest.Mock;
+        const r = new ComprehendRedact(creds);
+        expect(await r.redactText("0123456789", "TAG")).toBe("[ALL]");
+        expect(await r.redactText("0123456789", "MASK")).toBe("*****");
+    });
+
+    test("duplicate spans collapse to a single replacement (no index corruption)", async () => {
+        mockedAxios.create = jest.fn(() => ({
+            post: jest.fn().mockResolvedValue({
+                data: JSON.stringify({ Entities: [sample[0], sample[0], sample[1]] }),
+            }),
+        })) as unknown as jest.Mock;
+        const r = new ComprehendRedact(creds);
+        expect(await r.redactText(TEXT, "TAG")).toBe("Contact [EMAIL], call [PHONE].");
+        expect(await r.redactText(TEXT, "MASK")).toBe("Contact *****, call *****.");
+    });
+
+    test("observable failures surface through catch/then and subscribe (no silent success)", async () => {
+        mockedAxios.create = jest.fn(() => ({
+            post: jest.fn().mockResolvedValue({ data: JSON.stringify({ Message: "throttled" }) }),
+        })) as unknown as jest.Mock;
+        const r = new ComprehendRedact(creds);
+        const obs = r.redactObservable(TEXT);
+        // thenable: rejection propagates instead of resolving
+        await expect(obs.then((v) => v)).rejects.toThrow(/no `Entities`\/`Result` array/);
+        await expect(obs.catch(() => "recovered")).resolves.toBe("recovered");
+        // subscribe: onError receives the error, onNext never fires
+        const got: unknown[] = [];
+        obs.subscribe(
+            (v) => got.push(v),
+            (e) => got.push(e)
+        );
+        await new Promise((res) => setTimeout(res, 0));
+        expect(got).toHaveLength(1);
+        expect(got[0]).toBeInstanceOf(Error);
+        // chainWithEndpoint: rejects instead of calling the endpoint with raw text
+        const chat = jest.fn().mockResolvedValue({ content: "ok" });
+        await expect(r.chainWithEndpoint({ chat }, TEXT)).rejects.toThrow(
+            /no `Entities`\/`Result` array/
+        );
+        expect(chat).not.toHaveBeenCalled();
+    });
+
+    test("SigV4 canonicalizes the query string (parameter order must not change the signature)", async () => {
+        const authHeaderFor = async (search: string): Promise<string> => {
+            const mockPost = jest.fn().mockResolvedValue({
+                data: JSON.stringify({ Entities: [] }),
+            });
+            mockedAxios.create = jest.fn(() => ({ post: mockPost })) as unknown as jest.Mock;
+            const r = new ComprehendRedact({
+                accessKeyId: "AKIATEST",
+                secretAccessKey: "SECRETTEST",
+                region: "us-east-1",
+                endpoint: `http://127.0.0.1:9/comprehend/${search}`,
+            });
+            await r.detectPii(TEXT);
+            const cfg = mockPost.mock.calls[0][2];
+            return cfg.headers.authorization as string;
+        };
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date("2026-01-02T03:04:05.678Z"));
+        try {
+            const a = await authHeaderFor("?z=2&a=1");
+            const b = await authHeaderFor("?a=1&z=2");
+            expect(a).toMatch(/^AWS4-HMAC-SHA256 .*Signature=[a-f0-9]{64}$/);
+            expect(a).toBe(b);
+        } finally {
+            jest.useRealTimers();
+        }
     });
 });
