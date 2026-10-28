@@ -1,12 +1,11 @@
-import axios from "axios";
-import { retry } from "@lifeomic/attempt";
-const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
+const DEFAULT_GEMINI_BASE = "https://generativelanguage.googleapis.com/v1/models";
 
-interface GeminiAIConstructionOptions {
+export interface GeminiAIConstructionOptions {
     apiKey?: string;
+    baseUrl?: string;
 }
 
-type SafetyRating = {
+export type SafetyRating = {
     category:
         | "HARM_CATEGORY_SEXUALLY_EXPLICIT"
         | "HARM_CATEGORY_HATE_SPEECH"
@@ -15,36 +14,36 @@ type SafetyRating = {
     probability: "NEGLIGIBLE" | "LOW" | "MEDIUM" | "HIGH";
 };
 
-type ContentPart = {
+export type ContentPart = {
     text: string;
 };
 
-type Content = {
+export type Content = {
     parts: ContentPart[];
     role: string;
 };
 
-type Candidate = {
+export type Candidate = {
     content: Content;
     finishReason: string;
     index: number;
     safetyRatings: SafetyRating[];
 };
 
-type UsageMetadata = {
+export type UsageMetadata = {
     promptTokenCount: number;
     candidatesTokenCount: number;
     totalTokenCount: number;
 };
 
-type Response = {
+export type Response = {
     candidates: Candidate[];
     usageMetadata: UsageMetadata;
 };
 
-type responseMimeType = "text/plain" | "application/json";
+export type responseMimeType = "text/plain" | "application/json";
 
-interface GeminiAIChatOptions {
+export interface GeminiAIChatOptions {
     model?: string;
     max_output_tokens?: number;
     temperature?: number;
@@ -56,12 +55,17 @@ interface GeminiAIChatOptions {
 
 export class GeminiAI {
     apiKey: string;
-    constructor(options: GeminiAIConstructionOptions) {
+    baseUrl: string;
+
+    constructor(options: GeminiAIConstructionOptions = {}) {
         this.apiKey = options.apiKey || process.env.GEMINI_API_KEY || "";
+        this.baseUrl = (options.baseUrl || DEFAULT_GEMINI_BASE).replace(/\/+$/, "");
     }
 
     async chat(chatOptions: GeminiAIChatOptions): Promise<Response> {
-        let data = JSON.stringify({
+        const model = chatOptions.model || "gemini-pro";
+        const endpoint = `${this.baseUrl}/${model}:generateContent`;
+        const payload = {
             contents: [
                 {
                     role: "user",
@@ -72,26 +76,38 @@ export class GeminiAI {
                     ],
                 },
             ],
-        });
-
-        let config = {
-            method: "post",
-            maxBodyLength: Infinity,
-            url,
-            headers: {
-                "Content-Type": "application/json",
-                "x-goog-api-key": this.apiKey,
+            generationConfig: {
+                temperature: Number(chatOptions.temperature ?? 0.7),
+                maxOutputTokens: chatOptions.max_output_tokens ?? 1024,
+                responseMimeType: chatOptions.responseType || "text/plain",
             },
-            temperature: chatOptions.temperature || "0.7",
-            responseMimeType: chatOptions.responseType || "text/plain",
-            max_output_tokens: chatOptions.max_output_tokens || 1024,
-            data: data,
         };
-        return await retry(
-            async () => {
-                return (await axios.request(config)).data;
-            },
-            { maxAttempts: chatOptions.max_retry || 3, delay: chatOptions.delay || 200 }
-        );
+
+        const maxAttempts = Math.max(1, chatOptions.max_retry ?? 3);
+        const delayMs = chatOptions.delay ?? 200;
+        let lastErr: unknown;
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                const res = await fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-goog-api-key": this.apiKey,
+                    },
+                    body: JSON.stringify(payload),
+                });
+                if (!res.ok) {
+                    throw new Error(`Gemini HTTP ${res.status}: ${await res.text()}`);
+                }
+                return (await res.json()) as Response;
+            } catch (err) {
+                lastErr = err;
+                if (attempt < maxAttempts) {
+                    await new Promise((r) => setTimeout(r, delayMs));
+                }
+            }
+        }
+        throw lastErr;
     }
 }
