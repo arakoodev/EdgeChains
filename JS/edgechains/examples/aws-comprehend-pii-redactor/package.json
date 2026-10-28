@@ -1,0 +1,20 @@
+{
+    "name": "aws-comprehend-pii-redactor-example",
+    "version": "1.0.0",
+    "description": "Demonstrates AWS Comprehend PII redaction chained with EdgeChains AI Endpoints",
+    "main": "dist/index.js",
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "start": "tsc && node dist/index.js"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@aws-sdk/client-comprehend": "^3.1152.0",
+        "dotenv": "^18.0.8"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.0",
+        "typescript": "^5.4.0"
+    }
+}
