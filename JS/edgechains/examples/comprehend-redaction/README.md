@@ -37,14 +37,17 @@ The lib resolves `axios` from the `@arakoodev/edgechains.js` package, so install
 package's dependencies once (this also provides everything the lib imports):
 
 ```bash
-cd JS/edgechains/arakoodev
-npm install
+# run from the repo root; the subshell keeps you there, so the commands in
+# "Run" below work exactly as written
+(cd JS/edgechains/arakoodev && npm install)
 ```
 
 The example itself is run with `tsx` (not a declared dependency of the example); use
 `npx tsx` or a globally installed `tsx`.
 
 ## Run
+
+All commands below run **from the repo root**.
 
 Local mock (zero configuration):
 

@@ -34,8 +34,17 @@ async function main(): Promise<void> {
             let body = "";
             req.on("data", (c) => (body += c));
             req.on("end", () => {
-                const parsed = JSON.parse(body || "{}");
-                const text: string = parsed.Text ?? "";
+                let parsed: unknown;
+                try {
+                  parsed = JSON.parse(body || "{}");
+                } catch {
+                  parsed = {};
+                }
+                const record =
+                  parsed !== null && typeof parsed === "object"
+                    ? (parsed as Record<string, unknown>)
+                    : {};
+                const text: string = typeof record.Text === "string" ? record.Text : "";
                 const result: Array<{
                     BeginOffset: number;
                     EndOffset: number;
@@ -96,9 +105,10 @@ async function main(): Promise<void> {
     console.log("[3] Redacted (MASK):  ", masked);
 
     // Observable chaining (thenable + subscribe + async iterator)
-    await redact
-        .redactObservable(prompt)
-        .subscribe((v) => console.log("[4] Observable:       ", v));
+    const observable = redact.redactObservable(prompt);
+    observable.subscribe((value) => console.log("[4] Observable:       ", value));
+    // subscribe() returns void; await the thenable so [4] prints deterministically.
+    await observable;
 
     // Chain with an existing Endpoint class (e.g. OpenAI) before it sees the prompt
     const fakeOpenAI = {
