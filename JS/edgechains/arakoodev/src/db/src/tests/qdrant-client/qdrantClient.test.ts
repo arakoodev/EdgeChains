@@ -1,5 +1,5 @@
 import axios from "axios";
-import { QdrantClient } from "../../lib/qdrant-client/QdrantClient.js";
+import { QdrantClient } from "../../../../../dist/db/src/lib/qdrant-client/QdrantClient.js";
 
 jest.mock("axios");
 
