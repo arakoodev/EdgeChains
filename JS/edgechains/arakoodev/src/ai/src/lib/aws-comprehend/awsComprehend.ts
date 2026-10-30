@@ -8,9 +8,9 @@ interface AWSComprehendConstructionOptions {
 }
 
 interface PiiEntity {
-    type: string;
-    beginOffset: number;
-    endOffset: number;
+    Type: string;
+    BeginOffset: number;
+    EndOffset: number;
     score: number;
 }
 
@@ -83,11 +83,11 @@ export class AWSComprehend {
     async redact(text: string, languageCode: string = "en"): Promise<string> {
         const entities = await this.detectPiiEntities(text, languageCode);
         // Sort by offset descending to replace without shifting indices
-        const sorted = [...entities].sort((a, b) => b.beginOffset - a.beginOffset);
+        const sorted = [...entities].sort((a, b) => b.BeginOffset - a.BeginOffset);
         let result = text;
         for (const entity of sorted) {
-            const replacement = `[${entity.type}]`;
-            result = result.slice(0, entity.beginOffset) + replacement + result.slice(entity.endOffset);
+            const replacement = `[${entity.Type}]`;
+            result = result.slice(0, entity.BeginOffset) + replacement + result.slice(entity.EndOffset);
         }
         return result;
     }

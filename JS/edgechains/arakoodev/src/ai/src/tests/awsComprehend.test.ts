@@ -8,7 +8,7 @@ describe("AWSComprehend", () => {
         test("should detect PII entities", async () => {
             const mockResponse = {
                 Entities: [
-                    { Type: "EMAIL", BeginOffset: 10, EndOffset: 25, Score: 0.99 },
+                    { Type: "EMAIL", BeginOffset: 14, EndOffset: 30, Score: 0.99 },
                 ],
             };
             (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockResponse });
@@ -22,7 +22,7 @@ describe("AWSComprehend", () => {
         test("should redact PII from text", async () => {
             const mockResponse = {
                 Entities: [
-                    { Type: "EMAIL", BeginOffset: 10, EndOffset: 25, Score: 0.99 },
+                    { Type: "EMAIL", BeginOffset: 14, EndOffset: 30, Score: 0.99 },
                 ],
             };
             (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockResponse });
@@ -36,7 +36,7 @@ describe("AWSComprehend", () => {
 describe("RedactComprehend", () => {
     test("should redact prompt before calling endpoint", async () => {
         const mockComprehendResponse = {
-            Entities: [{ Type: "EMAIL", BeginOffset: 10, EndOffset: 25, Score: 0.99 }],
+            Entities: [{ Type: "EMAIL", BeginOffset: 14, EndOffset: 30, Score: 0.99 }],
         };
         (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockComprehendResponse });
 
