@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import fs from "node:fs";
 import crypto from "node:crypto";
@@ -49,12 +49,10 @@ function createSyncRPC(filename: string) {
         fs.writeFileSync(scriptPath, scriptContent);
 
         try {
-            const output = execSync(`node ${scriptPath}`, {
+            const output = execFileSync(process.execPath, [scriptPath], {
                 encoding: "utf8",
                 stdio: ["pipe", "pipe", "inherit"],
             });
-
-            fs.unlinkSync(scriptPath);
 
             const trimmedOutput = output.trim();
 
@@ -71,7 +69,6 @@ function createSyncRPC(filename: string) {
                 );
             }
         } catch (error: any) {
-            fs.unlinkSync(scriptPath);
             if (error) {
                 console.error("Execution error:", error.message);
                 if (error.stderr) {
@@ -80,6 +77,14 @@ function createSyncRPC(filename: string) {
                 throw new Error(`Execution error: ${error.message}`);
             }
             throw error;
+        } finally {
+            try {
+                if (fs.existsSync(scriptPath)) {
+                    fs.unlinkSync(scriptPath);
+                }
+            } catch {
+                // Ignore cleanup failure so original execution error is preserved
+            }
         }
     };
 }
