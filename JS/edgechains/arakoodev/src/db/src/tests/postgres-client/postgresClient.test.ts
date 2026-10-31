@@ -52,4 +52,57 @@ describe("PostgresClient", () => {
         // Check that the correct SQL query was generated
         expect(mockQuery).toHaveBeenCalledWith(expect.any(String));
     });
+
+    test("dbQuery should escape single quotes in search query and namespace to prevent SQL injection (CWE-89)", async () => {
+        const mockQuery = jest.fn().mockResolvedValue([]);
+        (getManager as jest.Mock).mockResolvedValueOnce({ query: mockQuery });
+        (createConnection as jest.Mock).mockResolvedValueOnce({ close: jest.fn() });
+
+        const clientWithQuotes = new PostgresClient(
+            [[0.1, 0.2]],
+            PostgresDistanceMetric.COSINE,
+            10,
+            5,
+            "test_table",
+            "ns'); DROP TABLE users; --",
+            {
+                textWeight: { baseWeight: 1, fineTuneWeight: 0.5 },
+                similarityWeight: { baseWeight: 1, fineTuneWeight: 0.5 },
+                dateWeight: { baseWeight: 1, fineTuneWeight: 0.5 },
+                orderRRF: "text_rank",
+                metadataTable: "test_metadata",
+                query: "search'); DROP TABLE secrets; --",
+            },
+            100
+        );
+
+        await clientWithQuotes.dbQuery();
+
+        expect(mockQuery).toHaveBeenCalledTimes(2);
+        const generatedSql = mockQuery.mock.calls[1][0] as string;
+        expect(generatedSql).toContain("search''); DROP TABLE secrets; --");
+        expect(generatedSql).toContain("ns''); DROP TABLE users; --");
+    });
+
+    test("dbQuery should reject invalid SQL table identifiers (CWE-89)", async () => {
+        const badClient = new PostgresClient(
+            [[0.1, 0.2]],
+            PostgresDistanceMetric.COSINE,
+            10,
+            5,
+            "test_table; DROP TABLE users; --",
+            "test_namespace",
+            {
+                textWeight: { baseWeight: 1, fineTuneWeight: 0.5 },
+                similarityWeight: { baseWeight: 1, fineTuneWeight: 0.5 },
+                dateWeight: { baseWeight: 1, fineTuneWeight: 0.5 },
+                orderRRF: "text_rank",
+                metadataTable: "test_metadata",
+                query: "test_query",
+            },
+            100
+        );
+
+        await expect(badClient.dbQuery()).rejects.toThrow(/Invalid SQL identifier/);
+    });
 });
