@@ -1,6 +1,7 @@
 import { expect, Page } from "@playwright/test";
 import { parseSite } from "../utils/index.js";
 import { removeBlankTags } from "../utils/page-parser.js";
+import { assertSafeScraperUrl } from "../utils/url-validator.js";
 
 const AsyncFunction = async function () {}.constructor;
 
@@ -318,5 +319,6 @@ export async function execPlayWrightCode(page: Page, code: string): Promise<stri
 }
 
 export async function goToLink(page: Page, url: string): Promise<any> {
-    await page.goto(url);
+    const safeUrl = assertSafeScraperUrl(url);
+    await page.goto(safeUrl);
 }

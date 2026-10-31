@@ -1,4 +1,5 @@
 import { chromium, Page } from "playwright";
+import { assertSafeScraperUrl } from "../utils/url-validator.js";
 import axios from "axios";
 import { retry } from "@lifeomic/attempt";
 import {
@@ -231,9 +232,14 @@ export class Playwright {
             );
             process.exit();
         }
+        const safeUrl = assertSafeScraperUrl(url || "https://www.google.com");
         const browser = await chromium.launch({ headless });
-        const page = await browser.newPage();
-        await page.goto(url || "https://www.google.com");
-        return await this.#interactWithPage(page, task);
+        try {
+            const page = await browser.newPage();
+            await page.goto(safeUrl);
+            return await this.#interactWithPage(page, task);
+        } finally {
+            await browser.close();
+        }
     }
 }
