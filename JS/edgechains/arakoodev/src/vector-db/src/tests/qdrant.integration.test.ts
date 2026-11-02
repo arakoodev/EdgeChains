@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Qdrant } from '../lib/qdrant/qdrant';
+import { Qdrant } from '../index';
 
 const url = process.env.QDRANT_TEST_URL;
 describe.skipIf(!url)('Qdrant real-server integration', () => {
