@@ -23,3 +23,9 @@ npm install
 npm run build
 npm start
 ```
+
+## Jsonnet Prompt Templates
+
+Declarative prompts are structured in `jsonnet/` without hardcoded prompt strings:
+- `jsonnet/main.jsonnet`: Dynamic prompt template using `std.strReplace`.
+- `jsonnet/secrets.jsonnet`: Secure environment variable injection.
