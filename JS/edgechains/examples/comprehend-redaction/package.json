@@ -1,0 +1,21 @@
+{
+  "name": "comprehend-redaction",
+  "version": "1.0.0",
+  "description": "Example: AWS Comprehend PII redaction chained with EdgeChains endpoints",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsc && node ./dist/index.js",
+    "test": "npx vitest"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "^0.1.23",
+    "axios": "^1.7.4",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.0.3"
+  }
+}
