@@ -221,7 +221,7 @@ class Deployment {
 
     constructor(config: DeploymentConfig, defaults: Omit<RouterConfig, "deployments">) {
         this.config = config;
-        this.name = config.name || `${config.provider}:${config.modelName}`;
+        this.name = config.name || config.modelName;
         this.endpoint = new BaseEndpoint({
             apiBase: config.apiBase || PROVIDER_API_BASES[config.provider],
             apiKey: config.apiKey,

@@ -58,7 +58,8 @@ export class MockAiServer {
             const body = raw ? JSON.parse(raw) : {};
             this.requests.push({ path, body });
 
-            const model = String(body.model ?? "");
+            const modelFromPath = path.match(/\/models\/([^:]+):/)?.[1];
+            const model = String(body.model ?? modelFromPath ?? "");
             for (const [match, queue] of Object.entries(this.failureQueues)) {
                 if (queue.length && (path.includes(match) || model.includes(match))) {
                     const rule = queue.shift()!;
