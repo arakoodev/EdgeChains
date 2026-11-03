@@ -15,8 +15,9 @@ let cohereKey: string = process.env.COHERE_API_KEY || secrets.cohere_api_key;
 
 // Offline demo mode: no real keys configured -> serve every deployment from a local mock.
 let mockUrl = "";
+let mock: ExampleMockServer | undefined;
 if (openaiKey.includes("REPLACE") && !process.env.OPENAI_API_KEY) {
-    const mock = new ExampleMockServer();
+    mock = new ExampleMockServer();
     mockUrl = await mock.start();
     openaiKey = "mock-openai-key";
     cohereKey = "mock-cohere-key";
@@ -70,3 +71,8 @@ console.log("Global token usage:", router.getGlobalUsage());
 if (mockUrl) {
     console.log("\n[demo] done - set OPENAI_API_KEY / COHERE_API_KEY to run against live APIs.");
 }
+
+if (mock) {
+    mock.close();
+}
+process.exit(0);
