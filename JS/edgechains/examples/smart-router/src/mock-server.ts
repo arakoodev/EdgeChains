@@ -14,6 +14,8 @@ export class ExampleMockServer {
         req.on("end", () => {
             const path = req.url || "";
             const body = JSON.parse(raw || "{}");
+            // PaLM carries the model in the path (:generateText), not in the body
+            const model = String(body.model ?? path.match(/\/models\/([^:]+):/)?.[1] ?? "");
             const echo = String(
                 body.messages?.[body.messages.length - 1]?.content ?? body.prompt ?? body.prompts?.[0] ?? ""
             ).slice(0, 60);
@@ -29,20 +31,20 @@ export class ExampleMockServer {
                 }
                 if (body.stream) {
                     res.writeHead(200, { "content-type": "text/event-stream" });
-                    for (const piece of ["streaming ", "from ", body.model]) {
+                    for (const piece of ["streaming ", "from ", model]) {
                         res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: piece } }] })}\n\n`);
                     }
                     res.end("data: [DONE]\n\n");
                     return;
                 }
                 return json(200, {
-                    choices: [{ message: { role: "assistant", content: `mock ${body.model} reply to: "${echo}"` } }],
+                    choices: [{ message: { role: "assistant", content: `mock ${model} reply to: "${echo}"` } }],
                     usage: { prompt_tokens: 8, completion_tokens: 12, total_tokens: 20 },
                 });
             }
             if (path.includes(":generateText")) {
                 return json(200, {
-                    candidates: [{ output: `mock ${body.model} reply to: "${echo}"` }],
+                    candidates: [{ output: `mock ${model} reply to: "${echo}"` }],
                     tokensInfo: {
                         inputCountsPerAuthor: [{ author: "user", count: 8 }],
                         outputCountsPerAuthor: [{ author: "model", count: 12 }],
@@ -52,11 +54,11 @@ export class ExampleMockServer {
             if (path.endsWith("/v1/generate")) {
                 if (body.stream) {
                     res.writeHead(200, { "content-type": "application/json" });
-                    res.end(`{"text":"streaming "}\n{"text":"from "}\n{"text":"${body.model}"}\n`);
+                    res.end(`{"text":"streaming "}\n{"text":"from "}\n{"text":"${model}"}\n`);
                     return;
                 }
                 return json(200, {
-                    completions: [{ text: `mock ${body.model} reply to: "${echo}"` }],
+                    completions: [{ text: `mock ${model} reply to: "${echo}"` }],
                     meta: { billed_units: { input_tokens: 8, output_tokens: 12 } },
                 });
             }
