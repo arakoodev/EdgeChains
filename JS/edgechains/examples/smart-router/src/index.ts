@@ -75,4 +75,3 @@ if (mockUrl) {
 if (mock) {
     mock.close();
 }
-process.exit(0);
