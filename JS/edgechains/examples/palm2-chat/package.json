@@ -1,0 +1,19 @@
+{
+    "name": "palm2-chat",
+    "version": "1.0.0",
+    "description": "Example showing Google Palm2 API usage in EdgeChains with jsonnet prompts",
+    "main": "dist/index.js",
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "start": "tsc && node dist/index.js"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "workspace:*",
+        "@arakoodev/jsonnet": "^1.0.1"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.24",
+        "typescript": "^5.3.3"
+    }
+}
