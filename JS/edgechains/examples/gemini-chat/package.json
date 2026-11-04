@@ -1,0 +1,11 @@
+{
+    "name": "edgechains-gemini-chat-example",
+    "private": true,
+    "scripts": {
+        "start": "node index.cjs"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "file:../../../jsonnet"
+    }
+}
