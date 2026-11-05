@@ -1,4 +1,4 @@
-import { Palm2Endpoint } from "../lib/palm2/palm2";
+import { Palm2Endpoint } from "../../lib/palm2/palm2";
 
 jest.mock("axios");
 import axios from "axios";

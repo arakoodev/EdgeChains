@@ -1,5 +1,6 @@
-import { ComprehendClient, DetectPiiEntitiesCommand } from "@aws-sdk/client-comprehend";
-import { Subject, Observable } from "rxjs";
+import { ComprehendClient, DetectPiiEntitiesCommand, LanguageCode } from "@aws-sdk/client-comprehend";
+import { Observable, from } from "rxjs";
+import { mergeMap, catchError } from "rxjs/operators";
 
 export type ComprehendPiiEntity = {
     Score: number;
@@ -74,7 +75,7 @@ export class ComprehendRedactor {
         const client = this.getClient();
         const cmd = new DetectPiiEntitiesCommand({
             Text: text,
-            LanguageCode: this.languageCode,
+            LanguageCode: this.languageCode as LanguageCode,
         });
         const res = await client.send(cmd);
         return (res.Entities ?? []) as ComprehendPiiEntity[];
@@ -106,18 +107,11 @@ export class ComprehendRedactor {
      * redaction, then feed the redacted prompt downstream (e.g. an LLM endpoint).
      */
     redactStream(prompt$: Observable<string>): Observable<string> {
-        const subject = new Subject<string>();
-        prompt$.subscribe({
-            next: async (prompt) => {
-                try {
-                    subject.next(await this.redact(prompt));
-                } catch (err) {
-                    subject.error(err);
-                }
-            },
-            error: (err) => subject.error(err),
-            complete: () => subject.complete(),
-        });
-        return subject.asObservable();
+        return prompt$.pipe(
+            mergeMap((prompt) => from(this.redact(prompt))),
+            catchError((err, caught) => {
+                throw err;
+            })
+        );
     }
 }
