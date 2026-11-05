@@ -42,7 +42,7 @@ export class ComprehendRedactor {
     /** Optional pre-built ComprehendClient (useful for tests/mocking). */
     injectedClient?: ComprehendClient;
 
-    constructor(options: ComprehendConstructionOptions) {
+    constructor(options: ComprehendConstructionOptions = {}) {
         this.accessKeyId = options.accessKeyId || process.env.AWS_ACCESS_KEY_ID || "";
         this.secretAccessKey = options.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY || "";
         this.region = options.region || process.env.AWS_REGION || "us-east-1";

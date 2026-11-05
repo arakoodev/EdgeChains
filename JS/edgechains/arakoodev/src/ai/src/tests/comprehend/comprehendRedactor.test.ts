@@ -70,7 +70,9 @@ describe("ComprehendRedactor", () => {
         const fake = makeFakeClient();
         const r = new ComprehendRedactor();
         (r as any).injectedClient = fake;
-        const result = await firstValueFrom(r.redactStream(of(TEXT)).pipe(toArray()));
+        const result = (await firstValueFrom(
+            r.redactStream(of(TEXT)).pipe(toArray())
+        )) as string[];
         expect(result[0]).not.toContain("Alice");
     });
 

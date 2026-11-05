@@ -30,7 +30,11 @@ describe("Palm2Endpoint", () => {
             data: { candidates: [{ output: "hello world", safetyRatings: [] }] },
         });
         const res = await ep.chat({ prompt: "say hi" });
-        const cfg = mockedAxios.request.mock.calls[0][0];
+        const cfg = mockedAxios.request.mock.calls[0][0] as {
+            url: string;
+            headers: Record<string, string>;
+            data: string;
+        };
         expect(cfg.url).toContain("text-bison-001:generateText");
         expect(cfg.headers["x-goog-api-key"]).toBe("k");
         expect(JSON.parse(cfg.data).prompt.text).toBe("say hi");
