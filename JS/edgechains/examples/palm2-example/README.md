@@ -2,7 +2,7 @@
 
 Demonstrates the new `Palm2Endpoint` class (Google PaLM 2 / text-bison).
 
-1. `export PALM2_API_KEY=your-key` (or put it in jsonnet secrets)
+1. `export PALM2_API_KEY=your-key` (read via jsonnet `std.extVar`)
 2. `npm install && npm run dev`
 3. `curl "http://localhost:3000/?topic=quantum%20computing"`
 

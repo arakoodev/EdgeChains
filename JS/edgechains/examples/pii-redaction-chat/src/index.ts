@@ -12,6 +12,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.get("/", async (c: any) => {
     const userText = c.req.query("text") || "";
+    // Provide external variables before evaluating the jsonnet secrets file.
+    jsonnet.extString("aws_region", process.env.AWS_REGION || "us-east-1");
+    jsonnet.extString("openai_api_key", process.env.OPENAI_API_KEY || "");
     const secrets = JSON.parse(
         jsonnet.evaluateFile(path.join(__dirname, "../src/jsonnet/secrets.jsonnet"))
     );
@@ -26,9 +29,16 @@ app.get("/", async (c: any) => {
     // Chain: prompt$ -> Comprehend PII redaction -> LLM endpoint
     const prompt$ = new Subject<string>();
     const redacted$ = redactor.redactStream(prompt$);
-    const answer = await new Promise<string>((resolve) => {
-        redacted$.subscribe(async (redacted) => {
-            resolve(await gpt.chat({ prompt: redacted }));
+    const answer = await new Promise<string>((resolve, reject) => {
+        redacted$.subscribe({
+            next: async (redacted) => {
+                try {
+                    resolve(await gpt.chat({ prompt: redacted }));
+                } catch (e) {
+                    reject(e);
+                }
+            },
+            error: reject,
         });
     });
     return c.json({ answer });

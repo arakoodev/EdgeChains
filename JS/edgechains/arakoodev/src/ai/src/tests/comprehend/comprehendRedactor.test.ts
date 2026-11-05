@@ -1,24 +1,32 @@
-import { ComprehendRedactor } from "../lib/comprehend/comprehend";
+import { of, firstValueFrom, toArray } from "rxjs";
+import { ComprehendRedactor, ComprehendPiiEntity } from "../lib/comprehend/comprehend";
 
-jest.mock("axios");
-import axios from "axios";
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-import { of } from "rxjs";
-import { firstValueFrom, toArray } from "rxjs";
-
-const MOCK_ENTITIES = [
-    { Score: 0.99, Type: "NAME", BeginOffset: 0, EndOffset: 5 },      // "Alice"
-    { Score: 0.98, Type: "PHONE_NUMBER", BeginOffset: 26, EndOffset: 38 }, // number
-    { Score: 0.97, Type: "EMAIL", BeginOffset: 52, EndOffset: 74 },
+const MOCK_ENTITIES: ComprehendPiiEntity[] = [
+    { Score: 0.99, Type: "NAME", BeginOffset: 0, EndOffset: 5 },
+    { Score: 0.98, Type: "PHONE_NUMBER", BeginOffset: 13, EndOffset: 25 },
+    { Score: 0.97, Type: "EMAIL", BeginOffset: 49, EndOffset: 66 },
 ];
 
 const TEXT = "Alice called +12065550100 about her order, email alice@example.com";
 
+/** Fake ComprehendClient with a controllable send() */
+const makeFakeClient = (entities: ComprehendPiiEntity[] = MOCK_ENTITIES, failFirst = false) => {
+    let calls = 0;
+    return {
+        send: jest.fn(async (_cmd: unknown) => {
+            calls++;
+            if (failFirst && calls === 1) throw new Error("throttled");
+            return { Entities: entities };
+        }),
+        calls,
+    };
+};
+
 describe("ComprehendRedactor", () => {
     beforeEach(() => {
-        mockedAxios.request.mockReset();
         process.env.AWS_ACCESS_KEY_ID = "akid";
         process.env.AWS_SECRET_ACCESS_KEY = "sk";
+        jest.restoreAllMocks();
     });
 
     it("constructs with env credentials and defaults", () => {
@@ -28,49 +36,48 @@ describe("ComprehendRedactor", () => {
         expect(r.replacement).toBe("[REDACTED]");
     });
 
-    it("detectPii posts DetectPiiEntities to the regional endpoint", async () => {
-        mockedAxios.request.mockResolvedValueOnce({ data: { Entities: MOCK_ENTITIES } });
+    it("detectPii sends DetectPiiEntitiesCommand via the client and returns entities", async () => {
+        const fake = makeFakeClient();
         const r = new ComprehendRedactor({ region: "us-west-2" });
+        (r as any).injectedClient = fake;
         const entities = await r.detectPii(TEXT);
-        const cfg = mockedAxios.request.mock.calls[0][0];
-        expect(cfg.url).toContain("comprehend.us-west-2.amazonaws.com");
-        expect(cfg.headers["X-Amz-Target"]).toContain("DetectPiiEntities");
+        expect(fake.send).toHaveBeenCalledTimes(1);
         expect(entities).toHaveLength(3);
     });
 
     it("redactFromEntities replaces all detected spans", () => {
         const r = new ComprehendRedactor();
         const out = r.redactFromEntities(TEXT, MOCK_ENTITIES);
-        expect(out).not.toContain("Alice");
-        expect(out).not.toContain("+12065550100");
-        expect(out).not.toContain("alice@example.com");
-        expect(out).toContain("[REDACTED]");
+        expect(out).toBe("[REDACTED] called [REDACTED] about her order, email [REDACTED]");
     });
 
     it("redactFromEntities filters by type when redactTypes set", () => {
         const r = new ComprehendRedactor({ redactTypes: ["PHONE_NUMBER"] });
         const out = r.redactFromEntities(TEXT, MOCK_ENTITIES);
-        expect(out).toContain("Alice"); // name kept
+        expect(out).toContain("Alice");
         expect(out).not.toContain("+12065550100");
     });
 
-    it("redact() chains detect + replace", async () => {
-        mockedAxios.request.mockResolvedValueOnce({ data: { Entities: MOCK_ENTITIES } });
+    it("redact() chains detect + replace via injected client", async () => {
+        const fake = makeFakeClient();
         const r = new ComprehendRedactor();
+        (r as any).injectedClient = fake;
         const out = await r.redact(TEXT);
         expect(out).toBe("[REDACTED] called [REDACTED] about her order, email [REDACTED]");
     });
 
     it("redactStream() redacts values flowing through the observable chain", async () => {
-        mockedAxios.request.mockResolvedValue({ data: { Entities: MOCK_ENTITIES } });
+        const fake = makeFakeClient();
         const r = new ComprehendRedactor();
+        (r as any).injectedClient = fake;
         const result = await firstValueFrom(r.redactStream(of(TEXT)).pipe(toArray()));
         expect(result[0]).not.toContain("Alice");
     });
 
     it("redactStream() propagates errors", async () => {
-        mockedAxios.request.mockRejectedValue(new Error("aws down"));
+        const fake = makeFakeClient([], true);
         const r = new ComprehendRedactor();
-        await expect(firstValueFrom(r.redactStream(of(TEXT)))).rejects.toThrow("aws down");
+        (r as any).injectedClient = fake;
+        await expect(firstValueFrom(r.redactStream(of(TEXT)))).rejects.toThrow("throttled");
     });
 });

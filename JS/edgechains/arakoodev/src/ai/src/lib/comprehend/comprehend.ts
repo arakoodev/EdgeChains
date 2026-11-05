@@ -1,9 +1,5 @@
-import axios from "axios";
-import { retry } from "@lifeomic/attempt";
+import { ComprehendClient, DetectPiiEntitiesCommand } from "@aws-sdk/client-comprehend";
 import { Subject, Observable } from "rxjs";
-
-const comprehendUrl =
-    "https://comprehend.us-east-1.amazonaws.com"; // region-overridable
 
 export type ComprehendPiiEntity = {
     Score: number;
@@ -43,6 +39,8 @@ export class ComprehendRedactor {
     languageCode: string;
     redactTypes: string[];
     replacement: string;
+    /** Optional pre-built ComprehendClient (useful for tests/mocking). */
+    injectedClient?: ComprehendClient;
 
     constructor(options: ComprehendConstructionOptions) {
         this.accessKeyId = options.accessKeyId || process.env.AWS_ACCESS_KEY_ID || "";
@@ -53,25 +51,33 @@ export class ComprehendRedactor {
         this.replacement = options.replacement || "[REDACTED]";
     }
 
-    /** Detect PII entities in text (Comprehend DetectPiiEntities). */
-    async detectPii(text: string): Promise<ComprehendPiiEntity[]> {
-        const data = JSON.stringify({ Text: text, LanguageCode: this.languageCode });
-        return await retry(
-            async () => {
-                const res = await axios.request({
-                    method: "post",
-                    maxBodyLength: Infinity,
-                    url: `https://comprehend.${this.region}.amazonaws.com`,
-                    headers: {
-                        "Content-Type": "application/x-amz-json-1.1",
-                        "X-Amz-Target": "Comprehend_20171127.DetectPiiEntities",
+    /** Internal: lazily created Comprehend client (injectable for tests). */
+    private _client?: ComprehendClient;
+
+    getClient(): ComprehendClient {
+        if (!this._client) {
+            this._client =
+                this.injectedClient ??
+                new ComprehendClient({
+                    region: this.region,
+                    credentials: {
+                        accessKeyId: this.accessKeyId,
+                        secretAccessKey: this.secretAccessKey,
                     },
-                    data,
                 });
-                return res.data.Entities as ComprehendPiiEntity[];
-            },
-            { maxAttempts: 3, delay: 200 }
-        );
+        }
+        return this._client;
+    }
+
+    /** Detect PII entities in text (Comprehend DetectPiiEntities, SigV4-signed). */
+    async detectPii(text: string): Promise<ComprehendPiiEntity[]> {
+        const client = this.getClient();
+        const cmd = new DetectPiiEntitiesCommand({
+            Text: text,
+            LanguageCode: this.languageCode,
+        });
+        const res = await client.send(cmd);
+        return (res.Entities ?? []) as ComprehendPiiEntity[];
     }
 
     /** Synchronous local redaction from a set of detected entities. */

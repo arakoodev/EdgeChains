@@ -11,15 +11,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.get("/", async (c: any) => {
     const topic = c.req.query("topic") || "machine learning";
-    const secrets = JSON.parse(
+    // All external variables are provided before evaluation.
+    jsonnet.extString("topic", topic);
+    jsonnet.extString("palm2_api_key", process.env.PALM2_API_KEY || "");
+    const config = JSON.parse(
         jsonnet.evaluateFile(path.join(__dirname, "../src/jsonnet/prompts.jsonnet"))
     );
-    const palm2 = new Palm2Endpoint({ apiKey: secrets.palm2_api_key });
-    jsonnet.extString("topic", topic);
-    const prompt = JSON.parse(
-        jsonnet.evaluateFile(path.join(__dirname, "../src/jsonnet/prompts.jsonnet"))
-    ).summarize;
-    const response = await palm2.gptFn(prompt);
+    const palm2 = new Palm2Endpoint({ apiKey: config.palm2_api_key });
+    const response = await palm2.gptFn(config.summarize);
     return c.json({ response });
 });
 
