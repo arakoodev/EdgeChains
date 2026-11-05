@@ -1,0 +1,14 @@
+{
+  "name": "pii-redaction-chat",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --external:@arakoodev/* && node dist/index.js"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "latest",
+    "@arakoodev/jsonnet": "latest",
+    "rxjs": "^7.8.1",
+    "file-uri-to-path": "^2.0.0"
+  }
+}
