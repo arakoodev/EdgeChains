@@ -31,7 +31,7 @@ app.get("/", async (c: any) => {
     const redacted$ = redactor.redactStream(prompt$);
     const answer = await new Promise<string>((resolve, reject) => {
         redacted$.subscribe({
-            next: async (redacted) => {
+            next: async (redacted: string) => {
                 try {
                     resolve(await gpt.chat({ prompt: redacted }));
                 } catch (e) {
