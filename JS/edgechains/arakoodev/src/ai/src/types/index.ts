@@ -22,3 +22,4 @@ export type ChatModel =
     | "gpt-3.5-turbo-16k-0613";
 
 export type role = "user" | "assistant" | "system";
+export * from "./palm2.js";
