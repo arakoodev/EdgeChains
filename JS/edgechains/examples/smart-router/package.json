@@ -1,0 +1,21 @@
+{
+    "name": "smart-router",
+    "version": "1.0.0",
+    "description": "LiteLLM-style smart router example for EdgeChains.js: Jsonnet routing, load balancing, rate-limit failover and streaming.",
+    "type": "module",
+    "main": "dist/index.js",
+    "scripts": {
+        "start": "tsc && node --experimental-wasm-modules dist/index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.24.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.7.4",
+        "typescript": "^5.6.3"
+    }
+}
