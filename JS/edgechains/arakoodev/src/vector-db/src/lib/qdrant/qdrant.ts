@@ -104,6 +104,15 @@ export class QdrantVectorStore {
             `/collections/${collectionName}/points/search`,
             {
                 vector: queryVector,
+                limit: limit,
+                with_payload: withPayload
+            }
+        );
+        return response.result;
+    }
+}     `/collections/${collectionName}/points/search`,
+            {
+                vector: queryVector,
                 limit,
                 with_payload: withPayload,
                 with_vector: false
