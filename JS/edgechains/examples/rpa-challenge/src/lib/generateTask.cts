@@ -1,4 +1,4 @@
-const { OpenAI } = require("@arakoodev/edgechains.js/ai");
+const { Router } = require("@arakoodev/edgechains.js/ai");
 
 function openAICall({
     prompt,
@@ -10,8 +10,8 @@ function openAICall({
     openAIKey: string;
 }) {
     try {
-        const openai = new OpenAI({ apiKey: openAIKey });
-        const completion = openai
+        const router = new Router({ apiKey: openAIKey });
+        const completion = router
             .chatWithFunction({
                 model: "gpt-3.5-turbo-0613",
                 messages: [{ role: "user", content: prompt }],
