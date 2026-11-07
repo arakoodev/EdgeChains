@@ -76,7 +76,16 @@ export class QdrantVectorStore {
     }
 
     /**
-     * Upsert vector points with optional payloads into a collection.
+     * Upsert vector points into the collection.
+     */
+    async upsert(collectionName: string, points: QdrantPoint[]) {
+        return this.request<{ status: string; time: number }>("PUT", `/collections/${collectionName}/points`, {
+            points
+        });
+    }
+
+    /**
+     * Search for vectors in the collection.points with optional payloads into a collection.
      */
     async upsert_points(collectionName: string, points: QdrantPoint[]) {
         const formattedPoints = points.map((p) => ({
