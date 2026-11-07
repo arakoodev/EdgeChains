@@ -1,9 +1,10 @@
 import axios from "axios";
 import { retry } from "@lifeomic/attempt";
-const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
+const defaultUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
 
 interface GeminiAIConstructionOptions {
     apiKey?: string;
+    url?: string;
 }
 
 type SafetyRating = {
@@ -56,12 +57,14 @@ interface GeminiAIChatOptions {
 
 export class GeminiAI {
     apiKey: string;
-    constructor(options: GeminiAIConstructionOptions) {
+    url: string;
+    constructor(options: GeminiAIConstructionOptions = {}) {
         this.apiKey = options.apiKey || process.env.GEMINI_API_KEY || "";
+        this.url = options.url || defaultUrl;
     }
 
     async chat(chatOptions: GeminiAIChatOptions): Promise<Response> {
-        let data = JSON.stringify({
+        const data = JSON.stringify({
             contents: [
                 {
                     role: "user",
@@ -72,20 +75,22 @@ export class GeminiAI {
                     ],
                 },
             ],
+            generationConfig: {
+                temperature: chatOptions.temperature ?? 0.7,
+                responseMimeType: chatOptions.responseType || "text/plain",
+                maxOutputTokens: chatOptions.max_output_tokens || 1024,
+            },
         });
 
-        let config = {
+        const config = {
             method: "post",
             maxBodyLength: Infinity,
-            url,
+            url: this.url,
             headers: {
                 "Content-Type": "application/json",
                 "x-goog-api-key": this.apiKey,
             },
-            temperature: chatOptions.temperature || "0.7",
-            responseMimeType: chatOptions.responseType || "text/plain",
-            max_output_tokens: chatOptions.max_output_tokens || 1024,
-            data: data,
+            data,
         };
         return await retry(
             async () => {

@@ -1,0 +1,18 @@
+{
+    "name": "palm2-chat",
+    "version": "1.0.0",
+    "description": "EdgeChains example demonstrating Google PaLM2 / Generative Language API with Jsonnet prompts.",
+    "main": "dist/index.js",
+    "type": "module",
+    "scripts": {
+        "start": "tsc && node --experimental-wasm-modules ./dist/index.js"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.23.6",
+        "@types/node": "^20.14.2"
+    },
+    "devDependencies": {
+        "typescript": "^5.4.5"
+    }
+}
