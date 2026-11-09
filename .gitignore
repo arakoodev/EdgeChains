@@ -44,3 +44,8 @@ yarn.lock
 package-lock.json
 .DS_Store
 pnpm-lock.yaml
+demo_frame.png
+demo_frame2.png
+demo_frame3.png
+demo_video.mp4
+make_demo_video.js
