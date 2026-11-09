@@ -1,10 +1,10 @@
 import Jsonnet from "@arakoodev/jsonnet";
 import * as path from "path";
-import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
+import { SmartRouter } from "@arakoodev/edgechains.js/ai";
 const jsonnet = new Jsonnet();
 const promptPath = path.join(process.cwd(), "./src/testGeneration/prompts.jsonnet");
 const testGeneratorPath = path.join(process.cwd(), "./src/testGeneration/testGenerator.jsonnet");
-const gpt3endpoint = new OpenAiEndpoint(
+const gpt3endpoint = new SmartRouter(
     "https://api.openai.com/v1/chat/completions",
     "",
     "",
