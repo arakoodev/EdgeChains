@@ -110,8 +110,7 @@ export class Palm2 {
         try {
             const response = await retry(
                 () => axios.post(url, body),
-                (err: any) => err.response?.status >= 500 || err.code === "ECONNABORTED",
-                { delay, maxRetry }
+                { delay, maxAttempts: maxRetry }
             );
 
             const data: Palm2Response = response.data;
