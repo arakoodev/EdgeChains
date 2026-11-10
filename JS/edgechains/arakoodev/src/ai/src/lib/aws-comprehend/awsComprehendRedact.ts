@@ -319,10 +319,10 @@ export class AWSComprehendRedact {
   // --- Crypto helpers (pure JS, no external deps) ---
 
   private sha256Hex(input: string): string {
-    return this.sha256(input).map((b) => b.toString(16).padStart(2, "0")).join("");
+    return this.sha256(input).toString("hex");
   }
 
-  private hmacSHA256(key: string, data: string): Buffer {
+  private hmacSHA256(key: string | Buffer, data: string): Buffer {
     // Simple HMAC-SHA256 using Node's crypto
     const crypto = require("crypto");
     return crypto.createHmac("sha256", key).update(data, "utf8").digest();
