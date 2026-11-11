@@ -19,6 +19,11 @@ export type ChatModel =
     | "gpt-3.5-turbo-0613"
     | "gpt-3.5-turbo-1106"
     | "gpt-3.5-turbo-0125"
-    | "gpt-3.5-turbo-16k-0613";
+    | "gpt-3.5-turbo-16k-0613"
+    | "text-bison-001"
+    | "chat-bison-001"
+    | "embedding-gecko-001";
+
+export type Palm2Model = "text-bison-001" | "chat-bison-001" | "embedding-gecko-001";
 
 export type role = "user" | "assistant" | "system";
