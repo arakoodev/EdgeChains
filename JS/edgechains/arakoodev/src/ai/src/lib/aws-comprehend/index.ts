@@ -1,0 +1,17 @@
+export {
+    AWSComprehendRedactor,
+    AwsComprehendRestClient,
+    type AWSComprehendRedactorOptions,
+    type ChatEndpoint,
+    type ComprehendPiiClient,
+    type ComprehendPiiEntity,
+    type DetectPiiEntitiesInput,
+    type DetectPiiEntitiesOutput,
+    type MessageLike,
+    type ObservableLike,
+    type ObserverLike,
+    type PiiRedactionResult,
+    type PiiRedactionStrategy,
+    type PromptChatOptions,
+    type SubscriptionLike,
+} from "./awsComprehendRedactor.js";
