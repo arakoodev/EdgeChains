@@ -1,0 +1,23 @@
+{
+    "name": "pii-redactor-example",
+    "version": "1.0.0",
+    "private": true,
+    "description": "EdgeChains example: redact PII with AWS Comprehend before sending prompts to an LLM (Promise + RxJS Observable variants).",
+    "main": "src/index.ts",
+    "scripts": {
+        "start": "tsx src/index.ts",
+        "stream": "tsx src/index.ts --stream",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "*",
+        "@aws-sdk/client-comprehend": "^3.600.0",
+        "dotenv": "^16.4.5",
+        "rxjs": "^7.8.1"
+    },
+    "devDependencies": {
+        "tsx": "^4.7.0",
+        "typescript": "^5.4.5",
+        "vitest": "^1.6.0"
+    }
+}
