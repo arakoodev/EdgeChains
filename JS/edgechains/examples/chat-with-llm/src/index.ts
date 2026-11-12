@@ -26,7 +26,7 @@ app.post("/chat", async (c: any) => {
         let response = jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/main.jsonnet"));
         return c.json(JSON.parse(response));
     } catch (error) {
-        console.log("error occured", error);
+        console.log("error occurred", error);
     }
 });
 

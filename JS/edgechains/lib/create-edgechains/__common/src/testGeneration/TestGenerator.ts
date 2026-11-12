@@ -48,14 +48,14 @@ export async function getContent() {
             .extString("test_package", "JUnit")
             .evaluateFile(testGeneratorPath);
 
-        var responce = await gpt3endpoint.gptFnTestGenerator(JSON.parse(testPrompt).prompt);
+        var response = await gpt3endpoint.gptFnTestGenerator(JSON.parse(testPrompt).prompt);
 
-        console.log("First Response.......\n \n" + responce);
-        var finalResponse = responce;
+        console.log("First Response.......\n \n" + response);
+        var finalResponse = response;
 
-        responce += JSON.parse(prompt).promptPlan;
+        response += JSON.parse(prompt).promptPlan;
 
-        finalResponse += await gpt3endpoint.gptFnTestGenerator(responce);
+        finalResponse += await gpt3endpoint.gptFnTestGenerator(response);
 
         console.log("Final Response.......\n\n");
 

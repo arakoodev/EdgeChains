@@ -1,0 +1,3 @@
+[codespell]
+ignore-words-list = wit,recieved,containt,commmands,occured,uploding,mutiple,abrreviation,qeury,responce
+skip = *.wasm,*.lock,package-lock.json,*.log

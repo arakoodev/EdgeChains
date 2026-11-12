@@ -28,7 +28,7 @@ ReactChainRouter.get("/", async (c: any) => {
         return c.json(response);
     } catch (error) {
         return c.json({
-            response: "Any error occured while finding the answer. Please try again!",
+            response: "Any error occurred while finding the answer. Please try again!",
         });
     }
 });
