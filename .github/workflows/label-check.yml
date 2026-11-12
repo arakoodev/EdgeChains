@@ -1,0 +1,24 @@
+name: Label Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - labeled
+      - unlabeled
+      - synchronize
+
+jobs:
+  check-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for labels
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const labels = context.payload.pull_request.labels;
+            if (labels.length === 0) {
+              core.setFailed("No labels found on this PR. Please add at least one label (e.g., 'js', 'java', 'bug', 'enhancement').");
+            } else {
+              console.log(`Found labels: ${labels.map(l => l.name).join(", ")}`);
+            }
