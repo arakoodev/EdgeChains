@@ -1,3 +1,4 @@
+import { AwsComprehendRedactor, RedactedEndpointChain } from "../comprehend/comprehend.js";
 import axios from "axios";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { z } from "zod";
@@ -64,6 +65,10 @@ export class OpenAI {
         this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || "";
         this.orgId = options.orgId || process.env.OPENAI_ORG_ID || "";
         this.checkKeys();
+    }
+
+    chainRedactor(redactor: AwsComprehendRedactor): RedactedEndpointChain<OpenAI> {
+        return redactor.chain(this);
     }
 
     private checkKeys(): void {

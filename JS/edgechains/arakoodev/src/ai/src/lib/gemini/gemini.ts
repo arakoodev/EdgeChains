@@ -1,3 +1,4 @@
+import { AwsComprehendRedactor, RedactedEndpointChain } from "../comprehend/comprehend.js";
 import axios from "axios";
 import { retry } from "@lifeomic/attempt";
 const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
@@ -58,6 +59,10 @@ export class GeminiAI {
     apiKey: string;
     constructor(options: GeminiAIConstructionOptions) {
         this.apiKey = options.apiKey || process.env.GEMINI_API_KEY || "";
+    }
+
+    chainRedactor(redactor: AwsComprehendRedactor): RedactedEndpointChain<GeminiAI> {
+        return redactor.chain(this);
     }
 
     async chat(chatOptions: GeminiAIChatOptions): Promise<Response> {
