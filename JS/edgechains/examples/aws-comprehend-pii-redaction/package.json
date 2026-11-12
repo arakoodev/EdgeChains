@@ -1,0 +1,11 @@
+{
+    "name": "aws-comprehend-pii-redaction-example",
+    "version": "1.0.0",
+    "description": "EdgeChains JS example chaining AWS Comprehend PII redaction with an OpenAI Endpoint as an Observable",
+    "scripts": {
+        "start": "npx tsx src/index.ts"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "workspace:*"
+    }
+}
