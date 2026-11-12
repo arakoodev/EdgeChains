@@ -1,0 +1,20 @@
+{
+    "name": "pii-redaction-comprehend",
+    "version": "1.0.0",
+    "description": "EdgeChains AWS Comprehend PII Redaction Observable Chaining Example",
+    "main": "dist/index.js",
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "start": "tsc && node ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.24.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.17.2",
+        "typescript": "^5.6.3"
+    }
+}
