@@ -1,0 +1,5 @@
+
+> start
+> tsx src/index.ts
+
+Redacted: Email [NAME] at [EMAIL] about account [SSN].

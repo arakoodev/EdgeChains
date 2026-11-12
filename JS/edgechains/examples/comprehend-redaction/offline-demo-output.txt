@@ -1,0 +1,15 @@
+$ npm run demo:offline
+
+> demo:offline
+> tsx src/offline-demo.ts
+
+OFFLINE DEMO: injected Comprehend results and Axios transport.
+No live AWS/OpenAI request, provider response or billing is claimed.
+Synthetic input: Email Ada at ada@example.com about account 123-45-6789.
+Redacted: Email [NAME] at [EMAIL] about account [SSN].
+Existing OpenAI.chat outbound messages: [{"role":"user","content":"Email [NAME] at [EMAIL] about account [SSN]."}]
+Transport intercepted locally; external requests: 0.
+Observable chain: AwsComprehendRedactor.chat$ -> existing OpenAI.chat -> offline adapter.
+PASS: outbound PII removed, original input unchanged, exactly one intercepted call.
+PASS: fail-closed Comprehend error prevents OpenAI transport invocation.
+Exit code: 0

@@ -1,0 +1,14 @@
+{
+  "name": "edgechains-comprehend-redaction-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "demo:offline": "tsx src/offline-demo.ts"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "file:../../arakoodev",
+    "rxjs": "^7.8.0",
+    "tsx": "^4.20.0"
+  }
+}
