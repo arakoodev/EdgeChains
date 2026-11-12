@@ -1,9 +1,11 @@
 import axios from "axios";
 import { retry } from "@lifeomic/attempt";
+import { PIIRedactor } from "../pii-redactor/piiRedactor.js";
 const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
 
 interface GeminiAIConstructionOptions {
     apiKey?: string;
+    piiRedactor?: PIIRedactor;
 }
 
 type SafetyRating = {
@@ -56,18 +58,23 @@ interface GeminiAIChatOptions {
 
 export class GeminiAI {
     apiKey: string;
+    piiRedactor?: PIIRedactor;
     constructor(options: GeminiAIConstructionOptions) {
         this.apiKey = options.apiKey || process.env.GEMINI_API_KEY || "";
+        this.piiRedactor = options.piiRedactor;
     }
 
     async chat(chatOptions: GeminiAIChatOptions): Promise<Response> {
+        const prompt = this.piiRedactor
+            ? await this.piiRedactor.redactPrompt(chatOptions.prompt)
+            : chatOptions.prompt;
         let data = JSON.stringify({
             contents: [
                 {
                     role: "user",
                     parts: [
                         {
-                            text: chatOptions.prompt,
+                            text: prompt,
                         },
                     ],
                 },
