@@ -1,0 +1,19 @@
+{
+  "name": "pii-redaction-comprehend-example",
+  "version": "1.0.0",
+  "description": "Example demonstrating AWS Comprehend PII redaction and observable prompt pipeline with EdgeChains",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/index.js"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "^0.1.23",
+    "axios": "^1.7.4",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@types/node": "^20.17.2"
+  }
+}
