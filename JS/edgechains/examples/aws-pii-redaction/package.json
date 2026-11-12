@@ -1,0 +1,14 @@
+{
+  "name": "aws-pii-redaction-example",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@arakoodev/edgechains.js": "file:../../arakoodev",
+    "@arakoodev/jsonnet": "latest",
+    "file-uri-to-path": "latest",
+    "dotenv": "latest"
+  },
+  "scripts": {
+    "start": "ts-node src/index.ts"
+  }
+}
