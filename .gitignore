@@ -30,7 +30,6 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
 
 ### Node Modules ###
 node_modules
@@ -44,3 +43,4 @@ yarn.lock
 package-lock.json
 .DS_Store
 pnpm-lock.yaml
+config.bat
