@@ -1,0 +1,19 @@
+{
+    "name": "pii-redactor-example",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "start": "ts-node --esm src/index.ts",
+        "build": "tsc",
+        "dev": "tsx src/index.ts"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev"
+    },
+    "devDependencies": {
+        "ts-node": "^10.9.2",
+        "tsx": "^4.7.0",
+        "typescript": "^5.6.3",
+        "@types/node": "^20.17.2"
+    }
+}
