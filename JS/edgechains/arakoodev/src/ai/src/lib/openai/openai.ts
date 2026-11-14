@@ -1,12 +1,18 @@
 import axios from "axios";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { z } from "zod";
-import { ChatModel, role } from "../../types/index";
+import { ChatModel, role } from "../../types/index.js";
+import { SmartRouter, DeploymentConfig, ObservabilityConfig } from "../router/SmartRouter.js";
+
 const openAI_url = "https://api.openai.com/v1/chat/completions";
 
 interface OpenAIConstructionOptions {
     apiKey?: string;
     orgId?: string;
+    deployments?: DeploymentConfig[];
+    observability?: ObservabilityConfig;
+    timeout?: number;
+    maxRetries?: number;
 }
 
 interface messageOption {
@@ -55,15 +61,42 @@ interface chatWithFunctionReturnOptions {
 
 interface OpenAIChatReturnOptions {
     content: string;
+    usage?: {
+        prompt_tokens: number;
+        completion_tokens: number;
+        total_tokens: number;
+    };
 }
 
 export class OpenAI {
     apiKey: string;
     orgId: string;
-    constructor(options: OpenAIConstructionOptions) {
+    router: SmartRouter;
+
+    constructor(options: OpenAIConstructionOptions = {}) {
         this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || "";
         this.orgId = options.orgId || process.env.OPENAI_ORG_ID || "";
         this.checkKeys();
+
+        const deployments: DeploymentConfig[] =
+            options.deployments && options.deployments.length > 0
+                ? options.deployments
+                : [
+                      {
+                          id: "openai-default",
+                          provider: "openai",
+                          model: "gpt-3.5-turbo",
+                          apiKey: this.apiKey,
+                          orgId: this.orgId,
+                      },
+                  ];
+
+        this.router = new SmartRouter({
+            deployments,
+            observability: options.observability,
+            timeout: options.timeout,
+            maxRetries: options.maxRetries,
+        });
     }
 
     private checkKeys(): void {
@@ -80,88 +113,32 @@ export class OpenAI {
     }
 
     async chat(chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
-        const response = await axios
-            .post(
-                openAI_url,
-                {
-                    model: chatOptions.model || "gpt-3.5-turbo",
-                    messages: chatOptions.prompt
-                        ? [
-                              {
-                                  role: chatOptions.role || "user",
-                                  content: chatOptions.prompt,
-                              },
-                          ]
-                        : chatOptions.messages,
-                    max_tokens: chatOptions.max_tokens || 256,
-                    temperature: chatOptions.temperature || 0.7,
-                    frequency_penalty: 1,
-                },
-                {
-                    headers: {
-                        Authorization: "Bearer " + this.apiKey,
-                        "content-type": "application/json",
-                        "OpenAI-Organization": this.orgId,
-                    },
-                }
-            )
-            .then((response) => {
-                return response.data.choices;
-            })
-            .catch((error) => {
-                if (error.response) {
-                    console.log("Server responded with status code:", error.response.status);
-                    console.log("Response data:", error.response.data);
-                } else if (error.request) {
-                    console.log("No response received:", error);
-                } else {
-                    console.log("Error creating request:", error.message);
-                }
-            });
-        return response[0].message;
+        const res = await this.router.completion({
+            model: chatOptions.model || "gpt-3.5-turbo",
+            prompt: chatOptions.prompt,
+            messages: chatOptions.messages,
+            max_tokens: chatOptions.max_tokens || 256,
+            temperature: chatOptions.temperature || 0.7,
+        });
+        return {
+            content: res.content,
+            usage: res.usage,
+        };
     }
 
     async streamedChat(chatOptions: OpenAIChatOptions): Promise<OpenAIChatReturnOptions> {
-        const response = await axios
-            .post(
-                openAI_url,
-                {
-                    model: chatOptions.model || "gpt-3.5-turbo",
-                    messages: chatOptions.prompt
-                        ? [
-                              {
-                                  role: chatOptions.role || "user",
-                                  content: chatOptions.prompt,
-                              },
-                          ]
-                        : chatOptions.messages,
-                    max_tokens: chatOptions.max_tokens || 256,
-                    temperature: chatOptions.temperature || 0.7,
-                    frequency_penalty: chatOptions.frequency_penalty || 1,
-                    stream: true,
-                },
-                {
-                    headers: {
-                        Authorization: "Bearer " + this.apiKey,
-                        "content-type": "application/json",
-                        "OpenAI-Organization": this.orgId,
-                    },
-                }
-            )
-            .then((response) => {
-                return response.data.choices;
-            })
-            .catch((error) => {
-                if (error.response) {
-                    console.log("Server responded with status code:", error.response.status);
-                    console.log("Response data:", error.response.data);
-                } else if (error.request) {
-                    console.log("No response received:", error);
-                } else {
-                    console.log("Error creating request:", error.message);
-                }
-            });
-        return response[0].message;
+        const res = await this.router.completion({
+            model: chatOptions.model || "gpt-3.5-turbo",
+            prompt: chatOptions.prompt,
+            messages: chatOptions.messages,
+            max_tokens: chatOptions.max_tokens || 256,
+            temperature: chatOptions.temperature || 0.7,
+            stream: true,
+        });
+        return {
+            content: res.content,
+            usage: res.usage,
+        };
     }
 
     async chatWithFunction(
@@ -250,7 +227,6 @@ export class OpenAI {
             description: "Generate a schema based on provided details.",
             parameters: jsonSchema,
         };
-        // Remembrer if any field like url or link is not available please create a dummy link based on the following prompt
         const content = `
                         You are a Schema generator that can generate answer based on given prompt and then return the response based on the give schema 
                         Remembrer if any field like url or link is not available please create a dummy link based on the following prompt
