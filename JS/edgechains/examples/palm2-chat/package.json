@@ -1,0 +1,19 @@
+{
+  "name": "palm2-chat-example",
+  "version": "1.0.0",
+  "description": "Example using Google PaLM 2 API with EdgeChains.js",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "node init && tsc",
+    "start": "node init && node dist/index.js"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "^0.1.23",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@types/node": "^20.17.2"
+  }
+}
