@@ -1,4 +1,4 @@
-const { OpenAI } = require("@arakoodev/edgechains.js/ai");
+const { Router } = require("@arakoodev/edgechains.js/ai");
 import { z } from "zod";
 
 const schema = z.object({
@@ -30,8 +30,8 @@ const schema = z.object({
 
 async function openAICall({ prompt, openAIApiKey }: any) {
     try {
-        const openai = new OpenAI({ apiKey: openAIApiKey });
-        let res = await openai.zodSchemaResponse({ prompt, schema: schema });
+        const router = new Router({ apiKey: openAIApiKey });
+        let res = await router.zodSchemaResponse({ prompt, schema: schema });
         return JSON.stringify(res);
     } catch (error) {
         return error;

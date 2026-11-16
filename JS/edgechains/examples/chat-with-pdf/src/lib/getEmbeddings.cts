@@ -1,4 +1,4 @@
-const { OpenAI } = require("@arakoodev/edgechains.js/openai");
+const { Router } = require("@arakoodev/edgechains.js/ai");
 const path = require("path");
 const Jsonnet = require("@arakoodev/jsonnet");
 
@@ -7,7 +7,7 @@ const jsonnet = new Jsonnet();
 const secretsPath = path.join(__dirname, "../../jsonnet/secrets.jsonnet");
 const openAIApiKey = JSON.parse(jsonnet.evaluateFile(secretsPath)).openai_api_key;
 
-const llm = new OpenAI({
+const llm = new Router({
     apiKey: openAIApiKey,
 });
 
