@@ -1,81 +1,51 @@
-import axios from "axios";
-import { OpenAI } from "../../../../dist/openai/src/lib/endpoints/OpenAiEndpoint.js";
+import { describe, expect, test } from "vitest";
+import { SmartRouter } from "../lib/router/SmartRouter.js";
+import { MockAI } from "../lib/router/MockAI.js";
 
-jest.mock("axios");
-
-describe("ChatOpenAi", () => {
-    describe("generateResponse", () => {
-        test("should generate response from OpenAI", async () => {
-            const mockResponse = [
-                {
-                    message: {
-                        content: "Test response",
-                    },
-                },
-            ];
-
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const response = await chatOpenAi.chat({ prompt: "test prompt" });
-            expect(response).toEqual("Test response");
+describe("SmartRouter Endpoint Replacement Tests", () => {
+    test("should generate response from OpenAI via SmartRouter", async () => {
+        const mockAI = new MockAI({
+            responsesByProvider: {
+                openai: "Test response",
+            },
         });
+        const router = new SmartRouter({
+            axiosInstance: mockAI.createAxiosInstance(),
+            deployments: [
+                {
+                    provider: "openai",
+                    model: "gpt-3.5-turbo",
+                    apiKey: "test_api_key",
+                },
+            ],
+        });
+        const response = await router.chat({ prompt: "test prompt" });
+        expect(response.content).toEqual("Test response");
+        expect(response.usage.total_tokens).toBeGreaterThan(0);
     });
 
-    describe("generateEmbeddings", () => {
-        test("should generate embeddings from OpenAI", async () => {
-            const mockResponse = { embeddings: "Test embeddings" };
-            axios.post = jest.fn().mockResolvedValue({ data: { data: { choices: mockResponse } } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const res = await chatOpenAi.generateEmbeddings("test prompt");
-            expect(res.choices.embeddings).toEqual("Test embeddings");
+    test("should chat with AI using multiple messages across deployments", async () => {
+        const mockAI = new MockAI({
+            responsesByProvider: {
+                openai: "Multi-message response",
+            },
         });
-    });
-
-    describe("chatWithAI", () => {
-        test("should chat with AI using multiple messages", async () => {
-            const mockResponse = [
+        const router = new SmartRouter({
+            axiosInstance: mockAI.createAxiosInstance(),
+            deployments: [
                 {
-                    message: {
-                        content: "Test response 1",
-                    },
+                    provider: "openai",
+                    model: "gpt-3.5-turbo",
+                    apiKey: "test_api_key",
                 },
-                {
-                    message: {
-                        content: "Test response 2",
-                    },
-                },
-            ];
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const chatMessages = [
-                {
-                    role: "user",
-                    content: "message 1",
-                },
-                {
-                    role: "agent",
-                    content: "message 2",
-                },
-            ];
-            //@ts-ignore
-            const responses = await chatOpenAi.chat({ messages: chatMessages });
-            expect(responses).toEqual(mockResponse);
+            ],
         });
-    });
-
-    describe("testResponseGeneration", () => {
-        test("should generate test response from OpenAI", async () => {
-            const mockResponse = [
-                {
-                    message: {
-                        content: "Test response",
-                    },
-                },
-            ];
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const response = await chatOpenAi.chat({ prompt: "test prompt" });
-            expect(response).toEqual("Test response");
+        const res = await router.chat({
+            messages: [
+                { role: "user", content: "message 1" },
+                { role: "assistant", content: "message 2" },
+            ],
         });
+        expect(res.content).toEqual("Multi-message response");
     });
 });
