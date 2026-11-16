@@ -22,6 +22,7 @@
         "test": "vitest"
     },
     "dependencies": {
+        "@aws-sdk/client-comprehend": "^3.864.0",
         "@babel/core": "^7.24.4",
         "@babel/preset-env": "^7.24.4",
         "@hono/node-server": "^0.6.0",
@@ -48,6 +49,7 @@
         "retell-client-js-sdk": "^2.0.4",
         "retell-sdk": "^4.9.0",
         "retry": "^0.13.1",
+        "rxjs": "^7.8.2",
         "ts-node": "^10.9.2",
         "typeorm": "^0.3.20",
         "vitest": "^2.0.3",
