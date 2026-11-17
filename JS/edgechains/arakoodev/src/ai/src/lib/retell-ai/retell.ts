@@ -43,7 +43,9 @@ export class RetellAI {
     }
 
     async initiateWebCall(agent_id: string): Promise<string> {
-        const webCallResponse = await this.retellClient.call.createWebCall({ agent_id });
+        const webCallResponse = await this.retellClient.call.createWebCall({
+            agent_id,
+        });
         return webCallResponse.access_token;
     }
 }

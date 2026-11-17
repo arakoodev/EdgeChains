@@ -1,71 +1,37 @@
-import { Stream } from "../../../../dist/openai/src/lib/streaming/OpenAiStreaming.js";
-import { TextEncoder, TextDecoder } from "text-decoding";
-jest.mock("../lib/streaming/OpenAiStreaming.ts", () => {
-    return {
-        Stream: jest.fn().mockImplementation(() => ({
-            OpenAIStream: jest.fn().mockImplementation((prompt) => {
-                return new ReadableStream({
-                    start(controller) {
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"Hi! "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"How "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"can "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"I "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode(
-                                '[{"choices":[{"delta":{"content":"help "}}]}]'
-                            )
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode(
-                                '[{"choices":[{"delta":{"content":"you?."}}]}]'
-                            )
-                        );
-                        controller.enqueue(new TextEncoder().encode("[DONE]"));
-                        controller.close();
-                    },
-                });
-            }),
-        })),
-    };
-});
+import { describe, test, expect, beforeEach } from "vitest";
+import { Router, MockLLM } from "../index.js";
 
-describe("Streaming", () => {
-    afterEach(() => {
-        jest.clearAllMocks(); // Clear mock function calls after each test
+describe("Streaming via Smart Router", () => {
+    let mockLLM: MockLLM;
+
+    beforeEach(() => {
+        mockLLM = new MockLLM();
     });
 
-    test("OpenAIStream should return expected text", async () => {
-        const options = {
-            model: "test_model",
-            OpenApiKey: "test_api_key",
+    test("OpenAIStream / streamChat should stream expected text and record token usage", async () => {
+        mockLLM.setScenario("test_api_key", {
+            responseText: "Hi! How can I help you?.",
+        });
+
+        const router = new Router({
+            model: "gpt-3.5-turbo",
+            apiKey: "test_api_key",
             temperature: 0.7,
-            top_p: 1,
-            frequency_penalty: 0,
-            presence_penalty: 0,
-            max_tokens: 500,
-            stream: true,
-            n: 1,
-        };
+        });
+        mockLLM.attach(router.httpClient);
 
-        const stream = new Stream(options);
-
-        //@ts-ignore
-        const streamReader = await stream.OpenAIStream("hi").getReader();
+        const stream = await router.OpenAIStream("hi");
+        const streamReader = stream.getReader();
         const text = await readStreamToString(streamReader);
 
         expect(text).toBe("Hi! How can I help you?.");
+        expect(router.getTokenUsage().total_tokens).toBeGreaterThan(0);
     });
 });
 
-async function readStreamToString(reader) {
+async function readStreamToString(
+    reader: ReadableStreamDefaultReader<Uint8Array>
+): Promise<string> {
     const decoder = new TextDecoder();
     let text = "";
     while (true) {
