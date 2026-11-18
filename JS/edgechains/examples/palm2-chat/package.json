@@ -1,0 +1,18 @@
+{
+    "name": "palm2-chat",
+    "version": "1.0.0",
+    "description": "Example demonstrating Google Palm2 with EdgeChains (prompts in jsonnet)",
+    "type": "module",
+    "scripts": {
+        "start": "tsc && node ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.24.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.7.4",
+        "typescript": "^5.6.3"
+    }
+}
