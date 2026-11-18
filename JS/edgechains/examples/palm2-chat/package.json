@@ -1,0 +1,19 @@
+{
+    "name": "palm2-chat",
+    "version": "1.0.0",
+    "description": "Example showing Palm2AI usage with Jsonnet prompts.",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "tsc && node --experimental-wasm-modules ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.23.6",
+        "@types/node": "^20.14.2",
+        "file-uri-to-path": "^2.0.0",
+        "path": "^0.12.7"
+    }
+}
+
