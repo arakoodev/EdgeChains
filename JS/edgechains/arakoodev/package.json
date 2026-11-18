@@ -19,7 +19,8 @@
         "build": "rm -rf dist && tsc -b",
         "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
         "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
-        "test": "vitest"
+        "test": "vitest",
+        "test:palm2": "vitest run testcases/palm2"
     },
     "dependencies": {
         "@babel/core": "^7.24.4",
