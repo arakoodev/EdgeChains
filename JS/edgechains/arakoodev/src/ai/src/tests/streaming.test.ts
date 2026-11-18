@@ -1,79 +1,65 @@
-import { Stream } from "../../../../dist/openai/src/lib/streaming/OpenAiStreaming.js";
-import { TextEncoder, TextDecoder } from "text-decoding";
-jest.mock("../lib/streaming/OpenAiStreaming.ts", () => {
-    return {
-        Stream: jest.fn().mockImplementation(() => ({
-            OpenAIStream: jest.fn().mockImplementation((prompt) => {
-                return new ReadableStream({
-                    start(controller) {
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"Hi! "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"How "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"can "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode('[{"choices":[{"delta":{"content":"I "}}]}]')
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode(
-                                '[{"choices":[{"delta":{"content":"help "}}]}]'
-                            )
-                        );
-                        controller.enqueue(
-                            new TextEncoder().encode(
-                                '[{"choices":[{"delta":{"content":"you?."}}]}]'
-                            )
-                        );
-                        controller.enqueue(new TextEncoder().encode("[DONE]"));
-                        controller.close();
-                    },
-                });
-            }),
-        })),
-    };
-});
+import { describe, test, expect, vi } from "vitest"
+import { OpenAIProvider } from "../providers/openai/OpenAIProvider.js"
+
+vi.mock("axios", () => {
+  const mockPost = vi.fn()
+  const mockAxiosInstance = {
+    post: mockPost,
+    interceptors: {
+      request: { use: vi.fn(), eject: vi.fn() },
+      response: { use: vi.fn((_resolve, reject) => {}) },
+    },
+  }
+  return {
+    default: {
+      create: vi.fn(() => mockAxiosInstance),
+    },
+  }
+})
 
 describe("Streaming", () => {
-    afterEach(() => {
-        jest.clearAllMocks(); // Clear mock function calls after each test
-    });
+  test("OpenAIProvider.stream should yield delta events", async () => {
+    const provider = new OpenAIProvider("test-key")
+    const axios = await import("axios")
+    const instance = (axios.default as any).create()
 
-    test("OpenAIStream should return expected text", async () => {
-        const options = {
-            model: "test_model",
-            OpenApiKey: "test_api_key",
-            temperature: 0.7,
-            top_p: 1,
-            frequency_penalty: 0,
-            presence_penalty: 0,
-            max_tokens: 500,
-            stream: true,
-            n: 1,
-        };
+    // Create a mock readable stream that emits SSE chunks
+    const chunks = [
+      'data: {"choices":[{"delta":{"content":"Hi! "},"index":0}]}',
+      'data: {"choices":[{"delta":{"content":"How "},"index":0}]}',
+      'data: {"choices":[{"delta":{"content":"can "},"index":0}]}',
+      'data: {"choices":[{"delta":{"content":"I "},"index":0}]}',
+      'data: {"choices":[{"delta":{"content":"help "},"index":0}]}',
+      'data: {"choices":[{"delta":{"content":"you?."},"index":0}]}',
+      "data: [DONE]",
+    ]
 
-        const stream = new Stream(options);
-
-        //@ts-ignore
-        const streamReader = await stream.OpenAIStream("hi").getReader();
-        const text = await readStreamToString(streamReader);
-
-        expect(text).toBe("Hi! How can I help you?.");
-    });
-});
-
-async function readStreamToString(reader) {
-    const decoder = new TextDecoder();
-    let text = "";
-    while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const decodedValue = decoder.decode(value);
-        if (decodedValue.includes("DONE")) break;
-        text += JSON.parse(decodedValue)[0]["choices"][0]["delta"]["content"];
+    // Create an async iterable from the chunks
+    const mockStream = {
+      [Symbol.asyncIterator]: () => {
+        let i = 0
+        return {
+          next: async () => {
+            if (i >= chunks.length) return { value: undefined, done: true }
+            return { value: Buffer.from(chunks[i++] + "\n"), done: false }
+          },
+        }
+      },
     }
-    return text;
-}
+
+    instance.post.mockResolvedValueOnce({ data: mockStream })
+
+    let fullText = ""
+    for await (const event of provider.stream({ prompt: "hi" })) {
+      if (event.type === "delta") {
+        fullText += event.content
+      } else if (event.type === "done") {
+        break
+      } else if (event.type === "error") {
+        throw new Error(`Stream error: ${event.error.message}`)
+      }
+    }
+
+    expect(fullText).toBe("Hi! How can I help you?.")
+  })
+})
