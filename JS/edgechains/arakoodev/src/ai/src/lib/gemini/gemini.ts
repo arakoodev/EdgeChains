@@ -1,12 +1,15 @@
 import axios from "axios";
 import { retry } from "@lifeomic/attempt";
-const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
 
-interface GeminiAIConstructionOptions {
+const DEFAULT_MODEL = "gemini-1.5-flash";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+
+export interface GeminiAIConstructionOptions {
     apiKey?: string;
+    baseUrl?: string;
 }
 
-type SafetyRating = {
+export type GeminiSafetyRating = {
     category:
         | "HARM_CATEGORY_SEXUALLY_EXPLICIT"
         | "HARM_CATEGORY_HATE_SPEECH"
@@ -15,77 +18,91 @@ type SafetyRating = {
     probability: "NEGLIGIBLE" | "LOW" | "MEDIUM" | "HIGH";
 };
 
-type ContentPart = {
+export type GeminiContentPart = {
     text: string;
 };
 
-type Content = {
-    parts: ContentPart[];
-    role: string;
+export type GeminiContent = {
+    parts: GeminiContentPart[];
+    role?: "user" | "model";
 };
 
-type Candidate = {
-    content: Content;
+export type GeminiCandidate = {
+    content: GeminiContent;
     finishReason: string;
     index: number;
-    safetyRatings: SafetyRating[];
+    safetyRatings: GeminiSafetyRating[];
 };
 
-type UsageMetadata = {
+export type GeminiUsageMetadata = {
     promptTokenCount: number;
     candidatesTokenCount: number;
     totalTokenCount: number;
 };
 
-type Response = {
-    candidates: Candidate[];
-    usageMetadata: UsageMetadata;
+export type GeminiAIResponse = {
+    candidates: GeminiCandidate[];
+    usageMetadata: GeminiUsageMetadata;
 };
 
-type responseMimeType = "text/plain" | "application/json";
+export type GeminiResponseMimeType = "text/plain" | "application/json";
 
-interface GeminiAIChatOptions {
+export interface GeminiGenerationConfig {
+    maxOutputTokens?: number;
+    temperature?: number;
+    topP?: number;
+    topK?: number;
+    responseMimeType?: GeminiResponseMimeType;
+}
+
+export interface GeminiAIChatOptions {
     model?: string;
     max_output_tokens?: number;
+    maxOutputTokens?: number;
     temperature?: number;
-    prompt: string;
+    topP?: number;
+    topK?: number;
+    prompt?: string;
+    messages?: GeminiContent[];
     max_retry?: number;
-    responseType?: responseMimeType;
+    responseType?: GeminiResponseMimeType;
+    responseMimeType?: GeminiResponseMimeType;
     delay?: number;
 }
 
 export class GeminiAI {
     apiKey: string;
+    baseUrl: string;
+
     constructor(options: GeminiAIConstructionOptions) {
         this.apiKey = options.apiKey || process.env.GEMINI_API_KEY || "";
+        this.baseUrl = options.baseUrl || GEMINI_API_URL;
     }
 
-    async chat(chatOptions: GeminiAIChatOptions): Promise<Response> {
-        let data = JSON.stringify({
-            contents: [
+    async chat(chatOptions: GeminiAIChatOptions): Promise<GeminiAIResponse> {
+        const data = {
+            contents: chatOptions.messages || [
                 {
                     role: "user",
                     parts: [
                         {
-                            text: chatOptions.prompt,
+                            text: chatOptions.prompt || "",
                         },
                     ],
                 },
             ],
-        });
+            generationConfig: buildGenerationConfig(chatOptions),
+        };
 
-        let config = {
+        const config = {
             method: "post",
             maxBodyLength: Infinity,
-            url,
+            url: `${this.baseUrl}/${chatOptions.model || DEFAULT_MODEL}:generateContent`,
             headers: {
                 "Content-Type": "application/json",
                 "x-goog-api-key": this.apiKey,
             },
-            temperature: chatOptions.temperature || "0.7",
-            responseMimeType: chatOptions.responseType || "text/plain",
-            max_output_tokens: chatOptions.max_output_tokens || 1024,
-            data: data,
+            data,
         };
         return await retry(
             async () => {
@@ -94,4 +111,20 @@ export class GeminiAI {
             { maxAttempts: chatOptions.max_retry || 3, delay: chatOptions.delay || 200 }
         );
     }
+}
+
+export class Palm2AI extends GeminiAI {}
+
+function buildGenerationConfig(
+    options: GeminiAIChatOptions
+): GeminiGenerationConfig {
+    return {
+        maxOutputTokens:
+            options.maxOutputTokens || options.max_output_tokens || 1024,
+        temperature: options.temperature ?? 0.7,
+        topP: options.topP,
+        topK: options.topK,
+        responseMimeType:
+            options.responseMimeType || options.responseType || "text/plain",
+    };
 }
