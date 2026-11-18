@@ -1,0 +1,12 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "*",
+    "@arakoodev/jsonnet": "*",
+    "file-uri-to-path": "^2.0.0",
+    "ts-node": "^10.9.2"
+  }
+}
