@@ -1,0 +1,1658 @@
+diff --git a/JS/edgechains/arakoodev/src/ai/src/index.ts b/JS/edgechains/arakoodev/src/ai/src/index.ts
+index 2c98f37..7a97cbc 100644
+--- a/JS/edgechains/arakoodev/src/ai/src/index.ts
++++ b/JS/edgechains/arakoodev/src/ai/src/index.ts
+@@ -3,3 +3,21 @@ export { GeminiAI } from "./lib/gemini/gemini.js";
+ export { LlamaAI } from "./lib/llama/llama.js";
+ export { RetellAI } from "./lib/retell-ai/retell.js";
+ export { RetellWebClient } from "./lib/retell-ai/retellWebClient.js";
++export { SmartRouter, SmartRouter as Router, RouterError } from "./lib/router/router.js";
++export type {
++    RoutingStrategy,
++    ProviderType,
++    RouterMessage,
++    LiteLLMParams,
++    ModelDeployment,
++    FallbackRule,
++    RouterConfig,
++    ChatRequestOptions,
++    CompletionRequestOptions,
++    EmbeddingRequestOptions,
++    RouterUsage,
++    RouterResponse,
++    EmbeddingItem,
++    EmbeddingResponse,
++    DeploymentMetrics,
++} from "./lib/router/router.js";
+diff --git a/JS/edgechains/arakoodev/src/ai/src/lib/router/router.ts b/JS/edgechains/arakoodev/src/ai/src/lib/router/router.ts
+new file mode 100644
+index 0000000..965f86b
+--- /dev/null
++++ b/JS/edgechains/arakoodev/src/ai/src/lib/router/router.ts
+@@ -0,0 +1,1062 @@
++export type RoutingStrategy =
++    | "simple-shuffle"
++    | "round-robin"
++    | "least-busy"
++    | "latency-based-routing"
++    | "priority-fallback";
++
++export type ProviderType = "openai" | "gemini" | "llama" | "custom";
++
++export interface RouterMessage {
++    role: "system" | "user" | "assistant" | "tool" | string;
++    content: string;
++    name?: string;
++}
++
++export interface LiteLLMParams {
++    model?: string;
++    api_key?: string;
++    api_base?: string;
++    timeout?: number;
++    max_retries?: number;
++    weight?: number;
++    priority?: number;
++    rpm?: number;
++    tpm?: number;
++    headers?: Record<string, string>;
++}
++
++export interface ModelDeployment {
++    id?: string;
++    /** Logical model group name (e.g. "gpt-4o", "fast-chat") */
++    modelName?: string;
++    /** LiteLLM Python-compatible alias for modelName */
++    model_name?: string;
++    /** Target provider type */
++    provider?: ProviderType;
++    /** Actual model identifier sent to the upstream provider */
++    model?: string;
++    /** Upstream base URL (e.g. "https://api.openai.com/v1" or "http://127.0.0.1:4001/v1") */
++    apiBase?: string;
++    /** Alias for apiBase */
++    api_base?: string;
++    /** Alias for apiBase */
++    baseUrl?: string;
++    /** Upstream API key */
++    apiKey?: string;
++    /** Alias for apiKey */
++    api_key?: string;
++    /** Extra HTTP headers */
++    headers?: Record<string, string>;
++    /** Relative weight for simple-shuffle weighted selection (default: 1) */
++    weight?: number;
++    /** Priority for priority-fallback strategy (lower number = higher priority, default: 0) */
++    priority?: number;
++    /** Per-deployment request timeout in ms */
++    timeout?: number;
++    /** Rate limit metadata (requests per minute) */
++    rpm?: number;
++    /** Rate limit metadata (tokens per minute) */
++    tpm?: number;
++    /** LiteLLM Python-compatible nested params */
++    litellm_params?: LiteLLMParams;
++    litellmParams?: LiteLLMParams;
++}
++
++export type FallbackRule = Record<string, string[]>;
++
++export interface RouterConfig {
++    modelList: ModelDeployment[];
++    routingStrategy?: RoutingStrategy;
++    /** Number of retries per model group before triggering fallbacks (default: 2) */
++    numRetries?: number;
++    /** Delay between retries in milliseconds (default: 0) */
++    retryDelayMs?: number;
++    /** Default request timeout in milliseconds (default: 30000) */
++    timeout?: number;
++    /** Cooldown duration in milliseconds after allowedFails consecutive failures (default: 60000) */
++    cooldownTime?: number;
++    /** Consecutive failures before placing a deployment into cooldown (default: 1) */
++    allowedFails?: number;
++    /** Cross-provider/cross-model fallback mapping, e.g. { "gpt-4": ["gpt-3.5-turbo"] } or [{ "gpt-4": ["gpt-3.5-turbo"] }] */
++    fallbacks?: FallbackRule | FallbackRule[];
++    /** Model group alias mapping, e.g. { "smart": "gpt-4o" } */
++    modelGroupAlias?: Record<string, string>;
++    /** HTTP status codes that trigger retry/cooldown (default: [408, 429, 500, 502, 503, 504]) */
++    retryableStatusCodes?: number[];
++    /** If true, falls back to the earliest-expiring cooled-down deployment when all are in cooldown (default: false) */
++    allowCooldownFallback?: boolean;
++}
++
++export interface ChatRequestOptions {
++    model: string;
++    messages?: RouterMessage[];
++    prompt?: string;
++    temperature?: number;
++    maxTokens?: number;
++    max_tokens?: number;
++    topP?: number;
++    top_p?: number;
++    stop?: string | string[];
++    timeout?: number;
++    numRetries?: number;
++    headers?: Record<string, string>;
++    extraBody?: Record<string, unknown>;
++}
++
++export interface CompletionRequestOptions {
++    model: string;
++    prompt: string;
++    temperature?: number;
++    maxTokens?: number;
++    max_tokens?: number;
++    topP?: number;
++    top_p?: number;
++    stop?: string | string[];
++    timeout?: number;
++    numRetries?: number;
++    headers?: Record<string, string>;
++    /** Use /completions endpoint instead of /chat/completions for OpenAI-compatible providers */
++    useCompletionsEndpoint?: boolean;
++    extraBody?: Record<string, unknown>;
++}
++
++export interface EmbeddingRequestOptions {
++    model: string;
++    input: string | string[];
++    timeout?: number;
++    numRetries?: number;
++    headers?: Record<string, string>;
++    extraBody?: Record<string, unknown>;
++}
++
++export interface RouterUsage {
++    promptTokens?: number;
++    completionTokens?: number;
++    totalTokens?: number;
++}
++
++export interface RouterResponse<T = unknown> {
++    content: string;
++    role: string;
++    model: string;
++    provider: ProviderType;
++    deploymentId: string;
++    latencyMs: number;
++    usage?: RouterUsage;
++    raw: T;
++}
++
++export interface EmbeddingItem {
++    index: number;
++    embedding: number[];
++}
++
++export interface EmbeddingResponse<T = unknown> {
++    data: EmbeddingItem[];
++    model: string;
++    provider: ProviderType;
++    deploymentId: string;
++    latencyMs: number;
++    usage?: RouterUsage;
++    raw: T;
++}
++
++export interface DeploymentMetrics {
++    deploymentId: string;
++    modelName: string;
++    provider: ProviderType;
++    upstreamModel: string;
++    totalRequests: number;
++    successfulRequests: number;
++    failedRequests: number;
++    activeRequests: number;
++    consecutiveFailures: number;
++    avgLatencyMs: number;
++    ewmaLatencyMs: number;
++    inCooldown: boolean;
++    cooldownUntil: number | null;
++}
++
++interface InternalDeployment {
++    id: string;
++    modelName: string;
++    provider: ProviderType;
++    upstreamModel: string;
++    apiBase: string;
++    apiKey: string;
++    headers: Record<string, string>;
++    weight: number;
++    priority: number;
++    timeout?: number;
++    rpm?: number;
++    tpm?: number;
++}
++
++interface DeploymentState {
++    totalRequests: number;
++    successfulRequests: number;
++    failedRequests: number;
++    activeRequests: number;
++    consecutiveFailures: number;
++    totalLatencyMs: number;
++    ewmaLatencyMs: number | null;
++    cooldownUntil: number;
++}
++
++class RouterHttpError extends Error {
++    status: number;
++    retryable: boolean;
++    body: unknown;
++
++    constructor(message: string, status: number, retryable: boolean, body?: unknown) {
++        super(message);
++        this.name = "RouterHttpError";
++        this.status = status;
++        this.retryable = retryable;
++        this.body = body;
++    }
++}
++
++export class RouterError extends Error {
++    attempts: Array<{ modelName: string; deploymentId: string; error: string }>;
++
++    constructor(
++        message: string,
++        attempts: Array<{ modelName: string; deploymentId: string; error: string }> = []
++    ) {
++        super(message);
++        this.name = "RouterError";
++        this.attempts = attempts;
++    }
++}
++
++const DEFAULT_RETRYABLE_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504]);
++const EWMA_ALPHA = 0.3;
++
++function parseProviderAndModel(
++    explicitProvider: ProviderType | undefined,
++    rawModel: string | undefined
++): { provider: ProviderType; upstreamModel: string } {
++    if (explicitProvider) {
++        const cleaned =
++            rawModel && rawModel.includes("/") && rawModel.startsWith(`${explicitProvider}/`)
++                ? rawModel.slice(explicitProvider.length + 1)
++                : rawModel || "gpt-3.5-turbo";
++        return { provider: explicitProvider, upstreamModel: cleaned };
++    }
++
++    if (rawModel && rawModel.includes("/")) {
++        const slashIdx = rawModel.indexOf("/");
++        const prefix = rawModel.slice(0, slashIdx).toLowerCase();
++        const rest = rawModel.slice(slashIdx + 1);
++        if (prefix === "openai" || prefix === "gemini" || prefix === "llama" || prefix === "custom") {
++            return { provider: prefix, upstreamModel: rest };
++        }
++    }
++
++    if (rawModel && rawModel.toLowerCase().startsWith("gemini")) {
++        return { provider: "gemini", upstreamModel: rawModel };
++    }
++    if (rawModel && rawModel.toLowerCase().startsWith("llama")) {
++        return { provider: "llama", upstreamModel: rawModel };
++    }
++
++    return { provider: "openai", upstreamModel: rawModel || "gpt-3.5-turbo" };
++}
++
++function defaultApiBase(provider: ProviderType): string {
++    switch (provider) {
++        case "gemini":
++            return "https://generativelanguage.googleapis.com/v1beta";
++        case "llama":
++            return "https://api.llama-api.com";
++        case "openai":
++        case "custom":
++        default:
++            return "https://api.openai.com/v1";
++    }
++}
++
++function normalizeFallbacks(
++    fallbacks?: FallbackRule | FallbackRule[]
++): Map<string, string[]> {
++    const map = new Map<string, string[]>();
++    if (!fallbacks) return map;
++
++    const entries = Array.isArray(fallbacks) ? fallbacks : [fallbacks];
++    for (const rule of entries) {
++        for (const [source, targets] of Object.entries(rule)) {
++            const existing = map.get(source) ?? [];
++            for (const target of targets) {
++                if (!existing.includes(target)) {
++                    existing.push(target);
++                }
++            }
++            map.set(source, existing);
++        }
++    }
++    return map;
++}
++
++function sleep(ms: number): Promise<void> {
++    if (ms <= 0) return Promise.resolve();
++    return new Promise((resolve) => setTimeout(resolve, ms));
++}
++
++export class SmartRouter {
++    private routingStrategy: RoutingStrategy;
++    private numRetries: number;
++    private retryDelayMs: number;
++    private defaultTimeoutMs: number;
++    private cooldownTimeMs: number;
++    private allowedFails: number;
++    private retryableStatusCodes: Set<number>;
++    private allowCooldownFallback: boolean;
++    private modelGroupAlias: Map<string, string>;
++    private fallbacks: Map<string, string[]>;
++    private deploymentsByModel: Map<string, InternalDeployment[]>;
++    private states: Map<string, DeploymentState>;
++    private roundRobinCounters: Map<string, number>;
++
++    constructor(config: RouterConfig) {
++        if (!config || !Array.isArray(config.modelList) || config.modelList.length === 0) {
++            throw new RouterError("SmartRouter requires a non-empty modelList.");
++        }
++
++        this.routingStrategy = config.routingStrategy ?? "simple-shuffle";
++        this.numRetries = config.numRetries ?? 2;
++        this.retryDelayMs = config.retryDelayMs ?? 0;
++        this.defaultTimeoutMs = config.timeout ?? 30_000;
++        this.cooldownTimeMs = config.cooldownTime ?? 60_000;
++        this.allowedFails = Math.max(1, config.allowedFails ?? 1);
++        this.retryableStatusCodes = config.retryableStatusCodes
++            ? new Set(config.retryableStatusCodes)
++            : DEFAULT_RETRYABLE_STATUS_CODES;
++        this.allowCooldownFallback = config.allowCooldownFallback ?? false;
++        this.modelGroupAlias = new Map(Object.entries(config.modelGroupAlias ?? {}));
++        this.fallbacks = normalizeFallbacks(config.fallbacks);
++        this.deploymentsByModel = new Map();
++        this.states = new Map();
++        this.roundRobinCounters = new Map();
++
++        config.modelList.forEach((raw, idx) => {
++            const normalized = this.normalizeDeployment(raw, idx);
++            const group = this.deploymentsByModel.get(normalized.modelName) ?? [];
++            group.push(normalized);
++            this.deploymentsByModel.set(normalized.modelName, group);
++            this.states.set(normalized.id, {
++                totalRequests: 0,
++                successfulRequests: 0,
++                failedRequests: 0,
++                activeRequests: 0,
++                consecutiveFailures: 0,
++                totalLatencyMs: 0,
++                ewmaLatencyMs: null,
++                cooldownUntil: 0,
++            });
++        });
++    }
++
++    private normalizeDeployment(raw: ModelDeployment, idx: number): InternalDeployment {
++        const nested = raw.litellm_params ?? raw.litellmParams;
++        const modelName = raw.modelName ?? raw.model_name;
++        if (!modelName) {
++            throw new RouterError(`Deployment at index ${idx} is missing modelName.`);
++        }
++
++        const rawTargetModel = raw.model ?? nested?.model ?? modelName;
++        const { provider, upstreamModel } = parseProviderAndModel(raw.provider, rawTargetModel);
++
++        const rawBase =
++            raw.apiBase ??
++            raw.api_base ??
++            raw.baseUrl ??
++            nested?.api_base ??
++            defaultApiBase(provider);
++
++        const apiKey = raw.apiKey ?? raw.api_key ?? nested?.api_key ?? "";
++        const id = raw.id ?? `${modelName}#${idx}`;
++
++        return {
++            id,
++            modelName,
++            provider,
++            upstreamModel,
++            apiBase: rawBase.replace(/\/+$/, ""),
++            apiKey,
++            headers: { ...(nested?.headers ?? {}), ...(raw.headers ?? {}) },
++            weight: Math.max(0.0001, raw.weight ?? nested?.weight ?? 1),
++            priority: raw.priority ?? nested?.priority ?? 0,
++            timeout: raw.timeout ?? nested?.timeout,
++            rpm: raw.rpm ?? nested?.rpm,
++            tpm: raw.tpm ?? nested?.tpm,
++        };
++    }
++
++    resolveModelAlias(model: string): string {
++        let current = model;
++        const seen = new Set<string>();
++        while (this.modelGroupAlias.has(current) && !seen.has(current)) {
++            seen.add(current);
++            current = this.modelGroupAlias.get(current)!;
++        }
++        return current;
++    }
++
++    getHealthyDeployments(modelName: string, now = Date.now()): InternalDeployment[] {
++        const resolved = this.resolveModelAlias(modelName);
++        const all = this.deploymentsByModel.get(resolved) ?? [];
++        return all.filter((d) => {
++            const st = this.states.get(d.id)!;
++            return st.cooldownUntil <= now;
++        });
++    }
++
++    clearCooldowns(): void {
++        for (const st of this.states.values()) {
++            st.cooldownUntil = 0;
++            st.consecutiveFailures = 0;
++        }
++    }
++
++    resetMetrics(): void {
++        for (const st of this.states.values()) {
++            st.totalRequests = 0;
++            st.successfulRequests = 0;
++            st.failedRequests = 0;
++            st.activeRequests = 0;
++            st.consecutiveFailures = 0;
++            st.totalLatencyMs = 0;
++            st.ewmaLatencyMs = null;
++            st.cooldownUntil = 0;
++        }
++        this.roundRobinCounters.clear();
++    }
++
++    getMetrics(modelName?: string): Record<string, DeploymentMetrics[]> {
++        const now = Date.now();
++        const result: Record<string, DeploymentMetrics[]> = {};
++        const targetGroup = modelName ? this.resolveModelAlias(modelName) : undefined;
++
++        for (const [groupName, deployments] of this.deploymentsByModel.entries()) {
++            if (targetGroup && groupName !== targetGroup) continue;
++            result[groupName] = deployments.map((d) => {
++                const st = this.states.get(d.id)!;
++                const inCooldown = st.cooldownUntil > now;
++                return {
++                    deploymentId: d.id,
++                    modelName: d.modelName,
++                    provider: d.provider,
++                    upstreamModel: d.upstreamModel,
++                    totalRequests: st.totalRequests,
++                    successfulRequests: st.successfulRequests,
++                    failedRequests: st.failedRequests,
++                    activeRequests: st.activeRequests,
++                    consecutiveFailures: st.consecutiveFailures,
++                    avgLatencyMs:
++                        st.successfulRequests > 0 ? st.totalLatencyMs / st.successfulRequests : 0,
++                    ewmaLatencyMs: st.ewmaLatencyMs ?? 0,
++                    inCooldown,
++                    cooldownUntil: inCooldown ? st.cooldownUntil : null,
++                };
++            });
++        }
++        return result;
++    }
++
++    private selectDeployment(
++        modelName: string,
++        excludedIds: Set<string>,
++        now = Date.now()
++    ): InternalDeployment | null {
++        const all = this.deploymentsByModel.get(modelName);
++        if (!all || all.length === 0) return null;
++
++        let candidates = all.filter(
++            (d) => !excludedIds.has(d.id) && this.states.get(d.id)!.cooldownUntil <= now
++        );
++
++        // If all non-excluded are in cooldown, optionally pick any healthy deployment (even if previously tried)
++        if (candidates.length === 0) {
++            candidates = all.filter((d) => this.states.get(d.id)!.cooldownUntil <= now);
++        }
++
++        // If every deployment in the group is in cooldown
++        if (candidates.length === 0) {
++            if (!this.allowCooldownFallback) {
++                return null;
++            }
++            const sortedByCooldown = [...all].sort(
++                (a, b) => this.states.get(a.id)!.cooldownUntil - this.states.get(b.id)!.cooldownUntil
++            );
++            return sortedByCooldown[0] ?? null;
++        }
++
++        switch (this.routingStrategy) {
++            case "round-robin": {
++                const idx = this.roundRobinCounters.get(modelName) ?? 0;
++                const chosen = candidates[idx % candidates.length];
++                this.roundRobinCounters.set(modelName, (idx + 1) % candidates.length);
++                return chosen;
++            }
++
++            case "least-busy": {
++                let best = candidates[0];
++                let bestActive = this.states.get(best.id)!.activeRequests;
++                let bestTotal = this.states.get(best.id)!.totalRequests;
++
++                for (let i = 1; i < candidates.length; i++) {
++                    const cand = candidates[i];
++                    const st = this.states.get(cand.id)!;
++                    if (
++                        st.activeRequests < bestActive ||
++                        (st.activeRequests === bestActive && st.totalRequests < bestTotal)
++                    ) {
++                        best = cand;
++                        bestActive = st.activeRequests;
++                        bestTotal = st.totalRequests;
++                    }
++                }
++                return best;
++            }
++
++            case "latency-based-routing": {
++                // Prefer unexplored deployments first so we have latency samples for all healthy nodes
++                const unexplored = candidates.find(
++                    (c) => this.states.get(c.id)!.ewmaLatencyMs === null
++                );
++                if (unexplored) return unexplored;
++
++                let best = candidates[0];
++                let bestLatency = this.states.get(best.id)!.ewmaLatencyMs ?? Number.POSITIVE_INFINITY;
++                for (let i = 1; i < candidates.length; i++) {
++                    const cand = candidates[i];
++                    const lat =
++                        this.states.get(cand.id)!.ewmaLatencyMs ?? Number.POSITIVE_INFINITY;
++                    if (lat < bestLatency) {
++                        best = cand;
++                        bestLatency = lat;
++                    }
++                }
++                return best;
++            }
++
++            case "priority-fallback": {
++                const sorted = [...candidates].sort((a, b) => a.priority - b.priority);
++                return sorted[0];
++            }
++
++            case "simple-shuffle":
++            default: {
++                const totalWeight = candidates.reduce((sum, d) => sum + d.weight, 0);
++                let threshold = Math.random() * totalWeight;
++                for (const cand of candidates) {
++                    threshold -= cand.weight;
++                    if (threshold <= 0) {
++                        return cand;
++                    }
++                }
++                return candidates[candidates.length - 1];
++            }
++        }
++    }
++
++    private recordSuccess(deployment: InternalDeployment, latencyMs: number): void {
++        const st = this.states.get(deployment.id)!;
++        st.successfulRequests += 1;
++        st.consecutiveFailures = 0;
++        st.cooldownUntil = 0;
++        st.totalLatencyMs += latencyMs;
++        st.ewmaLatencyMs =
++            st.ewmaLatencyMs === null
++                ? latencyMs
++                : EWMA_ALPHA * latencyMs + (1 - EWMA_ALPHA) * st.ewmaLatencyMs;
++    }
++
++    private recordFailure(deployment: InternalDeployment, now = Date.now()): void {
++        const st = this.states.get(deployment.id)!;
++        st.failedRequests += 1;
++        st.consecutiveFailures += 1;
++        if (st.consecutiveFailures >= this.allowedFails && this.cooldownTimeMs > 0) {
++            st.cooldownUntil = now + this.cooldownTimeMs;
++        }
++    }
++
++    private buildFallbackOrder(primaryModel: string): string[] {
++        const resolvedPrimary = this.resolveModelAlias(primaryModel);
++        const queue: string[] = [resolvedPrimary];
++        const visited = new Set<string>();
++        const order: string[] = [];
++
++        while (queue.length > 0) {
++            const current = queue.shift()!;
++            if (visited.has(current)) continue;
++            visited.add(current);
++            order.push(current);
++
++            const nextList = this.fallbacks.get(current) ?? [];
++            for (const fb of nextList) {
++                const resolvedFb = this.resolveModelAlias(fb);
++                if (!visited.has(resolvedFb)) {
++                    queue.push(resolvedFb);
++                }
++            }
++        }
++        return order;
++    }
++
++    private async executeWithResilience<T>(
++        model: string,
++        retriesOverride: number | undefined,
++        timeoutOverride: number | undefined,
++        invoker: (deployment: InternalDeployment, signal: AbortSignal) => Promise<T>
++    ): Promise<{ result: T; deployment: InternalDeployment; latencyMs: number }> {
++        const modelOrder = this.buildFallbackOrder(model);
++        const maxRetries = Math.max(0, retriesOverride ?? this.numRetries);
++        const attempts: Array<{ modelName: string; deploymentId: string; error: string }> = [];
++
++        for (const groupName of modelOrder) {
++            const groupDeployments = this.deploymentsByModel.get(groupName);
++            if (!groupDeployments || groupDeployments.length === 0) {
++                attempts.push({
++                    modelName: groupName,
++                    deploymentId: "none",
++                    error: `No deployments configured for model "${groupName}"`,
++                });
++                continue;
++            }
++
++            const excludedIds = new Set<string>();
++            const maxAttemptsForGroup = 1 + maxRetries;
++
++            for (let attempt = 0; attempt < maxAttemptsForGroup; attempt++) {
++                const deployment = this.selectDeployment(groupName, excludedIds);
++                if (!deployment) {
++                    attempts.push({
++                        modelName: groupName,
++                        deploymentId: "none",
++                        error: `All deployments for "${groupName}" are in cooldown`,
++                    });
++                    break;
++                }
++
++                const st = this.states.get(deployment.id)!;
++                st.totalRequests += 1;
++                st.activeRequests += 1;
++
++                const timeoutMs = timeoutOverride ?? deployment.timeout ?? this.defaultTimeoutMs;
++                const controller = new AbortController();
++                const timer = setTimeout(() => {
++                    controller.abort(new Error(`Request timed out after ${timeoutMs}ms`));
++                }, timeoutMs);
++
++                const start = performance.now();
++                try {
++                    const result = await invoker(deployment, controller.signal);
++                    const latencyMs = Math.max(0, performance.now() - start);
++                    this.recordSuccess(deployment, latencyMs);
++                    return { result, deployment, latencyMs };
++                } catch (err: unknown) {
++                    const message = err instanceof Error ? err.message : String(err);
++                    const isRetryable =
++                        err instanceof RouterHttpError ? err.retryable : true;
++
++                    this.recordFailure(deployment);
++                    excludedIds.add(deployment.id);
++                    attempts.push({
++                        modelName: groupName,
++                        deploymentId: deployment.id,
++                        error: message,
++                    });
++
++                    if (!isRetryable) {
++                        break;
++                    }
++                    if (attempt < maxAttemptsForGroup - 1 && this.retryDelayMs > 0) {
++                        await sleep(this.retryDelayMs);
++                    }
++                } finally {
++                    clearTimeout(timer);
++                    st.activeRequests = Math.max(0, st.activeRequests - 1);
++                }
++            }
++        }
++
++        const summary = attempts
++            .map((a) => `[${a.modelName}/${a.deploymentId}] ${a.error}`)
++            .join("; ");
++        throw new RouterError(
++            `SmartRouter failed for model "${model}" after ${attempts.length} attempt(s): ${summary}`,
++            attempts
++        );
++    }
++
++    private async postJson<T = unknown>(
++        url: string,
++        headers: Record<string, string>,
++        body: unknown,
++        signal: AbortSignal
++    ): Promise<T> {
++        const response = await fetch(url, {
++            method: "POST",
++            headers: {
++                "content-type": "application/json",
++                ...headers,
++            },
++            body: JSON.stringify(body),
++            signal,
++        });
++
++        const text = await response.text();
++        let parsed: unknown = text;
++        if (text) {
++            try {
++                parsed = JSON.parse(text);
++            } catch {
++                parsed = text;
++            }
++        }
++
++        if (!response.ok) {
++            const retryable = this.retryableStatusCodes.has(response.status);
++            throw new RouterHttpError(
++                `HTTP ${response.status} from ${url}: ${
++                    typeof parsed === "string" ? parsed : JSON.stringify(parsed)
++                }`,
++                response.status,
++                retryable,
++                parsed
++            );
++        }
++
++        return parsed as T;
++    }
++
++    private buildAuthHeaders(
++        deployment: InternalDeployment,
++        extraHeaders?: Record<string, string>
++    ): Record<string, string> {
++        const headers: Record<string, string> = {
++            ...deployment.headers,
++            ...(extraHeaders ?? {}),
++        };
++        if (deployment.apiKey) {
++            if (deployment.provider === "gemini") {
++                if (!headers["x-goog-api-key"]) {
++                    headers["x-goog-api-key"] = deployment.apiKey;
++                }
++            } else if (!headers["Authorization"] && !headers["authorization"]) {
++                headers["Authorization"] = `Bearer ${deployment.apiKey}`;
++            }
++        }
++        return headers;
++    }
++
++    async chat(options: ChatRequestOptions): Promise<RouterResponse> {
++        const messages: RouterMessage[] = options.messages
++            ? options.messages
++            : options.prompt !== undefined
++            ? [{ role: "user", content: options.prompt }]
++            : [];
++
++        if (messages.length === 0) {
++            throw new RouterError("chat() requires either messages or prompt.");
++        }
++
++        const { result, deployment, latencyMs } = await this.executeWithResilience(
++            options.model,
++            options.numRetries,
++            options.timeout,
++            async (dep, signal) => {
++                const headers = this.buildAuthHeaders(dep, options.headers);
++
++                if (dep.provider === "gemini") {
++                    const url = dep.apiBase.includes(":generateContent")
++                        ? dep.apiBase
++                        : `${dep.apiBase}/models/${encodeURIComponent(dep.upstreamModel)}:generateContent`;
++
++                    const contents = messages.map((m) => ({
++                        role: m.role === "assistant" ? "model" : "user",
++                        parts: [{ text: m.content }],
++                    }));
++
++                    const payload: Record<string, unknown> = {
++                        contents,
++                        generationConfig: {
++                            ...(options.temperature !== undefined
++                                ? { temperature: options.temperature }
++                                : {}),
++                            ...(options.maxTokens ?? options.max_tokens
++                                ? { maxOutputTokens: options.maxTokens ?? options.max_tokens }
++                                : {}),
++                            ...(options.topP ?? options.top_p
++                                ? { topP: options.topP ?? options.top_p }
++                                : {}),
++                            ...(options.stop
++                                ? {
++                                      stopSequences: Array.isArray(options.stop)
++                                          ? options.stop
++                                          : [options.stop],
++                                  }
++                                : {}),
++                        },
++                        ...(options.extraBody ?? {}),
++                    };
++
++                    return await this.postJson<Record<string, any>>(url, headers, payload, signal);
++                }
++
++                const url = dep.apiBase.endsWith("/chat/completions")
++                    ? dep.apiBase
++                    : `${dep.apiBase}/chat/completions`;
++
++                const payload: Record<string, unknown> = {
++                    model: dep.upstreamModel,
++                    messages,
++                    ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
++                    ...(options.maxTokens ?? options.max_tokens
++                        ? { max_tokens: options.maxTokens ?? options.max_tokens }
++                        : {}),
++                    ...(options.topP ?? options.top_p
++                        ? { top_p: options.topP ?? options.top_p }
++                        : {}),
++                    ...(options.stop !== undefined ? { stop: options.stop } : {}),
++                    ...(options.extraBody ?? {}),
++                };
++
++                return await this.postJson<Record<string, any>>(url, headers, payload, signal);
++            }
++        );
++
++        return this.normalizeChatResponse(result, deployment, latencyMs);
++    }
++
++    async complete(options: CompletionRequestOptions): Promise<RouterResponse> {
++        if (options.prompt === undefined || options.prompt === null) {
++            throw new RouterError("complete() requires a prompt.");
++        }
++
++        if (!options.useCompletionsEndpoint) {
++            return this.chat({
++                model: options.model,
++                prompt: options.prompt,
++                temperature: options.temperature,
++                maxTokens: options.maxTokens,
++                max_tokens: options.max_tokens,
++                topP: options.topP,
++                top_p: options.top_p,
++                stop: options.stop,
++                timeout: options.timeout,
++                numRetries: options.numRetries,
++                headers: options.headers,
++                extraBody: options.extraBody,
++            });
++        }
++
++        const { result, deployment, latencyMs } = await this.executeWithResilience(
++            options.model,
++            options.numRetries,
++            options.timeout,
++            async (dep, signal) => {
++                const headers = this.buildAuthHeaders(dep, options.headers);
++
++                if (dep.provider === "gemini") {
++                    const url = dep.apiBase.includes(":generateContent")
++                        ? dep.apiBase
++                        : `${dep.apiBase}/models/${encodeURIComponent(dep.upstreamModel)}:generateContent`;
++                    const payload = {
++                        contents: [{ role: "user", parts: [{ text: options.prompt }] }],
++                        ...(options.extraBody ?? {}),
++                    };
++                    return await this.postJson<Record<string, any>>(url, headers, payload, signal);
++                }
++
++                const url = dep.apiBase.endsWith("/completions")
++                    ? dep.apiBase
++                    : `${dep.apiBase}/completions`;
++                const payload: Record<string, unknown> = {
++                    model: dep.upstreamModel,
++                    prompt: options.prompt,
++                    ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
++                    ...(options.maxTokens ?? options.max_tokens
++                        ? { max_tokens: options.maxTokens ?? options.max_tokens }
++                        : {}),
++                    ...(options.topP ?? options.top_p
++                        ? { top_p: options.topP ?? options.top_p }
++                        : {}),
++                    ...(options.stop !== undefined ? { stop: options.stop } : {}),
++                    ...(options.extraBody ?? {}),
++                };
++                return await this.postJson<Record<string, any>>(url, headers, payload, signal);
++            }
++        );
++
++        return this.normalizeChatResponse(result, deployment, latencyMs);
++    }
++
++    async embed(options: EmbeddingRequestOptions): Promise<EmbeddingResponse> {
++        if (
++            options.input === undefined ||
++            options.input === null ||
++            (Array.isArray(options.input) && options.input.length === 0)
++        ) {
++            throw new RouterError("embed() requires non-empty input.");
++        }
++
++        const { result, deployment, latencyMs } = await this.executeWithResilience(
++            options.model,
++            options.numRetries,
++            options.timeout,
++            async (dep, signal) => {
++                const headers = this.buildAuthHeaders(dep, options.headers);
++
++                if (dep.provider === "gemini") {
++                    const url = dep.apiBase.includes(":embedContent")
++                        ? dep.apiBase
++                        : `${dep.apiBase}/models/${encodeURIComponent(dep.upstreamModel)}:embedContent`;
++                    const text = Array.isArray(options.input) ? options.input[0] : options.input;
++                    const payload = {
++                        model: `models/${dep.upstreamModel}`,
++                        content: { parts: [{ text }] },
++                        ...(options.extraBody ?? {}),
++                    };
++                    return await this.postJson<Record<string, any>>(url, headers, payload, signal);
++                }
++
++                const url = dep.apiBase.endsWith("/embeddings")
++                    ? dep.apiBase
++                    : `${dep.apiBase}/embeddings`;
++                const payload = {
++                    model: dep.upstreamModel,
++                    input: options.input,
++                    ...(options.extraBody ?? {}),
++                };
++                return await this.postJson<Record<string, any>>(url, headers, payload, signal);
++            }
++        );
++
++        return this.normalizeEmbeddingResponse(result, deployment, latencyMs);
++    }
++
++    private normalizeChatResponse(
++        raw: Record<string, any>,
++        deployment: InternalDeployment,
++        latencyMs: number
++    ): RouterResponse {
++        // OpenAI / Llama / custom chat or completions format
++        if (Array.isArray(raw?.choices) && raw.choices.length > 0) {
++            const first = raw.choices[0];
++            const content =
++                first?.message?.content ??
++                first?.text ??
++                first?.delta?.content ??
++                "";
++            const role = first?.message?.role ?? "assistant";
++            const usage = raw.usage
++                ? {
++                      promptTokens: raw.usage.prompt_tokens,
++                      completionTokens: raw.usage.completion_tokens,
++                      totalTokens: raw.usage.total_tokens,
++                  }
++                : undefined;
++
++            return {
++                content,
++                role,
++                model: raw.model ?? deployment.upstreamModel,
++                provider: deployment.provider,
++                deploymentId: deployment.id,
++                latencyMs,
++                usage,
++                raw,
++            };
++        }
++
++        // Gemini generateContent format
++        if (Array.isArray(raw?.candidates) && raw.candidates.length > 0) {
++            const cand = raw.candidates[0];
++            const parts = cand?.content?.parts ?? [];
++            const content = parts.map((p: any) => p?.text ?? "").join("");
++            const usage = raw.usageMetadata
++                ? {
++                      promptTokens: raw.usageMetadata.promptTokenCount,
++                      completionTokens: raw.usageMetadata.candidatesTokenCount,
++                      totalTokens: raw.usageMetadata.totalTokenCount,
++                  }
++                : undefined;
++
++            return {
++                content,
++                role: "assistant",
++                model: deployment.upstreamModel,
++                provider: deployment.provider,
++                deploymentId: deployment.id,
++                latencyMs,
++                usage,
++                raw,
++            };
++        }
++
++        return {
++            content: typeof raw?.content === "string" ? raw.content : "",
++            role: "assistant",
++            model: raw?.model ?? deployment.upstreamModel,
++            provider: deployment.provider,
++            deploymentId: deployment.id,
++            latencyMs,
++            raw,
++        };
++    }
++
++    private normalizeEmbeddingResponse(
++        raw: Record<string, any>,
++        deployment: InternalDeployment,
++        latencyMs: number
++    ): EmbeddingResponse {
++        if (Array.isArray(raw?.data)) {
++            const data: EmbeddingItem[] = raw.data.map((item: any, idx: number) => ({
++                index: typeof item.index === "number" ? item.index : idx,
++                embedding: Array.isArray(item.embedding) ? item.embedding : [],
++            }));
++            const usage = raw.usage
++                ? {
++                      promptTokens: raw.usage.prompt_tokens,
++                      totalTokens: raw.usage.total_tokens,
++                  }
++                : undefined;
++            return {
++                data,
++                model: raw.model ?? deployment.upstreamModel,
++                provider: deployment.provider,
++                deploymentId: deployment.id,
++                latencyMs,
++                usage,
++                raw,
++            };
++        }
++
++        // Gemini embedContent format
++        if (Array.isArray(raw?.embedding?.values)) {
++            return {
++                data: [{ index: 0, embedding: raw.embedding.values }],
++                model: deployment.upstreamModel,
++                provider: deployment.provider,
++                deploymentId: deployment.id,
++                latencyMs,
++                raw,
++            };
++        }
++
++        return {
++            data: [],
++            model: deployment.upstreamModel,
++            provider: deployment.provider,
++            deploymentId: deployment.id,
++            latencyMs,
++            raw,
++        };
++    }
++}
++
++export { SmartRouter as Router };
+diff --git a/JS/edgechains/arakoodev/src/ai/src/tests/smartRouter.test.ts b/JS/edgechains/arakoodev/src/ai/src/tests/smartRouter.test.ts
+new file mode 100644
+index 0000000..af27a56
+--- /dev/null
++++ b/JS/edgechains/arakoodev/src/ai/src/tests/smartRouter.test.ts
+@@ -0,0 +1,558 @@
++import { describe, it, afterEach } from "node:test";
++import assert from "node:assert/strict";
++import http from "node:http";
++import { SmartRouter, Router, RouterError } from "../lib/router/router.ts";
++
++interface MockServerHandle {
++    url: string;
++    hits: number;
++    requests: Array<{ url: string; headers: http.IncomingHttpHeaders; body: any }>;
++    close: () => Promise<void>;
++}
++
++async function startMockServer(
++    handler: (
++        req: http.IncomingMessage,
++        body: any,
++        res: http.ServerResponse,
++        state: { hits: number }
++    ) => void | Promise<void>
++): Promise<MockServerHandle> {
++    const state = { hits: 0 };
++    const requests: Array<{ url: string; headers: http.IncomingHttpHeaders; body: any }> = [];
++
++    const server = http.createServer((req, res) => {
++        const chunks: Buffer[] = [];
++        req.on("data", (c) => chunks.push(c));
++        req.on("end", async () => {
++            state.hits += 1;
++            const rawText = Buffer.concat(chunks).toString("utf8");
++            let parsed: any = rawText;
++            try {
++                parsed = rawText ? JSON.parse(rawText) : {};
++            } catch {
++                parsed = rawText;
++            }
++            requests.push({
++                url: req.url || "/",
++                headers: req.headers,
++                body: parsed,
++            });
++            try {
++                await handler(req, parsed, res, state);
++            } catch (err: any) {
++                if (!res.headersSent) {
++                    res.writeHead(500, { "content-type": "application/json" });
++                    res.end(JSON.stringify({ error: err?.message || "mock error" }));
++                }
++            }
++        });
++    });
++
++    await new Promise<void>((resolve) => {
++        server.listen(0, "127.0.0.1", () => resolve());
++    });
++
++    const address = server.address();
++    if (!address || typeof address === "string") {
++        throw new Error("Failed to bind mock server");
++    }
++
++    return {
++        url: `http://127.0.0.1:${address.port}/v1`,
++        get hits() {
++            return state.hits;
++        },
++        requests,
++        close: () =>
++            new Promise<void>((resolve, reject) => {
++                server.close((err) => (err ? reject(err) : resolve()));
++            }),
++    };
++}
++
++function sendJson(res: http.ServerResponse, status: number, payload: unknown): void {
++    res.writeHead(status, { "content-type": "application/json" });
++    res.end(JSON.stringify(payload));
++}
++
++const activeServers: MockServerHandle[] = [];
++
++async function trackServer(
++    handler: (
++        req: http.IncomingMessage,
++        body: any,
++        res: http.ServerResponse,
++        state: { hits: number }
++    ) => void | Promise<void>
++): Promise<MockServerHandle> {
++    const srv = await startMockServer(handler);
++    activeServers.push(srv);
++    return srv;
++}
++
++afterEach(async () => {
++    while (activeServers.length > 0) {
++        const srv = activeServers.pop()!;
++        await srv.close();
++    }
++});
++
++describe("SmartRouter", () => {
++    it("exports Router as an alias of SmartRouter and validates empty modelList", () => {
++        assert.equal(Router, SmartRouter);
++        assert.throws(
++            () => new SmartRouter({ modelList: [] }),
++            (err: unknown) => err instanceof RouterError
++        );
++    });
++
++    it("distributes requests evenly using round-robin strategy", async () => {
++        const s1 = await trackServer((_req, _body, res) =>
++            sendJson(res, 200, { choices: [{ message: { role: "assistant", content: "from-1" } }] })
++        );
++        const s2 = await trackServer((_req, _body, res) =>
++            sendJson(res, 200, { choices: [{ message: { role: "assistant", content: "from-2" } }] })
++        );
++        const s3 = await trackServer((_req, _body, res) =>
++            sendJson(res, 200, { choices: [{ message: { role: "assistant", content: "from-3" } }] })
++        );
++
++        const router = new SmartRouter({
++            routingStrategy: "round-robin",
++            modelList: [
++                { id: "d1", modelName: "gpt-4o", provider: "openai", apiBase: s1.url, apiKey: "k1" },
++                { id: "d2", modelName: "gpt-4o", provider: "openai", apiBase: s2.url, apiKey: "k2" },
++                { id: "d3", modelName: "gpt-4o", provider: "openai", apiBase: s3.url, apiKey: "k3" },
++            ],
++        });
++
++        const results: string[] = [];
++        for (let i = 0; i < 6; i++) {
++            const resp = await router.chat({ model: "gpt-4o", prompt: "hi" });
++            results.push(resp.content);
++        }
++
++        assert.deepEqual(results, ["from-1", "from-2", "from-3", "from-1", "from-2", "from-3"]);
++        assert.equal(s1.hits, 2);
++        assert.equal(s2.hits, 2);
++        assert.equal(s3.hits, 2);
++    });
++
++    it("favors higher-weight deployments under simple-shuffle strategy", async () => {
++        const heavy = await trackServer((_req, _body, res) =>
++            sendJson(res, 200, { choices: [{ message: { content: "heavy" } }] })
++        );
++        const light = await trackServer((_req, _body, res) =>
++            sendJson(res, 200, { choices: [{ message: { content: "light" } }] })
++        );
++
++        const router = new SmartRouter({
++            routingStrategy: "simple-shuffle",
++            modelList: [
++                { id: "heavy", modelName: "chat", apiBase: heavy.url, weight: 9 },
++                { id: "light", modelName: "chat", apiBase: light.url, weight: 1 },
++            ],
++        });
++
++        for (let i = 0; i < 40; i++) {
++            await router.chat({ model: "chat", prompt: "ping" });
++        }
++
++        assert.equal(heavy.hits + light.hits, 40);
++        assert.ok(heavy.hits > light.hits, `Expected heavy (${heavy.hits}) > light (${light.hits})`);
++    });
++
++    it("routes concurrent requests to the least-busy deployment", async () => {
++        let releaseSlow!: () => void;
++        const slowGate = new Promise<void>((resolve) => {
++            releaseSlow = resolve;
++        });
++
++        const s1 = await trackServer(async (_req, _body, res) => {
++            await slowGate;
++            sendJson(res, 200, { choices: [{ message: { content: "slow-done" } }] });
++        });
++        const s2 = await trackServer((_req, _body, res) => {
++            sendJson(res, 200, { choices: [{ message: { content: "fast-done" } }] });
++        });
++
++        const router = new SmartRouter({
++            routingStrategy: "least-busy",
++            modelList: [
++                { id: "node-1", modelName: "chat", apiBase: s1.url },
++                { id: "node-2", modelName: "chat", apiBase: s2.url },
++            ],
++        });
++
++        const firstPromise = router.chat({ model: "chat", prompt: "first" });
++        // Yield so first request is in-flight on node-1
++        await new Promise((r) => setTimeout(r, 25));
++
++        const secondResp = await router.chat({ model: "chat", prompt: "second" });
++        assert.equal(secondResp.deploymentId, "node-2");
++        assert.equal(secondResp.content, "fast-done");
++
++        releaseSlow();
++        const firstResp = await firstPromise;
++        assert.equal(firstResp.deploymentId, "node-1");
++    });
++
++    it("prefers lower-latency deployments under latency-based-routing", async () => {
++        const slow = await trackServer(async (_req, _body, res) => {
++            await new Promise((r) => setTimeout(r, 60));
++            sendJson(res, 200, { choices: [{ message: { content: "slow" } }] });
++        });
++        const fast = await trackServer((_req, _body, res) => {
++            sendJson(res, 200, { choices: [{ message: { content: "fast" } }] });
++        });
++
++        const router = new SmartRouter({
++            routingStrategy: "latency-based-routing",
++            modelList: [
++                { id: "slow-dep", modelName: "chat", apiBase: slow.url },
++                { id: "fast-dep", modelName: "chat", apiBase: fast.url },
++            ],
++        });
++
++        // First two calls explore both deployments
++        await router.chat({ model: "chat", prompt: "1" });
++        await router.chat({ model: "chat", prompt: "2" });
++
++        // Subsequent calls should consistently route to fast-dep
++        for (let i = 0; i < 4; i++) {
++            const resp = await router.chat({ model: "chat", prompt: `q-${i}` });
++            assert.equal(resp.deploymentId, "fast-dep");
++        }
++        assert.equal(slow.hits, 1);
++        assert.equal(fast.hits, 5);
++    });
++
++    it("selects highest priority deployment first and falls back on priority-fallback", async () => {
++        const primary = await trackServer((_req, _body, res) =>
++            sendJson(res, 503, { error: "primary overloaded" })
++        );
++        const secondary = await trackServer((_req, _body, res) =>
++            sendJson(res, 200, { choices: [{ message: { content: "from-secondary" } }] })
++        );
++        const tertiary = await trackServer((_req, _body, res) =>
++            sendJson(res, 200, { choices: [{ message: { content: "from-tertiary" } }] })
++        );
++
++        const router = new SmartRouter({
++            routingStrategy: "priority-fallback",
++            numRetries: 2,
++            modelList: [
++                { id: "p3", modelName: "chat", apiBase: tertiary.url, priority: 3 },
++                { id: "p1", modelName: "chat", apiBase: primary.url, priority: 1 },
++                { id: "p2", modelName: "chat", apiBase: secondary.url, priority: 2 },
++            ],
++        });
++
++        const resp = await router.chat({ model: "chat", prompt: "hello" });
++        assert.equal(resp.deploymentId, "p2");
++        assert.equal(resp.content, "from-secondary");
++        assert.equal(primary.hits, 1);
++        assert.equal(secondary.hits, 1);
++        assert.equal(tertiary.hits, 0);
++    });
++
++    it("retries automatically on 429/500 errors and succeeds on healthy deployment", async () => {
++        const flaky = await trackServer((_req, _body, res) =>
++            sendJson(res, 429, { error: "rate limited" })
++        );
++        const healthy = await trackServer((_req, _body, res) =>
++            sendJson(res, 200, {
++                model: "gpt-4o-mini",
++                choices: [{ message: { role: "assistant", content: "recovered" } }],
++                usage: { prompt_tokens: 5, completion_tokens: 2, total_tokens: 7 },
++            })
++        );
++
++        const router = new SmartRouter({
++            routingStrategy: "round-robin",
++            numRetries: 2,
++            modelList: [
++                { id: "flaky", modelName: "gpt-4o", apiBase: flaky.url },
++                { id: "healthy", modelName: "gpt-4o", apiBase: healthy.url },
++            ],
++        });
++
++        const resp = await router.chat({ model: "gpt-4o", prompt: "retry please" });
++        assert.equal(resp.content, "recovered");
++        assert.equal(resp.deploymentId, "healthy");
++        assert.deepEqual(resp.usage, {
++            promptTokens: 5,
++            completionTokens: 2,
++            totalTokens: 7,
++        });
++    });
++
++    it("falls back across providers (OpenAI -> Gemini) and normalizes Gemini response", async () => {
++        const openaiDown = await trackServer((_req, _body, res) =>
++            sendJson(res, 500, { error: "openai down" })
++        );
++        const geminiOk = await trackServer((_req, body, res) => {
++            assert.ok(Array.isArray(body.contents));
++            sendJson(res, 200, {
++                candidates: [
++                    {
++                        content: {
++                            role: "model",
++                            parts: [{ text: "hello from gemini" }],
++                        },
++                        finishReason: "STOP",
++                    },
++                ],
++                usageMetadata: {
++                    promptTokenCount: 4,
++                    candidatesTokenCount: 3,
++                    totalTokenCount: 7,
++                },
++            });
++        });
++
++        const router = new SmartRouter({
++            numRetries: 0,
++            fallbacks: [{ "gpt-4o": ["gemini-pro"] }],
++            modelList: [
++                {
++                    id: "oa-1",
++                    modelName: "gpt-4o",
++                    provider: "openai",
++                    apiBase: openaiDown.url,
++                    apiKey: "oa-key",
++                },
++                {
++                    id: "gem-1",
++                    modelName: "gemini-pro",
++                    provider: "gemini",
++                    model: "gemini-1.5-pro",
++                    apiBase: geminiOk.url,
++                    apiKey: "gem-key",
++                },
++            ],
++        });
++
++        const resp = await router.chat({
++            model: "gpt-4o",
++            messages: [{ role: "user", content: "hi" }],
++        });
++
++        assert.equal(resp.provider, "gemini");
++        assert.equal(resp.deploymentId, "gem-1");
++        assert.equal(resp.content, "hello from gemini");
++        assert.equal(geminiOk.requests[0].headers["x-goog-api-key"], "gem-key");
++        assert.deepEqual(resp.usage, {
++            promptTokens: 4,
++            completionTokens: 3,
++            totalTokens: 7,
++        });
++    });
++
++    it("aborts timed-out requests and fails over to backup deployment", async () => {
++        const hung = await trackServer((_req, _body, _res) => {
++            // Intentionally never respond
++        });
++        const fast = await trackServer((_req, _body, res) =>
++            sendJson(res, 200, { choices: [{ message: { content: "backup-ok" } }] })
++        );
++
++        const router = new SmartRouter({
++            routingStrategy: "priority-fallback",
++            timeout: 80,
++            numRetries: 1,
++            modelList: [
++                { id: "hung", modelName: "chat", apiBase: hung.url, priority: 1 },
++                { id: "fast", modelName: "chat", apiBase: fast.url, priority: 2 },
++            ],
++        });
++
++        const resp = await router.chat({ model: "chat", prompt: "timeout test" });
++        assert.equal(resp.content, "backup-ok");
++        assert.equal(resp.deploymentId, "fast");
++    });
++
++    it("puts failing deployments into cooldown and recovers after cooldownTime", async () => {
++        let failPrimary = true;
++        const primary = await trackServer((_req, _body, res) => {
++            if (failPrimary) {
++                sendJson(res, 502, { error: "bad gateway" });
++            } else {
++                sendJson(res, 200, { choices: [{ message: { content: "primary-recovered" } }] });
++            }
++        });
++        const secondary = await trackServer((_req, _body, res) =>
++            sendJson(res, 200, { choices: [{ message: { content: "secondary" } }] })
++        );
++
++        const router = new SmartRouter({
++            routingStrategy: "priority-fallback",
++            cooldownTime: 100,
++            allowedFails: 1,
++            numRetries: 1,
++            modelList: [
++                { id: "primary", modelName: "chat", apiBase: primary.url, priority: 1 },
++                { id: "secondary", modelName: "chat", apiBase: secondary.url, priority: 2 },
++            ],
++        });
++
++        // First call fails on primary -> enters cooldown -> secondary serves
++        const r1 = await router.chat({ model: "chat", prompt: "1" });
++        assert.equal(r1.content, "secondary");
++        assert.equal(router.getHealthyDeployments("chat").length, 1);
++
++        // Immediate second call skips cooled-down primary completely
++        const r2 = await router.chat({ model: "chat", prompt: "2" });
++        assert.equal(r2.content, "secondary");
++        assert.equal(primary.hits, 1);
++
++        // Wait for cooldown to expire and restore primary
++        failPrimary = false;
++        await new Promise((r) => setTimeout(r, 130));
++
++        const r3 = await router.chat({ model: "chat", prompt: "3" });
++        assert.equal(r3.content, "primary-recovered");
++        assert.equal(primary.hits, 2);
++    });
++
++    it("resolves modelGroupAlias and supports LiteLLM-style model_name/litellm_params", async () => {
++        const srv = await trackServer((_req, body, res) => {
++            sendJson(res, 200, {
++                model: body.model,
++                choices: [{ message: { content: `served:${body.model}` } }],
++            });
++        });
++
++        const router = new SmartRouter({
++            modelGroupAlias: {
++                "smart-alias": "production-llama",
++            },
++            modelList: [
++                {
++                    model_name: "production-llama",
++                    litellm_params: {
++                        model: "llama/llama-3.1-70b",
++                        api_base: srv.url,
++                        api_key: "secret-llama-key",
++                    },
++                },
++            ],
++        });
++
++        const resp = await router.chat({ model: "smart-alias", prompt: "hello" });
++        assert.equal(resp.provider, "llama");
++        assert.equal(resp.content, "served:llama-3.1-70b");
++        assert.equal(srv.requests[0].headers["authorization"], "Bearer secret-llama-key");
++    });
++
++    it("supports unified complete() via both chat and /completions endpoints", async () => {
++        const srv = await trackServer((req, body, res) => {
++            if (req.url === "/v1/completions") {
++                sendJson(res, 200, {
++                    choices: [{ text: `completion:${body.prompt}` }],
++                });
++                return;
++            }
++            sendJson(res, 200, {
++                choices: [{ message: { content: `chat:${body.messages[0].content}` } }],
++            });
++        });
++
++        const router = new SmartRouter({
++            modelList: [{ modelName: "text-model", apiBase: srv.url, apiKey: "k" }],
++        });
++
++        const chatStyle = await router.complete({ model: "text-model", prompt: "hello" });
++        assert.equal(chatStyle.content, "chat:hello");
++
++        const rawStyle = await router.complete({
++            model: "text-model",
++            prompt: "world",
++            useCompletionsEndpoint: true,
++        });
++        assert.equal(rawStyle.content, "completion:world");
++    });
++
++    it("supports unified embed() for both OpenAI and Gemini formats", async () => {
++        const oaEmbed = await trackServer((req, body, res) => {
++            assert.ok(req.url?.endsWith("/embeddings"));
++            sendJson(res, 200, {
++                model: body.model,
++                data: [{ index: 0, embedding: [0.1, 0.2, 0.3] }],
++                usage: { prompt_tokens: 3, total_tokens: 3 },
++            });
++        });
++        const gemEmbed = await trackServer((req, _body, res) => {
++            assert.ok(req.url?.includes(":embedContent"));
++            sendJson(res, 200, {
++                embedding: { values: [0.9, 0.8] },
++            });
++        });
++
++        const router = new SmartRouter({
++            modelList: [
++                {
++                    modelName: "embed-oa",
++                    provider: "openai",
++                    model: "text-embedding-3-small",
++                    apiBase: oaEmbed.url,
++                },
++                {
++                    modelName: "embed-gem",
++                    provider: "gemini",
++                    model: "text-embedding-004",
++                    apiBase: gemEmbed.url,
++                },
++            ],
++        });
++
++        const r1 = await router.embed({ model: "embed-oa", input: "edgechains" });
++        assert.deepEqual(r1.data, [{ index: 0, embedding: [0.1, 0.2, 0.3] }]);
++        assert.equal(r1.usage?.totalTokens, 3);
++
++        const r2 = await router.embed({ model: "embed-gem", input: "edgechains" });
++        assert.deepEqual(r2.data, [{ index: 0, embedding: [0.9, 0.8] }]);
++    });
++
++    it("prevents cyclic fallbacks, reports attempt traces on failure, and tracks metrics", async () => {
++        const sA = await trackServer((_req, _body, res) =>
++            sendJson(res, 500, { error: "A failed" })
++        );
++        const sB = await trackServer((_req, _body, res) =>
++            sendJson(res, 500, { error: "B failed" })
++        );
++
++        const router = new SmartRouter({
++            numRetries: 0,
++            fallbacks: {
++                "model-a": ["model-b"],
++                "model-b": ["model-a"],
++            },
++            modelList: [
++                { id: "dep-a", modelName: "model-a", apiBase: sA.url },
++                { id: "dep-b", modelName: "model-b", apiBase: sB.url },
++            ],
++        });
++
++        await assert.rejects(
++            () => router.chat({ model: "model-a", prompt: "boom" }),
++            (err: unknown) => {
++                assert.ok(err instanceof RouterError);
++                assert.equal(err.attempts.length, 2);
++                assert.equal(err.attempts[0].modelName, "model-a");
++                assert.equal(err.attempts[1].modelName, "model-b");
++                return true;
++            }
++        );
++
++        const metrics = router.getMetrics();
++        assert.equal(metrics["model-a"][0].failedRequests, 1);
++        assert.equal(metrics["model-a"][0].inCooldown, true);
++        assert.equal(metrics["model-b"][0].failedRequests, 1);
++
++        router.resetMetrics();
++        assert.equal(router.getMetrics("model-a")["model-a"][0].failedRequests, 0);
++        assert.equal(router.getMetrics("model-a")["model-a"][0].inCooldown, false);
++    });
++});
