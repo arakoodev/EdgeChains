@@ -33,6 +33,7 @@
         "cheerio": "^1.0.0-rc.12",
         "cors": "^2.8.5",
         "document": "^0.4.7",
+        "dotenv": "^18.0.9",
         "dts-bundle-generator": "^9.3.1",
         "esbuild": "^0.20.2",
         "hono": "3.9",
@@ -61,6 +62,7 @@
     "devDependencies": {
         "@babel/preset-typescript": "^7.24.1",
         "@types/cors": "^2.8.17",
+        "@types/dotenv": "^8.2.3",
         "@types/jest": "^29.5.12",
         "@types/node": "^20.17.2",
         "@types/pdf-parse": "^1.1.4",
