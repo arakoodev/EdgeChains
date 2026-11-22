@@ -7,10 +7,24 @@ local promptTemplate = |||
 local key = std.extVar('openai_api_key');
 local UserQuestion = std.extVar('question');
 
+local routerConfig = {
+  routingStrategy: 'least-tokens',
+  numRetries: 2,
+  modelList: [
+    {
+      deploymentId: 'openai-gpt35-16k',
+      modelName: 'gpt-3.5-turbo-16k',
+      provider: 'openai',
+      model: 'gpt-3.5-turbo-16k',
+      apiKey: key,
+    },
+  ],
+};
+
 local promptWithQuestion = std.strReplace(promptTemplate, '{question}', UserQuestion + '\n');
 
 local main() =
-  local response = arakoo.native('openAICall')({ prompt: promptWithQuestion, openAIApiKey: key });
+  local response = arakoo.native('openAICall')({ prompt: promptWithQuestion, openAIApiKey: key, routerConfig: routerConfig });
   response;
 
 main()
