@@ -1,0 +1,24 @@
+{
+    "name": "chat-with-palm2",
+    "version": "1.0.0",
+    "description": "Example EdgeChains app using the Google Palm2 API utility",
+    "main": "index.js",
+    "type": "module",
+    "keywords": [],
+    "author": "",
+    "scripts": {
+        "start": "tsc && node --experimental-wasm-modules ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.24.0",
+        "file-uri-to-path": "^2.0.0",
+        "path": "^0.12.7",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@types/node": "^22.7.4",
+        "typescript": "^5.7.0-dev.20241007"
+    }
+}
