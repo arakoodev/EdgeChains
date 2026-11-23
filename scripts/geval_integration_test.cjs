@@ -10,11 +10,20 @@
 const path = require("path");
 const Jsonnet = require("../JS/jsonnet/src/index.js");
 
-const BASE_URL = process.env.OPENAI_BASE_URL || "http://127.0.0.1:3000/v1";
-const MODEL = process.env.OPENAI_MODEL || "baidu/ernie-5.5-flash-preview:free";
-const API_KEY = process.env.OPENAI_API_KEY || "sk-local";
+// Defaults to the standard public OpenAI endpoint. Override BASE_URL/MODEL/KEY
+// to point at any OpenAI-compatible provider (e.g. a local proxy).
+const BASE_URL = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
+const API_KEY = process.env.OPENAI_API_KEY || "";
 
 async function callLLM({ prompt }) {
+    if (!API_KEY) {
+        throw new Error(
+            "OPENAI_API_KEY is not set. This live integration test calls a real " +
+                "LLM judge and is skipped unless OPENAI_API_KEY (and optionally " +
+                "OPENAI_BASE_URL / OPENAI_MODEL) are provided."
+        );
+    }
     const res = await fetch(`${BASE_URL}/chat/completions`, {
         method: "POST",
         headers: {
