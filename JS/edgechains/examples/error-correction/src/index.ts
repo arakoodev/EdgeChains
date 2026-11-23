@@ -32,7 +32,10 @@ app.post("/error-correction", async (c: any) => {
         );
         return c.json(JSON.parse(response));
     } catch (error) {
+        // Return a structured JSON error instead of falling through to Hono's
+        // default 404 (which happens when a handler returns undefined).
         console.log("error occured", error);
+        return c.json({ error: String(error) }, 500);
     }
 });
 
