@@ -181,4 +181,36 @@ describe("QdrantClient", () => {
         expect(body.with_payload).toBe(true);
         expect(body.with_vector).toBe(false);
     });
+
+    it("supports the PostgresClient-style positional constructor with no-arg dbQuery", async () => {
+        // Mirror PostgresClient's constructor signature so QdrantClient is a
+        // drop-in replacement in services like HydeSearchService.
+        const { fn, calls } = makeMockFetch(() => ({
+            result: [
+                { id: 1, score: 0.9, payload: { raw_text: "a", namespace: "docs" } },
+                { id: 2, score: 0.4, payload: { raw_text: "b", namespace: "docs" } },
+            ],
+        }));
+        const client = new QdrantClient(
+            [[0.1, 0.2, 0.3]], // wordEmbeddings
+            QdrantDistanceMetric.COSINE, // metric
+            5, // topK
+            20, // probes
+            "docs", // collectionName
+            "docs", // namespace
+            { query: "hello" }, // arkRequest
+            15 // upperLimit
+        );
+        client.fetchImpl = fn;
+
+        const results = await client.dbQuery();
+
+        expect(results).toHaveLength(2);
+        expect(results[0].id).toBe(1);
+        // namespace should be applied as a payload filter.
+        const body = JSON.parse(calls[0].init.body as string);
+        expect(body.filter.must[0].key).toBe("namespace");
+        expect(body.filter.must[0].match.value).toBe("docs");
+        expect(body.limit).toBe(5);
+    });
 });

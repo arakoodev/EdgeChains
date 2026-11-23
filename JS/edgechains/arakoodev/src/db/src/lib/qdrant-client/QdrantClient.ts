@@ -144,22 +144,73 @@ export class QdrantClient {
     /** Optional custom fetch implementation (useful for testing / edge runtimes). */
     fetchImpl: typeof fetch;
 
-    constructor(config: {
-        url?: string;
-        apiKey?: string;
-        collectionName?: string;
-        fetchImpl?: typeof fetch;
-    } = {}) {
-        this.url = (config.url || process.env.QDRANT_URL || "http://localhost:6333").replace(
-            /\/+$/,
-            ""
-        );
-        this.apiKey = config.apiKey || process.env.QDRANT_API_KEY;
-        this.collectionName = config.collectionName;
-        // Allow callers (and tests) to inject a fetch implementation.
-        this.fetchImpl =
-            config.fetchImpl ||
-            (typeof fetch !== "undefined" ? fetch.bind(globalThis) : (undefined as any));
+    // --- PostgresClient-compatible fields (positional constructor) ---
+    /** Query embeddings, set when constructed PostgresClient-style. */
+    wordEmbeddings?: number[][];
+    /** Distance metric, set when constructed PostgresClient-style. */
+    metric?: QdrantDistanceMetric;
+    /** topK, set when constructed PostgresClient-style. */
+    topK?: number;
+    /** HNSW probes (ef) hint, set when constructed PostgresClient-style. */
+    probes?: number;
+    /** Namespace / payload filter, set when constructed PostgresClient-style. */
+    namespace?: string;
+    /** Arbitrary request context (mirrors PostgresClient.arkRequest). */
+    arkRequest?: any;
+    /** Upper result limit, set when constructed PostgresClient-style. */
+    upperLimit?: number;
+
+    constructor(
+        configOrEmbeddings:
+            | {
+                  url?: string;
+                  apiKey?: string;
+                  collectionName?: string;
+                  fetchImpl?: typeof fetch;
+              }
+            | number[][] = {},
+        metric?: QdrantDistanceMetric,
+        topK?: number,
+        probes?: number,
+        collectionName?: string,
+        namespace?: string,
+        arkRequest?: any,
+        upperLimit?: number
+    ) {
+        // Support BOTH the clean config-object API and the positional
+        // `PostgresClient`-style constructor so QdrantClient is a drop-in
+        // replacement for PostgresClient in services like HydeSearchService.
+        if (Array.isArray(configOrEmbeddings)) {
+            // PostgresClient-style positional constructor.
+            this.wordEmbeddings = configOrEmbeddings;
+            this.metric = metric ?? QdrantDistanceMetric.COSINE;
+            this.topK = topK ?? 10;
+            this.probes = probes;
+            this.collectionName = collectionName;
+            this.namespace = namespace;
+            this.arkRequest = arkRequest;
+            this.upperLimit = upperLimit;
+            this.url = (process.env.QDRANT_URL || "http://localhost:6333").replace(
+                /\/+$/,
+                ""
+            );
+            this.apiKey = process.env.QDRANT_API_KEY;
+            this.fetchImpl =
+                typeof fetch !== "undefined" ? fetch.bind(globalThis) : (undefined as any);
+        } else {
+            // Clean config-object API.
+            const config = configOrEmbeddings || {};
+            this.url = (config.url || process.env.QDRANT_URL || "http://localhost:6333").replace(
+                /\/+$/,
+                ""
+            );
+            this.apiKey = config.apiKey || process.env.QDRANT_API_KEY;
+            this.collectionName = config.collectionName;
+            // Allow callers (and tests) to inject a fetch implementation.
+            this.fetchImpl =
+                config.fetchImpl ||
+                (typeof fetch !== "undefined" ? fetch.bind(globalThis) : (undefined as any));
+        }
     }
 
     /**
@@ -364,31 +415,41 @@ export class QdrantClient {
      * @param filter         Optional Qdrant payload filter.
      */
     async dbQuery(
-        wordEmbeddings: number[][],
+        wordEmbeddings?: number[][],
         collectionName?: string,
         topK?: number,
         filter?: QdrantPayload
     ): Promise<QdrantSearchResult[]> {
+        // Support the PostgresClient-style no-arg call: fall back to the
+        // embeddings/collection/topK supplied to the constructor.
+        const embeddings = wordEmbeddings ?? this.wordEmbeddings;
         const collection = collectionName || this.collectionName;
         if (!collection) {
             throw new Error(
                 "QdrantClient.dbQuery: no collectionName provided and no default collection set."
             );
         }
-        if (!wordEmbeddings || wordEmbeddings.length === 0) {
+        if (!embeddings || embeddings.length === 0) {
             return [];
         }
 
-        const perEmbeddingLimit = topK ?? 10;
+        const perEmbeddingLimit = topK ?? this.topK ?? 10;
+        // Build a payload filter from the namespace when constructed
+        // PostgresClient-style (namespace maps to a payload field match).
+        const effectiveFilter =
+            filter ??
+            (this.namespace
+                ? { must: [{ key: "namespace", match: { value: this.namespace } }] }
+                : undefined);
 
         // Run all embedding searches in parallel.
         const searches = await Promise.all(
-            wordEmbeddings.map((vector) =>
+            embeddings.map((vector) =>
                 this.searchPoints({
                     collectionName: collection,
                     vector,
                     topK: perEmbeddingLimit,
-                    filter,
+                    filter: effectiveFilter,
                 })
             )
         );
@@ -408,11 +469,9 @@ export class QdrantClient {
         // Sort by score descending.
         const merged = Array.from(byId.values()).sort((a, b) => b.score - a.score);
 
-        // When a single embedding was supplied, respect topK exactly.
-        if (wordEmbeddings.length === 1) {
-            return merged.slice(0, perEmbeddingLimit);
-        }
-        return merged;
+        // Respect the upper limit (PostgresClient-style) when set.
+        const limit = this.upperLimit ?? (embeddings.length === 1 ? perEmbeddingLimit : merged.length);
+        return merged.slice(0, limit);
     }
 }
 
