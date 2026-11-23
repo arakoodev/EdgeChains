@@ -162,4 +162,90 @@ describe("ErrorCorrectionChain", () => {
         expect(v.isCorrect).toBe(false);
         consoleErrorSpy.mockRestore();
     });
+
+    // ---------------------------------------------------------------------
+    // Prompt-construction tests: assert on the *content* actually sent to the
+    // model, proving the generate/verify/correct prompts are real (not stubs)
+    // and that the paper's critique-feedback loop is wired correctly.
+    // ---------------------------------------------------------------------
+
+    it("verify step sends a grader prompt containing the problem, answer and format", async () => {
+        const client = makeMockClient(["VERDICT: CORRECT\nCRITIQUE: fine"]);
+        const chain = new ErrorCorrectionChain({ openaiClient: client });
+        await chain.verifyAnswer("What is 2+2?", "4");
+
+        expect(client.chat).toHaveBeenCalledTimes(1);
+        const sent = client.chat.mock.calls[0][0];
+        expect(sent.prompt).toContain("What is 2+2?");
+        expect(sent.prompt).toContain("4");
+        expect(sent.prompt).toMatch(/VERDICT:\s*<CORRECT or INCORRECT>/);
+        expect(sent.prompt).toMatch(/CRITIQUE:/);
+        // verify must be deterministic.
+        expect(sent.temperature).toBe(0);
+        consoleErrorSpy.mockRestore();
+    });
+
+    it("correct step feeds the grader critique back into the correction prompt", async () => {
+        const client = makeMockClient(["corrected!"]);
+        const chain = new ErrorCorrectionChain({ openaiClient: client });
+        const out = await chain.correct("2+2?", "5", "the sum is wrong, it is 4");
+
+        expect(out).toBe("corrected!");
+        const sent = client.chat.mock.calls[0][0];
+        expect(sent.prompt).toContain("2+2?");
+        expect(sent.prompt).toContain("5"); // previous answer
+        expect(sent.prompt).toContain("the sum is wrong, it is 4"); // critique fed back
+        expect(sent.prompt).toMatch(/Corrected answer:/);
+    });
+
+    it("generate step is used (with a solve prompt) when no candidate is supplied", async () => {
+        const client = makeMockClient([
+            "first answer", // generate
+            "VERDICT: CORRECT\nCRITIQUE: ok", // verify
+        ]);
+        const chain = new ErrorCorrectionChain({ openaiClient: client });
+        const result = await chain.run({ problem: "3+3?" });
+
+        // First call is the generate step.
+        const genPrompt = client.chat.mock.calls[0][0].prompt;
+        expect(genPrompt).toContain("3+3?");
+        expect(genPrompt).toMatch(/Solve the following problem/);
+        expect(result.initialAnswer).toBe("first answer");
+        consoleErrorSpy.mockRestore();
+    });
+
+    it("injects caller-supplied context into the verification prompt", async () => {
+        const client = makeMockClient(["VERDICT: CORRECT\nCRITIQUE: ok"]);
+        const chain = new ErrorCorrectionChain({ openaiClient: client });
+        await chain.verifyAnswer("q", "a", "remember: use SI units");
+        const sent = client.chat.mock.calls[0][0];
+        expect(sent.prompt).toContain("remember: use SI units");
+        consoleErrorSpy.mockRestore();
+    });
+
+    it("propagates the configured model/temperature/max_tokens to every call", async () => {
+        const client = makeMockClient([
+            "first", // generate
+            "VERDICT: INCORRECT\nCRITIQUE: no", // verify
+            "second", // correct
+            "VERDICT: CORRECT\nCRITIQUE: yes", // verify
+        ]);
+        const chain = new ErrorCorrectionChain({
+            openaiClient: client,
+            model: "gpt-4o-mini",
+            temperature: 0.5,
+            maxTokens: 256,
+        });
+        await chain.run({ problem: "p" });
+
+        expect(client.chat).toHaveBeenCalledTimes(4);
+        for (const call of client.chat.mock.calls) {
+            const opts = call[0];
+            expect(opts.model).toBe("gpt-4o-mini");
+            expect(opts.max_tokens).toBe(256);
+            // generate/correct use the configured temperature; verify uses 0.
+            expect([0.5, 0]).toContain(opts.temperature);
+        }
+        consoleErrorSpy.mockRestore();
+    });
 });
