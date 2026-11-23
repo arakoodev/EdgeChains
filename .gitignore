@@ -44,3 +44,6 @@ yarn.lock
 package-lock.json
 .DS_Store
 pnpm-lock.yaml
+**/out/
+.DS_Store
+
