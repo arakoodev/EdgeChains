@@ -20,7 +20,7 @@ Exported from `ai/src/index.ts`: `TreeOfThoughtsChain`, `OpenAILLMClient`,
 ## Files (10)
 - src/ai/src/lib/tree-of-thoughts/treeOfThoughts.ts (chain, 335 lines)
 - src/ai/src/index.ts (exports)
-- src/ai/src/tests/treeOfThoughts.test.ts (5 Vitest tests)
+- src/ai/src/tests/treeOfThoughts.test.ts (9 Vitest tests)
 - examples/tree-of-thoughts/{jsonnet/main.jsonnet, jsonnet/secrets.jsonnet,
   src/index.ts, src/lib/generateResponse.cts, package.json, tsconfig.json, readme.md}
   — complete runnable ArakooServer example registering the `treeOfThoughts` native,
@@ -29,9 +29,9 @@ Exported from `ai/src/index.ts`: `TreeOfThoughtsChain`, `OpenAILLMClient`,
 ## Verification (real output)
 Build:  `npx tsc -b`  -> exit 0
 Tests:  `npx vitest run src/tests/treeOfThoughts.test.ts`
-  ✓ src/tests/treeOfThoughts.test.ts (5 tests) 4ms
+  ✓ src/tests/treeOfThoughts.test.ts (9 tests) 4ms
   Test Files  1 passed (1)
-       Tests  5 passed (5)
+       Tests  9 passed (9)
 
 ## Notes
 - Production bug fixed during dev: root/problem node was scored 1 so the search
