@@ -1,8 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import axios from "axios";
 import {
     TreeOfThoughtsChain,
     LLMClient,
+    OpenAILLMClient,
 } from "../lib/tree-of-thoughts/treeOfThoughts.js";
+
+vi.mock("axios");
 
 /**
  * A deterministic fake LLM used to exercise the Tree-of-Thoughts search without
@@ -150,5 +154,79 @@ describe("TreeOfThoughtsChain", () => {
         // All three thoughts scored 0.75; best path is one of them at depth 1.
         expect(result.bestPath.length).toBe(2);
         expect(result.score).toBeCloseTo(0.75, 5);
+    });
+
+    it("backtracks away from a dead-end branch to a shallower high-scoring path", async () => {
+        // The greedy first branch (A) scores highest at depth 1, so BFS expands
+        // it first. But every continuation of A is a dead end (score 0). The
+        // search must backtrack and keep A itself as the best complete answer
+        // rather than committing to a worse deeper node.
+        const proposals: Record<string, string[]> = {
+            __root__: ["A", "B"],
+            A: ["A-dead"],
+            B: ["B-strong", "B-also-strong"],
+        };
+        const scorer = (_p: string, t: string) => {
+            if (t === "A") return 0.95; // attractive but a trap
+            if (t === "A-dead") return 0.0; // dead end
+            if (t === "B") return 0.6;
+            if (t.startsWith("B-")) return 0.7;
+            return 0.1;
+        };
+        const llm = new ScriptedLLM(proposals, scorer);
+        const tot = new TreeOfThoughtsChain({
+            problem: "trap",
+            llm,
+            k: 3,
+            breadth: 2,
+            maxDepth: 2,
+        });
+        const result = await tot.run();
+        // A (0.95) beats every deeper node, so the best path stops at A even
+        // though the search continued expanding other branches.
+        expect(result.answer).toBe("A");
+        expect(result.bestPath).toEqual(["trap", "A"]);
+        expect(result.score).toBeCloseTo(0.95, 5);
+    });
+
+    it("falls back to the problem statement when no thoughts are generated", async () => {
+        const llm: LLMClient = { async chat() { return ""; } };
+        const tot = new TreeOfThoughtsChain({ problem: "only-problem", llm, maxDepth: 2 });
+        const result = await tot.run();
+        expect(result.answer).toBe("only-problem");
+        expect(result.bestPath).toEqual(["only-problem"]);
+        expect(result.score).toBe(1);
+    });
+});
+
+describe("OpenAILLMClient", () => {
+    beforeEach(() => {
+        vi.resetAllMocks();
+    });
+
+    it("posts to the chat completions endpoint and returns the message content", async () => {
+        const post = vi.mocked(axios.post);
+        post.mockResolvedValueOnce({
+            data: { choices: [{ message: { content: "hello from openai" } }] },
+        } as any);
+
+        const client = new OpenAILLMClient({ apiKey: "test-key", model: "gpt-4o" });
+        const out = await client.chat("say hi");
+
+        expect(out).toBe("hello from openai");
+        expect(post).toHaveBeenCalledTimes(1);
+        const [url, body, config] = post.mock.calls[0] as any[];
+        expect(url).toBe("https://api.openai.com/v1/chat/completions");
+        expect(body.model).toBe("gpt-4o");
+        expect(body.messages[0].content).toBe("say hi");
+        expect(config.headers.Authorization).toBe("Bearer test-key");
+    });
+
+    it("returns an empty string when the request fails", async () => {
+        const post = vi.mocked(axios.post);
+        post.mockRejectedValueOnce(new Error("network down"));
+        const client = new OpenAILLMClient({ apiKey: "test-key" });
+        const out = await client.chat("boom");
+        expect(out).toBe("");
     });
 });
