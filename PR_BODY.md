@@ -130,3 +130,8 @@ npm install && npm run start
   are fully deterministic and free.
 - A loom.com demo video is recommended per the issue's acceptance criteria; the
   runnable example is provided to record it against.
+- **Pre-existing test failures (unrelated to this PR):** the repo's
+  `openAiEndpoints.test.ts` and `streaming.test.ts` suites fail on a clean
+  checkout because they import from `dist/` (not built) and the `text-decoding`
+  package (not installed). These failures exist on the base `ts` branch and are
+  not touched by this PR. All three new test suites added here pass (14/14).
