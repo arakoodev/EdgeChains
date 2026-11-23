@@ -197,6 +197,56 @@ describe("TreeOfThoughtsChain", () => {
         expect(result.bestPath).toEqual(["only-problem"]);
         expect(result.score).toBe(1);
     });
+
+    it("backtracks: keeps a shallower high-scoring node over a deeper low-scoring one", async () => {
+        // Depth-1 node "strong" scores 0.9. Its only child "weak" scores 0.2.
+        // A naive "last leaf" implementation would return "weak"; ToT must
+        // backtrack and return the better shallower "strong" node.
+        const proposals: Record<string, string[]> = {
+            __root__: ["strong"],
+            strong: ["weak"],
+        };
+        const scorer = (_p: string, t: string) => (t === "strong" ? 0.9 : 0.2);
+        const llm = new ScriptedLLM(proposals, scorer);
+        const tot = new TreeOfThoughtsChain({
+            problem: "bt",
+            llm,
+            k: 1,
+            breadth: 1,
+            maxDepth: 2,
+        });
+        const result = await tot.run();
+        expect(result.answer).toBe("strong");
+        expect(result.bestPath).toEqual(["bt", "strong"]);
+        expect(result.score).toBeCloseTo(0.9, 5);
+    });
+
+    it("OpenAILLMClient.chat posts to the chat completions endpoint and returns content", async () => {
+        const post = vi.fn().mockResolvedValue({
+            data: { choices: [{ message: { content: "hello from openai" } }] },
+        });
+        (axios as any).post = post;
+
+        const client = new OpenAILLMClient({ apiKey: "test-key", model: "gpt-4o" as any });
+        const out = await client.chat("say hi");
+
+        expect(out).toBe("hello from openai");
+        expect(post).toHaveBeenCalledTimes(1);
+        const [url, body, config] = post.mock.calls[0];
+        expect(url).toBe("https://api.openai.com/v1/chat/completions");
+        expect(body.model).toBe("gpt-4o");
+        expect(body.messages[0].content).toBe("say hi");
+        expect(config.headers.Authorization).toBe("Bearer test-key");
+    });
+
+    it("OpenAILLMClient.chat returns empty string on API error", async () => {
+        (axios as any).post = vi.fn().mockRejectedValue({
+            response: { status: 500, data: "boom" },
+        });
+        const client = new OpenAILLMClient({ apiKey: "test-key" });
+        const out = await client.chat("fail");
+        expect(out).toBe("");
+    });
 });
 
 describe("OpenAILLMClient", () => {
