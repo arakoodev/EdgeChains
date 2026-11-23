@@ -1,6 +1,6 @@
 import { describe, test, expect, vi, afterEach, beforeEach } from "vitest";
 import axios from "axios";
-import { Palm2AI } from "../lib/palm2/palm2";
+import { Palm2AI } from "../../lib/palm2/palm2";
 
 vi.mock("axios");
 

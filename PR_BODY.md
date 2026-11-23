@@ -21,7 +21,7 @@ pattern/style of the existing provider integrations (`GeminiAI`, `LlamaAI`,
   - Exposes typed `Palm2Response` / `Palm2Candidate` / `SafetyRating` / `ContentFilter`
     types matching the Palm2 API response shape.
 - **`JS/edgechains/arakoodev/src/ai/src/index.ts`** — exports `Palm2AI`.
-- **`JS/edgechains/arakoodev/src/ai/src/tests/palm2Endpoints.test.ts`** — vitest suite
+- **`JS/edgechains/arakoodev/src/ai/src/testcases/palm2/palm2Endpoints.test.ts`** — vitest suite
   (3 tests) that mocks `axios` and asserts the request hits the real Palm2
   `generateText` URL, uses the `x-goog-api-key` header, sends the prompt body,
   honors model/temperature overrides, and reads the key from the environment.
@@ -40,7 +40,7 @@ console.log(res.candidates[0].output);
 
 ### Verification
 - `npx tsc --noEmit -p tsconfig.json` → **0 errors**
-- `npx vitest run src/ai/src/tests/palm2Endpoints.test.ts` → **3 passed (3)**
+- `npx vitest run src/ai/src/testcases/palm2/palm2Endpoints.test.ts` → **3 passed (3)**
 
 ### Notes
 - No API keys are committed; the example `secrets.jsonnet` uses a placeholder.
