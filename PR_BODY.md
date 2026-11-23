@@ -21,10 +21,16 @@ pattern/style of the existing provider integrations (`GeminiAI`, `LlamaAI`,
   - Exposes typed `Palm2Response` / `Palm2Candidate` / `SafetyRating` / `ContentFilter`
     types matching the Palm2 API response shape.
 - **`JS/edgechains/arakoodev/src/ai/src/index.ts`** — exports `Palm2AI`.
-- **`JS/edgechains/arakoodev/src/ai/src/testcases/palm2/palm2Endpoints.test.ts`** — vitest suite
-  (3 tests) that mocks `axios` and asserts the request hits the real Palm2
-  `generateText` URL, uses the `x-goog-api-key` header, sends the prompt body,
-  honors model/temperature overrides, and reads the key from the environment.
+- **`JS/edgechains/arakoodev/src/ai/src/testcases/palm2/palm2Endpoints.test.ts`** — Jest suite
+  (4 tests, matching the repo's `jest.config.cjs` / `openAiEndpoints.test.ts` convention) that
+  mocks `axios` and exercises `Palm2AI.chat()` end-to-end:
+  - asserts the request hits the real Palm2 `generateText` URL with `POST`, the
+    `Content-Type: application/json` and `x-goog-api-key` headers, and the correct
+    `{ prompt: { text }, temperature, candidateCount }` body;
+  - verifies the response is parsed from `candidates[0].output`;
+  - verifies model / `temperature` / `candidateCount` / `maxTokenCount` overrides;
+  - verifies the API key is read from `process.env.PALM2_API_KEY` when not passed;
+  - verifies a non-200 (rejected) response propagates as an error.
 - **`JS/edgechains/examples/chat-with-palm2/`** — usage example following the
   `chat-with-llm` convention (ArakooServer + jsonnet `main.jsonnet`/`secrets.jsonnet`
   + `generateResponse.cts` RPC calling `Palm2AI`).
@@ -40,7 +46,8 @@ console.log(res.candidates[0].output);
 
 ### Verification
 - `npx tsc --noEmit -p tsconfig.json` → **0 errors**
-- `npx vitest run src/ai/src/testcases/palm2/palm2Endpoints.test.ts` → **3 passed (3)**
+- `npm run build` (`tsc -b`) → **exit 0**
+- `npx jest src/ai/src/testcases/palm2/palm2Endpoints.test.ts` → **4 passed (4)**
 
 ### Notes
 - No API keys are committed; the example `secrets.jsonnet` uses a placeholder.
