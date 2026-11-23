@@ -1,0 +1,19 @@
+{
+    "name": "comprehend-pii-redactor",
+    "version": "1.0.0",
+    "description": "Example: redact PII from text using AWS Comprehend via EdgeChains",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "tsc && node ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@aws-sdk/client-comprehend": "^3.1175.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.7.4",
+        "typescript": "^5.7.0-dev.20241007"
+    }
+}
