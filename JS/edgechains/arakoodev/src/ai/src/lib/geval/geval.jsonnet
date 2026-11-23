@@ -6,17 +6,20 @@
 // External variables (set via jsonnet.extString before evaluating):
 //   - prompt        : the user prompt / question that produced the response
 //   - response      : the model-generated response to evaluate
-//   - context       : (optional) source information the response is grounded in
+//   - context       : source information the response is grounded in (may be "")
 //   - aspect        : one of coherence | consistency | fluency | relevance
 //   - openai_api_key: API key used by the openAICall native callback
 //
 // Native callback (set via jsonnet.javascriptCallback):
 //   - openAICall({ prompt, openAIApiKey }) => { content: "<judge output>" }
+//
+// Output (JSON string):
+//   { aspect, evaluation_prompt, judge_output }
 
 local prompt = std.extVar('prompt');
 local response = std.extVar('response');
-local context = if std.objectHas(std.extVar, 'context') then std.extVar('context') else '';
-local aspect = if std.objectHas(std.extVar, 'aspect') then std.extVar('aspect') else 'coherence';
+local context = std.extVar('context');
+local aspect = std.extVar('aspect');
 local key = std.extVar('openai_api_key');
 
 local aspectDefinitions = {
@@ -26,7 +29,11 @@ local aspectDefinitions = {
   relevance: 'the selection of important content from the source; how well the response captures the key information.',
 };
 
-local definition = if std.objectHas(aspectDefinitions, aspect) then aspectDefinitions[aspect] else aspectDefinitions['coherence'];
+local definition =
+  if std.objectHas(aspectDefinitions, aspect) then
+    aspectDefinitions[aspect]
+  else
+    aspectDefinitions['coherence'];
 
 local contextBlock =
   if std.length(context) > 0 then
