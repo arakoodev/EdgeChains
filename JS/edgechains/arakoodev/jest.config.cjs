@@ -1,10 +1,11 @@
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-    presets: [["@babel/preset-env", { targets: { node: "current" } }], "@babel/preset-typescript"],
-    testEnvironment: "jest-environment-jsdom",
-    transform: {
-        "^.+\\.ts?$": "ts-jest",
-        "^.+\\.tsx?$": "ts-jest",
-        "^.+\\.js?$": "babel-jest",
-        "^.+\\.jsx?$": "babel-jest",
+    preset: "ts-jest",
+    testEnvironment: "node",
+    // The codebase uses NodeNext-style `.js` import specifiers that point at
+    // `.ts` source files. Map them so jest can resolve the TypeScript sources.
+    moduleNameMapper: {
+        "^(\\.{1,2}/.*)\\.js$": "$1",
     },
+    testMatch: ["**/tests/**/*.test.ts"],
 };
