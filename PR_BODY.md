@@ -66,8 +66,9 @@ acceptance criterion.
 ### 5. Tests
 `JS/edgechains/arakoodev/src/ai/src/tests/comprehendRedactor.test.ts`
 `JS/edgechains/arakoodev/src/ai/src/tests/redactorChain.test.ts`
+`JS/edgechains/arakoodev/src/ai/src/tests/redactorChainOpenAI.integration.test.ts`
 
-Two deterministic, runner-agnostic Jest suites (also run under the repo's
+Three deterministic, runner-agnostic Jest suites (also run under the repo's
 `vitest` script) that inject a fake Comprehend client and exercise:
 - entity mapping (type/offsets/score/matched substring),
 - blank-input short-circuit (no AWS call),
@@ -80,6 +81,12 @@ Two deterministic, runner-agnostic Jest suites (also run under the repo's
 - **response redaction** when `redactResponse` is enabled,
 - **transparent proxy forwarding** of non-chat members,
 - the `redactPrompt` helper.
+
+The **integration suite** wraps the *real* EdgeChains `OpenAI` endpoint
+(`axios` mocked, no network) and asserts on the exact outbound request body that
+`OpenAI.chat` would send to the provider — proving the PII is scrubbed before it
+ever leaves the process, that `messages`-array prompts are redacted per message,
+and that non-chat methods (`streamedChat`) still delegate to the real endpoint.
 
 ### 6. Working example
 `JS/edgechains/examples/comprehend-pii-redactor/`
@@ -95,6 +102,12 @@ to **chain** the redactor in front of an `OpenAI` endpoint via `RedactorChain`.
 cd JS/edgechains/arakoodev
 npx jest src/ai/src/tests/comprehendRedactor.test.ts
 # PASS — 6 tests
+npx jest src/ai/src/tests/redactorChain.test.ts
+# PASS — 5 tests
+npx jest src/ai/src/tests/redactorChainOpenAI.integration.test.ts
+# PASS — 3 tests (wraps the real OpenAI endpoint, axios mocked)
+npx jest src/ai/src/tests
+# PASS — 14 tests total
 ```
 
 Type-check:
