@@ -10,3 +10,5 @@ export type {
     RedactResult,
     PiiEntityMatch,
 } from "./lib/comprehend/comprehend.js";
+export { RedactorChain, redactPrompt } from "./lib/comprehend/redactorChain.js";
+export type { ChatEndpointLike, RedactorChainOptions } from "./lib/comprehend/redactorChain.js";

@@ -1,9 +1,10 @@
-import { ComprehendRedactor } from "@arakoodev/edgechains.js";
+import { ComprehendRedactor, RedactorChain } from "@arakoodev/edgechains.js";
 
 /**
- * Demonstrates how to use the `ComprehendRedactor` utility to detect and redact
- * PII (names, emails, phone numbers, credit cards, SSNs, ...) from arbitrary
- * text before it is sent to an LLM.
+ * Demonstrates how to use the `ComprehendRedactor` utility from
+ * `@arakoodev/edgechains.js` to detect and redact PII (names, emails, phone
+ * numbers, credit cards, SSNs, ...) from arbitrary text before it is sent to an
+ * LLM.
  *
  * The redactor is designed to be chained in front of the existing EdgeChains
  * `Endpoint` classes (e.g. `OpenAI`) so that prompts are scrubbed of sensitive
@@ -56,6 +57,23 @@ async function main() {
     //       entityTypes: ["EMAIL", "PHONE"],
     //       replacement: "[HIDDEN]",
     //   });
+
+    // ---------------------------------------------------------------------
+    // Chaining with an LLM Endpoint (as an observable / middleware).
+    // ---------------------------------------------------------------------
+    // `RedactorChain.wrap` returns a transparent proxy around any EdgeChains
+    // endpoint whose `chat()` redacts the prompt before the LLM ever sees it
+    // (and, optionally, redacts the response on the way back out):
+    //
+    //   import { OpenAI } from "@arakoodev/edgechains.js";
+    //
+    //   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    //   const safe = RedactorChain.wrap(openai, redactor, { redactResponse: true });
+    //
+    //   const response = await safe.chat({
+    //       prompt: "My SSN is 123-45-6789, summarize my profile.",
+    //   });
+    //   // -> OpenAI only ever receives "My SSN is [REDACTED], summarize my profile."
 }
 
 main().catch((error) => {
