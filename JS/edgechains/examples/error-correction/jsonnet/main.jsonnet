@@ -5,17 +5,17 @@
 # step. This example runs the generate -> verify -> correct loop over a problem
 # and an optional candidate answer, then prints the corrected answer.
 #
-# Usage:
+# Usage (via the companion HTTP server in src/index.ts):
+#   POST /error-correction  { "problem": "...", "candidateAnswer": "..." }
+#
+# Or directly with the jsonnet CLI:
 #   arakoo <this-dir>/jsonnet/main.jsonnet \
 #       --ext-str problem="What is 12 * 12 + 3?" \
 #       --ext-str candidate_answer="140" \
 #       --ext-str openai_api_key="sk-..."
 
 local problem = std.extVar("problem");
-local candidateAnswer =
-  if std.objectHas(std.extVar("__all"), "candidate_answer")
-  then std.extVar("candidate_answer")
-  else "";
+local candidateAnswer = std.extVar("candidate_answer");
 
 local key = std.extVar("openai_api_key");
 
