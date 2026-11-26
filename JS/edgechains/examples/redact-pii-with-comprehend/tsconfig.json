@@ -1,0 +1,1 @@
+{"compilerOptions":{"esModuleInterop":true,"forceConsistentCasingInFileNames":true,"module":"NodeNext","moduleResolution":"NodeNext","outDir":"./dist","rootDir":"./src","skipLibCheck":true,"strict":true,"target":"ES2022"},"exclude":["./**/*.test.ts","./jsonnet/**/*"]}
