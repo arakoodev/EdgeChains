@@ -1,4 +1,4 @@
-const { OpenAI } = require("@arakoodev/edgechains.js/openai");
+const { OpenAI } = require("@arakoodev/edgechains.js/ai");
 
 const path = require("path");
 const Jsonnet = require("@arakoodev/jsonnet");
