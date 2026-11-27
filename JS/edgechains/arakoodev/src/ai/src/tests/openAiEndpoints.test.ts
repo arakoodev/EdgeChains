@@ -1,81 +1,58 @@
-import axios from "axios";
-import { OpenAI } from "../../../../dist/openai/src/lib/endpoints/OpenAiEndpoint.js";
+import { describe, test, expect, beforeEach } from "vitest";
+import { Router, MockLLM } from "../index.js";
 
-jest.mock("axios");
+describe("Router Endpoint Suite (replacing OpenAiEndpoint)", () => {
+  let mockLLM: MockLLM;
 
-describe("ChatOpenAi", () => {
-    describe("generateResponse", () => {
-        test("should generate response from OpenAI", async () => {
-            const mockResponse = [
-                {
-                    message: {
-                        content: "Test response",
-                    },
-                },
-            ];
+  beforeEach(() => {
+    mockLLM = new MockLLM();
+  });
 
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const response = await chatOpenAi.chat({ prompt: "test prompt" });
-            expect(response).toEqual("Test response");
-        });
+  describe("generateResponse", () => {
+    test("should generate response from OpenAI deployment via Router", async () => {
+      mockLLM.setScenario("test_api_key", {
+        responseText: "Test response",
+      });
+      const router = new Router({ apiKey: "test_api_key", provider: "openai" });
+      mockLLM.attach(router.httpClient);
+
+      const response = await router.chat({ prompt: "test prompt" });
+      expect(response.content).toEqual("Test response");
+      expect(response.usage.total_tokens).toBeGreaterThan(0);
     });
+  });
 
-    describe("generateEmbeddings", () => {
-        test("should generate embeddings from OpenAI", async () => {
-            const mockResponse = { embeddings: "Test embeddings" };
-            axios.post = jest.fn().mockResolvedValue({ data: { data: { choices: mockResponse } } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const res = await chatOpenAi.generateEmbeddings("test prompt");
-            expect(res.choices.embeddings).toEqual("Test embeddings");
-        });
-    });
+  describe("generateEmbeddings", () => {
+    test("should generate embeddings from OpenAI deployment via Router", async () => {
+      const router = new Router({ apiKey: "test_api_key", provider: "openai" });
+      mockLLM.attach(router.httpClient);
 
-    describe("chatWithAI", () => {
-        test("should chat with AI using multiple messages", async () => {
-            const mockResponse = [
-                {
-                    message: {
-                        content: "Test response 1",
-                    },
-                },
-                {
-                    message: {
-                        content: "Test response 2",
-                    },
-                },
-            ];
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const chatMessages = [
-                {
-                    role: "user",
-                    content: "message 1",
-                },
-                {
-                    role: "agent",
-                    content: "message 2",
-                },
-            ];
-            //@ts-ignore
-            const responses = await chatOpenAi.chat({ messages: chatMessages });
-            expect(responses).toEqual(mockResponse);
-        });
+      const res = await router.generateEmbeddings("test prompt");
+      expect(Array.isArray(res)).toBe(true);
+      expect(res[0].embedding).toEqual([0.1, 0.2, 0.3, 0.4]);
     });
+  });
 
-    describe("testResponseGeneration", () => {
-        test("should generate test response from OpenAI", async () => {
-            const mockResponse = [
-                {
-                    message: {
-                        content: "Test response",
-                    },
-                },
-            ];
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const response = await chatOpenAi.chat({ prompt: "test prompt" });
-            expect(response).toEqual("Test response");
-        });
+  describe("chatWithAI", () => {
+    test("should chat with AI using multiple messages", async () => {
+      mockLLM.setScenario("test_api_key", {
+        responseText: "Multi-message response",
+      });
+      const router = new Router({ apiKey: "test_api_key", provider: "openai" });
+      mockLLM.attach(router.httpClient);
+
+      const chatMessages = [
+        {
+          role: "user" as const,
+          content: "message 1",
+        },
+        {
+          role: "agent" as const,
+          content: "message 2",
+        },
+      ];
+      const response = await router.chat({ messages: chatMessages });
+      expect(response.content).toEqual("Multi-message response");
     });
+  });
 });
