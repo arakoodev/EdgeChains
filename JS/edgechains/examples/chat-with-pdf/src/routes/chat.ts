@@ -16,7 +16,7 @@ const openAICall = createClient(path.join(__dirname, "../../lib/generateResponse
 const getQueryMatch = createClient(path.join(__dirname, "../../lib/getQueryMatch.cjs"));
 const getEmbeddings = createClient(path.join(__dirname, "../../lib/getEmbeddings.cjs"));
 
-// this should run only once for uploding pdf data to supabase then you can continue with the chatbot functionality
+// this should run only once for uploading pdf data to supabase then you can continue with the chatbot functionality
 await InsertToSupabase(splitedDocs);
 
 export const ChatRouter: any = server.createApp();
