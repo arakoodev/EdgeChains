@@ -1,0 +1,12 @@
+{
+    "name": "qdrant-vector-search",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "start": "tsx src/index.ts"
+    },
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "tsx": "^4.7.2"
+    }
+}
