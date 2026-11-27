@@ -1,0 +1,18 @@
+{
+    "name": "pii-redaction",
+    "version": "1.0.0",
+    "description": "AWS Comprehend PII redaction chained with EdgeChains endpoints before LLM dispatch",
+    "type": "module",
+    "main": "dist/index.js",
+    "scripts": {
+        "start": "tsc && node ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev"
+    },
+    "devDependencies": {
+        "@types/node": "^22.7.4",
+        "typescript": "^5.6.3"
+    }
+}
