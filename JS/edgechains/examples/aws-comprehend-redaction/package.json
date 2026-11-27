@@ -1,0 +1,22 @@
+{
+  "name": "aws-comprehend-redaction-example",
+  "version": "1.0.0",
+  "description": "Example of AWS Comprehend PII redaction with EdgeChains",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "node --loader ts-node/esm src/index.ts",
+    "dev": "nodemon --exec node --loader ts-node/esm src/index.ts"
+  },
+  "dependencies": {
+    "@arakoodev/edgechains.js": "^0.1.23",
+    "@aws-sdk/client-comprehend": "^3.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "nodemon": "^3.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}
