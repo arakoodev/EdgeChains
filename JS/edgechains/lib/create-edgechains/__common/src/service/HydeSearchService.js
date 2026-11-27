@@ -1,6 +1,6 @@
 import Jsonnet from "@arakoodev/jsonnet";
 import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
-import { PostgresClient } from "@arakoodev/edgechains.js";
+import { PostgresClient, QdrantClient, QdrantDistanceMetric } from "@arakoodev/edgechains.js";
 import * as path from "path";
 var PostgresDistanceMetric;
 (function (PostgresDistanceMetric) {
@@ -50,18 +50,33 @@ async function hydeSearchAdaEmbedding(arkRequest, apiKey, orgId) {
                 return embedding;
             })
         );
-        // Chain 5 ==> Query via EmbeddingChain
-        const dbClient = new PostgresClient(
-            await embeddingsListChain,
-            PostgresDistanceMetric.IP,
-            topK,
-            20,
-            table,
-            namespace,
-            arkRequest,
-            15
-        );
-        const queryResult = await dbClient.dbQuery();
+        // Chain 5 ==> Query via EmbeddingChain (PostgresClient or QdrantClient)
+        let queryResult;
+        if (arkRequest.vectorDb === "qdrant" || process.env.VECTOR_DB === "qdrant") {
+            const qdrantClient = new QdrantClient(
+                await embeddingsListChain,
+                QdrantDistanceMetric.COSINE,
+                topK,
+                table,
+                process.env.QDRANT_URL || "http://localhost:6333",
+                process.env.QDRANT_API_KEY,
+                arkRequest,
+                15
+            );
+            queryResult = await qdrantClient.dbQuery();
+        } else {
+            const dbClient = new PostgresClient(
+                await embeddingsListChain,
+                PostgresDistanceMetric.IP,
+                topK,
+                20,
+                table,
+                namespace,
+                arkRequest,
+                15
+            );
+            queryResult = await dbClient.dbQuery();
+        }
         // Chain 6 ==> Create Prompt using Embeddings
         const retrievedDocs = [];
         for (const embeddings of queryResult) {
