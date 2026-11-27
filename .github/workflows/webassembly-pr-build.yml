@@ -51,7 +51,7 @@ jobs:
           override: true
 
       - name: Cache Javy Core
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ./target
           key: javy-core
