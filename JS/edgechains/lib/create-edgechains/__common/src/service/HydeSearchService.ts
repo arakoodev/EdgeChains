@@ -1,5 +1,5 @@
 import Jsonnet from "@arakoodev/jsonnet";
-import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
+import { SmartRouter } from "@arakoodev/edgechains.js/ai";
 import { PostgresClient } from "@arakoodev/edgechains.js";
 import type { ArkRequest } from "@arakoodev/edgechains.js";
 import * as path from "path";
@@ -12,14 +12,21 @@ enum PostgresDistanceMetric {
 
 async function hydeSearchAdaEmbedding(arkRequest: ArkRequest, apiKey: string, orgId: string) {
     try {
-        const gpt3endpoint = new OpenAiEndpoint(
-            "https://api.openai.com/v1/chat/completions",
-            apiKey,
-            orgId,
-            "gpt-3.5-turbo",
-            "user",
-            parseInt("0.7")
-        );
+        const gpt3endpoint = new SmartRouter({
+            routingStrategy: "least-tokens",
+            defaultModel: "gpt-3.5-turbo",
+            modelList: [
+                {
+                    deploymentId: "openai-hyde-primary",
+                    modelName: "gpt-3.5-turbo",
+                    provider: "openai",
+                    model: "gpt-3.5-turbo",
+                    apiKey,
+                    orgId,
+                    apiBase: "https://api.openai.com/v1",
+                },
+            ],
+        });
         // Get required params from API...
         const table = "ada_hyde_prod";
         const namespace = "360_docs";
