@@ -1,12 +1,13 @@
+import { describe, test, expect, vi } from "vitest";
 import { Qdrant } from "../../lib/qdrant/qdrant";
 
 function mockHttp(
   overrides: Partial<Record<"put" | "post" | "get", any>> = {},
 ) {
   return {
-    put: jest.fn().mockResolvedValue({ status: 200, data: { result: true } }),
-    post: jest.fn().mockResolvedValue({ status: 200, data: { result: [] } }),
-    get: jest.fn().mockResolvedValue({ status: 200, data: { result: {} } }),
+    put: vi.fn().mockResolvedValue({ status: 200, data: { result: true } }),
+    post: vi.fn().mockResolvedValue({ status: 200, data: { result: [] } }),
+    get: vi.fn().mockResolvedValue({ status: 200, data: { result: {} } }),
     ...overrides,
   } as any;
 }
@@ -42,7 +43,7 @@ describe("Qdrant", () => {
   test("search posts query vector and returns results", async () => {
     const results = [{ id: 1, score: 0.9, payload: { a: 1 } }];
     const http = mockHttp({
-      post: jest
+      post: vi
         .fn()
         .mockResolvedValue({ status: 200, data: { result: results } }),
     });
@@ -84,7 +85,7 @@ describe("Qdrant", () => {
   test("getCollectionInfo returns result payload", async () => {
     const info = { status: "green", points_count: 3 };
     const http = mockHttp({
-      get: jest.fn().mockResolvedValue({ status: 200, data: { result: info } }),
+      get: vi.fn().mockResolvedValue({ status: 200, data: { result: info } }),
     });
     const qdrant = new Qdrant({ url: "http://x", http });
     expect(await qdrant.getCollectionInfo("docs")).toEqual(info);
@@ -92,7 +93,7 @@ describe("Qdrant", () => {
 
   test("4xx errors are not retried", async () => {
     const http = mockHttp({
-      put: jest.fn().mockRejectedValue({
+      put: vi.fn().mockRejectedValue({
         response: { status: 400, data: { error: "bad request" } },
       }),
     });
