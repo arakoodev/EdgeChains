@@ -1,0 +1,17 @@
+{
+    "name": "redact-pii",
+    "version": "1.0.0",
+    "description": "Example demonstrating AWS Comprehend PII redaction with EdgeChains",
+    "type": "module",
+    "scripts": {
+        "start": "tsc && node ./dist/index.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev"
+    },
+    "devDependencies": {
+        "@types/node": "^22.7.4",
+        "typescript": "^5.6.3"
+    }
+}
