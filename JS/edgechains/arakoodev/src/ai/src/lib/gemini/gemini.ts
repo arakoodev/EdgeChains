@@ -1,12 +1,12 @@
 import axios from "axios";
 import { retry } from "@lifeomic/attempt";
-const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
+const baseUrl = "https://generativelanguage.googleapis.com/v1/models";
 
-interface GeminiAIConstructionOptions {
+export interface GeminiAIConstructionOptions {
     apiKey?: string;
 }
 
-type SafetyRating = {
+export type SafetyRating = {
     category:
         | "HARM_CATEGORY_SEXUALLY_EXPLICIT"
         | "HARM_CATEGORY_HATE_SPEECH"
@@ -15,36 +15,36 @@ type SafetyRating = {
     probability: "NEGLIGIBLE" | "LOW" | "MEDIUM" | "HIGH";
 };
 
-type ContentPart = {
+export type ContentPart = {
     text: string;
 };
 
-type Content = {
+export type Content = {
     parts: ContentPart[];
     role: string;
 };
 
-type Candidate = {
+export type Candidate = {
     content: Content;
     finishReason: string;
     index: number;
     safetyRatings: SafetyRating[];
 };
 
-type UsageMetadata = {
+export type UsageMetadata = {
     promptTokenCount: number;
     candidatesTokenCount: number;
     totalTokenCount: number;
 };
 
-type Response = {
+export type GeminiAIResponse = {
     candidates: Candidate[];
     usageMetadata: UsageMetadata;
 };
 
 type responseMimeType = "text/plain" | "application/json";
 
-interface GeminiAIChatOptions {
+export interface GeminiAIChatOptions {
     model?: string;
     max_output_tokens?: number;
     temperature?: number;
@@ -60,8 +60,10 @@ export class GeminiAI {
         this.apiKey = options.apiKey || process.env.GEMINI_API_KEY || "";
     }
 
-    async chat(chatOptions: GeminiAIChatOptions): Promise<Response> {
-        let data = JSON.stringify({
+    async chat(chatOptions: GeminiAIChatOptions): Promise<GeminiAIResponse> {
+        const model = chatOptions.model || "gemini-pro";
+        const url = `${baseUrl}/${model}:generateContent`;
+        const data = {
             contents: [
                 {
                     role: "user",
@@ -72,9 +74,14 @@ export class GeminiAI {
                     ],
                 },
             ],
-        });
+            generationConfig: {
+                temperature: chatOptions.temperature || 0.7,
+                responseMimeType: chatOptions.responseType || "text/plain",
+                maxOutputTokens: chatOptions.max_output_tokens || 1024,
+            },
+        };
 
-        let config = {
+        const config = {
             method: "post",
             maxBodyLength: Infinity,
             url,
@@ -82,10 +89,7 @@ export class GeminiAI {
                 "Content-Type": "application/json",
                 "x-goog-api-key": this.apiKey,
             },
-            temperature: chatOptions.temperature || "0.7",
-            responseMimeType: chatOptions.responseType || "text/plain",
-            max_output_tokens: chatOptions.max_output_tokens || 1024,
-            data: data,
+            data,
         };
         return await retry(
             async () => {
