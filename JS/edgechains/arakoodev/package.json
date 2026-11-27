@@ -10,6 +10,7 @@
         "./vector-db": "./dist/vector-db/src/index.js",
         "./document-loader": "./dist/document-loader/src/index.js",
         "./splitter": "./dist/splitter/src/index.js",
+        "./redaction": "./dist/redaction/src/index.js",
         "./arakooserver": "./dist/arakooserver/src/index.js",
         "./db": "./dist/db/src/index.js",
         "./scraper": "./dist/scraper/src/index.js",
@@ -22,6 +23,7 @@
         "test": "vitest"
     },
     "dependencies": {
+        "@aws-sdk/client-comprehend": "^3.1050.0",
         "@babel/core": "^7.24.4",
         "@babel/preset-env": "^7.24.4",
         "@hono/node-server": "^0.6.0",
