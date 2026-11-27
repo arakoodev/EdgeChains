@@ -1,5 +1,5 @@
 import Jsonnet from "@arakoodev/jsonnet";
-import { OpenAiEndpoint } from "@arakoodev/edgechains.js";
+import { Router } from "@arakoodev/edgechains.js";
 import { PostgresClient } from "@arakoodev/edgechains.js";
 import * as path from "path";
 var PostgresDistanceMetric;
@@ -10,7 +10,7 @@ var PostgresDistanceMetric;
 })(PostgresDistanceMetric || (PostgresDistanceMetric = {}));
 async function hydeSearchAdaEmbedding(arkRequest, apiKey, orgId) {
     try {
-        const gpt3endpoint = new OpenAiEndpoint(
+        const gpt3endpoint = new Router(
             "https://api.openai.com/v1/chat/completions",
             apiKey,
             orgId,
