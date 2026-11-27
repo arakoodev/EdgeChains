@@ -44,3 +44,4 @@ yarn.lock
 package-lock.json
 .DS_Store
 pnpm-lock.yaml
+JS/edgechains/arakoodev/*.tsbuildinfo
