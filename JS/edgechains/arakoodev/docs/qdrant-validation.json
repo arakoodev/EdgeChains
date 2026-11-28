@@ -1,0 +1,42 @@
+{
+  "observed_at": "2026-09-18T09:08:11.759583+00:00",
+  "baseline": "8d79cb4bbf23a9dbc305152fc225bd50db48a0de",
+  "node": "22.21.1",
+  "typescript": "5.9.3",
+  "vitest": "2.1.9",
+  "qdrant": "1.19.1",
+  "unit_tests": {
+    "passed": 50,
+    "failed": 0
+  },
+  "real_database_scenarios": {
+    "passed": 3,
+    "failed": 0
+  },
+  "sdk_build": "passed",
+  "new_test_typecheck": "passed",
+  "format": "passed",
+  "legacy_suite": {
+    "baseline_test_pass": 0,
+    "failed_test_cases_each": 3,
+    "failed_files_each": 15,
+    "matching_failure_signatures": true,
+    "explanation": "Legacy import paths, absent Jest/global bindings and scraper/browser setup/network failures; not an all-green repository suite.",
+    "candidate_final_pass": 50,
+    "integration_in_full_run": "3 skipped without opt-in; subsequently all 3 executed and passed"
+  },
+  "package_dry_run": {
+    "qdrant_js_types_and_entrypoint_included": true,
+    "published": false
+  },
+  "demo": {
+    "seconds": 16.2,
+    "recording": "qdrant-demo.mp4",
+    "actual_compiled_package_example": true,
+    "example_exit": 0
+  },
+  "no_qdrant_sdk_dependency": true,
+  "source_and_test_files_ai_assisted": true,
+  "manual_human_review_claimed": false,
+  "money_earned_claimed": false
+}
