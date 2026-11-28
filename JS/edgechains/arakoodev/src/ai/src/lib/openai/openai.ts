@@ -21,6 +21,7 @@ interface OpenAIChatOptions {
     max_tokens?: number;
     temperature?: number;
     prompt?: string;
+    systemPrompt?: string
     messages?: messageOption[];
     frequency_penalty?: number;
 }
@@ -87,6 +88,7 @@ export class OpenAI {
                     model: chatOptions.model || "gpt-3.5-turbo",
                     messages: chatOptions.prompt
                         ? [
+                            {role: "system", content: chatOptions.systemPrompt || ""},
                               {
                                   role: chatOptions.role || "user",
                                   content: chatOptions.prompt,
