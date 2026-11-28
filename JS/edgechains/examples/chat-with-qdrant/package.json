@@ -1,0 +1,26 @@
+{
+    "name": "chat-with-qdrant",
+    "version": "1.0.0",
+    "description": "EdgeChains example: Qdrant vector search with jsonnet prompts",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "test": "npx vitest run",
+        "build": "tsc -b",
+        "start": "tsc && node --experimental-wasm-modules dist/index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "AGPL-3.0",
+    "dependencies": {
+        "@arakoodev/edgechains.js": "file:../../arakoodev",
+        "@arakoodev/jsonnet": "^0.24.0",
+        "file-uri-to-path": "^2.0.0",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.1",
+        "typescript": "^5.6.3",
+        "vitest": "^1.5.3"
+    }
+}
