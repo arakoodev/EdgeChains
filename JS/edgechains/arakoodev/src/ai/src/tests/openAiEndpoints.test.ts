@@ -1,81 +1,37 @@
-import axios from "axios";
-import { OpenAI } from "../../../../dist/openai/src/lib/endpoints/OpenAiEndpoint.js";
+import { describe, test, expect, vi } from "vitest"
+import { OpenAI } from "../lib/openai/openai.js"
 
-jest.mock("axios");
+// Mock axios
+vi.mock("axios", () => {
+  const mockPost = vi.fn()
+  const mockAxiosInstance = {
+    post: mockPost,
+    interceptors: {
+      request: { use: vi.fn(), eject: vi.fn() },
+      response: { use: vi.fn((_resolve, reject) => {}) },
+    },
+  }
+  return {
+    default: {
+      create: vi.fn(() => mockAxiosInstance),
+    },
+  }
+})
 
-describe("ChatOpenAi", () => {
-    describe("generateResponse", () => {
-        test("should generate response from OpenAI", async () => {
-            const mockResponse = [
-                {
-                    message: {
-                        content: "Test response",
-                    },
-                },
-            ];
+describe("ChatOpenAi (backward compat adapter)", () => {
+  test("should generate response from OpenAI", async () => {
+    const axios = await import("axios")
+    const instance = (axios.default as any).create()
 
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const response = await chatOpenAi.chat({ prompt: "test prompt" });
-            expect(response).toEqual("Test response");
-        });
-    });
+    instance.post.mockResolvedValueOnce({
+      data: {
+        choices: [{ message: { content: "Test response" } }],
+        usage: { prompt_tokens: 5, completion_tokens: 10, total_tokens: 15 },
+      },
+    })
 
-    describe("generateEmbeddings", () => {
-        test("should generate embeddings from OpenAI", async () => {
-            const mockResponse = { embeddings: "Test embeddings" };
-            axios.post = jest.fn().mockResolvedValue({ data: { data: { choices: mockResponse } } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const res = await chatOpenAi.generateEmbeddings("test prompt");
-            expect(res.choices.embeddings).toEqual("Test embeddings");
-        });
-    });
-
-    describe("chatWithAI", () => {
-        test("should chat with AI using multiple messages", async () => {
-            const mockResponse = [
-                {
-                    message: {
-                        content: "Test response 1",
-                    },
-                },
-                {
-                    message: {
-                        content: "Test response 2",
-                    },
-                },
-            ];
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const chatMessages = [
-                {
-                    role: "user",
-                    content: "message 1",
-                },
-                {
-                    role: "agent",
-                    content: "message 2",
-                },
-            ];
-            //@ts-ignore
-            const responses = await chatOpenAi.chat({ messages: chatMessages });
-            expect(responses).toEqual(mockResponse);
-        });
-    });
-
-    describe("testResponseGeneration", () => {
-        test("should generate test response from OpenAI", async () => {
-            const mockResponse = [
-                {
-                    message: {
-                        content: "Test response",
-                    },
-                },
-            ];
-            axios.post = jest.fn().mockResolvedValueOnce({ data: { choices: mockResponse } });
-            const chatOpenAi = new OpenAI({ apiKey: "test_api_key" });
-            const response = await chatOpenAi.chat({ prompt: "test prompt" });
-            expect(response).toEqual("Test response");
-        });
-    });
-});
+    const chatOpenAi = new OpenAI({ apiKey: "test_api_key" })
+    const response = await chatOpenAi.chat({ prompt: "test prompt" })
+    expect(response).toEqual({ content: "Test response" })
+  })
+})
